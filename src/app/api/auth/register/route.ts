@@ -46,9 +46,10 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Registration error:", message);
     return NextResponse.json(
-      { error: "Erreur lors de la création du compte" },
+      { error: "Erreur lors de la création du compte", details: message },
       { status: 500 }
     );
   }
