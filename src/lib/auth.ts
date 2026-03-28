@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
@@ -28,9 +29,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!user?.passwordHash) return null;
 
-        // In production, use bcrypt.compare
-        // For now, simple check (replace with proper hashing)
-        const isValid = user.passwordHash === credentials.password;
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) return null;
 
         return { id: user.id, name: user.name, email: user.email, image: user.image };
