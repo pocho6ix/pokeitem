@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -18,6 +19,7 @@ interface ItemTypeData {
 interface SerieItemsGridProps {
   itemTypes: ItemTypeData[];
   serieName: string;
+  serieSlug: string;
   serieAbbreviation: string;
   /** Real DB items for this series (if any) */
   dbItems?: Array<{
@@ -35,10 +37,14 @@ interface SerieItemsGridProps {
 export function SerieItemsGrid({
   itemTypes,
   serieName,
+  serieSlug,
   serieAbbreviation,
   dbItems,
 }: SerieItemsGridProps) {
   const { data: session } = useSession();
+  const params = useParams();
+  // Use prop first, fall back to URL param
+  const resolvedSerieSlug = serieSlug || (params?.serieSlug as string) || "";
   const [selectedItem, setSelectedItem] = useState<{
     id: string;
     name: string;
@@ -48,6 +54,7 @@ export function SerieItemsGrid({
     priceTrend?: number | null;
     retailPrice?: number | null;
     serie?: { name: string; abbreviation?: string | null };
+    serieSlug?: string;
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -64,6 +71,7 @@ export function SerieItemsGrid({
       priceTrend: dbItem?.priceTrend,
       retailPrice: dbItem?.retailPrice ?? itemType.typicalMsrp,
       serie: { name: serieName, abbreviation: serieAbbreviation },
+      serieSlug: resolvedSerieSlug,
     });
     setIsModalOpen(true);
   }

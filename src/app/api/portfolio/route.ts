@@ -114,14 +114,18 @@ export async function POST(request: NextRequest) {
 
     const userId = (session.user as { id: string }).id;
     const body = await request.json();
-    const { itemId, quantity, purchasePrice, purchaseDate, notes } = body;
-
-    if (!itemId) {
-      return NextResponse.json(
-        { error: "itemId est requis" },
-        { status: 400 }
-      );
-    }
+    const {
+      itemId,
+      quantity,
+      purchasePrice,
+      purchaseDate,
+      notes,
+      // For auto-creating items not yet in DB
+      serieSlug,
+      itemType,
+      itemName,
+      retailPrice,
+    } = body;
 
     if (quantity !== undefined && (typeof quantity !== "number" || quantity < 1)) {
       return NextResponse.json(
@@ -130,7 +134,67 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const itemExists = await prisma.item.findUnique({ where: { id: itemId } });
+    let resolvedItemId = itemId;
+
+    // If no itemId, find or create the item based on serie + type
+    if (!resolvedItemId && serieSlug && itemType) {
+      // Find the serie in DB
+      let serie = await prisma.serie.findFirst({
+        where: { slug: serieSlug },
+      });
+
+      // If serie doesn't exist, create it from the provided data
+      if (!serie) {
+        const bloc = await prisma.bloc.findFirst({
+          orderBy: { order: "desc" },
+        });
+        if (!bloc) {
+          return NextResponse.json(
+            { error: "Aucun bloc trouvé en base" },
+            { status: 400 }
+          );
+        }
+        serie = await prisma.serie.create({
+          data: {
+            name: serieSlug.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+            slug: serieSlug,
+            blocId: bloc.id,
+          },
+        });
+      }
+
+      // Find existing item by serie + type
+      let item = await prisma.item.findFirst({
+        where: { serieId: serie.id, type: itemType as import("@prisma/client").ItemType },
+      });
+
+      // Create item if it doesn't exist
+      if (!item) {
+        const slug = `${serieSlug}-${itemType.toLowerCase().replace(/_/g, "-")}`;
+        item = await prisma.item.create({
+          data: {
+            serieId: serie.id,
+            name: itemName || `${serie.name} — ${itemType}`,
+            slug,
+            type: itemType as import("@prisma/client").ItemType,
+            retailPrice: retailPrice ?? null,
+          },
+        });
+      }
+
+      resolvedItemId = item.id;
+    }
+
+    if (!resolvedItemId) {
+      return NextResponse.json(
+        { error: "itemId ou serieSlug + itemType requis" },
+        { status: 400 }
+      );
+    }
+
+    const itemExists = await prisma.item.findUnique({
+      where: { id: resolvedItemId },
+    });
     if (!itemExists) {
       return NextResponse.json({ error: "Item non trouvé" }, { status: 404 });
     }
@@ -138,7 +202,7 @@ export async function POST(request: NextRequest) {
     const portfolioItem = await prisma.portfolioItem.create({
       data: {
         userId,
-        itemId,
+        itemId: resolvedItemId,
         quantity: quantity ?? 1,
         purchasePrice: purchasePrice ?? 0,
         purchaseDate: purchaseDate ? new Date(purchaseDate) : new Date(),

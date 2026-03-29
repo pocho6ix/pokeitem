@@ -122,6 +122,7 @@ export default async function SeriePage({ params }: SeriePageProps) {
       <SerieItemsGrid
         itemTypes={ITEM_TYPES}
         serieName={serie.name}
+        serieSlug={serie.slug}
         serieAbbreviation={serie.abbreviation}
         dbItems={dbItems.map((i) => ({
           ...i,

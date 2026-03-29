@@ -16,6 +16,7 @@ interface AddToPortfolioModalProps {
     priceTrend?: number | null;
     retailPrice?: number | null;
     serie?: { name: string; abbreviation?: string | null };
+    serieSlug?: string;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -59,11 +60,16 @@ export function AddToPortfolioModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          itemId: item.id,
+          itemId: item.id || undefined,
           quantity,
           purchasePrice,
           purchaseDate,
           notes: notes || undefined,
+          // Fallback for items not yet in DB
+          serieSlug: item.serieSlug,
+          itemType: item.type,
+          itemName: item.name,
+          retailPrice: item.retailPrice,
         }),
       });
 
