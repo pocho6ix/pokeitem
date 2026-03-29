@@ -11,12 +11,12 @@ import {
   Percent,
   ArrowUpRight,
   ArrowDownRight,
-  Clock,
   Wallet,
   Trash2,
-  Pencil,
   Search,
+  RefreshCw,
 } from "lucide-react";
+import { UpdatePriceModal } from "@/components/portfolio/UpdatePriceModal";
 import {
   AreaChart,
   Area,
@@ -48,6 +48,11 @@ interface PortfolioItemData {
     imageUrl: string | null;
     currentPrice: number | null;
     priceTrend: number | null;
+    priceFrom: number | null;
+    priceUpdatedAt: string | null;
+    lastScrapedAt: string | null;
+    cardmarketUrl: string | null;
+    retailPrice: number | null;
     serie?: { name: string; bloc?: { name: string } };
   };
   quantity: number;
@@ -232,6 +237,7 @@ export default function DashboardContent() {
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>("1M");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [pricingItem, setPricingItem] = useState<PortfolioItemData["item"] | null>(null);
 
   const fetchPortfolio = useCallback(async () => {
     try {
@@ -536,6 +542,20 @@ export default function DashboardContent() {
         )}
       </div>
 
+      {/* Update Price Modal */}
+      {pricingItem && (
+        <UpdatePriceModal
+          item={pricingItem}
+          isOpen={!!pricingItem}
+          onClose={() => setPricingItem(null)}
+          onSuccess={() => {
+            setPricingItem(null);
+            fetchPortfolio();
+            fetchChart(period);
+          }}
+        />
+      )}
+
       {/* Items table */}
       <Card>
         <CardHeader>
@@ -593,6 +613,11 @@ export default function DashboardContent() {
                             {formatPrice(row.currentValuePerUnit)}/u
                           </div>
                         )}
+                        {row.item.priceUpdatedAt && (
+                          <div className="text-[10px] text-[var(--text-tertiary)]">
+                            {new Date(row.item.priceUpdatedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
+                          </div>
+                        )}
                       </td>
                       <td className={`font-data py-3 pr-4 text-right font-medium ${plPositive ? "text-green-500" : "text-red-500"}`}>
                         <div>
@@ -605,14 +630,23 @@ export default function DashboardContent() {
                         </div>
                       </td>
                       <td className="py-3 text-right">
-                        <button
-                          onClick={() => handleDelete(row.id)}
-                          disabled={deleting === row.id}
-                          className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/30 transition-colors"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setPricingItem(row.item)}
+                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-950/30 transition-colors"
+                            title="Actualiser le prix"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(row.id)}
+                            disabled={deleting === row.id}
+                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/30 transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
