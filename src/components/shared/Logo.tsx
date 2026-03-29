@@ -22,26 +22,14 @@ export function Logo({ className, size = "md", variant = "full" }: LogoProps) {
   return (
     <Link href="/" className={cn("flex items-center shrink-0", className)}>
       {variant === "full" ? (
-        <>
-          {/* Light mode: transparent bg logo */}
-          <Image
-            src="/logo-long.png"
-            alt="PokeItem"
-            width={dims.full.w}
-            height={dims.full.h}
-            className="h-auto rounded-lg dark:hidden"
-            priority
-          />
-          {/* Dark mode: white bg logo */}
-          <Image
-            src="/logo-long-light.png"
-            alt="PokeItem"
-            width={dims.full.w}
-            height={dims.full.h}
-            className="h-auto hidden dark:block rounded-lg px-1"
-            priority
-          />
-        </>
+        <Image
+          src="/logo-long.png"
+          alt="PokeItem"
+          width={dims.full.w}
+          height={dims.full.h}
+          className="h-auto"
+          priority
+        />
       ) : variant === "icon" ? (
         <Image
           src="/logo.png"
