@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
+import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import {
   Card,
   CardContent,
   CardHeader,
 } from "@/components/ui/Card";
+import { getBlogPostBySlug, BLOG_POSTS } from "@/data/blog-posts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -16,44 +19,30 @@ interface BlogPostPageProps {
 }
 
 // ---------------------------------------------------------------------------
-// Mock helpers
+// Constants
 // ---------------------------------------------------------------------------
 
-function slugToTitle(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+const CATEGORY_VARIANTS: Record<string, "default" | "success" | "warning" | "secondary"> = {
+  guide: "default",
+  actualite: "secondary",
+  investissement: "success",
+  top: "warning",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  guide: "Guide",
+  actualite: "Actualité",
+  investissement: "Investissement",
+  top: "Top",
+};
+
+// ---------------------------------------------------------------------------
+// Static params for SSG
+// ---------------------------------------------------------------------------
+
+export function generateStaticParams() {
+  return BLOG_POSTS.filter((p) => p.published).map((p) => ({ slug: p.slug }));
 }
-
-const RELATED_POSTS = [
-  {
-    slug: "guide-debuter-collection-pokemon-tcg",
-    title: "Guide complet : bien d\u00e9buter sa collection Pok\u00e9mon TCG",
-    category: "guide",
-    readingTime: 8,
-  },
-  {
-    slug: "top-10-produits-scelles-rentables-2025",
-    title: "Top 10 des produits scell\u00e9s les plus rentables en 2025",
-    category: "top",
-    readingTime: 5,
-  },
-  {
-    slug: "investir-etb-strategie-conseils",
-    title: "Investir dans les ETB : strat\u00e9gie et conseils",
-    category: "investissement",
-    readingTime: 10,
-  },
-];
-
-const TABLE_OF_CONTENTS = [
-  { id: "introduction", label: "Introduction" },
-  { id: "contexte", label: "Contexte" },
-  { id: "analyse", label: "Analyse d\u00e9taill\u00e9e" },
-  { id: "conseils", label: "Conseils pratiques" },
-  { id: "conclusion", label: "Conclusion" },
-];
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -63,20 +52,33 @@ export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const title = slugToTitle(slug);
+  const post = getBlogPostBySlug(slug);
+
+  if (!post) {
+    return { title: "Article introuvable — Blog PokeItem" };
+  }
+
+  const title = post.metaTitle || `${post.title} — Blog PokeItem`;
+  const description =
+    post.metaDescription || post.excerpt || `Lisez "${post.title}" sur le blog PokeItem.`;
 
   return {
-    title: `${title} — Blog PokeItem`,
-    description: `Lisez notre article "${title}" sur le blog PokeItem. Guides, actualit\u00e9s et analyses Pok\u00e9mon TCG.`,
+    title,
+    description,
+    keywords: post.keywords,
     openGraph: {
-      title: `${title} — Blog PokeItem`,
-      description: `Lisez notre article "${title}" sur le blog PokeItem.`,
+      title,
+      description,
       type: "article",
       url: `https://www.pokeitem.fr/blog/${slug}`,
+      ...(post.coverImage && {
+        images: [{ url: post.coverImage, width: 1200, height: 630, alt: post.title }],
+      }),
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} — Blog PokeItem`,
+      title,
+      description,
     },
     alternates: {
       canonical: `https://www.pokeitem.fr/blog/${slug}`,
@@ -90,10 +92,15 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const title = slugToTitle(slug);
-  const publishedAt = "2026-03-20";
-  const readingTime = 8;
-  const author = "PokeItem";
+  const post = getBlogPostBySlug(slug);
+
+  if (!post) notFound();
+
+  const relatedPosts = post.relatedSlugs
+    .map((s) => getBlogPostBySlug(s))
+    .filter(Boolean);
+
+  const hasContent = post.contentHtml.trim().length > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -107,7 +114,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </li>
           <li aria-hidden="true">/</li>
           <li className="truncate font-medium text-[var(--text-primary)]">
-            {title}
+            {post.title}
           </li>
         </ol>
       </nav>
@@ -117,166 +124,201 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <article className="min-w-0">
           {/* Header */}
           <header className="mb-8">
-            <Badge variant="default" className="mb-3">
-              Guide
+            <Badge
+              variant={CATEGORY_VARIANTS[post.category] ?? "default"}
+              className="mb-3"
+            >
+              {CATEGORY_LABELS[post.category] ?? post.category}
             </Badge>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {title}
+              {post.title}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
-              <span>{author}</span>
+              <span>{post.author}</span>
               <span aria-hidden="true">&middot;</span>
-              <time dateTime={publishedAt}>
-                {new Date(publishedAt).toLocaleDateString("fr-FR", {
+              <time dateTime={post.publishedAt}>
+                {new Date(post.publishedAt).toLocaleDateString("fr-FR", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
                 })}
               </time>
               <span aria-hidden="true">&middot;</span>
-              <span>{readingTime} min de lecture</span>
+              <span>{post.readingTime} min de lecture</span>
             </div>
           </header>
 
-          {/* Cover image placeholder */}
+          {/* Cover image */}
           <div className="mb-8 aspect-[2/1] w-full overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
-            <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <circle cx="9" cy="9" r="2" />
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-              </svg>
+            {post.coverImage ? (
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                width={1200}
+                height={600}
+                className="h-full w-full object-cover"
+                priority
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <circle cx="9" cy="9" r="2" />
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                </svg>
+              </div>
+            )}
+          </div>
+
+          {/* Article body */}
+          {hasContent ? (
+            <div
+              className="prose prose-lg max-w-none dark:prose-invert prose-headings:scroll-mt-24 prose-a:text-blue-600 dark:prose-a:text-blue-400"
+              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+            />
+          ) : (
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <section id="introduction">
+                <h2>Introduction</h2>
+                <p>
+                  Cet article est en cours de rédaction. Le contenu complet sera
+                  bientôt disponible. Revenez prochainement !
+                </p>
+              </section>
             </div>
-          </div>
-
-          {/* Article body (placeholder) */}
-          <div className="prose prose-lg max-w-none dark:prose-invert">
-            <section id="introduction">
-              <h2>Introduction</h2>
-              <p>
-                Cet article est un espace r\u00e9serv\u00e9 en attendant l&apos;int\u00e9gration du
-                contenu MDX. Le syst\u00e8me de blog PokeItem supportera bient\u00f4t les
-                articles r\u00e9dig\u00e9s en Markdown avec des composants interactifs.
-              </p>
-            </section>
-
-            <section id="contexte">
-              <h2>Contexte</h2>
-              <p>
-                Le march\u00e9 Pok\u00e9mon TCG \u00e9volue rapidement. Les collectionneurs et
-                investisseurs cherchent des informations fiables pour prendre
-                les meilleures d\u00e9cisions.
-              </p>
-            </section>
-
-            <section id="analyse">
-              <h2>Analyse d\u00e9taill\u00e9e</h2>
-              <p>
-                Contenu \u00e0 venir. Cette section contiendra une analyse approfondie
-                du sujet trait\u00e9 dans cet article.
-              </p>
-            </section>
-
-            <section id="conseils">
-              <h2>Conseils pratiques</h2>
-              <p>
-                Contenu \u00e0 venir. Des recommandations concr\u00e8tes seront
-                pr\u00e9sent\u00e9es ici pour aider les lecteurs.
-              </p>
-            </section>
-
-            <section id="conclusion">
-              <h2>Conclusion</h2>
-              <p>
-                Contenu \u00e0 venir. Un r\u00e9sum\u00e9 des points cl\u00e9s et des prochaines
-                \u00e9tapes sera disponible dans cette section.
-              </p>
-            </section>
-          </div>
+          )}
         </article>
 
         {/* Sidebar: Table of contents (desktop only) */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-              Sommaire
-            </h3>
-            <nav aria-label="Sommaire">
-              <ul className="space-y-2 border-l border-[var(--border-default)] pl-4">
-                {TABLE_OF_CONTENTS.map((item) => (
-                  <li key={item.id}>
-                    <a
-                      href={`#${item.id}`}
-                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-blue-600 dark:hover:text-blue-400"
-                    >
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </aside>
+        {post.tableOfContents.length > 0 && (
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                Sommaire
+              </h3>
+              <nav aria-label="Sommaire">
+                <ul className="space-y-2 border-l border-[var(--border-default)] pl-4">
+                  {post.tableOfContents.map((item) => (
+                    <li key={item.id}>
+                      <a
+                        href={`#${item.id}`}
+                        className="text-sm text-[var(--text-secondary)] transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          </aside>
+        )}
       </div>
 
       {/* Related articles */}
-      <section className="mt-16">
-        <h2 className="mb-6 text-2xl font-bold">Articles li\u00e9s</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {RELATED_POSTS.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              className="group focus-visible:outline-none"
-            >
-              <Card className="flex h-full flex-col transition-shadow group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-blue-500">
-                <div className="aspect-[16/9] w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
-                  <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="36"
-                      height="36"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                      <circle cx="9" cy="9" r="2" />
-                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                    </svg>
+      {relatedPosts.length > 0 && (
+        <section className="mt-16">
+          <h2 className="mb-6 text-2xl font-bold">Articles liés</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {relatedPosts.map((related) => (
+              <Link
+                key={related!.slug}
+                href={`/blog/${related!.slug}`}
+                className="group focus-visible:outline-none"
+              >
+                <Card className="flex h-full flex-col transition-shadow group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-blue-500">
+                  <div className="aspect-[16/9] w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+                    {related!.coverImage ? (
+                      <Image
+                        src={related!.coverImage}
+                        alt={related!.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="36"
+                          height="36"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                          <circle cx="9" cy="9" r="2" />
+                          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <CardHeader>
-                  <h3 className="line-clamp-2 text-base font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                    {post.title}
-                  </h3>
-                </CardHeader>
-                <CardContent className="mt-auto">
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                    <Badge variant="secondary" className="text-[10px]">
-                      {post.category}
-                    </Badge>
-                    <span>{post.readingTime} min de lecture</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
+                  <CardHeader>
+                    <h3 className="line-clamp-2 text-base font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      {related!.title}
+                    </h3>
+                  </CardHeader>
+                  <CardContent className="mt-auto">
+                    <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                      <Badge variant="secondary" className="text-[10px]">
+                        {CATEGORY_LABELS[related!.category] ?? related!.category}
+                      </Badge>
+                      <span>{related!.readingTime} min de lecture</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.metaDescription || post.excerpt,
+            author: {
+              "@type": "Organization",
+              name: post.author,
+              url: "https://www.pokeitem.fr",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "PokeItem",
+              url: "https://www.pokeitem.fr",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://www.pokeitem.fr/logo.png",
+              },
+            },
+            datePublished: post.publishedAt,
+            dateModified: post.publishedAt,
+            mainEntityOfPage: `https://www.pokeitem.fr/blog/${post.slug}`,
+            ...(post.coverImage && {
+              image: `https://www.pokeitem.fr${post.coverImage}`,
+            }),
+            keywords: post.keywords.join(", "),
+            wordCount: post.readingTime * 200,
+          }),
+        }}
+      />
     </div>
   );
 }
