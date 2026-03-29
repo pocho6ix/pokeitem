@@ -9,6 +9,7 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   coverImage: string | null;
+  coverImageAlt: string | null;
   author: string;
   tags: string[];
   category: string;

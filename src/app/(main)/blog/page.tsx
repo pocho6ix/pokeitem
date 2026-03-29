@@ -55,7 +55,7 @@ export default function BlogPage() {
                 {post.coverImage ? (
                   <Image
                     src={post.coverImage}
-                    alt={post.title}
+                    alt={post.coverImageAlt ?? post.title}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

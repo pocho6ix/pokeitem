@@ -153,7 +153,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {post.coverImage ? (
               <Image
                 src={post.coverImage}
-                alt={post.title}
+                alt={post.coverImageAlt ?? post.title}
                 width={1200}
                 height={600}
                 className="h-full w-full object-cover"
@@ -241,7 +241,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     {related!.coverImage ? (
                       <Image
                         src={related!.coverImage}
-                        alt={related!.title}
+                        alt={related!.coverImageAlt ?? related!.title}
                         fill
                         className="object-cover"
                       />
