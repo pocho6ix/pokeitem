@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { X, Minus, Plus, Package } from "lucide-react";
+import { X, Minus, Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
+import { ItemImage } from "@/components/shared/ItemImage";
 
 interface AddToPortfolioModalProps {
   item: {
@@ -137,9 +138,12 @@ export function AddToPortfolioModal({
         <form onSubmit={handleSubmit} className="p-5 space-y-5">
           {/* Item info */}
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-tertiary)]">
-              <Package className="h-8 w-8 text-[var(--text-tertiary)]" />
-            </div>
+            <ItemImage
+              src={item.imageUrl}
+              alt={item.name}
+              size="md"
+              className="h-16 w-16 shrink-0 rounded-xl"
+            />
             <div className="min-w-0">
               <h3 className="font-semibold text-[var(--text-primary)] leading-tight">
                 {item.name}

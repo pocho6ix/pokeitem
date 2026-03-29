@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { UpdatePriceModal } from "@/components/portfolio/UpdatePriceModal";
+import { ItemImage } from "@/components/shared/ItemImage";
 import {
   AreaChart,
   Area,
@@ -566,6 +567,7 @@ export default function DashboardContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-default)] text-left text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
+                  <th className="pb-3 pr-2 w-14"></th>
                   <th className="pb-3 pr-4">Nom</th>
                   <th className="pb-3 pr-4">Type</th>
                   <th className="pb-3 pr-4 text-right">Qté</th>
@@ -580,6 +582,14 @@ export default function DashboardContent() {
                   const plPositive = row.pnl >= 0;
                   return (
                     <tr key={row.id} className="group hover:bg-[var(--bg-card-hover)]">
+                      <td className="py-3 pr-2">
+                        <ItemImage
+                          src={row.item.imageUrl}
+                          alt={row.item.name}
+                          size="sm"
+                          className="w-12 h-12 rounded-lg"
+                        />
+                      </td>
                       <td className="py-3 pr-4">
                         <p className="font-medium text-[var(--text-primary)]">
                           {row.item.name}

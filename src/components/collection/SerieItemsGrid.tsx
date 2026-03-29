@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
+import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
+import { ItemImage } from "@/components/shared/ItemImage";
 import { AddToPortfolioModal } from "@/components/portfolio/AddToPortfolioModal";
 
 interface ItemTypeData {
@@ -43,7 +43,6 @@ export function SerieItemsGrid({
 }: SerieItemsGridProps) {
   const { data: session } = useSession();
   const params = useParams();
-  // Use prop first, fall back to URL param
   const resolvedSerieSlug = serieSlug || (params?.serieSlug as string) || "";
   const [selectedItem, setSelectedItem] = useState<{
     id: string;
@@ -59,7 +58,6 @@ export function SerieItemsGrid({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   function handleAddToPortfolio(itemType: ItemTypeData) {
-    // Try to find a matching DB item
     const dbItem = dbItems?.find((i) => i.type === itemType.type);
 
     setSelectedItem({
@@ -87,29 +85,38 @@ export function SerieItemsGrid({
               dbItem?.currentPrice ?? dbItem?.priceTrend ?? itemType.typicalMsrp;
 
             return (
-              <Card key={itemType.type} className="flex flex-col p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <Badge className={ITEM_TYPE_COLORS[itemType.type] ?? ""}>
+              <Card
+                key={itemType.type}
+                className="group flex flex-col overflow-hidden"
+              >
+                {/* Image */}
+                <ItemImage
+                  src={dbItem?.imageUrl}
+                  alt={ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
+                  size="xl"
+                  className="aspect-[4/3] rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
+                />
+
+                {/* Content */}
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-tight">
                     {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-                  </Badge>
-                </div>
-                <h3 className="mb-1 font-semibold text-[var(--text-primary)]">
-                  {itemType.label}
-                </h3>
-                <p className="mb-3 flex-1 text-sm text-[var(--text-secondary)]">
-                  {itemType.description}
-                </p>
-                <div className="mt-auto flex items-center justify-between">
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
-                    ~{formatPrice(displayPrice)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleAddToPortfolio(itemType)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-                  >
-                    + Portfolio
-                  </button>
+                  </h3>
+                  <p className="mt-1 flex-1 text-xs text-[var(--text-secondary)] line-clamp-2">
+                    {itemType.description}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="font-data text-base font-bold text-[var(--text-primary)]">
+                      ~{formatPrice(displayPrice)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleAddToPortfolio(itemType)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                    >
+                      + Portfolio
+                    </button>
+                  </div>
                 </div>
               </Card>
             );
