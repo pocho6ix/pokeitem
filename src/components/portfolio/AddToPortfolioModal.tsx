@@ -7,6 +7,13 @@ import { formatPrice } from "@/lib/utils";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { ItemImage } from "@/components/shared/ItemImage";
 
+const TYPE_SLUG: Record<string, string> = {
+  BOOSTER: "booster", DUOPACK: "duopack", BLISTER: "blister",
+  MINI_TIN: "mini-tin", POKEBALL_TIN: "pokeball-tin", BUNDLE: "bundle",
+  BOX_SET: "box-set", ETB: "etb", BOOSTER_BOX: "booster-box",
+  UPC: "upc", TIN: "tin", THEME_DECK: "theme-deck", TRAINER_KIT: "trainer-kit",
+};
+
 interface AddToPortfolioModalProps {
   item: {
     id: string;
@@ -140,6 +147,7 @@ export function AddToPortfolioModal({
           <div className="flex items-start gap-4">
             <ItemImage
               src={item.imageUrl}
+              slug={item.serieSlug ? `${item.serieSlug}-${TYPE_SLUG[item.type] || item.type.toLowerCase()}` : undefined}
               alt={item.name}
               size="md"
               className="h-16 w-16 shrink-0 rounded-xl"

@@ -34,6 +34,22 @@ interface SerieItemsGridProps {
   }>;
 }
 
+const TYPE_SLUG: Record<string, string> = {
+  BOOSTER: "booster",
+  DUOPACK: "duopack",
+  BLISTER: "blister",
+  MINI_TIN: "mini-tin",
+  POKEBALL_TIN: "pokeball-tin",
+  BUNDLE: "bundle",
+  BOX_SET: "box-set",
+  ETB: "etb",
+  BOOSTER_BOX: "booster-box",
+  UPC: "upc",
+  TIN: "tin",
+  THEME_DECK: "theme-deck",
+  TRAINER_KIT: "trainer-kit",
+};
+
 export function SerieItemsGrid({
   itemTypes,
   serieName,
@@ -92,6 +108,7 @@ export function SerieItemsGrid({
                 {/* Image */}
                 <ItemImage
                   src={dbItem?.imageUrl}
+                  slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
                   alt={ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
                   size="xl"
                   className="aspect-[4/3] rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"

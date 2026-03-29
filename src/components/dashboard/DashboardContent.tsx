@@ -45,6 +45,7 @@ interface PortfolioItemData {
   item: {
     id: string;
     name: string;
+    slug: string;
     type: string;
     imageUrl: string | null;
     currentPrice: number | null;
@@ -585,6 +586,7 @@ export default function DashboardContent() {
                       <td className="py-3 pr-2">
                         <ItemImage
                           src={row.item.imageUrl}
+                          slug={row.item.slug}
                           alt={row.item.name}
                           size="sm"
                           className="w-12 h-12 rounded-lg"

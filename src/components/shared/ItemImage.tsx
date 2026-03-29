@@ -6,6 +6,8 @@ interface ItemImageProps {
   alt: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  /** Item slug — used to resolve image by convention when src is null */
+  slug?: string;
 }
 
 const SIZES = {
@@ -20,16 +22,18 @@ export function ItemImage({
   alt,
   size = "md",
   className = "",
+  slug,
 }: ItemImageProps) {
   const dim = SIZES[size];
+  const resolvedSrc = src || (slug ? `/images/items/${slug}.jpg` : null);
 
   return (
     <div
       className={`bg-[var(--bg-tertiary)] flex items-center justify-center overflow-hidden ${className}`}
     >
-      {src ? (
+      {resolvedSrc ? (
         <Image
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           width={dim.w}
           height={dim.h}
