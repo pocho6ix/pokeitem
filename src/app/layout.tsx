@@ -65,7 +65,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${plusJakarta.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
+      <body className={`${plusJakarta.variable} ${spaceGrotesk.variable} font-sans antialiased`} suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>
