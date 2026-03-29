@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { SERIES } from "@/data/series";
+import { BLOCS } from "@/data/blocs";
 
 export async function GET() {
   try {
@@ -143,21 +145,44 @@ export async function POST(request: NextRequest) {
         where: { slug: serieSlug },
       });
 
-      // If serie doesn't exist, create it from the provided data
+      // If serie doesn't exist, create it from static data
       if (!serie) {
-        const bloc = await prisma.bloc.findFirst({
-          orderBy: { order: "desc" },
-        });
-        if (!bloc) {
+        // Look up serie in static data to get the correct blocSlug
+        const staticSerie = SERIES.find((s) => s.slug === serieSlug);
+        const blocSlug = staticSerie?.blocSlug;
+
+        if (!blocSlug) {
           return NextResponse.json(
-            { error: "Aucun bloc trouvé en base" },
+            { error: "Série introuvable dans les données statiques" },
             { status: 400 }
           );
         }
+
+        // Find or create the bloc in DB
+        let bloc = await prisma.bloc.findFirst({ where: { slug: blocSlug } });
+        if (!bloc) {
+          const staticBloc = BLOCS.find((b) => b.slug === blocSlug);
+          if (!staticBloc) {
+            return NextResponse.json(
+              { error: "Bloc introuvable dans les données statiques" },
+              { status: 400 }
+            );
+          }
+          bloc = await prisma.bloc.create({
+            data: {
+              name: staticBloc.name,
+              slug: staticBloc.slug,
+              abbreviation: staticBloc.abbreviation ?? null,
+              order: staticBloc.order,
+            },
+          });
+        }
+
         serie = await prisma.serie.create({
           data: {
-            name: serieSlug.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
-            slug: serieSlug,
+            name: staticSerie.name,
+            slug: staticSerie.slug,
+            abbreviation: staticSerie.abbreviation ?? null,
             blocId: bloc.id,
           },
         });
