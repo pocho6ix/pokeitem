@@ -1,6 +1,9 @@
 // ---------------------------------------------------------------------------
-// Blog posts content — Static data for SEO-optimized articles
+// Blog posts content — Static data + auto-generated articles
 // ---------------------------------------------------------------------------
+
+import { readdirSync, readFileSync, existsSync } from "fs";
+import { join } from "path";
 
 export interface BlogPostData {
   id: string;
@@ -563,16 +566,40 @@ const repererFaux: BlogPostData = {
 };
 
 // ---------------------------------------------------------------------------
+// Auto-generated articles loader
+// ---------------------------------------------------------------------------
+
+function loadGeneratedArticles(): BlogPostData[] {
+  const generatedDir = join(process.cwd(), "src", "data", "blog-posts-generated");
+  if (!existsSync(generatedDir)) return [];
+
+  try {
+    const files = readdirSync(generatedDir).filter((f) => f.endsWith(".json"));
+    return files.map((file) => {
+      const raw = readFileSync(join(generatedDir, file), "utf-8");
+      return JSON.parse(raw) as BlogPostData;
+    });
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
-export const BLOG_POSTS: BlogPostData[] = [
+const MANUAL_POSTS: BlogPostData[] = [
   guideDebuterCollection,
   equilibreParfait,
   top10Rentables,
   investirETB,
   calendrierSorties,
   repererFaux,
+];
+
+export const BLOG_POSTS: BlogPostData[] = [
+  ...MANUAL_POSTS,
+  ...loadGeneratedArticles(),
 ];
 
 export function getBlogPostBySlug(slug: string): BlogPostData | undefined {

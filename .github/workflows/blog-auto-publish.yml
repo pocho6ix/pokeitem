@@ -1,0 +1,54 @@
+name: Auto Publish Blog Articles
+
+on:
+  schedule:
+    # 2 articles par jour : 8h et 14h UTC (10h et 16h heure de Paris)
+    - cron: '0 8 * * *'
+    - cron: '0 14 * * *'
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Slug de la série (laisser vide pour la prochaine dans la queue)"
+        required: false
+
+jobs:
+  generate-article:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm ci
+
+      - name: Generate Series Article via Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.slug }}" ]; then
+            node scripts/generate-series-article.js "${{ github.event.inputs.slug }}"
+          else
+            node scripts/generate-series-article.js --next
+          fi
+
+      - name: Commit & Push
+        run: |
+          git config user.name "Ivan Hasselin"
+          git config user.email "bot@pokeitem.fr"
+          git add src/data/blog-posts-generated/ public/images/blog/ scripts/series-queue.json
+          git diff --cached --quiet && echo "No new content" && exit 0
+          ARTICLE=$(ls -t src/data/blog-posts-generated/*.json 2>/dev/null | head -1)
+          TITLE=""
+          if [ -n "$ARTICLE" ]; then
+            TITLE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$ARTICLE','utf-8')).title)")
+          fi
+          git commit -m "blog: ${TITLE:-nouveau article série}"
+          git push
+
+      - name: Trigger Vercel Deploy
+        if: env.VERCEL_DEPLOY_HOOK != ''
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: curl -X POST "$VERCEL_DEPLOY_HOOK"
