@@ -11,6 +11,9 @@ on:
         description: "Slug de la série (laisser vide pour la prochaine dans la queue)"
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   generate-article:
     runs-on: ubuntu-latest
