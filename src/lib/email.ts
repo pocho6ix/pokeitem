@@ -1,18 +1,12 @@
-import { Resend } from "resend";
-
-function getResend() {
+export async function sendVerificationEmail(email: string, token: string) {
+  const { Resend } = await import("resend");
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY is not configured");
-  return new Resend(key);
-}
 
-const FROM_EMAIL = process.env.EMAIL_FROM ?? "PokeItem <noreply@pokeitem.fr>";
-const BASE_URL = process.env.NEXTAUTH_URL ?? "https://www.pokeitem.fr";
-
-export async function sendVerificationEmail(email: string, token: string) {
+  const resend = new Resend(key);
+  const FROM_EMAIL = process.env.EMAIL_FROM ?? "PokeItem <noreply@pokeitem.fr>";
+  const BASE_URL = process.env.NEXTAUTH_URL ?? "https://www.pokeitem.fr";
   const verifyUrl = `${BASE_URL}/verification?token=${token}`;
-
-  const resend = getResend();
   await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
