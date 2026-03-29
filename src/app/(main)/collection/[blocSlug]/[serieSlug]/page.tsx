@@ -5,9 +5,8 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { ITEM_TYPES } from "@/data/item-types";
 import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
-import { formatPrice } from "@/lib/utils";
+import { SerieItemsGrid } from "@/components/collection/SerieItemsGrid";
+import { prisma } from "@/lib/prisma";
 
 interface SeriePageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
@@ -39,6 +38,41 @@ export default async function SeriePage({ params }: SeriePageProps) {
 
   if (!bloc || !serie) {
     notFound();
+  }
+
+  // Fetch real items from DB for this series (if any)
+  let dbItems: Array<{
+    id: string;
+    name: string;
+    type: string;
+    imageUrl: string | null;
+    currentPrice: number | null;
+    priceTrend: number | null;
+    retailPrice: number | null;
+    serie: { name: string; abbreviation: string | null } | null;
+  }> = [];
+
+  try {
+    const dbSerie = await prisma.serie.findFirst({
+      where: { slug: serieSlug },
+    });
+    if (dbSerie) {
+      dbItems = await prisma.item.findMany({
+        where: { serieId: dbSerie.id },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          imageUrl: true,
+          currentPrice: true,
+          priceTrend: true,
+          retailPrice: true,
+          serie: { select: { name: true, abbreviation: true } },
+        },
+      });
+    }
+  } catch {
+    // DB not available, continue with static data
   }
 
   return (
@@ -85,36 +119,15 @@ export default async function SeriePage({ params }: SeriePageProps) {
         Types de produits disponibles
       </h2>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {ITEM_TYPES.filter((it) => it.typicalMsrp > 0).map((itemType) => (
-          <Card key={itemType.type} className="flex flex-col p-5">
-            <div className="flex items-center justify-between mb-3">
-              <Badge
-                className={ITEM_TYPE_COLORS[itemType.type] ?? ""}
-              >
-                {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-              </Badge>
-            </div>
-            <h3 className="font-semibold text-[var(--text-primary)] mb-1">
-              {itemType.label}
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-3 flex-1">
-              {itemType.description}
-            </p>
-            <div className="flex items-center justify-between mt-auto">
-              <span className="text-sm font-medium text-[var(--text-primary)]">
-                ~{formatPrice(itemType.typicalMsrp)}
-              </span>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-              >
-                + Portfolio
-              </button>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <SerieItemsGrid
+        itemTypes={ITEM_TYPES}
+        serieName={serie.name}
+        serieAbbreviation={serie.abbreviation}
+        dbItems={dbItems.map((i) => ({
+          ...i,
+          serie: i.serie ?? undefined,
+        }))}
+      />
     </div>
   );
 }

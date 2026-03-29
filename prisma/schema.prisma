@@ -19,10 +19,11 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  portfolio     PortfolioItem[]
-  wishlist      WishlistItem[]
+  accounts         Account[]
+  sessions         Session[]
+  portfolio        PortfolioItem[]
+  wishlist         WishlistItem[]
+  manualValuations ManualValuation[]
 
   @@map("users")
 }
@@ -178,14 +179,15 @@ enum Language {
 // ─── HISTORIQUE DES PRIX ─────────────────────────────────────
 
 model PriceHistory {
-  id       String   @id @default(cuid())
-  itemId   String
-  price    Float
-  source   String?
-  currency String   @default("EUR")
-  date     DateTime @default(now())
+  id        String   @id @default(cuid())
+  itemId    String
+  price     Float
+  priceFrom Float?
+  source    String   @default("cardmarket")
+  currency  String   @default("EUR")
+  date      DateTime @default(now())
 
-  item Item @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   @@index([itemId, date])
   @@map("price_history")
@@ -206,11 +208,11 @@ model PortfolioItem {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  item Item @relation(fields: [itemId], references: [id])
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item             Item              @relation(fields: [itemId], references: [id])
 
-  @@unique([userId, itemId, purchasePrice])
   @@index([userId])
+  @@index([itemId])
   @@map("portfolio_items")
 }
 
@@ -264,6 +266,22 @@ model MarketListing {
   @@index([source])
   @@index([scrapedAt])
   @@map("market_listings")
+}
+
+// ─── VALORISATIONS MANUELLES ─────────────────────────────────
+
+model ManualValuation {
+  id     String   @id @default(cuid())
+  userId String
+  itemId String
+  price  Float
+  date   DateTime @default(now())
+  note   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, itemId])
+  @@map("manual_valuations")
 }
 
 // ─── BLOG ────────────────────────────────────────────────────
