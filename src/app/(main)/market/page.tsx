@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { formatPrice } from "@/lib/utils";
 import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS, CONDITION_LABELS } from "@/lib/constants";
+import { ItemImage } from "@/components/shared/ItemImage";
 
 // ---------------------------------------------------------------------------
 // Category filter pills
@@ -62,10 +63,13 @@ const MOCK_ITEMS: MarketItem[] = [
 function MarketCard({ item }: { item: MarketItem }) {
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-md">
-      {/* Image placeholder */}
-      <div className="flex h-44 items-center justify-center bg-[var(--bg-subtle)]">
-        <span className="text-xs text-[var(--text-tertiary)]">Image</span>
-      </div>
+      {/* Image */}
+      <ItemImage
+        src={item.imageUrl}
+        alt={item.title}
+        size="xl"
+        className="h-44"
+      />
       <CardContent className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="line-clamp-2 text-sm font-semibold text-[var(--text-primary)]">
           {item.title}
