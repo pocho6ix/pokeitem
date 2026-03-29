@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import * as fs from "fs";
+import * as path from "path";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { ITEM_TYPES } from "@/data/item-types";
@@ -10,6 +12,29 @@ import { prisma } from "@/lib/prisma";
 
 interface SeriePageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
+}
+
+const TYPE_SLUG_REVERSE: Record<string, string> = {
+  booster: "BOOSTER", duopack: "DUOPACK", blister: "BLISTER",
+  "mini-tin": "MINI_TIN", "pokeball-tin": "POKEBALL_TIN", bundle: "BUNDLE",
+  "box-set": "BOX_SET", etb: "ETB", "booster-box": "BOOSTER_BOX",
+  upc: "UPC", tin: "TIN", "theme-deck": "THEME_DECK", "trainer-kit": "TRAINER_KIT",
+};
+
+function getAvailableImageTypes(serieSlug: string): string[] {
+  const dir = path.join(process.cwd(), "public", "images", "items");
+  try {
+    const files = fs.readdirSync(dir);
+    const prefix = `${serieSlug}-`;
+    return files
+      .filter((f) => f.startsWith(prefix) && f.endsWith(".jpg"))
+      .map((f) => {
+        const typePart = f.slice(prefix.length, -4);
+        return TYPE_SLUG_REVERSE[typePart] || typePart.toUpperCase();
+      });
+  } catch {
+    return [];
+  }
 }
 
 function findBloc(slug: string) {
@@ -128,6 +153,7 @@ export default async function SeriePage({ params }: SeriePageProps) {
           ...i,
           serie: i.serie ?? undefined,
         }))}
+        availableImageTypes={getAvailableImageTypes(serie.slug)}
       />
     </div>
   );
