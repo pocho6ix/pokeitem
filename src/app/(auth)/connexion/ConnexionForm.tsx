@@ -51,7 +51,11 @@ export function ConnexionForm() {
       });
 
       if (result?.error) {
-        setError("Email ou mot de passe incorrect");
+        if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+          setError("Veuillez vérifier votre adresse email avant de vous connecter. Consultez votre boîte de réception.");
+        } else {
+          setError("Email ou mot de passe incorrect");
+        }
         return;
       }
 
@@ -79,7 +83,7 @@ export function ConnexionForm() {
       <CardContent className="space-y-6">
         {registered && (
           <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
-            Compte cr&eacute;&eacute; avec succ&egrave;s ! Connectez-vous.
+            Compte cr&eacute;&eacute; avec succ&egrave;s ! V&eacute;rifiez votre email pour activer votre compte.
           </div>
         )}
 

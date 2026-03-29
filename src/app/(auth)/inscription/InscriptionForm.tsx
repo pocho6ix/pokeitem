@@ -40,6 +40,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export function InscriptionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
 
   const {
@@ -75,12 +76,47 @@ export function InscriptionForm() {
         return;
       }
 
-      router.push("/connexion?registered=true");
+      setEmailSent(true);
     } catch {
       setError("Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (emailSent) {
+    return (
+      <Card>
+        <CardHeader className="items-center space-y-4 pb-2">
+          <Logo size="lg" />
+        </CardHeader>
+        <CardContent className="space-y-4 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+            <svg className="h-8 w-8 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">
+            V&eacute;rifiez votre email
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Un email de confirmation a &eacute;t&eacute; envoy&eacute; &agrave; votre adresse.
+            Cliquez sur le lien pour activer votre compte.
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)]">
+            Le lien expire dans 24 heures. Pensez &agrave; v&eacute;rifier vos spams.
+          </p>
+          <Button
+            variant="outline"
+            className="mt-2"
+            onClick={() => router.push("/connexion?registered=true")}
+          >
+            Aller &agrave; la connexion
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
