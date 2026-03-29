@@ -29,7 +29,7 @@ export function ItemImage({
 
   return (
     <div
-      className={`bg-[var(--bg-tertiary)] flex items-center justify-center overflow-hidden ${className}`}
+      className={`bg-white flex items-center justify-center overflow-hidden ${className}`}
     >
       {resolvedSrc ? (
         <Image
