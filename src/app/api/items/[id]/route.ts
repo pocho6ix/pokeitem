@@ -16,7 +16,7 @@ export async function GET(
           take: 30,
           orderBy: { date: "desc" },
         },
-        _count: { select: { userItems: true } },
+        _count: { select: { portfolioItems: true } },
       },
     });
 

@@ -4,20 +4,15 @@
 
 export enum ItemType {
   BOOSTER = 'BOOSTER',
-  DISPLAY = 'DISPLAY',
+  BOOSTER_BOX = 'BOOSTER_BOX',
   ETB = 'ETB',
-  COFFRET = 'COFFRET',
-  COFFRET_PREMIUM = 'COFFRET_PREMIUM',
-  MINI_TIN = 'MINI_TIN',
-  POKEBOX = 'POKEBOX',
-  TRIPACK = 'TRIPACK',
-  DUOPACK = 'DUOPACK',
-  DECK = 'DECK',
+  BOX_SET = 'BOX_SET',
+  UPC = 'UPC',
+  TIN = 'TIN',
+  BLISTER = 'BLISTER',
+  THEME_DECK = 'THEME_DECK',
   BUNDLE = 'BUNDLE',
-  VALISETTE = 'VALISETTE',
-  KIT_AVANT_PREMIERE = 'KIT_AVANT_PREMIERE',
-  COLLECTION_FIGURINE = 'COLLECTION_FIGURINE',
-  POKEBALL_TIN = 'POKEBALL_TIN',
+  TRAINER_KIT = 'TRAINER_KIT',
   OTHER = 'OTHER',
 }
 
@@ -95,9 +90,15 @@ export interface Item {
   exclusiveStore: string | null;
   language: Language;
   order: number;
+  cardmarketUrl?: string | null;
+  cardmarketId?: string | null;
+  priceFrom?: number | null;
+  priceTrend?: number | null;
+  availableSellers?: number | null;
+  lastScrapedAt?: string | null;
   serie?: Serie;
   prices?: PriceHistory[];
-  userItems?: unknown[];
+  portfolioItems?: unknown[];
 }
 
 export interface PriceHistory {

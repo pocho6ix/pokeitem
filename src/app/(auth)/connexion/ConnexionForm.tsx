@@ -55,7 +55,7 @@ export function ConnexionForm() {
         return;
       }
 
-      router.push("/ma-collection");
+      router.push("/portfolio");
     } catch {
       setError("Une erreur est survenue");
     } finally {
@@ -64,7 +64,7 @@ export function ConnexionForm() {
   }
 
   async function handleOAuth(provider: "google" | "discord") {
-    await signIn(provider, { callbackUrl: "/ma-collection" });
+    await signIn(provider, { callbackUrl: "/portfolio" });
   }
 
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -17,19 +17,20 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "PokeItem — Gérez votre collection d'items Pokémon TCG",
+    default: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
     template: "%s | PokeItem",
   },
   description:
-    "PokeItem est la plateforme de référence pour gérer, valoriser et suivre votre collection d'items scellés Pokémon TCG. Displays, ETB, coffrets et plus.",
+    "PokeItem est la plateforme de référence pour gérer, valoriser et suivre votre portfolio d'items scellés Pokémon TCG. Booster Boxes, ETB, coffrets et plus.",
   keywords: [
     "pokémon tcg",
     "collection pokémon",
     "items scellés pokémon",
-    "display pokémon",
+    "booster box pokémon",
     "etb pokémon",
     "investir pokémon",
     "pokeitem",
+    "portfolio pokémon",
   ],
   authors: [{ name: "PokeItem" }],
   openGraph: {
@@ -37,14 +38,14 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     url: "https://www.pokeitem.fr",
     siteName: "PokeItem",
-    title: "PokeItem — Gérez votre collection d'items Pokémon TCG",
+    title: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
     description:
-      "La plateforme de référence pour gérer et valoriser votre collection d'items scellés Pokémon TCG.",
+      "La plateforme de référence pour gérer et valoriser votre portfolio d'items scellés Pokémon TCG.",
   },
   twitter: {
     card: "summary_large_image",
     title: "PokeItem",
-    description: "Gérez votre collection d'items scellés Pokémon TCG.",
+    description: "Gérez votre portfolio d'items scellés Pokémon TCG.",
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
@@ -65,9 +66,9 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${plusJakarta.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <Providers>
           {children}
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

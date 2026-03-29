@@ -1,28 +1,28 @@
 import { create } from "zustand";
-import type { UserItem } from "@/types";
+import type { PortfolioItem } from "@/types/collection";
 
-interface CollectionState {
-  items: UserItem[];
+interface PortfolioState {
+  items: PortfolioItem[];
   isLoading: boolean;
   error: string | null;
 
-  fetchCollection: () => Promise<void>;
-  addItem: (data: Omit<UserItem, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  fetchPortfolio: () => Promise<void>;
+  addItem: (data: Omit<PortfolioItem, "id" | "createdAt" | "updatedAt">) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
-  updateItem: (id: string, data: Partial<UserItem>) => Promise<void>;
+  updateItem: (id: string, data: Partial<PortfolioItem>) => Promise<void>;
 }
 
-export const useCollectionStore = create<CollectionState>((set, get) => ({
+export const usePortfolioStore = create<PortfolioState>((set) => ({
   items: [],
   isLoading: false,
   error: null,
 
-  fetchCollection: async () => {
+  fetchPortfolio: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/collection");
-      if (!res.ok) throw new Error(`Failed to fetch collection: ${res.status}`);
-      const data: UserItem[] = await res.json();
+      const res = await fetch("/api/portfolio");
+      if (!res.ok) throw new Error(`Failed to fetch portfolio: ${res.status}`);
+      const data: PortfolioItem[] = await res.json();
       set({ items: data, isLoading: false });
     } catch (err) {
       set({
@@ -35,13 +35,13 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   addItem: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/collection", {
+      const res = await fetch("/api/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Failed to add item: ${res.status}`);
-      const newItem: UserItem = await res.json();
+      const newItem: PortfolioItem = await res.json();
       set((state) => ({
         items: [...state.items, newItem],
         isLoading: false,
@@ -57,7 +57,7 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   removeItem: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/collection?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/portfolio?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`Failed to remove item: ${res.status}`);
@@ -76,13 +76,13 @@ export const useCollectionStore = create<CollectionState>((set, get) => ({
   updateItem: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/collection?id=${encodeURIComponent(id)}`, {
+      const res = await fetch(`/api/portfolio?id=${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Failed to update item: ${res.status}`);
-      const updated: UserItem = await res.json();
+      const updated: PortfolioItem = await res.json();
       set((state) => ({
         items: state.items.map((item) => (item.id === id ? updated : item)),
         isLoading: false,

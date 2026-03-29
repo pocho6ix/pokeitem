@@ -21,7 +21,7 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
-  collection    UserItem[]
+  portfolio     PortfolioItem[]
   wishlist      WishlistItem[]
 
   @@map("users")
@@ -109,34 +109,40 @@ model Serie {
 }
 
 model Item {
-  id             String     @id @default(cuid())
-  serieId        String
-  name           String
-  slug           String     @unique
-  type           ItemType
-  description    String?    @db.Text
-  imageUrl       String?
-  images         String[]
-  ean            String?
-  releaseDate    DateTime?
-  retailPrice    Float?
-  currentPrice   Float?
-  priceUpdatedAt DateTime?
-  boosterCount   Int?
-  promoCards     String[]
-  contents       String?    @db.Text
-  isExclusive    Boolean    @default(false)
-  exclusiveStore String?
-  language       Language   @default(FR)
-  order          Int        @default(0)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id               String     @id @default(cuid())
+  serieId          String
+  name             String
+  slug             String     @unique
+  type             ItemType
+  description      String?    @db.Text
+  imageUrl         String?
+  images           String[]
+  ean              String?
+  releaseDate      DateTime?
+  retailPrice      Float?
+  currentPrice     Float?
+  priceUpdatedAt   DateTime?
+  boosterCount     Int?
+  promoCards       String[]
+  contents         String?    @db.Text
+  isExclusive      Boolean    @default(false)
+  exclusiveStore   String?
+  language         Language   @default(FR)
+  order            Int        @default(0)
+  cardmarketUrl    String?    @db.Text
+  cardmarketId     String?
+  priceFrom        Float?
+  priceTrend       Float?
+  availableSellers Int?
+  lastScrapedAt    DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
-  serie          Serie           @relation(fields: [serieId], references: [id])
-  prices         PriceHistory[]
-  userItems      UserItem[]
-  wishlistItems  WishlistItem[]
-  marketListings MarketListing[]
+  serie            Serie            @relation(fields: [serieId], references: [id])
+  prices           PriceHistory[]
+  portfolioItems   PortfolioItem[]
+  wishlistItems    WishlistItem[]
+  marketListings   MarketListing[]
 
   @@index([type])
   @@index([serieId])
@@ -145,20 +151,15 @@ model Item {
 
 enum ItemType {
   BOOSTER
-  DISPLAY
+  BOOSTER_BOX
   ETB
-  COFFRET
-  COFFRET_PREMIUM
-  MINI_TIN
-  POKEBOX
-  TRIPACK
-  DUOPACK
-  DECK
+  BOX_SET
+  UPC
+  TIN
+  BLISTER
+  THEME_DECK
   BUNDLE
-  VALISETTE
-  KIT_AVANT_PREMIERE
-  COLLECTION_FIGURINE
-  POKEBALL_TIN
+  TRAINER_KIT
   OTHER
 }
 
@@ -190,20 +191,18 @@ model PriceHistory {
   @@map("price_history")
 }
 
-// ─── COLLECTION UTILISATEUR ──────────────────────────────────
+// ─── PORTFOLIO UTILISATEUR ───────────��──────────────────────
 
-model UserItem {
+model PortfolioItem {
   id            String        @id @default(cuid())
   userId        String
   itemId        String
   quantity      Int           @default(1)
   purchasePrice Float?
+  priceType     PriceType     @default(CUSTOM)
   purchaseDate  DateTime?
   condition     ItemCondition @default(SEALED)
   notes         String?       @db.Text
-  forSale       Boolean       @default(false)
-  forTrade      Boolean       @default(false)
-  askingPrice   Float?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -212,7 +211,12 @@ model UserItem {
 
   @@unique([userId, itemId, purchasePrice])
   @@index([userId])
-  @@map("user_items")
+  @@map("portfolio_items")
+}
+
+enum PriceType {
+  RETAIL
+  CUSTOM
 }
 
 enum ItemCondition {

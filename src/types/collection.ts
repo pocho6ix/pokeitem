@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------
-// Collection-related types
+// Portfolio-related types
 // ---------------------------------------------------------------------------
 
 import type { Item, ItemCondition, ItemType } from './item';
 
-export interface UserItem {
+export type PriceType = 'RETAIL' | 'CUSTOM';
+
+export interface PortfolioItem {
   id: string;
   userId: string;
   itemId: string;
   quantity: number;
   purchasePrice: number | null;
+  priceType: PriceType;
   purchaseDate: string | null;
   condition: ItemCondition;
   notes: string | null;
-  forSale: boolean;
-  forTrade: boolean;
-  askingPrice: number | null;
   createdAt: string;
   updatedAt: string;
   item?: Item;
@@ -31,12 +31,14 @@ export interface WishlistItem {
   item?: Item;
 }
 
-export interface CollectionStats {
+export interface PortfolioStats {
   totalValue: number;
   totalItems: number;
   totalInvested: number;
   profitLoss: number;
   profitLossPercent: number;
+  variation24h: number;
+  variation24hPercent: number;
   distributionByType: Record<ItemType, number>;
   distributionBySerie: Record<string, number>;
   topPerformers: Array<{
@@ -48,7 +50,7 @@ export interface CollectionStats {
   }>;
 }
 
-export interface CollectionActivity {
+export interface PortfolioActivity {
   id: string;
   type: 'added' | 'modified' | 'removed';
   itemName: string;

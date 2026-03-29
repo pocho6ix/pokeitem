@@ -9,7 +9,7 @@ const MOBILE_NAV_ITEMS = [
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/blog", label: "Blog", icon: FileText },
-  { href: "/ma-collection", label: "Profil", icon: User },
+  { href: "/portfolio", label: "Portfolio", icon: User },
 ];
 
 export function MobileNav() {

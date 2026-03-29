@@ -51,7 +51,7 @@ export function InscriptionForm() {
   });
 
   async function handleOAuth(provider: "google" | "discord") {
-    await signIn(provider, { callbackUrl: "/ma-collection" });
+    await signIn(provider, { callbackUrl: "/portfolio" });
   }
 
   async function onSubmit(data: RegisterFormData) {

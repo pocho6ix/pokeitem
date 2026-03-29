@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Package, ShoppingBag, FileText, Menu, User, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/Logo";
+import { CommandSearch } from "@/components/shared/CommandSearch";
 import { ThemeToggle } from "./ThemeToggle";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +21,7 @@ const NAV_ITEMS = [
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <>
@@ -47,14 +50,49 @@ export function Header() {
                 </Link>
               );
             })}
+            {session && (
+              <Link
+                href="/portfolio"
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  pathname.startsWith("/portfolio")
+                    ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                )}
+              >
+                <User className="h-4 w-4" />
+                Portfolio
+              </Link>
+            )}
           </nav>
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+            <CommandSearch />
             <ThemeToggle />
-            <Link href="/connexion" className="hidden md:block">
-              <Button size="sm">Connexion</Button>
-            </Link>
+
+            {session ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  href="/profil"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-sm font-medium"
+                  title={session.user?.name ?? "Profil"}
+                >
+                  {session.user?.name?.charAt(0).toUpperCase() ?? "U"}
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                  title="Déconnexion"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <Link href="/connexion" className="hidden md:block">
+                <Button size="sm">Connexion</Button>
+              </Link>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -91,14 +129,37 @@ export function Header() {
             );
           })}
           <hr className="my-3 border-[var(--border-default)]" />
-          <Link
-            href="/connexion"
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-          >
-            <User className="h-5 w-5" />
-            Connexion
-          </Link>
+          {session ? (
+            <>
+              <Link
+                href="/portfolio"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+              >
+                <User className="h-5 w-5" />
+                Portfolio
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <LogOut className="h-5 w-5" />
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/connexion"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+            >
+              <User className="h-5 w-5" />
+              Connexion
+            </Link>
+          )}
         </nav>
       </Sheet>
     </>
