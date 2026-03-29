@@ -24,10 +24,17 @@ function getSystemTheme(): "light" | "dark" {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "system";
-    return (localStorage.getItem("theme") as Theme) || "system";
-  });
+  // Always start with "system" to match SSR — hydrate from localStorage in useEffect
+  const [theme, setThemeState] = useState<Theme>("system");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme") as Theme | null;
+    if (stored && ["light", "dark", "system"].includes(stored)) {
+      setThemeState(stored);
+    }
+    setMounted(true);
+  }, []);
 
   const resolvedTheme = theme === "system" ? getSystemTheme() : theme;
 
@@ -37,19 +44,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(resolvedTheme);
-  }, [resolvedTheme]);
+  }, [resolvedTheme, mounted]);
 
   useEffect(() => {
     if (theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => setThemeState((prev) => (prev === "system" ? "system" : prev));
-    // Force re-render on system change
-    const forceUpdate = () => {
-      setThemeState("system");
-    };
+    const forceUpdate = () => setThemeState("system");
     mq.addEventListener("change", forceUpdate);
     return () => mq.removeEventListener("change", forceUpdate);
   }, [theme]);
