@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import {
+  generateOrganizationJsonLd,
+  generateWebsiteJsonLd,
+} from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -41,11 +45,20 @@ export const metadata: Metadata = {
     title: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
     description:
       "La plateforme de référence pour gérer et valoriser votre portfolio d'items scellés Pokémon TCG.",
+    images: [
+      {
+        url: "https://www.pokeitem.fr/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "PokeItem",
     description: "Gérez votre portfolio d'items scellés Pokémon TCG.",
+    images: ["https://www.pokeitem.fr/og-image.png"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
@@ -66,6 +79,18 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`${plusJakarta.variable} ${spaceGrotesk.variable} font-sans antialiased`} suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateOrganizationJsonLd()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateWebsiteJsonLd()),
+          }}
+        />
         <Providers>
           {children}
         </Providers>

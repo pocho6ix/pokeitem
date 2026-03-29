@@ -6,6 +6,10 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import {
+  generateBreadcrumbJsonLd,
+  generateItemListJsonLd,
+} from "@/lib/seo/structured-data";
 
 interface BlocPageProps {
   params: Promise<{ blocSlug: string }>;
@@ -23,9 +27,23 @@ export async function generateMetadata({ params }: BlocPageProps): Promise<Metad
   const { blocSlug } = await params;
   const bloc = findBloc(blocSlug);
   if (!bloc) return { title: "Bloc introuvable | PokeItem" };
+
+  const title = `${bloc.name} — Toutes les series | PokeItem`;
+  const description = `Explorez toutes les series du bloc ${bloc.name} (${bloc.nameEn}) sur PokeItem : produits scelles, prix et historique.`;
+
   return {
-    title: `${bloc.name} | Collection | PokeItem`,
-    description: `Toutes les series du bloc ${bloc.name} de la collection Pokemon TCG.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://www.pokeitem.fr/collection/${blocSlug}`,
+    },
+    twitter: { card: "summary_large_image", title, description },
+    alternates: {
+      canonical: `https://www.pokeitem.fr/collection/${blocSlug}`,
+    },
   };
 }
 
@@ -39,8 +57,31 @@ export default async function BlocPage({ params }: BlocPageProps) {
 
   const series = getSeriesForBloc(bloc.slug);
 
+  const breadcrumbLd = generateBreadcrumbJsonLd([
+    { name: "Accueil", url: "/" },
+    { name: "Collection", url: "/collection" },
+    { name: bloc.name, url: `/collection/${bloc.slug}` },
+  ]);
+
+  const itemListLd = generateItemListJsonLd(
+    `Series du bloc ${bloc.name}`,
+    series.map((s) => ({
+      name: s.name,
+      url: `/collection/${bloc.slug}/${s.slug}`,
+    }))
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+      />
+
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
         <Link href="/collection" className="hover:text-blue-600 transition-colors">

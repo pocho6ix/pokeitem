@@ -6,9 +6,14 @@ import * as path from "path";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { ITEM_TYPES } from "@/data/item-types";
+import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 import { SerieItemsGrid } from "@/components/collection/SerieItemsGrid";
 import { prisma } from "@/lib/prisma";
+import {
+  generateBreadcrumbJsonLd,
+  generateItemListJsonLd,
+} from "@/lib/seo/structured-data";
 
 interface SeriePageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
@@ -50,9 +55,24 @@ export async function generateMetadata({ params }: SeriePageProps): Promise<Meta
   const bloc = findBloc(blocSlug);
   const serie = findSerie(blocSlug, serieSlug);
   if (!bloc || !serie) return { title: "Serie introuvable | PokeItem" };
+
+  const title = `${serie.name} — ${bloc.name} | PokeItem`;
+  const description = `Tous les produits scelles de la serie ${serie.name} (${serie.abbreviation}) du bloc ${bloc.name}. Prix, disponibilite et details sur PokeItem.`;
+
   return {
-    title: `${serie.name} | ${bloc.name} | PokeItem`,
-    description: `Decouvrez les items scelles de la serie ${serie.name} du bloc ${bloc.name}.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `https://www.pokeitem.fr/collection/${blocSlug}/${serieSlug}`,
+      images: serie.imageUrl ? [{ url: serie.imageUrl, alt: serie.name }] : [],
+    },
+    twitter: { card: "summary_large_image", title, description },
+    alternates: {
+      canonical: `https://www.pokeitem.fr/collection/${blocSlug}/${serieSlug}`,
+    },
   };
 }
 
@@ -100,8 +120,32 @@ export default async function SeriePage({ params }: SeriePageProps) {
     // DB not available, continue with static data
   }
 
+  const breadcrumbLd = generateBreadcrumbJsonLd([
+    { name: "Accueil", url: "/" },
+    { name: "Collection", url: "/collection" },
+    { name: bloc.name, url: `/collection/${bloc.slug}` },
+    { name: serie.name, url: `/collection/${bloc.slug}/${serie.slug}` },
+  ]);
+
+  const itemListLd = generateItemListJsonLd(
+    `Produits scelles — ${serie.name}`,
+    ITEM_TYPES.filter((it) => it.typicalMsrp > 0).map((it) => ({
+      name: ITEM_TYPE_LABELS[it.type] ?? it.label,
+      url: `/collection/${bloc.slug}/${serie.slug}#${it.type.toLowerCase()}`,
+    }))
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+      />
+
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
         <Link href="/collection" className="hover:text-blue-600 transition-colors">

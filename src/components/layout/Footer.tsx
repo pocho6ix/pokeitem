@@ -3,19 +3,24 @@ import { Logo } from "@/components/shared/Logo";
 
 const FOOTER_LINKS = {
   Collection: [
-    { href: "/collection", label: "Catalogue" },
-    { href: "/collection/mega-evolution", label: "Méga-Évolution" },
-    { href: "/collection/ecarlate-violet", label: "Écarlate & Violet" },
-    { href: "/collection/epee-bouclier", label: "Épée & Bouclier" },
+    { href: "/collection", label: "Catalogue complet" },
+    { href: "/collection/ecarlate-violet", label: "Ecarlate & Violet" },
+    { href: "/collection/epee-bouclier", label: "Epee & Bouclier" },
+    { href: "/collection/soleil-lune", label: "Soleil & Lune" },
+    { href: "/collection/xy", label: "XY" },
+    { href: "/collection/noir-blanc", label: "Noir & Blanc" },
+    { href: "/collection/mega-evolution", label: "Mega-Evolution" },
   ],
   Ressources: [
     { href: "/blog", label: "Blog" },
     { href: "/market", label: "Market" },
-    { href: "/blog/guide-investir-pokemon-tcg", label: "Guide investissement" },
+    { href: "/blog/guide-debuter-collection-pokemon-tcg", label: "Guide du debutant" },
+    { href: "/blog/top-10-produits-scelles-rentables-2025", label: "Top 10 produits rentables" },
+    { href: "/blog/investir-etb-strategie-conseils", label: "Investir dans les ETB" },
   ],
-  Légal: [
-    { href: "/mentions-legales", label: "Mentions légales" },
-    { href: "/politique-confidentialite", label: "Confidentialité" },
+  Legal: [
+    { href: "/mentions-legales", label: "Mentions legales" },
+    { href: "/politique-confidentialite", label: "Confidentialite" },
     { href: "/cgu", label: "CGU" },
   ],
 };
