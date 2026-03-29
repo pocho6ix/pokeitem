@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Registration error:", message);
     return NextResponse.json(
-      { error: "Erreur lors de la création du compte", details: message },
+      { error: "Erreur lors de la création du compte" },
       { status: 500 }
     );
   }
