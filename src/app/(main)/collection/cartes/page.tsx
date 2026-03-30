@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { TabNav } from "@/components/ui/TabNav";
 import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
 import { BLOCS } from "@/data/blocs";
+import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
 import type { BlocCardProgress } from "@/types/card";
 
@@ -46,12 +47,19 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
 
   const countBySlug = new Map(seriesInDb.map((s) => [s.slug, s.cardCount ?? 0]));
 
+  // Build releaseDate lookup from static data (most accurate source)
+  const releaseDateBySlug = new Map(
+    SERIES.map((s) => [s.slug, s.releaseDate ? new Date(s.releaseDate).getTime() : 0])
+  );
+
   return BLOCS.map((bloc) => {
     const blocSeries = seriesInDb.filter((s) => s.bloc.slug === bloc.slug);
 
+    // Sort most recent first by releaseDate
     const sorted = [...blocSeries].sort((a, b) => {
-      const diff = (b.cardCount ?? 0) - (a.cardCount ?? 0);
-      return diff !== 0 ? diff : a.name.localeCompare(b.name, "fr");
+      const da = releaseDateBySlug.get(a.slug) ?? 0;
+      const db = releaseDateBySlug.get(b.slug) ?? 0;
+      return db - da;
     });
 
     return {

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Logo } from "@/components/shared/Logo";
 
 const FOOTER_LINKS = {
@@ -15,68 +14,95 @@ const FOOTER_LINKS = {
   Ressources: [
     { href: "/blog", label: "Blog" },
     { href: "/market", label: "Market" },
-    { href: "/blog/guide-debuter-collection-pokemon-tcg", label: "Guide du debutant" },
+    { href: "/blog/guide-debuter-collection-pokemon-tcg", label: "Guide du débutant" },
     { href: "/blog/top-10-produits-scelles-rentables-2025", label: "Top 10 produits rentables" },
     { href: "/blog/investir-etb-strategie-conseils", label: "Investir dans les ETB" },
   ],
-  Legal: [
-    { href: "/mentions-legales", label: "Mentions legales" },
-    { href: "/politique-confidentialite", label: "Confidentialite" },
+  Légal: [
+    { href: "/mentions-legales", label: "Mentions légales" },
+    { href: "/politique-confidentialite", label: "Confidentialité" },
     { href: "/cgu", label: "CGU" },
   ],
 };
 
-// Placeholder URLs — à remplacer quand l'appli sera live
-const APP_STORE_URL = "#";
+const APP_STORE_URL  = "#";
 const GOOGLE_PLAY_URL = "#";
+
+// ─── Store badges ─────────────────────────────────────────────────────────────
+
+function AppStoreBadge() {
+  return (
+    <Link
+      href={APP_STORE_URL}
+      aria-label="Télécharger dans l'App Store"
+      className="inline-flex items-center gap-3 rounded-xl border border-white/15 bg-black px-4 py-2.5 transition-opacity hover:opacity-80"
+    >
+      {/* Apple logo */}
+      <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0 fill-white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+      </svg>
+      <div className="text-left leading-tight">
+        <p className="text-[9px] font-normal text-white/70 uppercase tracking-wide">Télécharger dans</p>
+        <p className="text-[15px] font-semibold text-white">l&apos;App Store</p>
+      </div>
+    </Link>
+  );
+}
+
+function GooglePlayBadge() {
+  return (
+    <Link
+      href={GOOGLE_PLAY_URL}
+      aria-label="Disponible sur Google Play"
+      className="inline-flex items-center gap-3 rounded-xl border border-white/15 bg-black px-4 py-2.5 transition-opacity hover:opacity-80"
+    >
+      {/* Google Play triangle logo */}
+      <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3.18 23.76a2 2 0 0 0 2.17-.32l.06-.05 12.14-6.98-2.64-2.65z" fill="#EA4335"/>
+        <path d="M20.54 10.23L17.8 8.69l-2.95 2.84 2.95 2.94 2.77-1.59a1.98 1.98 0 0 0 0-3.65z" fill="#FBBC04"/>
+        <path d="M3.18.24A2 2 0 0 0 2 2.06v19.88l.05.06L14.85 12z" fill="#4285F4"/>
+        <path d="M14.85 12 3.23 23.82l.06.05a2 2 0 0 0 2.06-.06l.05-.04L17.8 16.3z" fill="#34A853"/>
+      </svg>
+      <div className="text-left leading-tight">
+        <p className="text-[9px] font-normal text-white/70 uppercase tracking-wide">Disponible sur</p>
+        <p className="text-[15px] font-semibold text-white">Google Play</p>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 dark:border-gray-200 bg-white dark:bg-white">
+    <footer className="border-t border-[var(--border-default)] bg-[var(--bg-primary)]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {/* Brand */}
+
+          {/* Brand + store badges */}
           <div className="col-span-2 md:col-span-1">
             <Logo size="md" />
-            <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">
+            <p className="mt-3 text-sm text-[var(--text-secondary)]">
               Votre plateforme pour gérer votre collection de cartes et d&apos;items scellés Pokémon.
             </p>
 
-            {/* App store badges */}
+            {/* Badges — App Store first */}
             <div className="mt-4 flex flex-col gap-2">
-              <Link href={GOOGLE_PLAY_URL} aria-label="Disponible sur Google Play">
-                <Image
-                  src="/images/badges/google-play.svg"
-                  alt="Disponible sur Google Play"
-                  width={140}
-                  height={42}
-                  className="h-[42px] w-auto"
-                  unoptimized
-                />
-              </Link>
-              <Link href={APP_STORE_URL} aria-label="Télécharger dans l'App Store">
-                <Image
-                  src="/images/badges/app-store.svg"
-                  alt="Télécharger dans l'App Store"
-                  width={140}
-                  height={42}
-                  className="h-[42px] w-auto"
-                  unoptimized
-                />
-              </Link>
+              <AppStoreBadge />
+              <GooglePlayBadge />
             </div>
           </div>
 
-          {/* Links */}
+          {/* Navigation links */}
           {Object.entries(FOOTER_LINKS).map(([title, links]) => (
             <div key={title}>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-900">{title}</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
               <ul className="mt-3 space-y-2">
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 transition-colors"
+                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
                     >
                       {link.label}
                     </Link>
@@ -87,17 +113,18 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Disclaimer */}
-        <div className="mt-10 border-t border-gray-200 dark:border-gray-200 pt-6 space-y-3">
-          <p className="text-xs text-gray-400 dark:text-gray-400 text-center">
-            PokeItem n&apos;est pas une application officielle Pokémon, elle n&apos;est en aucun cas affiliée, approuvée ou supportée par Nintendo, GAME FREAK ou The Pokémon Company.
+        {/* Bottom disclaimer */}
+        <div className="mt-10 space-y-3 border-t border-[var(--border-default)] pt-6">
+          <p className="text-center text-xs text-[var(--text-tertiary)]">
+            PokeItem n&apos;est pas une application officielle Pokémon, elle n&apos;est en aucun cas affiliée, approuvée
+            ou supportée par Nintendo, GAME FREAK ou The Pokémon Company.
             Les images et illustrations utilisées sont la propriété de leurs auteurs respectifs.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-xs text-gray-400 dark:text-gray-400">
+          <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
+            <p className="text-xs text-[var(--text-tertiary)]">
               &copy; {new Date().getFullYear()} PokeItem. Tous droits réservés.
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-400">
+            <p className="text-xs text-[var(--text-tertiary)]">
               Google Play et le logo Google Play sont des marques de Google Inc.
             </p>
           </div>
