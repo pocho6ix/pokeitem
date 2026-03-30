@@ -8,6 +8,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,7 @@ export function CardScanner() {
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<CardVersion>(CardVersion.NORMAL);
 
   // ── Check onboarding on mount ──────────────────────────────────────────────
   useEffect(() => {
@@ -260,7 +262,7 @@ export function CardScanner() {
               quantity: 1,
               condition: "NEAR_MINT",
               language: "FR",
-              version: "NORMAL",
+              version: selectedVersion,
             },
           ],
         }),
@@ -275,7 +277,7 @@ export function CardScanner() {
       setError("Erreur de connexion.");
     }
     setIsAdding(false);
-  }, [result]);
+  }, [result, selectedVersion]);
 
   // ── Reset ──────────────────────────────────────────────────────────────────
   const reset = useCallback(() => {
@@ -283,6 +285,7 @@ export function CardScanner() {
     setResult(null);
     setPhoto(null);
     setError(null);
+    setSelectedVersion(CardVersion.NORMAL);
     setState("idle");
   }, [stopStream]);
 
@@ -566,6 +569,34 @@ export function CardScanner() {
                       {result.confidence}% confiance
                     </span>
                   </div>
+
+                  {/* Version picker */}
+                  {(() => {
+                    const availableVersions = getSerieVersions(result.serie.slug, result.serie.blocSlug);
+                    if (availableVersions.length <= 1) return null;
+                    return (
+                      <div className="mb-5">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+                          Version
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableVersions.map((v) => (
+                            <button
+                              key={v}
+                              onClick={() => setSelectedVersion(v)}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+                                selectedVersion === v
+                                  ? "border-blue-600 bg-blue-600 text-white"
+                                  : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                              }`}
+                            >
+                              {CARD_VERSION_LABELS[v]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Actions */}
                   <div className="flex flex-col gap-3">
