@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 interface UserProfile {
   id: string;
@@ -12,6 +13,7 @@ interface UserProfile {
 }
 
 export function ProfilForm() {
+  const { update: updateSession } = useSession();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,7 +53,8 @@ export function ProfilForm() {
         return;
       }
       setUser((prev) => (prev ? { ...prev, name: data.name } : prev));
-      showMessage("success", "Nom mis à jour");
+      await updateSession({ name: data.name });
+      showMessage("success", "Pseudo mis à jour");
     } catch {
       showMessage("error", "Erreur réseau");
     } finally {
@@ -77,6 +80,7 @@ export function ProfilForm() {
         return;
       }
       setUser((prev) => (prev ? { ...prev, image: data.image } : prev));
+      await updateSession({ image: data.image });
       showMessage("success", "Photo mise à jour");
     } catch {
       showMessage("error", "Erreur réseau");
@@ -96,6 +100,7 @@ export function ProfilForm() {
         return;
       }
       setUser((prev) => (prev ? { ...prev, image: null } : prev));
+      await updateSession({ image: null });
       showMessage("success", "Photo supprimée");
     } catch {
       showMessage("error", "Erreur réseau");

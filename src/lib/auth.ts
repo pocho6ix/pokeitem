@@ -49,15 +49,24 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id;
+        token.id    = user.id;
+        token.image = user.image ?? null;
+        token.name  = user.name  ?? null;
+      }
+      // Called when update() is invoked client-side (avatar / name change)
+      if (trigger === "update") {
+        if (session?.image !== undefined) token.image = session.image;
+        if (session?.name  !== undefined) token.name  = session.name;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id: string }).id = token.id as string;
+        (session.user as { id: string; image?: string | null; name?: string | null }).id    = token.id    as string;
+        (session.user as { id: string; image?: string | null; name?: string | null }).image = token.image as string | null;
+        (session.user as { id: string; image?: string | null; name?: string | null }).name  = token.name  as string | null;
       }
       return session;
     },

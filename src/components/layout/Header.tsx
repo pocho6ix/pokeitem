@@ -65,12 +65,19 @@ function MobileTopBar() {
       {/* Right: profile icon */}
       <div className="flex items-center gap-2">
         {session ? (
-          <Link
-            href="/profil"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm"
-            title="Mon profil"
-          >
-            {pseudo?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
+          <Link href="/profil" title="Mon profil" className="block h-9 w-9 shrink-0">
+            {session.user?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={session.user.image}
+                alt={pseudo ?? "Profil"}
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-blue-600/50"
+              />
+            ) : (
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm">
+                {pseudo?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
+              </span>
+            )}
           </Link>
         ) : (
           <Link
@@ -136,12 +143,19 @@ export function Header() {
 
             {session ? (
               <div className="flex items-center gap-2">
-                <Link
-                  href="/profil"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white"
-                  title={session.user?.name ?? "Profil"}
-                >
-                  {session.user?.name?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
+                <Link href="/profil" title={session.user?.name ?? "Profil"} className="block h-8 w-8 shrink-0">
+                  {session.user?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name ?? "Profil"}
+                      className="h-8 w-8 rounded-full object-cover ring-2 ring-blue-600/50"
+                    />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                      {session.user?.name?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
+                    </span>
+                  )}
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
