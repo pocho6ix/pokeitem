@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
+import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
 import { Package, TrendingUp, ShoppingBag, BarChart3, ArrowRight, Star } from "lucide-react";
 
 const FEATURES = [
@@ -59,31 +61,17 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm mb-6">
               <Star className="h-4 w-4 text-yellow-400" />
-              La plateforme #1 pour les items scellés Pokémon
+              La référence des collectionneurs Pokémon.
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               Gérez votre collection{" "}
               <span className="text-yellow-400">Pokémon TCG</span>
             </h1>
             <p className="mt-6 text-lg text-blue-100 max-w-xl">
-              PokeItem est le Finary des items scellés Pokémon. Cataloguez, valorisez et suivez
-              l&apos;évolution de votre collection de displays, ETB, coffrets et plus.
+              La plateforme de référence pour les collectionneurs Pokémon.{" "}
+              Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/inscription"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-blue-50 transition-colors"
-              >
-                Commencer gratuitement
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-              <Link
-                href="/collection"
-                className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
-              >
-                Explorer le catalogue
-              </Link>
-            </div>
+            <HeroCTAButtons />
           </div>
         </div>
       </section>
@@ -163,24 +151,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-[var(--bg-primary)]">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-3xl font-bold text-[var(--text-primary)]">
-            Prêt à gérer votre collection ?
-          </h2>
-          <p className="mt-4 text-[var(--text-secondary)]">
-            Rejoignez PokeItem et commencez à suivre la valeur de vos items Pokémon scellés dès aujourd&apos;hui.
-          </p>
-          <Link
-            href="/inscription"
-            className="mt-8 inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-white shadow-lg hover:bg-[var(--color-primary-dark)] transition-colors"
-          >
-            Créer mon compte gratuitement
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </div>
-      </section>
+      <HomepageCTASection />
 
       <Footer />
       <MobileNav />

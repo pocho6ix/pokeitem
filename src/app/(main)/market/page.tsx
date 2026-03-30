@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { ShoppingBag, Sparkles, TrendingUp, Link2, BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -29,7 +31,8 @@ const FEATURES = [
   },
 ];
 
-export default function MarketPage() {
+export default async function MarketPage() {
+  const session = await getServerSession(authOptions);
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
 
@@ -91,20 +94,22 @@ export default function MarketPage() {
       </div>
 
       {/* CTA */}
-      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] p-8 text-center">
-        <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
-          Soyez notifié au lancement
-        </h2>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">
-          Le Market est en cours de développement. Créez un compte pour être informé dès son ouverture.
-        </p>
-        <a
-          href="/inscription"
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-        >
-          Créer un compte gratuit
-        </a>
-      </div>
+      {!session && (
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] p-8 text-center">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+            Soyez notifié au lancement
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)] mb-6">
+            Le Market est en cours de développement. Créez un compte pour être informé dès son ouverture.
+          </p>
+          <a
+            href="/inscription"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            Créer un compte gratuit
+          </a>
+        </div>
+      )}
 
       {/* FAQ SEO */}
       <div className="mt-16 border-t border-[var(--border-default)] pt-10">
