@@ -26,12 +26,13 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
     },
   });
 
-  // Owned card counts per serie
+  // Owned card counts per serie (unique cards only — not counting versions separately)
   const ownedBySerieId = new Map<string, number>();
   if (userId) {
     const owned = await prisma.userCard.findMany({
       where: { userId },
-      select: { card: { select: { serieId: true } } },
+      select: { card: { select: { serieId: true } }, cardId: true },
+      distinct: ["cardId"],
     });
     for (const uc of owned) {
       const sid = uc.card.serieId;

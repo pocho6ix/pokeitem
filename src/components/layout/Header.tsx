@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, FileText, ScanLine, Menu, User, LogOut, BookOpen } from "lucide-react";
-import { useState } from "react";
+import { Package, ShoppingBag, FileText, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/Logo";
 import { CommandSearch } from "@/components/shared/CommandSearch";
-import { ThemeToggle } from "./ThemeToggle";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 
@@ -21,6 +20,74 @@ const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; authReq
   { href: "/blog", label: "Blog", icon: FileText },
 ];
 
+// ─── Greeting helper ──────────────────────────────────────────────────────────
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 6)  return "Bonsoir";
+  if (h < 12) return "Bonjour";
+  if (h < 18) return "Bonjour";
+  return "Bonsoir";
+}
+
+// ─── Mobile top bar ───────────────────────────────────────────────────────────
+
+function MobileTopBar() {
+  const { data: session } = useSession();
+  const pseudo = session?.user?.name ?? null;
+
+  return (
+    <div className="flex h-14 items-center justify-between px-4 md:hidden">
+      {/* Left: logo icon + greeting */}
+      <div className="flex items-center gap-3">
+        <Link href="/" className="shrink-0">
+          <Image
+            src="/logo.png"
+            alt="PokeItem"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-xl object-contain"
+            priority
+          />
+        </Link>
+        <div className="leading-tight">
+          {pseudo ? (
+            <>
+              <p className="text-[11px] text-[var(--text-tertiary)]">{getGreeting()},</p>
+              <p className="text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
+            </>
+          ) : (
+            <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
+          )}
+        </div>
+      </div>
+
+      {/* Right: profile icon */}
+      <div className="flex items-center gap-2">
+        {session ? (
+          <Link
+            href="/profil"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm"
+            title="Mon profil"
+          >
+            {pseudo?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
+          </Link>
+        ) : (
+          <Link
+            href="/connexion"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+            title="Connexion"
+          >
+            <User className="h-4 w-4" />
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,13 +95,20 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-200 bg-white dark:bg-white backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* ── Unified header shell ── */}
+      <header className="sticky top-0 z-50 w-full border-b border-[var(--border-default)] bg-[var(--bg-primary)]/80 backdrop-blur-xl">
+
+        {/* Mobile top bar */}
+        <MobileTopBar />
+
+        {/* Desktop nav bar */}
+        <div className="mx-auto hidden h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 md:flex">
+
           {/* Logo */}
           <Logo />
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Nav links */}
+          <nav className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               if (item.authRequired && !session) return null;
               const isActive = pathname.startsWith(item.href);
@@ -45,8 +119,8 @@ export function Header() {
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-50 dark:text-blue-600"
-                      : "text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -56,47 +130,37 @@ export function Header() {
             })}
           </nav>
 
-          {/* Right side */}
+          {/* Right controls */}
           <div className="flex items-center gap-2">
             <CommandSearch />
-            <ThemeToggle />
 
             {session ? (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Link
                   href="/profil"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-sm font-medium"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white"
                   title={session.user?.name ?? "Profil"}
                 >
-                  {session.user?.name?.charAt(0).toUpperCase() ?? "U"}
+                  {session.user?.name?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-100"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
                   title="Déconnexion"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
               </div>
             ) : (
-              <Link href="/connexion" className="hidden md:block">
+              <Link href="/connexion">
                 <Button size="sm">Connexion</Button>
               </Link>
             )}
-
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-100 md:hidden"
-              aria-label="Menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Sheet */}
+      {/* Mobile slide-in menu (hamburger → Sheet) — still accessible via MobileNav on desktop */}
       <Sheet isOpen={mobileOpen} onClose={() => setMobileOpen(false)} title="Menu">
         <nav className="flex flex-col gap-1 pt-4">
           {NAV_ITEMS.map((item) => {
@@ -110,8 +174,8 @@ export function Header() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-50 dark:text-blue-600"
-                    : "text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
+                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -121,21 +185,28 @@ export function Header() {
           })}
           <hr className="my-3 border-[var(--border-default)]" />
           {session ? (
-            <button
-              onClick={() => {
-                setMobileOpen(false);
-                signOut({ callbackUrl: "/" });
-              }}
-              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-            >
-              <LogOut className="h-5 w-5" />
-              Déconnexion
-            </button>
+            <>
+              <Link
+                href="/profil"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+              >
+                <User className="h-5 w-5" />
+                Mon profil
+              </Link>
+              <button
+                onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <LogOut className="h-5 w-5" />
+                Déconnexion
+              </button>
+            </>
           ) : (
             <Link
               href="/connexion"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
+              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
             >
               <User className="h-5 w-5" />
               Connexion

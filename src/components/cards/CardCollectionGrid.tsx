@@ -5,12 +5,10 @@ import Image from "next/image";
 import {
   CardRarity,
   CardCondition,
-  DoubleAvailability,
   CARD_RARITY_LABELS,
   CARD_RARITY_SYMBOL,
   CARD_RARITY_ORDER,
   CARD_CONDITION_LABELS,
-  DOUBLE_AVAILABILITY_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
@@ -37,30 +35,18 @@ export interface OwnedEntry {
   version: CardVersion;
 }
 
-export interface DoubleEntry {
-  id: string;
-  cardId: string;
-  quantity: number;
-  condition: CardCondition;
-  language: string;
-  version: CardVersion;
-  availability: DoubleAvailability;
-  price: number | null;
-}
-
 interface Props {
   cards: CardRow[];
   serieSlug: string;
   blocSlug: string;
   initialOwned: OwnedEntry[];
-  initialDoubles: DoubleEntry[];
   isAuthenticated: boolean;
 }
 
 type SortKey    = "number" | "name" | "rarity";
 type SortOrder  = "asc" | "desc";
 type ViewFilter = "all" | "owned" | "missing";
-type ActiveModal = null | "add-collection" | "add-doubles" | "sort" | "options";
+type ActiveModal = null | "add-collection" | "sort" | "options";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,8 +55,7 @@ function cn(...classes: (string | boolean | undefined)[]) {
 }
 
 /** Nested map: cardId → version → entry */
-type OwnedVersionMap  = Map<string, Map<CardVersion, OwnedEntry>>;
-type DoubleVersionMap = Map<string, Map<CardVersion, DoubleEntry>>;
+type OwnedVersionMap = Map<string, Map<CardVersion, OwnedEntry>>;
 
 function buildOwnedMap(entries: OwnedEntry[]): OwnedVersionMap {
   const m: OwnedVersionMap = new Map();
@@ -79,15 +64,6 @@ function buildOwnedMap(entries: OwnedEntry[]): OwnedVersionMap {
     const version = (e.version ?? CardVersion.NORMAL) as CardVersion;
     if (!m.has(e.cardId)) m.set(e.cardId, new Map());
     m.get(e.cardId)!.set(version, { ...e, version });
-  }
-  return m;
-}
-
-function buildDoubleMap(entries: DoubleEntry[]): DoubleVersionMap {
-  const m: DoubleVersionMap = new Map();
-  for (const e of entries) {
-    if (!m.has(e.cardId)) m.set(e.cardId, new Map());
-    m.get(e.cardId)!.set(e.version, e);
   }
   return m;
 }
@@ -206,6 +182,12 @@ function OptionsModal({
 
 // ─── Sub-component: AddToCollectionModal ─────────────────────────────────────
 
+const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
+  { value: CardCondition.POOR,        label: "Mauvais état" },
+  { value: CardCondition.GOOD,        label: "Bon état" },
+  { value: CardCondition.NEAR_MINT,   label: "État neuf" },
+];
+
 function AddToCollectionModal({
   selectedCards, availableVersions, ownedMap, onSubmit, onClose, isPending,
 }: {
@@ -220,205 +202,104 @@ function AddToCollectionModal({
   const [condition, setCondition] = useState<CardCondition>(CardCondition.NEAR_MINT);
   const [language,  setLanguage]  = useState("FR");
   const [version,   setVersion]   = useState<CardVersion>(availableVersions[0]);
-  const [foil,      setFoil]      = useState(false);
 
-  // Pre-fill quantity from existing owned entry when a single card is selected
   const existingQty = selectedCards.length === 1
     ? ownedMap.get(selectedCards[0].id)?.get(version)?.quantity ?? 0
     : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4">
-      <div className="w-full max-w-md rounded-t-2xl bg-[var(--bg-card)] p-6 shadow-xl sm:rounded-2xl">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Ajouter à ma collection</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="w-full max-w-md rounded-t-3xl bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-[var(--border-default)]" />
         </div>
-        <p className="mb-5 text-sm text-[var(--text-secondary)]">
-          {selectedCards.length === 1 ? selectedCards[0].name : `${selectedCards.length} cartes sélectionnées`}
-          {existingQty > 0 && <span className="ml-2 text-blue-500">· déjà {existingQty} en collection</span>}
-        </p>
 
-        {/* Version */}
-        <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Version</label>
-          <div className="flex flex-wrap gap-2">
-            {availableVersions.map((v) => {
-              const currentQty = selectedCards.length === 1
-                ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0
-                : 0;
-              return (
-                <button
-                  key={v}
-                  onClick={() => setVersion(v)}
+        <div className="px-6 pb-8 pt-3">
+          {/* Header */}
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Ajouter à ma collection</h2>
+              <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
+                {selectedCards.length === 1 ? selectedCards[0].name : `${selectedCards.length} cartes`}
+                {existingQty > 0 && <span className="ml-1.5 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">déjà ×{existingQty}</span>}
+              </p>
+            </div>
+            <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          {/* Version pills */}
+          {availableVersions.length > 1 && (
+            <div className="mb-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Version</p>
+              <div className="flex flex-wrap gap-2">
+                {availableVersions.map((v) => {
+                  const qty = selectedCards.length === 1 ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0 : 0;
+                  return (
+                    <button key={v} onClick={() => setVersion(v)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-medium transition-all",
+                        version === v
+                          ? "border-blue-500 bg-blue-600 text-white shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                      )}>
+                      {CARD_VERSION_LABELS[v]}
+                      {qty > 0 && <span className={cn("rounded-full px-1.5 text-[10px] font-bold", version === v ? "bg-white/30 text-white" : "bg-blue-500 text-white")}>×{qty}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Quantity stepper */}
+          <div className="mb-5">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Quantité</p>
+            <div className="flex items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2">
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">−</button>
+              <span className="text-lg font-bold text-[var(--text-primary)]">{quantity}</span>
+              <button onClick={() => setQuantity(Math.min(99, quantity + 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">+</button>
+            </div>
+          </div>
+
+          {/* Condition pills */}
+          <div className="mb-5">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
+            <div className="grid grid-cols-3 gap-2">
+              {CONDITION_PILLS.map((c) => (
+                <button key={c.value} onClick={() => setCondition(c.value)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
-                    version === v
-                      ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                    "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                    condition === c.value
+                      ? "border-blue-500 bg-blue-600 text-white shadow-sm"
                       : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
-                  )}
-                >
-                  <span>{CARD_VERSION_LABELS[v]}</span>
-                  {currentQty > 0 && (
-                    <span className="rounded-full bg-blue-500 px-1.5 text-[10px] font-bold text-white">×{currentQty}</span>
-                  )}
+                  )}>
+                  {c.label}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          {/* Quantité */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Quantité</label>
-            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)]">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">−</button>
-              <input type="number" min={1} max={999} value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(999, Number(e.target.value))))}
-                className="w-full bg-transparent py-2 text-center text-sm font-semibold text-[var(--text-primary)] outline-none" />
-              <button onClick={() => setQuantity(Math.min(999, quantity + 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">+</button>
+              ))}
             </div>
           </div>
 
-          {/* Langue */}
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Langue</label>
+          {/* Language */}
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Langue</p>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+              className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
               {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
-        </div>
 
-        {/* État */}
-        <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">État</label>
-          <select value={condition} onChange={(e) => setCondition(e.target.value as CardCondition)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
-            {(Object.entries(CARD_CONDITION_LABELS) as [CardCondition, string][]).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <button onClick={() => onSubmit({ quantity, condition, language, version, foil: false })}
-          disabled={isPending}
-          className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-          {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Sub-component: AddToDoublesModal ─────────────────────────────────────────
-
-function AddToDoublesModal({
-  selectedCards, availableVersions, onSubmit, onClose, isPending,
-}: {
-  selectedCards: CardRow[];
-  availableVersions: CardVersion[];
-  onSubmit: (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; availability: DoubleAvailability; price: number | null }) => void;
-  onClose: () => void;
-  isPending: boolean;
-}) {
-  const [quantity,     setQuantity]     = useState(1);
-  const [condition,    setCondition]    = useState<CardCondition>(CardCondition.NEAR_MINT);
-  const [language,     setLanguage]     = useState("FR");
-  const [version,      setVersion]      = useState<CardVersion>(availableVersions[0]);
-  const [availability, setAvailability] = useState<DoubleAvailability>(DoubleAvailability.TRADE);
-  const [price,        setPrice]        = useState("");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4">
-      <div className="w-full max-w-md rounded-t-2xl bg-[var(--bg-card)] p-6 shadow-xl sm:rounded-2xl">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Ajouter aux doubles</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          {/* CTA */}
+          <button onClick={() => onSubmit({ quantity, condition, language, version, foil: false })}
+            disabled={isPending}
+            className="w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white hover:bg-blue-700 active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-blue-600/30">
+            {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
           </button>
         </div>
-        <p className="mb-5 text-sm text-[var(--text-secondary)]">
-          {selectedCards.length === 1 ? selectedCards[0].name : `${selectedCards.length} cartes sélectionnées`}
-        </p>
-
-        {/* Version */}
-        <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Version</label>
-          <div className="flex flex-wrap gap-2">
-            {availableVersions.map((v) => (
-              <button key={v} onClick={() => setVersion(v)}
-                className={cn(
-                  "rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
-                  version === v
-                    ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-amber-400"
-                )}>
-                {CARD_VERSION_LABELS[v]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-4 grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Quantité</label>
-            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)]">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">−</button>
-              <input type="number" min={1} max={999} value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(999, Number(e.target.value))))}
-                className="w-full bg-transparent py-2 text-center text-sm font-semibold text-[var(--text-primary)] outline-none" />
-              <button onClick={() => setQuantity(Math.min(999, quantity + 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">+</button>
-            </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Langue</label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
-              {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">État</label>
-          <select value={condition} onChange={(e) => setCondition(e.target.value as CardCondition)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
-            {(Object.entries(CARD_CONDITION_LABELS) as [CardCondition, string][]).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-5 rounded-xl border border-[var(--border-default)] p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Doubles à vendre / échanger</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Dispo</label>
-              <select value={availability} onChange={(e) => setAvailability(e.target.value as DoubleAvailability)}
-                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
-                {(Object.entries(DOUBLE_AVAILABILITY_LABELS) as [DoubleAvailability, string][]).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Prix (€)</label>
-              <input type="number" min={0} step={0.01} placeholder="Optionnel" value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
-            </div>
-          </div>
-        </div>
-
-        <button onClick={() => onSubmit({ quantity, condition, language, version, availability, price: price ? parseFloat(price) : null })}
-          disabled={isPending}
-          className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-          {isPending ? "Enregistrement…" : "Ajouter aux doubles"}
-        </button>
       </div>
     </div>
   );
@@ -436,7 +317,7 @@ const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function CardCollectionGrid({
-  cards, serieSlug, blocSlug, initialOwned, initialDoubles, isAuthenticated,
+  cards, serieSlug, blocSlug, initialOwned, isAuthenticated,
 }: Props) {
 
   // ── Resolve available versions for this serie ────────────────────────────
@@ -454,8 +335,7 @@ export function CardCollectionGrid({
   const [activeModal,      setActiveModal]      = useState<ActiveModal>(null);
   const [isPending,        startTransition]     = useTransition();
 
-  const [ownedMap,   setOwnedMap]   = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
-  const [doublesMap, setDoublesMap] = useState<DoubleVersionMap>(() => buildDoubleMap(initialDoubles));
+  const [ownedMap, setOwnedMap] = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -551,50 +431,6 @@ export function CardCollectionGrid({
     [selectedCards, ownedMap, initialOwned, isAuthenticated]
   );
 
-  const handleAddToDoubles = useCallback(
-    (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; availability: DoubleAvailability; price: number | null }) => {
-      if (!isAuthenticated) return;
-
-      const optimistic = cloneDoubleMap(doublesMap);
-      for (const card of selectedCards) {
-        const entry: DoubleEntry = { id: `tmp-${card.id}-${data.version}`, cardId: card.id, ...data };
-        if (!optimistic.has(card.id)) optimistic.set(card.id, new Map());
-        optimistic.get(card.id)!.set(data.version, entry);
-      }
-      setDoublesMap(optimistic);
-      setActiveModal(null);
-      setSelectedIds(new Set());
-
-      startTransition(async () => {
-        try {
-          const res = await fetch("/api/cards/doubles", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cards: selectedCards.map((c) => ({ cardId: c.id, ...data })) }),
-          });
-          if (!res.ok) {
-            setDoublesMap(buildDoubleMap(initialDoubles));
-          } else {
-            const { results } = await res.json();
-            setDoublesMap((prev) => {
-              const m = cloneDoubleMap(prev);
-              for (const r of results) {
-                if (r.record) {
-                  if (!m.has(r.cardId)) m.set(r.cardId, new Map());
-                  m.get(r.cardId)!.set(r.version as CardVersion, { id: r.record.id, cardId: r.cardId, ...data });
-                }
-              }
-              return m;
-            });
-          }
-        } catch {
-          setDoublesMap(buildDoubleMap(initialDoubles));
-        }
-      });
-    },
-    [selectedCards, doublesMap, initialDoubles, isAuthenticated]
-  );
-
   const handleRemoveSelected = useCallback(() => {
     if (!isAuthenticated || selectedIds.size === 0) return;
     const optimistic = cloneOwnedMap(ownedMap);
@@ -671,7 +507,7 @@ export function CardCollectionGrid({
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm dark:border-blue-800 dark:bg-blue-950/30">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
           <span className="text-blue-700 dark:text-blue-300">
-            <a href="/connexion" className="font-semibold underline">Connectez-vous</a> pour gérer votre collection et vos doubles.
+            <a href="/connexion" className="font-semibold underline">Connectez-vous</a> pour gérer votre collection.
           </span>
         </div>
       )}
@@ -790,7 +626,6 @@ export function CardCollectionGrid({
             const isSelected = selectedIds.has(card.id);
             const ownedTotal = totalOwned(ownedMap, card.id);
             const isOwned    = ownedTotal > 0;
-            const hasDouble  = doublesMap.has(card.id);
             const dim        = showTransparency && isAuthenticated && !isOwned;
             // Collect owned version badges for display
             const ownedVersions = ownedMap.get(card.id) ? Array.from(ownedMap.get(card.id)!.keys()) : [];
@@ -837,11 +672,6 @@ export function CardCollectionGrid({
                     </div>
                   )}
 
-                  {/* Double badge — top left */}
-                  {hasDouble && (
-                    <div className="absolute left-1 top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white shadow">D</div>
-                  )}
-
                   {/* Selection overlay */}
                   {isSelected && (
                     <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20">
@@ -880,11 +710,6 @@ export function CardCollectionGrid({
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
               </button>
-              <button onClick={() => setActiveModal("add-doubles")}
-                className="flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="8" height="10" x="2" y="7" rx="1"/><path d="M22 7H12M22 12H12M22 17H12"/></svg>
-                Doubles
-              </button>
               <button onClick={() => setActiveModal("add-collection")}
                 className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -921,14 +746,6 @@ export function CardCollectionGrid({
           onClose={() => setActiveModal(null)}
           isPending={isPending} />
       )}
-      {activeModal === "add-doubles" && selectedCards.length > 0 && (
-        <AddToDoublesModal
-          selectedCards={selectedCards}
-          availableVersions={availableVersions}
-          onSubmit={handleAddToDoubles}
-          onClose={() => setActiveModal(null)}
-          isPending={isPending} />
-      )}
     </div>
   );
 }
@@ -941,8 +758,3 @@ function cloneOwnedMap(src: OwnedVersionMap): OwnedVersionMap {
   return m;
 }
 
-function cloneDoubleMap(src: DoubleVersionMap): DoubleVersionMap {
-  const m: DoubleVersionMap = new Map();
-  for (const [k, v] of src) m.set(k, new Map(v));
-  return m;
-}

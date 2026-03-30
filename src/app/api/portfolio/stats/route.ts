@@ -12,6 +12,7 @@ export async function GET() {
 
     const userId = (session.user as { id: string }).id;
 
+    // ── Sealed items (portfolio) ────────────────────────────────────────────
     const portfolioItems = await prisma.portfolioItem.findMany({
       where: { userId },
       include: { item: true },
@@ -19,7 +20,7 @@ export async function GET() {
 
     const totalItems = portfolioItems.reduce((sum, pi) => sum + pi.quantity, 0);
 
-    const totalValue = portfolioItems.reduce(
+    const itemsValue = portfolioItems.reduce(
       (sum, pi) => sum + (pi.item.currentPrice ?? 0) * pi.quantity,
       0
     );
@@ -28,6 +29,19 @@ export async function GET() {
       (sum, pi) => sum + (pi.purchasePrice ?? 0) * pi.quantity,
       0
     );
+
+    // ── Cards (collection) — market value only, purchase cost TBD ──────────
+    const userCards = await prisma.userCard.findMany({
+      where: { userId },
+      select: { quantity: true, card: { select: { price: true } } },
+    });
+
+    const cardsValue = userCards.reduce(
+      (sum, uc) => sum + (uc.card.price ?? 0) * uc.quantity,
+      0
+    );
+
+    const totalValue = itemsValue + cardsValue;
 
     const profitLoss = totalValue - totalInvested;
     const profitLossPercent =

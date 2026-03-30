@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { label: "Cartes", href: "/portfolio/cartes" },
-  { label: "Items",  href: "/portfolio/items" },
+  { label: "Cartes",   href: "/portfolio/cartes" },
+  { label: "Doubles",  href: "/portfolio/doubles" },
+  { label: "Items",    href: "/portfolio/items" },
 ];
 
 export function PortfolioTabNav() {

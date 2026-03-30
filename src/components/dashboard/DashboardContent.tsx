@@ -400,12 +400,12 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         </div>
       )}
 
-      {/* Portfolio evolution chart */}
-      {chartDataFormatted.length > 1 && (
+      {/* Portfolio evolution chart — only in standalone mode (layout shows it in compact mode) */}
+      {!compact && chartDataFormatted.length > 1 && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Évolution du Portfolio</CardTitle>
+              <CardTitle>Évolution de mon classeur</CardTitle>
               <div className="flex gap-1">
                 {PERIODS.map((p) => (
                   <button

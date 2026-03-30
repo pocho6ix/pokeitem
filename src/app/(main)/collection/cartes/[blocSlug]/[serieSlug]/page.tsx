@@ -8,7 +8,7 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
 import { CardCollectionGrid } from "@/components/cards/CardCollectionGrid";
-import type { CardRow, OwnedEntry, DoubleEntry } from "@/components/cards/CardCollectionGrid";
+import type { CardRow, OwnedEntry } from "@/components/cards/CardCollectionGrid";
 import { CardRarity } from "@/types/card";
 
 interface PageProps {
@@ -57,24 +57,15 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
 
   const dbCards = serieDb?.cards ?? [];
 
-  // ── Fetch user's owned cards & doubles (if authenticated) ───────────────
-  let initialOwned: OwnedEntry[]   = [];
-  let initialDoubles: DoubleEntry[] = [];
+  // ── Fetch user's owned cards (if authenticated) ────────────────────────
+  let initialOwned: OwnedEntry[] = [];
 
   if (userId && serieDb) {
-    const [userCards, userDoubles] = await Promise.all([
-      prisma.userCard.findMany({
-        where: { userId, card: { serieId: serieDb.id } },
-        select: { id: true, cardId: true, quantity: true, condition: true, language: true, foil: true, version: true },
-      }),
-      prisma.userCardDouble.findMany({
-        where: { userId, card: { serieId: serieDb.id } },
-        select: { id: true, cardId: true, quantity: true, condition: true, language: true, availability: true, price: true, version: true },
-      }),
-    ]);
-
-    initialOwned   = userCards   as OwnedEntry[];
-    initialDoubles = userDoubles as DoubleEntry[];
+    const userCards = await prisma.userCard.findMany({
+      where: { userId, card: { serieId: serieDb.id } },
+      select: { id: true, cardId: true, quantity: true, condition: true, language: true, foil: true, version: true },
+    });
+    initialOwned = userCards as OwnedEntry[];
   }
 
   // ── Shape cards for the grid ────────────────────────────────────────────
@@ -169,7 +160,6 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
           serieSlug={serieSlug}
           blocSlug={blocSlug}
           initialOwned={initialOwned}
-          initialDoubles={initialDoubles}
           isAuthenticated={!!userId}
         />
       )}

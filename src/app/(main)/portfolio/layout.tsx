@@ -1,4 +1,5 @@
 import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
+import { PortfolioEvolutionChart } from "@/components/dashboard/PortfolioEvolutionChart";
 import { PortfolioTabNav } from "@/components/dashboard/PortfolioTabNav";
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
@@ -12,10 +13,13 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
         </p>
       </div>
 
-      {/* Portfolio KPI metrics — always visible on both tabs */}
+      {/* Portfolio KPI metrics — always visible on all tabs */}
       <PortfolioMiniStats />
 
-      {/* Tab navigation: Cartes | Items */}
+      {/* Evolution chart — always visible below KPIs */}
+      <PortfolioEvolutionChart />
+
+      {/* Tab navigation: Cartes | Doubles | Items */}
       <PortfolioTabNav />
 
       {/* Tab content */}

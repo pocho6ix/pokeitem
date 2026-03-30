@@ -39,29 +39,42 @@
   }
 
   .dark {
-    --bg-primary: #0c1222;
-    --bg-secondary: #111827;
-    --bg-tertiary: #1e293b;
-    --bg-card: #162032;
-    --bg-card-hover: #1e293b;
+    --bg-primary: #060d18;
+    --bg-secondary: #0b1628;
+    --bg-tertiary: #0f1f38;
+    --bg-card: #0d1e35;
+    --bg-card-hover: #112541;
+    --bg-subtle: #0a1726;
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-tertiary: #64748b;
-    --border-default: #1e3a5f;
-    --border-hover: #2d4a6f;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
-    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+    --border-default: #172d4a;
+    --border-hover: #1e3d60;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.4);
   }
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
+  min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark mode — deep navy radial gradient (fixed so it stays while scrolling) */
+.dark body {
+  background:
+    radial-gradient(ellipse at 55% 0%, #0f2d52 0%, #07111f 55%, #040a14 100%);
+  background-attachment: fixed;
 }
 
 /* Scrollbar styling */

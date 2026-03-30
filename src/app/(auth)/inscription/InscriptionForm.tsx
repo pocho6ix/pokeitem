@@ -16,8 +16,8 @@ const registerSchema = z
   .object({
     name: z
       .string()
-      .min(1, "Le nom est requis")
-      .min(2, "Le nom doit contenir au moins 2 caractères"),
+      .min(1, "Le pseudo est requis")
+      .min(2, "Le pseudo doit contenir au moins 2 caractères"),
     email: z
       .string()
       .min(1, "L'email est requis")
@@ -137,10 +137,10 @@ export function InscriptionForm() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Nom"
+            label="Pseudo"
             type="text"
-            placeholder="Votre nom"
-            autoComplete="name"
+            placeholder="Votre pseudo"
+            autoComplete="username"
             error={errors.name?.message}
             {...register("name")}
           />
