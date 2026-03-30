@@ -131,9 +131,6 @@ export function SerieItemsGrid({
             <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-tight">
               {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
             </h3>
-            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${ITEM_TYPE_COLORS[itemType.type] ?? ""}`}>
-              {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-            </span>
           </div>
           <p className="mt-1 flex-1 text-xs text-[var(--text-secondary)] line-clamp-2">
             {itemType.description}

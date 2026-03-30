@@ -9,7 +9,6 @@ export const ITEM_TYPE_LABELS: Record<string, string> = {
   TIN: "Tin",
   MINI_TIN: "Mini Tin",
   POKEBALL_TIN: "Tin Pokéball",
-  BLISTER: "Blister",
   THEME_DECK: "Theme Deck",
   BUNDLE: "Bundle",
   TRAINER_KIT: "Trainer Kit",
@@ -27,7 +26,6 @@ export const ITEM_TYPE_COLORS: Record<string, string> = {
   TIN: "item-type-badge",
   MINI_TIN: "item-type-badge",
   POKEBALL_TIN: "item-type-badge",
-  BLISTER: "item-type-badge",
   THEME_DECK: "item-type-badge",
   BUNDLE: "item-type-badge",
   TRAINER_KIT: "item-type-badge",
@@ -35,9 +33,9 @@ export const ITEM_TYPE_COLORS: Record<string, string> = {
 };
 
 export const ITEM_TYPE_MSRP: Record<string, number> = {
-  BOOSTER: 4.99,
+  BOOSTER: 6.99,
   DUOPACK: 12.99,
-  TRIPACK: 15.99,
+  TRIPACK: 19.99,
   BOOSTER_BOX: 159.99,
   ETB: 109.99,
   BOX_SET: 25.99,
@@ -45,7 +43,6 @@ export const ITEM_TYPE_MSRP: Record<string, number> = {
   TIN: 16.99,
   MINI_TIN: 11.99,
   POKEBALL_TIN: 16.99,
-  BLISTER: 6.99,
   THEME_DECK: 14.99,
   BUNDLE: 34.99,
   TRAINER_KIT: 34.99,

@@ -19,7 +19,7 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
     label: 'Booster',
     description: 'Paquet de 10 cartes aléatoires scellé',
     typicalContent: '10 cartes dont 1 rare ou supérieure',
-    typicalMsrp: 4.99,
+    typicalMsrp: 6.99,
     icon: 'Package',
   },
   {
@@ -33,9 +33,9 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
   {
     type: ItemType.TRIPACK,
     label: 'Tripack',
-    description: '3 boosters avec 1 carte promo',
+    description: '3 boosters avec 1 carte promo, emballage cartonné plastifié',
     typicalContent: '3 boosters et 1 carte promo',
-    typicalMsrp: 15.99,
+    typicalMsrp: 19.99,
     icon: 'Layers',
   },
   {
@@ -101,22 +101,6 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
     typicalContent: '2-4 boosters et 1 carte promo',
     typicalMsrp: 16.99,
     icon: 'Disc',
-  },
-  {
-    type: ItemType.TRIPACK,
-    label: 'Tripack',
-    description: '3 boosters avec 1 carte promo',
-    typicalContent: '3 boosters et 1 carte promo, emballage cartonné plastifié',
-    typicalMsrp: 15.99,
-    icon: 'Layers',
-  },
-  {
-    type: ItemType.BLISTER,
-    label: 'Blister',
-    description: 'Pack sous blister avec carte promo et pièce',
-    typicalContent: '1 booster, 1 carte promo, 1 pièce',
-    typicalMsrp: 6.99,
-    icon: 'Layers',
   },
   {
     type: ItemType.THEME_DECK,
