@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" fill="none">
+  <!-- Card shape -->
+  <rect x="6" y="6" width="108" height="148" rx="14" ry="14" fill="white" stroke="#1B2E6B" stroke-width="7"/>
+
+  <!-- Pokéball body (red top half) -->
+  <path d="M20 80 A40 40 0 0 1 100 80 Z" fill="#CC2222"/>
+  <!-- Pokéball body (white bottom half) -->
+  <path d="M20 80 A40 40 0 0 0 100 80 Z" fill="white"/>
+  <!-- Pokéball outer ring -->
+  <circle cx="60" cy="80" r="40" fill="none" stroke="#1B2E6B" stroke-width="6"/>
+  <!-- Pokéball dividing line -->
+  <line x1="20" y1="80" x2="100" y2="80" stroke="#1B2E6B" stroke-width="6"/>
+  <!-- Pokéball center button outer -->
+  <circle cx="60" cy="80" r="12" fill="white" stroke="#1B2E6B" stroke-width="6"/>
+  <!-- Pokéball center button inner -->
+  <circle cx="60" cy="80" r="5" fill="#1B2E6B"/>
+
+  <!-- Gap cut in top-right of ball for the booster pack -->
+  <path d="M82 46 A40 40 0 0 1 100 80" stroke="white" stroke-width="8" fill="none"/>
+
+  <!-- Booster pack (tilted, inserted into gap) -->
+  <g transform="translate(84, 38) rotate(20)">
+    <!-- Pack body -->
+    <rect x="0" y="0" width="22" height="30" rx="2" fill="#EEF0F8" stroke="#1B2E6B" stroke-width="2"/>
+    <!-- Pack top stripe (yellow) -->
+    <rect x="0" y="0" width="22" height="6" rx="2" fill="#F5C400" stroke="#1B2E6B" stroke-width="1.5"/>
+    <!-- Serrated top edge dots -->
+    <rect x="2" y="-1" width="2" height="2" rx="0.5" fill="#1B2E6B"/>
+    <rect x="6" y="-1" width="2" height="2" rx="0.5" fill="#1B2E6B"/>
+    <rect x="10" y="-1" width="2" height="2" rx="0.5" fill="#1B2E6B"/>
+    <rect x="14" y="-1" width="2" height="2" rx="0.5" fill="#1B2E6B"/>
+    <rect x="18" y="-1" width="2" height="2" rx="0.5" fill="#1B2E6B"/>
+    <!-- Mini pokeball on pack -->
+    <circle cx="11" cy="18" r="6" fill="white" stroke="#1B2E6B" stroke-width="1.2"/>
+    <path d="M5 18 A6 6 0 0 1 17 18 Z" fill="#CC2222"/>
+    <line x1="5" y1="18" x2="17" y2="18" stroke="#1B2E6B" stroke-width="1.2"/>
+    <circle cx="11" cy="18" r="2" fill="white" stroke="#1B2E6B" stroke-width="1"/>
+    <!-- SEALED text -->
+    <text x="11" y="29" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" font-weight="bold" fill="#1B2E6B">SEALED</text>
+  </g>
+</svg>

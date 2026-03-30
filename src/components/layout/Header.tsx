@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Package, ShoppingBag, FileText, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
@@ -40,16 +39,7 @@ function MobileTopBar() {
     <div className="flex h-14 items-center justify-between px-4 md:hidden">
       {/* Left: logo icon + greeting */}
       <div className="flex items-center gap-3">
-        <Link href="/" className="shrink-0">
-          <Image
-            src="/logo.png"
-            alt="PokeItem"
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-xl object-contain"
-            priority
-          />
-        </Link>
+        <Logo variant="icon" size="md" />
         <div className="leading-tight">
           {pseudo ? (
             <>
