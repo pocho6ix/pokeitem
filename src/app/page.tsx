@@ -115,8 +115,8 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-2xl font-bold text-[var(--text-primary)]">Blocs populaires</h2>
-              <p className="mt-1 text-[var(--text-secondary)]">Explorez les derniers blocs Pokémon TCG</p>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)]">Séries populaires</h2>
+              <p className="mt-1 text-[var(--text-secondary)]">Explorez les dernières séries Pokémon TCG</p>
             </div>
             <Link
               href="/collection"
@@ -146,7 +146,7 @@ export default function HomePage() {
                   {bloc.name}
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)] mt-1">
-                  {bloc.series} séries &middot; {bloc.period}
+                  {bloc.series} extensions &middot; {bloc.period}
                 </p>
               </Link>
             ))}

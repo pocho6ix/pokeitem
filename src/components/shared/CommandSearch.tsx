@@ -57,8 +57,8 @@ function getStaticResults(query: string): SearchResult[] {
 }
 
 const CATEGORY_CONFIG = {
-  blocs: { label: "Blocs", icon: Package },
-  series: { label: "Séries", icon: BookOpen },
+  blocs: { label: "Séries", icon: Package },
+  series: { label: "Extensions", icon: BookOpen },
   articles: { label: "Articles", icon: FileText },
 };
 
@@ -182,7 +182,7 @@ export function CommandSearch() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Rechercher une série, un bloc, un article..."
+              placeholder="Rechercher une extension, une série, un article..."
               className="flex-1 bg-transparent px-3 py-3.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none"
             />
             {query && (

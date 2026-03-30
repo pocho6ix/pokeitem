@@ -24,6 +24,7 @@ model User {
   portfolio        PortfolioItem[]
   wishlist         WishlistItem[]
   manualValuations ManualValuation[]
+  userCards        UserCard[]
 
   @@map("users")
 }
@@ -105,6 +106,7 @@ model Serie {
 
   bloc  Bloc   @relation(fields: [blocId], references: [id])
   items Item[]
+  cards Card[]
 
   @@map("series")
 }
@@ -286,6 +288,68 @@ model ManualValuation {
 
   @@index([userId, itemId])
   @@map("manual_valuations")
+}
+
+// ─── CARTES ──────────────────────────────────────────────────
+
+model Card {
+  id         String     @id @default(cuid())
+  serieId    String
+  number     String
+  name       String
+  rarity     CardRarity @default(COMMON)
+  imageUrl   String?
+  tcgdexId   String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  serie     Serie      @relation(fields: [serieId], references: [id])
+  userCards UserCard[]
+
+  @@unique([serieId, number])
+  @@index([serieId])
+  @@map("cards")
+}
+
+enum CardRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  DOUBLE_RARE
+  ILLUSTRATION_RARE
+  SPECIAL_ILLUSTRATION_RARE
+  HYPER_RARE
+  ACE_SPEC_RARE
+  PROMO
+}
+
+model UserCard {
+  id        String        @id @default(cuid())
+  userId    String
+  cardId    String
+  quantity  Int           @default(1)
+  foil      Boolean       @default(false)
+  condition CardCondition @default(NEAR_MINT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@index([cardId])
+  @@map("user_cards")
+}
+
+enum CardCondition {
+  MINT
+  NEAR_MINT
+  EXCELLENT
+  GOOD
+  LIGHT_PLAYED
+  PLAYED
+  POOR
 }
 
 // ─── BLOG ────────────────────────────────────────────────────

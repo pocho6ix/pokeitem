@@ -41,7 +41,7 @@ export default function AjouterPage() {
           Parcourir le catalogue
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-[var(--text-secondary)]">
-          Naviguez dans le catalogue par bloc et serie pour trouver le produit
+          Naviguez dans le catalogue par série et extension pour trouver le produit
           que vous souhaitez ajouter a votre collection.
         </p>
         <Link

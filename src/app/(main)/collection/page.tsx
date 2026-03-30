@@ -5,11 +5,12 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { TabNav } from "@/components/ui/TabNav";
 
 export const metadata: Metadata = {
   title: "Collection Pokemon TCG | PokeItem",
   description:
-    "Explorez tous les items scelles par bloc et serie de la collection Pokemon TCG.",
+    "Explorez tous les items scelles par série et extension de la collection Pokemon TCG.",
 };
 
 function formatPeriod(startDate: string, endDate: string | null): string {
@@ -53,9 +54,16 @@ export default function CollectionPage() {
           Collection Pok&eacute;mon TCG
         </h1>
         <p className="mt-2 text-[var(--text-secondary)]">
-          Explorez tous les items scell&eacute;s par bloc et s&eacute;rie
+          Explorez tous les items scell&eacute;s par s&eacute;rie et extension
         </p>
       </div>
+
+      <TabNav
+        tabs={[
+          { label: "Produits scellés", href: "/collection", active: true },
+          { label: "Cartes", href: "/collection/cartes", active: false },
+        ]}
+      />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {BLOCS.map((bloc, index) => {
@@ -95,8 +103,8 @@ export default function CollectionPage() {
                   </p>
                   <p className="text-sm text-[var(--text-secondary)]">
                     {seriesCount > 0
-                      ? `${seriesCount} s\u00e9rie${seriesCount > 1 ? "s" : ""}`
-                      : "Aucune s\u00e9rie r\u00e9f\u00e9renc\u00e9e"}
+                      ? `${seriesCount} extension${seriesCount > 1 ? "s" : ""}`
+                      : "Aucune extension r\u00e9f\u00e9renc\u00e9e"}
                   </p>
                 </div>
               </Card>

@@ -54,10 +54,10 @@ export async function generateMetadata({ params }: SeriePageProps): Promise<Meta
   const { blocSlug, serieSlug } = await params;
   const bloc = findBloc(blocSlug);
   const serie = findSerie(blocSlug, serieSlug);
-  if (!bloc || !serie) return { title: "Serie introuvable | PokeItem" };
+  if (!bloc || !serie) return { title: "Extension introuvable | PokeItem" };
 
   const title = `${serie.name} — ${bloc.name} | PokeItem`;
-  const description = `Tous les produits scelles de la serie ${serie.name} (${serie.abbreviation}) du bloc ${bloc.name}. Prix, disponibilite et details sur PokeItem.`;
+  const description = `Tous les produits scelles de l'extension ${serie.name} (${serie.abbreviation}) de la série ${bloc.name}. Prix, disponibilite et details sur PokeItem.`;
 
   return {
     title,
@@ -179,7 +179,7 @@ export default async function SeriePage({ params }: SeriePageProps) {
             month: "long",
             year: "numeric",
           })}
-          {" "}&mdash; Bloc {bloc.name}
+          {" "}&mdash; Série {bloc.name}
         </p>
       </div>
 

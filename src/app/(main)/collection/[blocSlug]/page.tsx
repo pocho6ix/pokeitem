@@ -26,10 +26,10 @@ function getSeriesForBloc(blocSlug: string) {
 export async function generateMetadata({ params }: BlocPageProps): Promise<Metadata> {
   const { blocSlug } = await params;
   const bloc = findBloc(blocSlug);
-  if (!bloc) return { title: "Bloc introuvable | PokeItem" };
+  if (!bloc) return { title: "Série introuvable | PokeItem" };
 
-  const title = `${bloc.name} — Toutes les series | PokeItem`;
-  const description = `Explorez toutes les series du bloc ${bloc.name} (${bloc.nameEn}) sur PokeItem : produits scelles, prix et historique.`;
+  const title = `${bloc.name} — Toutes les extensions | PokeItem`;
+  const description = `Explorez toutes les extensions de la série ${bloc.name} (${bloc.nameEn}) sur PokeItem : produits scellés, prix et historique.`;
 
   return {
     title,
@@ -64,7 +64,7 @@ export default async function BlocPage({ params }: BlocPageProps) {
   ]);
 
   const itemListLd = generateItemListJsonLd(
-    `Series du bloc ${bloc.name}`,
+    `Extensions de la série ${bloc.name}`,
     series.map((s) => ({
       name: s.name,
       url: `/collection/${bloc.slug}/${s.slug}`,
@@ -102,7 +102,7 @@ export default async function BlocPage({ params }: BlocPageProps) {
           <Badge variant="secondary">{bloc.abbreviation}</Badge>
         </div>
         <p className="mt-2 text-[var(--text-secondary)]">
-          Bloc {bloc.nameEn} &mdash;{" "}
+          Série {bloc.nameEn} &mdash;{" "}
           {new Date(bloc.startDate).getFullYear()}
           {bloc.endDate
             ? ` - ${new Date(bloc.endDate).getFullYear()}`
@@ -110,10 +110,10 @@ export default async function BlocPage({ params }: BlocPageProps) {
         </p>
       </div>
 
-      {/* Series grid */}
+      {/* Extensions grid */}
       {series.length === 0 ? (
         <p className="text-[var(--text-secondary)]">
-          Aucune s&eacute;rie r&eacute;f&eacute;renc&eacute;e pour ce bloc.
+          Aucune extension r&eacute;f&eacute;renc&eacute;e pour cette s&eacute;rie.
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
