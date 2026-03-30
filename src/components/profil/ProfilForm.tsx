@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { getDefaultAvatar } from "@/lib/defaultAvatar";
 
 interface UserProfile {
   id: string;
@@ -134,6 +134,7 @@ export function ProfilForm() {
     .join("");
 
   const hasChanged = name.trim() !== (user.name ?? "");
+  const avatarSrc = user.image ?? getDefaultAvatar(user.id);
 
   return (
     <div className="space-y-8">
@@ -158,19 +159,12 @@ export function ProfilForm() {
         <div className="flex items-center gap-6">
           {/* Avatar display */}
           <div className="relative h-20 w-20 shrink-0">
-            {user.image ? (
-              <Image
-                src={user.image}
-                alt="Photo de profil"
-                width={80}
-                height={80}
-                className="h-20 w-20 rounded-full object-cover border-2 border-[var(--border-default)]"
-              />
-            ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-2xl font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                {initials}
-              </div>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={avatarSrc}
+              alt="Photo de profil"
+              className="h-20 w-20 rounded-full object-cover border-2 border-[var(--border-default)]"
+            />
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
                 <svg className="h-6 w-6 animate-spin text-white" viewBox="0 0 24 24" fill="none">

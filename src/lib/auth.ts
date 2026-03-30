@@ -60,6 +60,16 @@ export const authOptions: NextAuthOptions = {
         if (session?.image !== undefined) token.image = session.image;
         if (session?.name  !== undefined) token.name  = session.name;
       }
+      // For sessions issued before image/name were stored in the token,
+      // fetch fresh values from DB once (token.image will be undefined, not null)
+      if (token.id && token.image === undefined) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { image: true, name: true },
+        });
+        token.image = dbUser?.image ?? null;
+        if (token.name === undefined) token.name = dbUser?.name ?? null;
+      }
       return token;
     },
     async session({ session, token }) {

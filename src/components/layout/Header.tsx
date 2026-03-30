@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Package, ShoppingBag, FileText, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { Logo } from "@/components/shared/Logo";
 import { CommandSearch } from "@/components/shared/CommandSearch";
 import { Sheet } from "@/components/ui/Sheet";
@@ -33,7 +34,9 @@ function getGreeting() {
 
 function MobileTopBar() {
   const { data: session } = useSession();
-  const pseudo = session?.user?.name ?? null;
+  const pseudo  = session?.user?.name ?? null;
+  const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const avatarSrc = session?.user?.image ?? (userId ? getDefaultAvatar(userId) : null);
 
   return (
     <div className="flex h-14 items-center justify-between px-4 md:hidden">
@@ -56,10 +59,10 @@ function MobileTopBar() {
       <div className="flex items-center gap-2">
         {session ? (
           <Link href="/profil" title="Mon profil" className="block h-9 w-9 shrink-0">
-            {session.user?.image ? (
+            {avatarSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={session.user.image}
+                src={avatarSrc}
                 alt={pseudo ?? "Profil"}
                 className="h-9 w-9 rounded-full object-cover ring-2 ring-blue-600/50"
               />
@@ -89,6 +92,8 @@ export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
+  const desktopUserId  = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const desktopAvatarSrc = session?.user?.image ?? (desktopUserId ? getDefaultAvatar(desktopUserId) : null);
 
   return (
     <>
@@ -134,11 +139,11 @@ export function Header() {
             {session ? (
               <div className="flex items-center gap-2">
                 <Link href="/profil" title={session.user?.name ?? "Profil"} className="block h-8 w-8 shrink-0">
-                  {session.user?.image ? (
+                  {desktopAvatarSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={session.user.image}
-                      alt={session.user.name ?? "Profil"}
+                      src={desktopAvatarSrc}
+                      alt={session.user?.name ?? "Profil"}
                       className="h-8 w-8 rounded-full object-cover ring-2 ring-blue-600/50"
                     />
                   ) : (
