@@ -1,15 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/shared/Logo";
 
 const FOOTER_LINKS = {
   Collection: [
     { href: "/collection", label: "Catalogue complet" },
-    { href: "/collection/ecarlate-violet", label: "Ecarlate & Violet" },
-    { href: "/collection/epee-bouclier", label: "Epee & Bouclier" },
-    { href: "/collection/soleil-lune", label: "Soleil & Lune" },
-    { href: "/collection/xy", label: "XY" },
-    { href: "/collection/noir-blanc", label: "Noir & Blanc" },
-    { href: "/collection/mega-evolution", label: "Mega-Evolution" },
+    { href: "/collection/produits/ecarlate-violet", label: "Ecarlate & Violet" },
+    { href: "/collection/produits/epee-bouclier", label: "Epee & Bouclier" },
+    { href: "/collection/produits/soleil-lune", label: "Soleil & Lune" },
+    { href: "/collection/produits/xy", label: "XY" },
+    { href: "/collection/produits/noir-blanc", label: "Noir & Blanc" },
+    { href: "/collection/produits/mega-evolution", label: "Mega-Evolution" },
   ],
   Ressources: [
     { href: "/blog", label: "Blog" },
@@ -25,6 +26,10 @@ const FOOTER_LINKS = {
   ],
 };
 
+// Placeholder URLs — à remplacer quand l'appli sera live
+const APP_STORE_URL = "#";
+const GOOGLE_PLAY_URL = "#";
+
 export function Footer() {
   return (
     <footer className="border-t border-[var(--border-default)] bg-[var(--bg-secondary)]">
@@ -34,8 +39,32 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Logo size="md" />
             <p className="mt-3 text-sm text-[var(--text-secondary)]">
-              La plateforme de gestion de collection d&apos;items scellés Pokémon TCG.
+              Votre plateforme pour gérer votre collection de cartes et d&apos;items scellés Pokémon.
             </p>
+
+            {/* App store badges */}
+            <div className="mt-4 flex flex-col gap-2">
+              <Link href={GOOGLE_PLAY_URL} aria-label="Disponible sur Google Play">
+                <Image
+                  src="/images/badges/google-play.svg"
+                  alt="Disponible sur Google Play"
+                  width={140}
+                  height={42}
+                  className="h-[42px] w-auto"
+                  unoptimized
+                />
+              </Link>
+              <Link href={APP_STORE_URL} aria-label="Télécharger dans l'App Store">
+                <Image
+                  src="/images/badges/app-store.svg"
+                  alt="Télécharger dans l'App Store"
+                  width={140}
+                  height={42}
+                  className="h-[42px] w-auto"
+                  unoptimized
+                />
+              </Link>
+            </div>
           </div>
 
           {/* Links */}
@@ -58,13 +87,20 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 border-t border-[var(--border-default)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--text-tertiary)]">
-            &copy; {new Date().getFullYear()} PokeItem. Tous droits réservés.
+        {/* Disclaimer */}
+        <div className="mt-10 border-t border-[var(--border-default)] pt-6 space-y-3">
+          <p className="text-xs text-[var(--text-tertiary)] text-center">
+            PokeItem n&apos;est pas une application officielle Pokémon, elle n&apos;est en aucun cas affiliée, approuvée ou supportée par Nintendo, GAME FREAK ou The Pokémon Company.
+            Les images et illustrations utilisées sont la propriété de leurs auteurs respectifs.
           </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            Pokémon est une marque déposée de The Pokémon Company.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-xs text-[var(--text-tertiary)]">
+              &copy; {new Date().getFullYear()} PokeItem. Tous droits réservés.
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Google Play et le logo Google Play sont des marques de Google Inc.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
