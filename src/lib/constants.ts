@@ -16,24 +16,22 @@ export const ITEM_TYPE_LABELS: Record<string, string> = {
   OTHER: "Autre",
 };
 
-const TAG_STYLE = "bg-[#FF0000] text-white dark:bg-white dark:text-[#FF0000]";
-
 export const ITEM_TYPE_COLORS: Record<string, string> = {
-  BOOSTER: TAG_STYLE,
-  DUOPACK: TAG_STYLE,
-  TRIPACK: TAG_STYLE,
-  BOOSTER_BOX: TAG_STYLE,
-  ETB: TAG_STYLE,
-  BOX_SET: TAG_STYLE,
-  UPC: TAG_STYLE,
-  TIN: TAG_STYLE,
-  MINI_TIN: TAG_STYLE,
-  POKEBALL_TIN: TAG_STYLE,
-  BLISTER: TAG_STYLE,
-  THEME_DECK: TAG_STYLE,
-  BUNDLE: TAG_STYLE,
-  TRAINER_KIT: TAG_STYLE,
-  OTHER: TAG_STYLE,
+  BOOSTER: "item-type-badge",
+  DUOPACK: "item-type-badge",
+  TRIPACK: "item-type-badge",
+  BOOSTER_BOX: "item-type-badge",
+  ETB: "item-type-badge",
+  BOX_SET: "item-type-badge",
+  UPC: "item-type-badge",
+  TIN: "item-type-badge",
+  MINI_TIN: "item-type-badge",
+  POKEBALL_TIN: "item-type-badge",
+  BLISTER: "item-type-badge",
+  THEME_DECK: "item-type-badge",
+  BUNDLE: "item-type-badge",
+  TRAINER_KIT: "item-type-badge",
+  OTHER: "item-type-badge",
 };
 
 export const ITEM_TYPE_MSRP: Record<string, number> = {
