@@ -32,10 +32,11 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
   const ownedBySerieId = new Map<string, number>();
 
   if (userId) {
-    // Group user's owned cards by serie
+    // Count unique cards per serie (one card = one slot, regardless of versions owned)
     const owned = await prisma.userCard.findMany({
       where: { userId },
-      select: { card: { select: { serieId: true } } },
+      select: { card: { select: { serieId: true } }, cardId: true },
+      distinct: ["cardId"],
     });
     for (const uc of owned) {
       const sid = uc.card.serieId;

@@ -98,13 +98,14 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "legendary-treasures":         "bw11",
   // ── HGSS ───────────────────────────────────────────────────────────────
   "heartgold-soulsilver-base":   "hgss1",
-  "rivaux-emergeants":           "hgss2",
-  "vainqueurs-supremes":         "hgss3",
+  "dechainement":                "hgss2",
+  "indomptable":                 "hgss3",
   "triomphe":                    "hgss4",
-  "arceus":                      "pl4",
   // ── Platine ────────────────────────────────────────────────────────────
   "platine-base":                "pl1",
-  "eveil-des-legendes":          "pl2",
+  "rivaux-emergeants":           "pl2",
+  "vainqueurs-supremes":         "pl3",
+  "arceus":                      "pl4",
   // ── Diamant & Perle ────────────────────────────────────────────────────
   "diamant-et-perle":            "dp1",
   "tresors-mysterieux":          "dp2",
