@@ -62,7 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const base64Data = dataUrl.slice(commaIdx + 1);
 
     // 4. Call Claude claude-haiku-4-5 with vision
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY_SCANNER ?? process.env.ANTHROPIC_API_KEY });
 
     const claudeResponse = await anthropic.messages.create({
       model: "claude-haiku-4-5",
