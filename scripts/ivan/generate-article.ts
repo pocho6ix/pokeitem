@@ -125,26 +125,49 @@ EXEMPLES DE PROMPTS GEMINI (adapte au thème de la série) :
 
 IMPORTANT : Réponds UNIQUEMENT avec le JSON, sans markdown code blocks, sans texte avant ou après.`;
 
-  const response = await client.messages.create({
-    model: IVAN_CONFIG.model,
-    max_tokens: IVAN_CONFIG.maxTokens,
-    messages: [{ role: "user", content: userPrompt }],
-    system: systemPrompt,
-  });
+  // Attempt up to 2 times in case of JSON parse failure
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const response = await client.messages.create({
+      model: IVAN_CONFIG.model,
+      max_tokens: IVAN_CONFIG.maxTokens,
+      messages: [
+        { role: "user", content: userPrompt },
+        // Prefill to force Claude to start with valid JSON
+        { role: "assistant", content: "{" },
+      ],
+      system: systemPrompt,
+    });
 
-  const text = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("");
+    const text =
+      "{" +
+      response.content
+        .filter((block): block is Anthropic.TextBlock => block.type === "text")
+        .map((block) => block.text)
+        .join("");
 
-  // Parser le JSON (nettoyer les éventuels blocs markdown)
-  const cleaned = text
-    .replace(/```json\s*/g, "")
-    .replace(/```\s*/g, "")
-    .trim();
+    // Clean up markdown fences if any
+    const cleaned = text
+      .replace(/```json\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim();
 
-  const article: GeneratedArticle = JSON.parse(cleaned);
-  article.slug = `guide-${serie.slug}`;
+    try {
+      const article: GeneratedArticle = JSON.parse(cleaned);
+      article.slug = `guide-${serie.slug}`;
+      return article;
+    } catch (err) {
+      console.error(
+        `  Tentative ${attempt}/2 — Erreur JSON: ${err instanceof Error ? err.message : err}`,
+      );
+      if (attempt === 2) {
+        // Log first 1000 chars for debugging
+        console.error("  Début de la réponse:", cleaned.slice(0, 1000));
+        throw new Error(`Impossible de parser la réponse Claude après 2 tentatives`);
+      }
+      console.log("  Nouvelle tentative...");
+    }
+  }
 
-  return article;
+  // Unreachable but TypeScript needs it
+  throw new Error("Unexpected");
 }
