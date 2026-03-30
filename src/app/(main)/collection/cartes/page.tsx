@@ -88,8 +88,8 @@ export default async function CollectionCartesPage() {
 
       <TabNav
         tabs={[
-          { label: "Produits scellés", href: "/collection", active: false },
           { label: "Cartes", href: "/collection/cartes", active: true },
+          { label: "Produits scellés", href: "/collection/produits", active: false },
         ]}
       />
 

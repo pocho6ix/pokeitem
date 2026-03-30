@@ -60,8 +60,8 @@ export default function CollectionProduitsPage() {
 
       <TabNav
         tabs={[
-          { label: "Produits scellés", href: "/collection/produits", active: true },
           { label: "Cartes", href: "/collection/cartes", active: false },
+          { label: "Produits scellés", href: "/collection/produits", active: true },
         ]}
       />
 
