@@ -19,7 +19,7 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
     label: 'Booster',
     description: 'Paquet de 10 cartes aléatoires scellé',
     typicalContent: '10 cartes dont 1 rare ou supérieure',
-    typicalMsrp: 5.99,
+    typicalMsrp: 4.99,
     icon: 'Package',
   },
   {
@@ -72,10 +72,10 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
   },
   {
     type: ItemType.ETB,
-    label: 'Coffret Dresseur d\'Élite',
-    description: 'ETB — Coffret contenant boosters, sleeves et accessoires',
+    label: 'ETB',
+    description: 'Coffret Dresseur d\'Élite — boosters, sleeves et accessoires',
     typicalContent: '9 boosters, 65 sleeves, dé, marqueurs de dégâts',
-    typicalMsrp: 59.99,
+    typicalMsrp: 109.99,
     icon: 'Trophy',
   },
   {
@@ -88,7 +88,7 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
   },
   {
     type: ItemType.UPC,
-    label: 'Ultra Premium Collection',
+    label: 'UPC',
     description: 'Coffret haut de gamme avec contenu exclusif',
     typicalContent: '16+ boosters, cartes métal, accessoires premium',
     typicalMsrp: 159.99,

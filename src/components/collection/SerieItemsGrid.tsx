@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
-import { ITEM_TYPE_LABELS } from "@/lib/constants";
+import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
 import { ItemImage } from "@/components/shared/ItemImage";
 import { AddToPortfolioModal } from "@/components/portfolio/AddToPortfolioModal";
@@ -108,8 +108,7 @@ export function SerieItemsGrid({
 
   function renderItemCard(itemType: ItemTypeData) {
     const dbItem = dbItems?.find((i) => i.type === itemType.type);
-    const displayPrice =
-      dbItem?.currentPrice ?? dbItem?.priceTrend ?? itemType.typicalMsrp;
+    const displayPrice = itemType.typicalMsrp;
 
     return (
       <Card
@@ -127,15 +126,20 @@ export function SerieItemsGrid({
 
         {/* Content */}
         <div className="flex flex-1 flex-col p-4">
-          <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-tight">
-            {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-tight">
+              {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
+            </h3>
+            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${ITEM_TYPE_COLORS[itemType.type] ?? ""}`}>
+              {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
+            </span>
+          </div>
           <p className="mt-1 flex-1 text-xs text-[var(--text-secondary)] line-clamp-2">
             {itemType.description}
           </p>
           <div className="mt-3 flex items-center justify-between">
             <span className="font-data text-base font-bold text-[var(--text-primary)]">
-              ~{formatPrice(displayPrice)}
+              {formatPrice(displayPrice)}
             </span>
             <button
               type="button"
