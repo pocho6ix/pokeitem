@@ -130,7 +130,7 @@ export default function HomePage() {
             {POPULAR_BLOCS.map((bloc) => (
               <Link
                 key={bloc.slug}
-                href={`/collection/${bloc.slug}`}
+                href={`/collection/produits/${bloc.slug}`}
                 className="group rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 hover:shadow-lg hover:border-[var(--color-primary)]/30 transition-all"
               >
                 <div className="h-32 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center mb-4 p-4">

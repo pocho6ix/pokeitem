@@ -39,7 +39,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
       <nav aria-label="Fil d'Ariane" className="mb-6 text-sm text-[var(--text-secondary)]">
         <ol className="flex items-center gap-1.5">
           <li>
-            <Link href="/collection" className="hover:text-blue-600 dark:hover:text-blue-400">
+            <Link href="/collection/cartes" className="hover:text-blue-600 dark:hover:text-blue-400">
               Collection
             </Link>
           </li>
