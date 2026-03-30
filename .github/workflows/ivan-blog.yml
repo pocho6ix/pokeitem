@@ -1,0 +1,42 @@
+name: Agent Ivan — Blog SEO quotidien
+
+on:
+  schedule:
+    # Tous les jours à 7h UTC = 9h CET (heure d'été) / 8h CET (heure d'hiver)
+    - cron: "0 7 * * *"
+
+  # Permet de lancer manuellement depuis GitHub
+  workflow_dispatch:
+
+jobs:
+  ivan-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Agent Ivan
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npx tsx scripts/ivan-run.ts
+
+      - name: Commit & Push
+        run: |
+          git config user.name "Agent Ivan"
+          git config user.email "ivan@pokeitem.fr"
+          git add -A
+          git diff --staged --quiet || git commit -m "blog: nouvel article — $(date +'%Y-%m-%d')"
+          git push
