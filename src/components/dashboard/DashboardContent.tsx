@@ -336,7 +336,7 @@ export default function DashboardContent() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Portfolio</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Vue d&apos;ensemble de votre portefeuille d&apos;investissement
           </p>
@@ -359,7 +359,7 @@ export default function DashboardContent() {
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Page title */}
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Portfolio</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           {summary.itemCount} item{summary.itemCount > 1 ? "s" : ""} &middot;{" "}
           {summary.uniqueItemCount} produit{summary.uniqueItemCount > 1 ? "s" : ""} unique{summary.uniqueItemCount > 1 ? "s" : ""}

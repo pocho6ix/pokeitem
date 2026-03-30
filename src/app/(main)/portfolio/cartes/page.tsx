@@ -53,7 +53,7 @@ export default function PortfolioCartesPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-          Mon Portfolio
+          Mon Classeur
         </h1>
         <p className="mt-2 text-[var(--text-secondary)]">
           Gérez votre collection de cartes Pokémon TCG

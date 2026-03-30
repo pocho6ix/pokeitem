@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, FileText, ScanLine, Menu, User, LogOut } from "lucide-react";
+import { Package, ShoppingBag, FileText, ScanLine, Menu, User, LogOut, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -12,10 +13,11 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; authRequired?: boolean }[] = [
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
+  { href: "/portfolio", label: "Classeur", icon: BookOpen, authRequired: true },
   { href: "/blog", label: "Blog", icon: FileText },
 ];
 
@@ -34,6 +36,7 @@ export function Header() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
+              if (item.authRequired && !session) return null;
               const isActive = pathname.startsWith(item.href);
               return (
                 <Link
@@ -51,20 +54,6 @@ export function Header() {
                 </Link>
               );
             })}
-            {session && (
-              <Link
-                href="/portfolio"
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  pathname.startsWith("/portfolio")
-                    ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-                )}
-              >
-                <User className="h-4 w-4" />
-                Portfolio
-              </Link>
-            )}
           </nav>
 
           {/* Right side */}
@@ -111,6 +100,7 @@ export function Header() {
       <Sheet isOpen={mobileOpen} onClose={() => setMobileOpen(false)} title="Menu">
         <nav className="flex flex-col gap-1 pt-4">
           {NAV_ITEMS.map((item) => {
+            if (item.authRequired && !session) return null;
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
@@ -131,26 +121,16 @@ export function Header() {
           })}
           <hr className="my-3 border-[var(--border-default)]" />
           {session ? (
-            <>
-              <Link
-                href="/portfolio"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-              >
-                <User className="h-5 w-5" />
-                Portfolio
-              </Link>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  signOut({ callbackUrl: "/" });
-                }}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <LogOut className="h-5 w-5" />
-                Déconnexion
-              </button>
-            </>
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                signOut({ callbackUrl: "/" });
+              }}
+              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              <LogOut className="h-5 w-5" />
+              Déconnexion
+            </button>
           ) : (
             <Link
               href="/connexion"

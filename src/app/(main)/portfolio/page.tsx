@@ -3,9 +3,9 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 import { TabNav } from "@/components/ui/TabNav";
 
 export const metadata: Metadata = {
-  title: "Portfolio | PokeItem",
+  title: "Classeur | PokeItem",
   description:
-    "Tableau de bord de votre portfolio de produits Pokémon scellés. Suivez la valeur, le P&L et les tendances du marché.",
+    "Tableau de bord de votre classeur de produits Pokémon scellés. Suivez la valeur, le P&L et les tendances du marché.",
 };
 
 export default function PortfolioPage() {

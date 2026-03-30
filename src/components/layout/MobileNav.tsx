@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, FileText, User } from "lucide-react";
+import { Package, ShoppingBag, ScanLine, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MOBILE_NAV_ITEMS = [
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/market", label: "Market", icon: ShoppingBag },
-  { href: "/blog", label: "Blog", icon: FileText },
-  { href: "/portfolio", label: "Portfolio", icon: User },
+  { href: "/scanner", label: "Scanner", icon: ScanLine },
+  { href: "/portfolio", label: "Classeur", icon: BookOpen },
 ];
 
 export function MobileNav() {
