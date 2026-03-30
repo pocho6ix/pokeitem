@@ -24,6 +24,12 @@ export enum CardCondition {
   POOR = 'POOR',
 }
 
+export enum DoubleAvailability {
+  TRADE = 'TRADE',
+  SELL  = 'SELL',
+  BOTH  = 'BOTH',
+}
+
 export interface Card {
   id: string;
   serieId: string;
@@ -41,6 +47,19 @@ export interface UserCard {
   quantity: number;
   foil: boolean;
   condition: CardCondition;
+  language: string;
+  card?: Card;
+}
+
+export interface UserCardDouble {
+  id: string;
+  userId: string;
+  cardId: string;
+  quantity: number;
+  condition: CardCondition;
+  language: string;
+  availability: DoubleAvailability;
+  price: number | null;
   card?: Card;
 }
 
@@ -74,6 +93,30 @@ export const CARD_RARITY_LABELS: Record<CardRarity, string> = {
   [CardRarity.PROMO]: 'Promo',
 };
 
+export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
+  [CardRarity.COMMON]: '●',
+  [CardRarity.UNCOMMON]: '◆',
+  [CardRarity.RARE]: '☆',
+  [CardRarity.DOUBLE_RARE]: '★★',
+  [CardRarity.ILLUSTRATION_RARE]: '✦',
+  [CardRarity.SPECIAL_ILLUSTRATION_RARE]: '✦★',
+  [CardRarity.HYPER_RARE]: '✦✦',
+  [CardRarity.ACE_SPEC_RARE]: '◈',
+  [CardRarity.PROMO]: 'P',
+};
+
+export const CARD_RARITY_ORDER: Record<CardRarity, number> = {
+  [CardRarity.COMMON]: 0,
+  [CardRarity.UNCOMMON]: 1,
+  [CardRarity.RARE]: 2,
+  [CardRarity.DOUBLE_RARE]: 3,
+  [CardRarity.ILLUSTRATION_RARE]: 4,
+  [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 5,
+  [CardRarity.HYPER_RARE]: 6,
+  [CardRarity.ACE_SPEC_RARE]: 7,
+  [CardRarity.PROMO]: 8,
+};
+
 export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {
   [CardCondition.MINT]: 'Mint',
   [CardCondition.NEAR_MINT]: 'Near Mint',
@@ -83,3 +126,21 @@ export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {
   [CardCondition.PLAYED]: 'Jouée',
   [CardCondition.POOR]: 'Mauvais État',
 };
+
+export const DOUBLE_AVAILABILITY_LABELS: Record<DoubleAvailability, string> = {
+  [DoubleAvailability.TRADE]: 'Échange',
+  [DoubleAvailability.SELL]: 'Vente',
+  [DoubleAvailability.BOTH]: 'Échange & Vente',
+};
+
+export const CARD_LANGUAGES = [
+  { value: 'FR', label: 'Français' },
+  { value: 'EN', label: 'Anglais' },
+  { value: 'JP', label: 'Japonais' },
+  { value: 'DE', label: 'Allemand' },
+  { value: 'ES', label: 'Espagnol' },
+  { value: 'IT', label: 'Italien' },
+  { value: 'PT', label: 'Portugais' },
+  { value: 'KO', label: 'Coréen' },
+  { value: 'ZH', label: 'Chinois' },
+];

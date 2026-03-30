@@ -25,6 +25,7 @@ model User {
   wishlist         WishlistItem[]
   manualValuations ManualValuation[]
   userCards        UserCard[]
+  userCardDoubles  UserCardDouble[]
 
   @@map("users")
 }
@@ -303,8 +304,9 @@ model Card {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  serie     Serie      @relation(fields: [serieId], references: [id])
-  userCards UserCard[]
+  serie       Serie            @relation(fields: [serieId], references: [id])
+  userCards   UserCard[]
+  userDoubles UserCardDouble[]
 
   @@unique([serieId, number])
   @@index([serieId])
@@ -330,6 +332,7 @@ model UserCard {
   quantity  Int           @default(1)
   foil      Boolean       @default(false)
   condition CardCondition @default(NEAR_MINT)
+  language  Language      @default(FR)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -340,6 +343,33 @@ model UserCard {
   @@index([userId])
   @@index([cardId])
   @@map("user_cards")
+}
+
+model UserCardDouble {
+  id           String             @id @default(cuid())
+  userId       String
+  cardId       String
+  quantity     Int                @default(1)
+  condition    CardCondition      @default(NEAR_MINT)
+  language     Language           @default(FR)
+  availability DoubleAvailability @default(TRADE)
+  price        Float?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@index([cardId])
+  @@map("user_card_doubles")
+}
+
+enum DoubleAvailability {
+  TRADE
+  SELL
+  BOTH
 }
 
 enum CardCondition {

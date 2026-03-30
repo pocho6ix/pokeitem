@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { TabNav } from "@/components/ui/TabNav";
 import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
 import { BLOCS } from "@/data/blocs";
@@ -10,52 +12,68 @@ export const metadata: Metadata = {
   description: "Explorez toutes les cartes Pokémon TCG par série et extension.",
 };
 
-export const revalidate = 3600; // re-fetch at most every hour
+export const revalidate = 0; // dynamic — owned data is per-user
 
-async function buildBlocProgress(): Promise<BlocCardProgress[]> {
-  // Fetch all series with their card counts from DB
+async function buildBlocProgress(userId: string | null): Promise<BlocCardProgress[]> {
+  // ── Fetch all series with their card counts ───────────────────────────
   const seriesInDb = await prisma.serie.findMany({
     select: {
-      slug: true,
-      name: true,
+      id:          true,
+      slug:        true,
+      name:        true,
       abbreviation: true,
-      imageUrl: true,
-      cardCount: true,
+      imageUrl:    true,
+      cardCount:   true,
       bloc: { select: { slug: true } },
     },
   });
 
-  const countBySlug = new Map(
-    seriesInDb.map((s) => [s.slug, s.cardCount ?? 0])
-  );
+  // ── Fetch owned card counts per serie for this user ───────────────────
+  const ownedBySerieId = new Map<string, number>();
+
+  if (userId) {
+    // Group user's owned cards by serie
+    const owned = await prisma.userCard.findMany({
+      where: { userId },
+      select: { card: { select: { serieId: true } } },
+    });
+    for (const uc of owned) {
+      const sid = uc.card.serieId;
+      ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
+    }
+  }
+
+  const countBySlug = new Map(seriesInDb.map((s) => [s.slug, s.cardCount ?? 0]));
 
   return BLOCS.map((bloc) => {
     const blocSeries = seriesInDb.filter((s) => s.bloc.slug === bloc.slug);
 
-    // Sort: series with cards first, then by name
     const sorted = [...blocSeries].sort((a, b) => {
       const diff = (b.cardCount ?? 0) - (a.cardCount ?? 0);
       return diff !== 0 ? diff : a.name.localeCompare(b.name, "fr");
     });
 
     return {
-      blocSlug: bloc.slug,
-      blocName: bloc.name,
+      blocSlug:         bloc.slug,
+      blocName:         bloc.name,
       blocAbbreviation: bloc.abbreviation ?? null,
       series: sorted.map((serie) => ({
-        serieSlug: serie.slug,
-        serieName: serie.name,
+        serieSlug:         serie.slug,
+        serieName:         serie.name,
         serieAbbreviation: serie.abbreviation ?? null,
-        serieImageUrl: serie.imageUrl ?? null,
-        totalCards: countBySlug.get(serie.slug) ?? 0,
-        ownedCards: 0, // will come from user session once auth is wired
+        serieImageUrl:     serie.imageUrl ?? null,
+        totalCards:  countBySlug.get(serie.slug) ?? 0,
+        ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
       })),
     };
   });
 }
 
 export default async function CollectionCartesPage() {
-  const blocs = await buildBlocProgress();
+  const session = await getServerSession(authOptions);
+  const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
+
+  const blocs = await buildBlocProgress(userId);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
