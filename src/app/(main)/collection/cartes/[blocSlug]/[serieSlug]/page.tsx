@@ -65,11 +65,11 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     const [userCards, userDoubles] = await Promise.all([
       prisma.userCard.findMany({
         where: { userId, card: { serieId: serieDb.id } },
-        select: { id: true, cardId: true, quantity: true, condition: true, language: true, foil: true },
+        select: { id: true, cardId: true, quantity: true, condition: true, language: true, foil: true, version: true },
       }),
       prisma.userCardDouble.findMany({
         where: { userId, card: { serieId: serieDb.id } },
-        select: { id: true, cardId: true, quantity: true, condition: true, language: true, availability: true, price: true },
+        select: { id: true, cardId: true, quantity: true, condition: true, language: true, availability: true, price: true, version: true },
       }),
     ]);
 
@@ -166,6 +166,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
         <CardCollectionGrid
           cards={cards}
           serieSlug={serieSlug}
+          blocSlug={blocSlug}
           initialOwned={initialOwned}
           initialDoubles={initialDoubles}
           isAuthenticated={!!userId}

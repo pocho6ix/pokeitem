@@ -2,6 +2,9 @@
 // Card-related types — mirrors Prisma schema
 // ---------------------------------------------------------------------------
 
+// Re-export CardVersion from the canonical data file so everything stays in sync
+export { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
+
 export enum CardRarity {
   COMMON = 'COMMON',
   UNCOMMON = 'UNCOMMON',
@@ -48,6 +51,7 @@ export interface UserCard {
   foil: boolean;
   condition: CardCondition;
   language: string;
+  version: string;
   card?: Card;
 }
 
@@ -58,6 +62,7 @@ export interface UserCardDouble {
   quantity: number;
   condition: CardCondition;
   language: string;
+  version: string;
   availability: DoubleAvailability;
   price: number | null;
   card?: Card;
