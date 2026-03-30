@@ -1,195 +1,140 @@
-"use client";
+import type { Metadata } from "next";
+import { ShoppingBag, Sparkles, TrendingUp, Link2, BarChart3 } from "lucide-react";
 
-import { useState } from "react";
-import { ExternalLink } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Select } from "@/components/ui/Select";
-import { SearchBar } from "@/components/shared/SearchBar";
-import { formatPrice } from "@/lib/utils";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS, CONDITION_LABELS } from "@/lib/constants";
-import { ItemImage } from "@/components/shared/ItemImage";
+export const metadata: Metadata = {
+  title: "Market — PokeItem",
+  description: "Retrouvez les meilleurs prix pour vos items Pokémon TCG sur toutes les plateformes : CardMarket, eBay, et plus encore.",
+};
 
-// ---------------------------------------------------------------------------
-// Category filter pills
-// ---------------------------------------------------------------------------
-
-const MARKET_CATEGORIES = [
-  { label: "Tous", value: "all" },
-  { label: "Boosters", value: "BOOSTER" },
-  { label: "Booster Boxes", value: "BOOSTER_BOX" },
-  { label: "ETB", value: "ETB" },
-  { label: "Box Sets", value: "BOX_SET" },
-  { label: "UPC", value: "UPC" },
-  { label: "Tins", value: "TIN" },
-  { label: "Blisters", value: "BLISTER" },
-  { label: "Bundles", value: "BUNDLE" },
-  { label: "Theme Decks", value: "THEME_DECK" },
-  { label: "Trainer Kits", value: "TRAINER_KIT" },
+const FEATURES = [
+  {
+    icon: TrendingUp,
+    title: "Prix en temps réel",
+    description: "Comparez les prix de vos items scellés Pokémon sur toutes les plateformes : CardMarket, eBay, Vinted et plus.",
+  },
+  {
+    icon: BarChart3,
+    title: "Historique des prix",
+    description: "Visualisez l'évolution des prix dans le temps pour identifier les meilleures opportunités d'achat et de vente.",
+  },
+  {
+    icon: Link2,
+    title: "Liens directs",
+    description: "Accédez directement aux annonces des vendeurs sur chaque plateforme. Achetez au meilleur prix en un clic.",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Alertes de prix",
+    description: "Recevez une notification quand un item de votre wishlist atteint votre prix cible sur l'une des plateformes.",
+  },
 ];
-
-// ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
-
-interface MarketItem {
-  id: string;
-  title: string;
-  type: string;
-  priceFrom: number;
-  priceTrend: number;
-  sellers: number;
-  condition: string;
-  cardmarketUrl: string;
-  imageUrl: string | null;
-}
-
-const MOCK_ITEMS: MarketItem[] = [
-  { id: "1", title: "Booster Box Pokémon 151", type: "BOOSTER_BOX", priceFrom: 189.0, priceTrend: 225.0, sellers: 493, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "2", title: "ETB Évolutions Prismatiques", type: "ETB", priceFrom: 79.0, priceTrend: 95.0, sellers: 312, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "3", title: "Booster Box Étincelles Déferlantes", type: "BOOSTER_BOX", priceFrom: 132.0, priceTrend: 158.0, sellers: 205, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "4", title: "UPC Dracaufeu Écarlate & Violet", type: "UPC", priceFrom: 155.0, priceTrend: 174.0, sellers: 89, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "5", title: "ETB Méga-Évolution", type: "ETB", priceFrom: 54.0, priceTrend: 79.82, sellers: 493, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "6", title: "Tin Pikachu EX", type: "TIN", priceFrom: 14.5, priceTrend: 21.0, sellers: 178, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "7", title: "Blister Flammes Obsidiennes", type: "BLISTER", priceFrom: 11.9, priceTrend: 14.5, sellers: 267, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "8", title: "Booster Box Évolution Céleste", type: "BOOSTER_BOX", priceFrom: 280.0, priceTrend: 310.0, sellers: 156, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-  { id: "9", title: "Bundle Forces Temporelles", type: "BUNDLE", priceFrom: 25.0, priceTrend: 29.9, sellers: 134, condition: "SEALED", cardmarketUrl: "#", imageUrl: null },
-];
-
-// ---------------------------------------------------------------------------
-// MarketCard
-// ---------------------------------------------------------------------------
-
-function MarketCard({ item }: { item: MarketItem }) {
-  return (
-    <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-md">
-      {/* Image */}
-      <ItemImage
-        src={item.imageUrl}
-        alt={item.title}
-        size="xl"
-        className="h-44"
-      />
-      <CardContent className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 text-sm font-semibold text-[var(--text-primary)]">
-          {item.title}
-        </h3>
-        <Badge className={ITEM_TYPE_COLORS[item.type]}>
-          {ITEM_TYPE_LABELS[item.type]}
-        </Badge>
-
-        <div className="mt-1">
-          <p className="text-xs text-[var(--text-tertiary)]">À partir de</p>
-          <p className="font-data text-lg font-bold text-[var(--text-primary)]">
-            {formatPrice(item.priceFrom)}
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
-          <span>Trend: {formatPrice(item.priceTrend)}</span>
-          <span>{item.sellers} vendeurs</span>
-        </div>
-
-        <div className="mt-auto flex gap-2 pt-2">
-          <a
-            href={item.cardmarketUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-default)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
-          >
-            CardMarket
-            <ExternalLink className="h-3 w-3" />
-          </a>
-          <button
-            type="button"
-            className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
-          >
-            + Portfolio
-          </button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
 
 export default function MarketPage() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("trend-desc");
-
-  const filtered = MOCK_ITEMS.filter((item) => {
-    if (search && !item.title.toLowerCase().includes(search.toLowerCase())) return false;
-    if (categoryFilter !== "all" && item.type !== categoryFilter) return false;
-    return true;
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case "price-asc": return a.priceFrom - b.priceFrom;
-      case "price-desc": return b.priceFrom - a.priceFrom;
-      case "trend-desc": return b.priceTrend - a.priceTrend;
-      case "sellers-desc": return b.sellers - a.sellers;
-      default: return 0;
-    }
-  });
-
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Market</h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Trouvez les meilleures offres sur CardMarket
+    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+
+      {/* Hero */}
+      <div className="text-center mb-16">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-1.5 text-sm font-medium text-[var(--text-secondary)] mb-6">
+          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+          Bientôt disponible
+        </div>
+
+        <div className="flex justify-center mb-6">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg">
+            <ShoppingBag className="h-10 w-10 text-white" />
+          </div>
+        </div>
+
+        <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-4">
+          Market PokeItem
+        </h1>
+        <p className="text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
+          Comparez les prix de vos items Pokémon TCG sur toutes les plateformes de vente. Achetez au meilleur prix, vendez au bon moment.
         </p>
       </div>
 
-      {/* Search + Sort */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-        <SearchBar
-          placeholder="Rechercher un item..."
-          value={search}
-          onChange={setSearch}
-          className="sm:max-w-xs"
-        />
-        <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="trend-desc">Prix Trend ↓</option>
-          <option value="price-asc">Prix ↑</option>
-          <option value="price-desc">Prix ↓</option>
-          <option value="sellers-desc">Vendeurs ↓</option>
-        </Select>
-      </div>
-
-      {/* Category pills */}
-      <div className="flex flex-wrap gap-2">
-        {MARKET_CATEGORIES.map((cat) => (
-          <button
-            key={cat.value}
-            onClick={() => setCategoryFilter(cat.value)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              categoryFilter === cat.value
-                ? "bg-[var(--color-primary)] text-white"
-                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
-            }`}
+      {/* Features */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-16">
+        {FEATURES.map((feature) => (
+          <div
+            key={feature.title}
+            className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6"
           >
-            {cat.label}
-          </button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 mb-4">
+              <feature.icon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="font-semibold text-[var(--text-primary)] mb-1">{feature.title}</h3>
+            <p className="text-sm text-[var(--text-secondary)]">{feature.description}</p>
+          </div>
         ))}
       </div>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <p className="py-12 text-center text-sm text-[var(--text-tertiary)]">
-          Aucun item trouvé.
+      {/* Platforms */}
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] p-8 mb-16">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 text-center">
+          Plateformes intégrées
+        </h2>
+        <div className="flex flex-wrap justify-center gap-3">
+          {["CardMarket", "eBay", "Vinted", "Rakuten", "Leboncoin"].map((platform) => (
+            <span
+              key={platform}
+              className="rounded-full border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-1.5 text-sm font-medium text-[var(--text-secondary)]"
+            >
+              {platform}
+            </span>
+          ))}
+          <span className="rounded-full border border-dashed border-[var(--border-default)] px-4 py-1.5 text-sm text-[var(--text-tertiary)]">
+            + d'autres à venir
+          </span>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] p-8 text-center">
+        <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+          Soyez notifié au lancement
+        </h2>
+        <p className="text-sm text-[var(--text-secondary)] mb-6">
+          Le Market est en cours de développement. Créez un compte pour être informé dès son ouverture.
         </p>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((item) => (
-            <MarketCard key={item.id} item={item} />
+        <a
+          href="/inscription"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+        >
+          Créer un compte gratuit
+        </a>
+      </div>
+
+      {/* FAQ SEO */}
+      <div className="mt-16 border-t border-[var(--border-default)] pt-10">
+        <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">Questions fréquentes</h2>
+        <div className="space-y-6">
+          {[
+            {
+              q: "Sur quelles plateformes PokeItem Market comparera-t-il les prix ?",
+              a: "PokeItem Market intégrera CardMarket, eBay, Vinted, Rakuten et d'autres plateformes de revente de produits Pokémon TCG. L'objectif est de centraliser tous les prix en un seul endroit.",
+            },
+            {
+              q: "Comment fonctionne l'affiliation sur PokeItem Market ?",
+              a: "Lorsque vous cliquez sur un lien vers une plateforme partenaire et effectuez un achat, PokeItem perçoit une petite commission. Cela ne modifie pas le prix que vous payez.",
+            },
+            {
+              q: "Puis-je créer des alertes de prix sur mes items Pokémon favoris ?",
+              a: "Oui, cette fonctionnalité sera disponible au lancement du Market. Vous pourrez définir un prix cible pour n'importe quel item et être notifié dès qu'une annonce correspond à vos critères.",
+            },
+            {
+              q: "Les prix sur PokeItem Market seront-ils mis à jour en temps réel ?",
+              a: "Les prix seront mis à jour régulièrement (plusieurs fois par jour) depuis les plateformes partenaires. L'objectif est d'afficher des données aussi fraîches que possible.",
+            },
+          ].map((item, i) => (
+            <div key={i}>
+              <h3 className="font-medium text-[var(--text-primary)]">{item.q}</h3>
+              <p className="mt-1 text-sm text-[var(--text-secondary)]">{item.a}</p>
+            </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, FileText, Menu, User, LogOut } from "lucide-react";
+import { Package, ShoppingBag, FileText, ScanLine, Menu, User, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 const NAV_ITEMS = [
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/market", label: "Market", icon: ShoppingBag },
+  { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/blog", label: "Blog", icon: FileText },
 ];
 
