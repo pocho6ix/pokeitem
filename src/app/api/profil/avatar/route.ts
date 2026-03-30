@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile, unlink } from "fs/promises";
-import { join } from "path";
+import { put, del } from "@vercel/blob";
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -44,30 +43,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  // Delete old avatar if it's a local file
-  if (user.image?.startsWith("/images/avatars/")) {
+  // Delete old avatar from Vercel Blob if it exists
+  if (user.image && user.image.includes("blob.vercel-storage.com")) {
     try {
-      await unlink(join(process.cwd(), "public", user.image));
+      await del(user.image);
     } catch {
-      // Old file may not exist, ignore
+      // Old blob may not exist, ignore
     }
   }
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const filename = `${user.id}-${Date.now()}.${ext}`;
-  const filepath = join(process.cwd(), "public", "images", "avatars", filename);
+  const filename = `avatars/${user.id}-${Date.now()}.${ext}`;
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  await writeFile(filepath, bytes);
-
-  const imageUrl = `/images/avatars/${filename}`;
+  const blob = await put(filename, file, {
+    access: "public",
+    contentType: file.type,
+  });
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { image: imageUrl },
+    data: { image: blob.url },
   });
 
-  return NextResponse.json({ image: imageUrl });
+  return NextResponse.json({ image: blob.url });
 }
 
 export async function DELETE() {
@@ -85,10 +83,10 @@ export async function DELETE() {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  // Delete local avatar file
-  if (user.image?.startsWith("/images/avatars/")) {
+  // Delete from Vercel Blob
+  if (user.image && user.image.includes("blob.vercel-storage.com")) {
     try {
-      await unlink(join(process.cwd(), "public", user.image));
+      await del(user.image);
     } catch {
       // Ignore
     }
