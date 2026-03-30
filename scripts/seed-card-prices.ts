@@ -114,6 +114,31 @@ const SLUG_TO_PTCG: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Mapping : slug série → TCGdex set ID  (FR-exclusive + fallback)
+// ---------------------------------------------------------------------------
+const SLUG_TO_TCGDEX: Record<string, string> = {
+  "mega-evolution":             "me01",
+  "flammes-fantasmagoriques":   "me02",
+  "heros-transcendants":        "me02.5",
+  // EV — present on PTCGIO too, but TCGdex has FR pricing
+  "ecarlate-et-violet":         "sv01",
+  "evolutions-a-paldea":        "sv02",
+  "flammes-obsidiennes":        "sv03",
+  "pokemon-151":                "sv03.5",
+  "faille-paradoxe":            "sv04",
+  "destinees-de-paldea":        "sv04.5",
+  "forces-temporelles":         "sv05",
+  "mascarade-crepusculaire":    "sv06",
+  "fable-nebuleuse":            "sv06.5",
+  "couronne-stellaire":         "sv07",
+  "etincelles-deferlantes":     "sv08",
+  "evolutions-prismatiques":    "sv08.5",
+  "aventures-ensemble":         "sv09",
+  "rivalites-destinees":        "sv10",
+  "foudre-noire-flamme-blanche":"sv10.5b",
+};
+
+// ---------------------------------------------------------------------------
 // Types PokémonTCG.io
 // ---------------------------------------------------------------------------
 interface PTCGCardmarketPrices {
@@ -145,6 +170,51 @@ interface PTCGResponse {
 function normalizeNumber(n: string): string {
   // "001" → "1", "TG01" → "TG1", "GG01" → "GG1"
   return n.replace(/^([A-Z]*)0+(\d+)$/, "$1$2");
+}
+
+// ---------------------------------------------------------------------------
+// TCGdex fetcher — returns localId → {normal price, holo price}
+// ---------------------------------------------------------------------------
+interface TCGdexCardMin { localId: string; }
+interface TCGdexSetMin  { cards: TCGdexCardMin[]; }
+interface TCGdexCardPricing {
+  pricing?: {
+    cardmarket?: {
+      trend?: number | null;
+      "trend-holo"?: number | null;
+    } | null;
+  } | null;
+}
+
+async function fetchTCGdexPrices(setId: string): Promise<Map<string, { normal: number | null; holo: number | null }>> {
+  const map = new Map<string, { normal: number | null; holo: number | null }>();
+
+  // 1. Get card list for the set
+  const setRes = await fetch(`https://api.tcgdex.net/v2/fr/sets/${setId}`);
+  if (!setRes.ok) { console.warn(`  ⚠ TCGdex set ${setId} → ${setRes.status}`); return map; }
+  const setData = (await setRes.json()) as TCGdexSetMin;
+  const cards = setData.cards ?? [];
+
+  // 2. Fetch each card's pricing (batched, 5 at a time to avoid rate limits)
+  const BATCH = 5;
+  for (let i = 0; i < cards.length; i += BATCH) {
+    const batch = cards.slice(i, i + BATCH);
+    await Promise.all(batch.map(async (c) => {
+      try {
+        const r = await fetch(`https://api.tcgdex.net/v2/fr/cards/${setId}-${c.localId}`);
+        if (!r.ok) return;
+        const d = (await r.json()) as TCGdexCardPricing;
+        const cm = d?.pricing?.cardmarket;  // pricing.cardmarket, not cardmarket directly
+        map.set(c.localId, {
+          normal: cm?.trend ?? null,
+          holo:   cm?.["trend-holo"] || null,
+        });
+      } catch { /* skip */ }
+    }));
+    await new Promise((r) => setTimeout(r, 150));
+  }
+
+  return map;
 }
 
 async function fetchPTCGCards(setId: string): Promise<PTCGCard[]> {
@@ -198,15 +268,19 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
   if (dryRun) console.log("Mode dry-run — aucune écriture en DB\n");
 
   // Build the list of slugs to process
-  // opts.sets contains PTCG set IDs (e.g. "sv1,sv2") when --sets= is used
+  // All known slugs = union of PTCGIO + TCGdex mappings
+  const allSlugs = new Set([...Object.keys(SLUG_TO_PTCG), ...Object.keys(SLUG_TO_TCGDEX)]);
+
   let slugsToProcess: string[];
   if (opts.sets) {
-    // Filter slugs whose PTCG ID is in the provided list
-    slugsToProcess = Object.entries(SLUG_TO_PTCG)
-      .filter(([, ptcgId]) => opts.sets!.includes(ptcgId))
-      .map(([slug]) => slug);
+    // opts.sets can be PTCG IDs (e.g. "sv1") or TCGdex IDs (e.g. "me01") or serie slugs
+    slugsToProcess = [...allSlugs].filter((slug) => {
+      const ptcg   = SLUG_TO_PTCG[slug];
+      const tcgdex = SLUG_TO_TCGDEX[slug];
+      return opts.sets!.includes(ptcg ?? "") || opts.sets!.includes(tcgdex ?? "") || opts.sets!.includes(slug);
+    });
   } else {
-    slugsToProcess = Object.keys(SLUG_TO_PTCG);
+    slugsToProcess = [...allSlugs];
   }
 
   // Charger une fois tous les slugs de séries depuis la DB
@@ -221,13 +295,6 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
   let totalCardsWithPrice = 0;
 
   for (const slug of slugsToProcess) {
-    const ptcgId = SLUG_TO_PTCG[slug];
-    if (!ptcgId) {
-      console.warn(`Pas de mapping PTCG pour le slug "${slug}" — ignoré`);
-      totalSetsSkipped++;
-      continue;
-    }
-
     const serieId = serieBySlug.get(slug);
     if (!serieId) {
       console.warn(`Série "${slug}" absente de la DB — ignoré`);
@@ -235,28 +302,55 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
       continue;
     }
 
-    process.stdout.write(`${ptcgId.padEnd(12)} → ${slug.padEnd(40)}`);
+    const ptcgId   = SLUG_TO_PTCG[slug];
+    const tcgdexId = SLUG_TO_TCGDEX[slug];
 
-    // Fetch all cards from PTCGIO
-    const ptcgCards = await fetchPTCGCards(ptcgId);
+    // Build a unified price map: localId/normalizedNumber → price
+    const priceMap = new Map<string, number>();
 
-    if (ptcgCards.length === 0) {
-      console.log(`aucune carte PTCGIO`);
-      totalSetsSkipped++;
-      // Rate limit between sets
-      await new Promise((r) => setTimeout(r, 200));
-      continue;
+    if (ptcgId) {
+      process.stdout.write(`${ptcgId.padEnd(12)} → ${slug.padEnd(40)}`);
+      const ptcgCards = await fetchPTCGCards(ptcgId);
+
+      if (ptcgCards.length === 0) {
+        // PTCGIO failed — fall through to TCGdex if available
+        if (!tcgdexId) {
+          console.log(`aucune carte PTCGIO`);
+          totalSetsSkipped++;
+          await new Promise((r) => setTimeout(r, 200));
+          continue;
+        }
+        console.log(`aucune carte PTCGIO → fallback TCGdex`);
+      } else {
+        for (const card of ptcgCards) {
+          const normalized = normalizeNumber(card.number);
+          const prices = card.cardmarket?.prices ?? null;
+          const price = prices?.trendPrice ?? prices?.averageSellPrice ?? null;
+          if (price !== null) priceMap.set(normalized, price);
+        }
+        console.log(`${ptcgCards.length} cartes PTCGIO`);
+      }
     }
 
-    // Build map: normalized number → price data
-    const priceMap = new Map<string, { trendPrice: number | null; averageSellPrice: number | null }>();
-    for (const card of ptcgCards) {
-      const normalized = normalizeNumber(card.number);
-      const prices = card.cardmarket?.prices ?? null;
-      priceMap.set(normalized, {
-        trendPrice: prices?.trendPrice ?? null,
-        averageSellPrice: prices?.averageSellPrice ?? null,
-      });
+    // Use TCGdex as primary source (for FR-exclusive sets) or fallback
+    if (tcgdexId && priceMap.size === 0) {
+      if (!ptcgId) process.stdout.write(`${"tcgdex:"+tcgdexId.padEnd(10)} → ${slug.padEnd(40)}`);
+      const tcgdexPrices = await fetchTCGdexPrices(tcgdexId);
+      for (const [localId, prices] of tcgdexPrices) {
+        // localId from TCGdex is zero-padded (e.g. "001"), normalize it
+        const normalized = normalizeNumber(localId);
+        const price = prices.normal ?? prices.holo ?? null;
+        if (price !== null) priceMap.set(normalized, price);
+        // also keep zero-padded key for direct DB match
+        if (price !== null) priceMap.set(localId, price);
+      }
+      if (!ptcgId) console.log(`${tcgdexPrices.size} cartes TCGdex`);
+    }
+
+    if (priceMap.size === 0) {
+      console.log(`  → aucun prix disponible, ignoré`);
+      totalSetsSkipped++;
+      continue;
     }
 
     // Fetch all DB cards for this serie
@@ -265,60 +359,44 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
       select: { id: true, number: true },
     });
 
-    console.log(`${ptcgCards.length} cartes PTCGIO, ${dbCards.length} cartes DB`);
-
     if (!dryRun && dbCards.length > 0) {
       const now = new Date();
       const updates: Array<{ id: string; price: number }> = [];
 
       for (const dbCard of dbCards) {
-        const normalized = normalizeNumber(dbCard.number);
-        const priceData = priceMap.get(normalized);
-
-        if (!priceData) continue;
-
-        // Use trendPrice with fallback to averageSellPrice
-        const price = priceData.trendPrice ?? priceData.averageSellPrice;
-        if (price === null || price === undefined) continue;
-
+        // Try exact number first (e.g. "001"), then normalized (e.g. "1")
+        const price = priceMap.get(dbCard.number) ?? priceMap.get(normalizeNumber(dbCard.number)) ?? null;
+        if (price === null) continue;
         updates.push({ id: dbCard.id, price });
         totalCardsWithPrice++;
       }
 
       // Batched updates in chunks of 50
-      const BATCH = 50;
-      for (let i = 0; i < updates.length; i += BATCH) {
-        const batch = updates.slice(i, i + BATCH);
+      const CHUNK = 50;
+      for (let i = 0; i < updates.length; i += CHUNK) {
+        const chunk = updates.slice(i, i + CHUNK);
         await Promise.all(
-          batch.map((u) =>
+          chunk.map((u) =>
             prisma.card.update({
               where: { id: u.id },
-              data: {
-                price: u.price,
-                priceUpdatedAt: now,
-              },
+              data: { price: u.price, priceUpdatedAt: now },
             })
           )
         );
       }
 
+      console.log(`  → ${updates.length}/${dbCards.length} cartes mises à jour`);
       totalCardsUpdated += updates.length;
     } else if (dryRun) {
-      // Count what would be updated in dry-run mode
       for (const dbCard of dbCards) {
-        const normalized = normalizeNumber(dbCard.number);
-        const priceData = priceMap.get(normalized);
-        if (!priceData) continue;
-        const price = priceData.trendPrice ?? priceData.averageSellPrice;
-        if (price === null || price === undefined) continue;
+        const price = priceMap.get(dbCard.number) ?? priceMap.get(normalizeNumber(dbCard.number)) ?? null;
+        if (price === null) continue;
         totalCardsWithPrice++;
         totalCardsUpdated++;
       }
     }
 
     totalSetsProcessed++;
-
-    // Rate limit between sets
     await new Promise((r) => setTimeout(r, 200));
   }
 
