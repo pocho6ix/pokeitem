@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Série Équilibre Parfait Pokémon TCG - Guide Complet 2026"
+
+A premium flat-lay photography of Pokémon TCG Perfect Balance sealed products arranged on a sophisticated dark marble surface with golden veins. Include a booster box, ETB, bundle, and mini tins featuring Mega-Zygarde-ex artwork. Futuristic lighting with cyan and gold accents reflecting the Illumis theme. Professional studio lighting with dramatic shadows. No text overlay. Aspect ratio 1200x630, photorealistic editorial style.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-equilibre-parfait.jpg
