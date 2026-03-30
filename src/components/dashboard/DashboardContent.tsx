@@ -229,7 +229,7 @@ function EmptyPortfolio() {
 // Main dashboard
 // ---------------------------------------------------------------------------
 
-export default function DashboardContent() {
+export default function DashboardContent({ compact = false }: { compact?: boolean }) {
   const { status } = useSession();
   const [items, setItems] = useState<PortfolioItemData[]>([]);
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
@@ -299,14 +299,16 @@ export default function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className={compact ? "space-y-6" : "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"}>
         <div className="animate-pulse space-y-6">
-          <div className="h-8 w-48 bg-[var(--bg-tertiary)] rounded" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 bg-[var(--bg-tertiary)] rounded-xl" />
-            ))}
-          </div>
+          {!compact && <div className="h-8 w-48 bg-[var(--bg-tertiary)] rounded" />}
+          {!compact && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-28 bg-[var(--bg-tertiary)] rounded-xl" />
+              ))}
+            </div>
+          )}
           <div className="h-72 bg-[var(--bg-tertiary)] rounded-xl" />
         </div>
       </div>
@@ -315,7 +317,7 @@ export default function DashboardContent() {
 
   if (status === "unauthenticated") {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className={compact ? "" : "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"}>
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Package className="h-12 w-12 text-[var(--text-tertiary)] mb-4" />
           <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">
@@ -334,13 +336,15 @@ export default function DashboardContent() {
 
   if (!summary || items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Vue d&apos;ensemble de votre portefeuille d&apos;investissement
-          </p>
-        </div>
+      <div className={compact ? "" : "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"}>
+        {!compact && (
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              Vue d&apos;ensemble de votre portefeuille d&apos;investissement
+            </p>
+          </div>
+        )}
         <EmptyPortfolio />
       </div>
     );
@@ -356,41 +360,45 @@ export default function DashboardContent() {
   }));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-      {/* Page title */}
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          {summary.itemCount} item{summary.itemCount > 1 ? "s" : ""} &middot;{" "}
-          {summary.uniqueItemCount} produit{summary.uniqueItemCount > 1 ? "s" : ""} unique{summary.uniqueItemCount > 1 ? "s" : ""}
-        </p>
-      </div>
+    <div className={compact ? "space-y-8" : "mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8"}>
+      {/* Page title — only in standalone mode */}
+      {!compact && (
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mon Classeur</h1>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {summary.itemCount} item{summary.itemCount > 1 ? "s" : ""} &middot;{" "}
+            {summary.uniqueItemCount} produit{summary.uniqueItemCount > 1 ? "s" : ""} unique{summary.uniqueItemCount > 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label="Valeur Actuelle"
-          value={formatPrice(summary.totalCurrentValue)}
-          icon={BarChart3}
-        />
-        <KpiCard
-          label="Investi Total"
-          value={formatPrice(summary.totalInvested)}
-          icon={Wallet}
-        />
-        <KpiCard
-          label="P&L"
-          value={`${isPositive ? "+" : ""}${formatPrice(summary.totalPnl)}`}
-          trend={summary.totalPnlPercent}
-          icon={TrendingUp}
-        />
-        <KpiCard
-          label="P&L %"
-          value={formatPriceChange(summary.totalPnlPercent)}
-          trend={summary.totalPnlPercent}
-          icon={Percent}
-        />
-      </div>
+      {/* KPI cards — only in standalone mode (layout handles them in compact) */}
+      {!compact && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label="Valeur Actuelle"
+            value={formatPrice(summary.totalCurrentValue)}
+            icon={BarChart3}
+          />
+          <KpiCard
+            label="Investi Total"
+            value={formatPrice(summary.totalInvested)}
+            icon={Wallet}
+          />
+          <KpiCard
+            label="P&L"
+            value={`${isPositive ? "+" : ""}${formatPrice(summary.totalPnl)}`}
+            trend={summary.totalPnlPercent}
+            icon={TrendingUp}
+          />
+          <KpiCard
+            label="P&L %"
+            value={formatPriceChange(summary.totalPnlPercent)}
+            trend={summary.totalPnlPercent}
+            icon={Percent}
+          />
+        </div>
+      )}
 
       {/* Portfolio evolution chart */}
       {chartDataFormatted.length > 1 && (
