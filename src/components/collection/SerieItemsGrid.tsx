@@ -39,7 +39,7 @@ interface SerieItemsGridProps {
 const TYPE_SLUG: Record<string, string> = {
   BOOSTER: "booster",
   DUOPACK: "duopack",
-  BLISTER: "blister",
+  TRIPACK: "tripack",
   MINI_TIN: "mini-tin",
   POKEBALL_TIN: "pokeball-tin",
   BUNDLE: "bundle",
@@ -48,6 +48,7 @@ const TYPE_SLUG: Record<string, string> = {
   BOOSTER_BOX: "booster-box",
   UPC: "upc",
   TIN: "tin",
+  BLISTER: "blister",
   THEME_DECK: "theme-deck",
   TRAINER_KIT: "trainer-kit",
 };
