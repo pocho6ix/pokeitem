@@ -145,8 +145,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           )}
 
-          {/* Title overlaid at bottom of image */}
-          <div className={`${post.coverImage ? "absolute bottom-0 left-0 right-0 p-6 text-white" : "p-6"}`}>
+        {/* Title overlaid at bottom of image */}
+        <div className={`${post.coverImage ? "absolute bottom-0 left-0 right-0 p-6 text-white" : "p-6"}`}>
             <Badge
               variant={CATEGORY_VARIANTS[post.category] ?? "default"}
               className="mb-3"
@@ -233,13 +233,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 className="group focus-visible:outline-none"
               >
                 <Card className="flex h-full flex-col transition-shadow group-hover:shadow-lg group-focus-visible:ring-2 group-focus-visible:ring-blue-500">
-                  <div className="aspect-[16/9] w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+                  <div className="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
                     {related!.coverImage ? (
                       <Image
                         src={related!.coverImage}
                         alt={related!.coverImageAlt ?? related!.title}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">

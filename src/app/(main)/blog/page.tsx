@@ -64,9 +64,9 @@ export default function BlogPage() {
             </span>
           </div>
           <Link href={`/blog/${pinnedPost.slug}`} className="group block focus-visible:outline-none">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 focus-visible:ring-2 focus-visible:ring-blue-500">
+            <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 focus-visible:ring-2 focus-visible:ring-blue-500">
               {/* Image */}
-              <div className="aspect-[21/9] w-full overflow-hidden sm:aspect-[3/1]">
+              <div className="relative aspect-[21/9] w-full overflow-hidden sm:aspect-[3/1]">
                 {pinnedPost.coverImage ? (
                   <Image
                     src={pinnedPost.coverImage}
