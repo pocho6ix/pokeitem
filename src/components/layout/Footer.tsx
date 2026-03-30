@@ -32,13 +32,13 @@ const GOOGLE_PLAY_URL = "#";
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border-default)] bg-[var(--bg-secondary)]">
+    <footer className="border-t border-gray-200 dark:border-gray-200 bg-white dark:bg-white">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Logo size="md" />
-            <p className="mt-3 text-sm text-[var(--text-secondary)]">
+            <p className="mt-3 text-sm text-gray-500 dark:text-gray-500">
               Votre plateforme pour gérer votre collection de cartes et d&apos;items scellés Pokémon.
             </p>
 
@@ -70,13 +70,13 @@ export function Footer() {
           {/* Links */}
           {Object.entries(FOOTER_LINKS).map(([title, links]) => (
             <div key={title}>
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-900">{title}</h3>
               <ul className="mt-3 space-y-2">
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                      className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -88,16 +88,16 @@ export function Footer() {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-10 border-t border-[var(--border-default)] pt-6 space-y-3">
-          <p className="text-xs text-[var(--text-tertiary)] text-center">
+        <div className="mt-10 border-t border-gray-200 dark:border-gray-200 pt-6 space-y-3">
+          <p className="text-xs text-gray-400 dark:text-gray-400 text-center">
             PokeItem n&apos;est pas une application officielle Pokémon, elle n&apos;est en aucun cas affiliée, approuvée ou supportée par Nintendo, GAME FREAK ou The Pokémon Company.
             Les images et illustrations utilisées sont la propriété de leurs auteurs respectifs.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-xs text-[var(--text-tertiary)]">
+            <p className="text-xs text-gray-400 dark:text-gray-400">
               &copy; {new Date().getFullYear()} PokeItem. Tous droits réservés.
             </p>
-            <p className="text-xs text-[var(--text-tertiary)]">
+            <p className="text-xs text-gray-400 dark:text-gray-400">
               Google Play et le logo Google Play sont des marques de Google Inc.
             </p>
           </div>

@@ -28,7 +28,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-[var(--border-default)] bg-white dark:bg-[var(--bg-primary)]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-200 bg-white dark:bg-white backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Logo />
@@ -45,8 +45,8 @@ export function Header() {
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-50 dark:text-blue-600"
+                      : "text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -72,7 +72,7 @@ export function Header() {
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-100"
                   title="Déconnexion"
                 >
                   <LogOut className="h-4 w-4" />
@@ -87,7 +87,7 @@ export function Header() {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-100 md:hidden"
               aria-label="Menu"
             >
               <Menu className="h-5 w-5" />
@@ -110,8 +110,8 @@ export function Header() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                    ? "bg-blue-50 text-blue-600 dark:bg-blue-50 dark:text-blue-600"
+                    : "text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -135,7 +135,7 @@ export function Header() {
             <Link
               href="/connexion"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+              className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-100"
             >
               <User className="h-5 w-5" />
               Connexion
