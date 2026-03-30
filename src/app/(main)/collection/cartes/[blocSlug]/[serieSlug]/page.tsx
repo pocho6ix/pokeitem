@@ -84,6 +84,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     name:     c.name,
     rarity:   c.rarity as CardRarity,
     imageUrl: c.imageUrl,
+    price:    c.price ?? null,
   }));
 
   return (

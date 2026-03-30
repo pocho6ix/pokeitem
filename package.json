@@ -10,7 +10,9 @@
     "seed:series": "npx tsx scripts/seed-series.ts",
     "seed:series:dry": "npx tsx scripts/seed-series.ts --dry-run",
     "seed:cards": "npx tsx scripts/seed-cards.ts",
-    "seed:cards:dry": "npx tsx scripts/seed-cards.ts --dry-run"
+    "seed:cards:dry": "npx tsx scripts/seed-cards.ts --dry-run",
+    "seed:prices": "npx tsx scripts/seed-card-prices.ts",
+    "seed:prices:dry": "npx tsx scripts/seed-card-prices.ts --dry-run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",

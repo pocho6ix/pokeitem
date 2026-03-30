@@ -300,7 +300,10 @@ model Card {
   name       String
   rarity     CardRarity @default(COMMON)
   imageUrl   String?
-  tcgdexId   String?
+  tcgdexId       String?
+  price          Float?
+  priceReverse   Float?
+  priceUpdatedAt DateTime?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 

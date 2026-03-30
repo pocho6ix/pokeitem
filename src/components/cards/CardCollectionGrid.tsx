@@ -24,6 +24,7 @@ export interface CardRow {
   name: string;
   rarity: CardRarity;
   imageUrl: string | null;
+  price?: number | null;
 }
 
 export interface OwnedEntry {
@@ -74,8 +75,10 @@ type DoubleVersionMap = Map<string, Map<CardVersion, DoubleEntry>>;
 function buildOwnedMap(entries: OwnedEntry[]): OwnedVersionMap {
   const m: OwnedVersionMap = new Map();
   for (const e of entries) {
+    // Normalize: version may arrive as a raw string from Prisma — coerce to CardVersion
+    const version = (e.version ?? CardVersion.NORMAL) as CardVersion;
     if (!m.has(e.cardId)) m.set(e.cardId, new Map());
-    m.get(e.cardId)!.set(e.version, e);
+    m.get(e.cardId)!.set(version, { ...e, version });
   }
   return m;
 }
@@ -117,7 +120,7 @@ function SortModal({
       <div className="w-full max-w-sm rounded-2xl bg-[var(--bg-card)] p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Options de tri</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]">
+          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -143,7 +146,7 @@ function SortModal({
         </div>
         <div className="flex gap-3">
           <button onClick={() => { setLocalBy("number"); setLocalOrder("asc"); }}
-            className="flex-1 rounded-xl border border-[var(--border-default)] py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]">
+            className="flex-1 rounded-xl border border-[var(--border-default)] py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
             Réinitialiser
           </button>
           <button onClick={() => { onApply(localBy, localOrder); onClose(); }}
@@ -169,7 +172,7 @@ function OptionsModal({
       <div className="w-full max-w-sm rounded-2xl bg-[var(--bg-card)] p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Options</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]">
+          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -184,7 +187,7 @@ function OptionsModal({
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Ajouts</p>
         <div className="mb-5">
           <button onClick={() => { onAddAll(); onClose(); }}
-            className="flex w-full items-center gap-2 rounded-xl border border-[var(--border-default)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]">
+            className="flex w-full items-center gap-2 rounded-xl border border-[var(--border-default)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
             Ajouter toute la série à ma collection
           </button>
@@ -229,7 +232,7 @@ function AddToCollectionModal({
       <div className="w-full max-w-md rounded-t-2xl bg-[var(--bg-card)] p-6 shadow-xl sm:rounded-2xl">
         <div className="mb-1 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Ajouter à ma collection</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]">
+          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -254,7 +257,7 @@ function AddToCollectionModal({
                     "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
                     version === v
                       ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                      : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-blue-400"
+                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
                   )}
                 >
                   <span>{CARD_VERSION_LABELS[v]}</span>
@@ -271,7 +274,7 @@ function AddToCollectionModal({
           {/* Quantité */}
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Quantité</label>
-            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)]">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">−</button>
               <input type="number" min={1} max={999} value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, Math.min(999, Number(e.target.value))))}
@@ -284,7 +287,7 @@ function AddToCollectionModal({
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Langue</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
               {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
@@ -294,23 +297,14 @@ function AddToCollectionModal({
         <div className="mb-4">
           <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">État</label>
           <select value={condition} onChange={(e) => setCondition(e.target.value as CardCondition)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
             {(Object.entries(CARD_CONDITION_LABELS) as [CardCondition, string][]).map(([val, label]) => (
               <option key={val} value={val}>{label}</option>
             ))}
           </select>
         </div>
 
-        {/* Foil */}
-        <label className="mb-5 flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--border-default)] px-4 py-3">
-          <input type="checkbox" checked={foil} onChange={(e) => setFoil(e.target.checked)} className="accent-blue-500" />
-          <div>
-            <p className="text-sm font-medium text-[var(--text-primary)]">Carte holographique / foil</p>
-            <p className="text-xs text-[var(--text-secondary)]">Cocher si la carte est brillante</p>
-          </div>
-        </label>
-
-        <button onClick={() => onSubmit({ quantity, condition, language, version, foil })}
+        <button onClick={() => onSubmit({ quantity, condition, language, version, foil: false })}
           disabled={isPending}
           className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
           {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
@@ -343,7 +337,7 @@ function AddToDoublesModal({
       <div className="w-full max-w-md rounded-t-2xl bg-[var(--bg-card)] p-6 shadow-xl sm:rounded-2xl">
         <div className="mb-1 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Ajouter aux doubles</h2>
-          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]">
+          <button onClick={onClose} className="rounded-full p-1 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
@@ -361,7 +355,7 @@ function AddToDoublesModal({
                   "rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
                   version === v
                     ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                    : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-amber-400"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-amber-400"
                 )}>
                 {CARD_VERSION_LABELS[v]}
               </button>
@@ -372,7 +366,7 @@ function AddToDoublesModal({
         <div className="mb-4 grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Quantité</label>
-            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+            <div className="flex items-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)]">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 text-lg font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">−</button>
               <input type="number" min={1} max={999} value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, Math.min(999, Number(e.target.value))))}
@@ -383,7 +377,7 @@ function AddToDoublesModal({
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Langue</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
               {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
@@ -392,7 +386,7 @@ function AddToDoublesModal({
         <div className="mb-4">
           <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">État</label>
           <select value={condition} onChange={(e) => setCondition(e.target.value as CardCondition)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
             {(Object.entries(CARD_CONDITION_LABELS) as [CardCondition, string][]).map(([val, label]) => (
               <option key={val} value={val}>{label}</option>
             ))}
@@ -405,7 +399,7 @@ function AddToDoublesModal({
             <div>
               <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Dispo</label>
               <select value={availability} onChange={(e) => setAvailability(e.target.value as DoubleAvailability)}
-                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
                 {(Object.entries(DOUBLE_AVAILABILITY_LABELS) as [DoubleAvailability, string][]).map(([val, label]) => (
                   <option key={val} value={val}>{label}</option>
                 ))}
@@ -415,7 +409,7 @@ function AddToDoublesModal({
               <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Prix (€)</label>
               <input type="number" min={0} step={0.01} placeholder="Optionnel" value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
+                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
             </div>
           </div>
         </div>
@@ -432,7 +426,8 @@ function AddToDoublesModal({
 
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
-const VERSION_BADGE: Partial<Record<CardVersion, { label: string; cls: string }>> = {
+const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
+  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-blue-600" },
   [CardVersion.REVERSE]:            { label: "R",  cls: "bg-violet-600" },
   [CardVersion.REVERSE_POKEBALL]:   { label: "RP", cls: "bg-purple-600" },
   [CardVersion.REVERSE_MASTERBALL]: { label: "RM", cls: "bg-amber-500" },
@@ -477,7 +472,7 @@ export function CardCollectionGrid({
       result = result.filter((c) => c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q));
     }
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
-    if (versionFilter) result = result.filter((c) => ownedMap.get(c.id)?.has(versionFilter));
+    // versionFilter changes display context only — does not hide cards
     if (viewFilter === "owned")   result = result.filter((c) =>  ownedMap.has(c.id));
     if (viewFilter === "missing") result = result.filter((c) => !ownedMap.has(c.id));
 
@@ -688,7 +683,7 @@ export function CardCollectionGrid({
             <span>{ownedCount} / {cards.length} cartes possédées</span>
             <span className="font-semibold text-[var(--text-primary)]">{progressPct}%</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-subtle)]">
+          <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
             <div className="h-full rounded-full bg-blue-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
@@ -703,7 +698,7 @@ export function CardCollectionGrid({
         ] as { value: ViewFilter; label: string }[]).map((tab) => (
           <button key={tab.value} onClick={() => setViewFilter(tab.value)}
             className={cn("rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-              viewFilter === tab.value ? "bg-blue-600 text-white" : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]")}>
+              viewFilter === tab.value ? "bg-blue-600 text-white" : "bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]")}>
             {tab.label}
           </button>
         ))}
@@ -714,7 +709,7 @@ export function CardCollectionGrid({
         <div className="relative flex-1 min-w-[180px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="text" placeholder="Nom ou numéro…" value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] py-2 pl-8 pr-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
+            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] py-2 pl-8 pr-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -722,13 +717,13 @@ export function CardCollectionGrid({
           )}
         </div>
         <button onClick={() => setActiveModal("sort")}
-          className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] hover:border-blue-400 hover:text-blue-600">
+          className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
           Trier
         </button>
         {isAuthenticated && (
           <button onClick={() => setActiveModal("options")}
-            className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] hover:border-blue-400 hover:text-blue-600">
+            className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
             Options
           </button>
@@ -746,7 +741,7 @@ export function CardCollectionGrid({
                 title={CARD_RARITY_LABELS[rarity]}
                 className={cn("flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
                   active ? "border-blue-500 bg-blue-500 text-white"
-                    : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-blue-400 hover:text-blue-600")}>
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600")}>
                 <span>{CARD_RARITY_SYMBOL[rarity]}</span>
                 <span>{count}</span>
               </button>
@@ -765,7 +760,7 @@ export function CardCollectionGrid({
               <button key={v} onClick={() => setVersionFilter(active ? null : v)}
                 className={cn("rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
                   active ? "border-blue-500 bg-blue-500 text-white"
-                    : "border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:border-blue-400 hover:text-blue-600")}>
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600")}>
                 {CARD_VERSION_LABELS[v]}
               </button>
             );
@@ -805,7 +800,7 @@ export function CardCollectionGrid({
                 className={cn("group relative", isAuthenticated ? "cursor-pointer" : "cursor-default")}
                 title={`${card.number} · ${card.name}`}>
                 <div className={cn(
-                  "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-subtle)] shadow-sm transition-all",
+                  "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all",
                   isAuthenticated && "group-hover:-translate-y-0.5 group-hover:shadow-md",
                   dim && "opacity-40",
                   isSelected && "ring-2 ring-blue-500 ring-offset-1"
@@ -821,33 +816,28 @@ export function CardCollectionGrid({
                     </div>
                   )}
 
-                  {/* Number + rarity badge */}
+                  {/* Number + rarity badge — bottom left */}
                   <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
                     <span className="opacity-80">{CARD_RARITY_SYMBOL[card.rarity]}</span>
                   </div>
 
-                  {/* Owned total badge */}
-                  {isOwned && (
-                    <div className="absolute right-1 top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white shadow">
-                      ×{ownedTotal}
-                    </div>
-                  )}
-
-                  {/* Version badges for owned versions (R / RP / RM) */}
+                  {/* Version ownership pills — bottom right, stacked */}
                   {ownedVersions.length > 0 && (
-                    <div className="absolute bottom-5 left-1 flex flex-col gap-0.5">
-                      {ownedVersions
-                        .filter((v) => VERSION_BADGE[v])
-                        .map((v) => (
-                          <span key={v} className={`rounded px-0.5 py-px text-[7px] font-bold text-white ${VERSION_BADGE[v]!.cls}`}>
-                            {VERSION_BADGE[v]!.label}
+                    <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
+                      {ownedVersions.map((v) => {
+                        const qty = ownedMap.get(card.id)!.get(v)!.quantity;
+                        const b   = VERSION_BADGE[v];
+                        return (
+                          <span key={v} className={`rounded px-1 py-px text-[8px] font-bold leading-none text-white shadow-sm ${b.cls}`}>
+                            {b.label}{qty > 1 ? `×${qty}` : ""}
                           </span>
-                        ))}
+                        );
+                      })}
                     </div>
                   )}
 
-                  {/* Double badge */}
+                  {/* Double badge — top left */}
                   {hasDouble && (
                     <div className="absolute left-1 top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white shadow">D</div>
                   )}
@@ -862,8 +852,11 @@ export function CardCollectionGrid({
                   )}
                 </div>
 
-                {/* Card name */}
+                {/* Card name + price */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
+                <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+                  {card.price != null ? `${card.price.toFixed(2)}\u00a0€` : "–\u00a0€"}
+                </p>
               </div>
             );
           })}
@@ -877,7 +870,7 @@ export function CardCollectionGrid({
           <div className="mx-auto max-w-7xl px-4 pb-4 sm:pb-6">
             <div className="flex items-center gap-3 rounded-2xl bg-[var(--bg-card)] p-3 shadow-2xl border border-[var(--border-default)]">
               <button onClick={selectAll} title="Tout sélectionner"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30">
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
               <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">
@@ -898,7 +891,7 @@ export function CardCollectionGrid({
                 Collection
               </button>
               <button onClick={deselectAll}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]">
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
