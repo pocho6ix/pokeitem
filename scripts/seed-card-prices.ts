@@ -21,6 +21,7 @@ const prisma = new PrismaClient();
 // ---------------------------------------------------------------------------
 const SLUG_TO_PTCG: Record<string, string> = {
   // ── Écarlate & Violet ──────────────────────────────────────────────────
+  "rivalites-destinees":         "sv10",
   "ecarlate-et-violet":          "sv1",
   "evolutions-a-paldea":         "sv2",
   "flammes-obsidiennes":         "sv3",
@@ -107,10 +108,38 @@ const SLUG_TO_PTCG: Record<string, string> = {
   // ── Diamant & Perle ────────────────────────────────────────────────────
   "diamant-et-perle":            "dp1",
   "tresors-mysterieux":          "dp2",
-  "grands-envols":               "dp3",
-  "tempete-dp":                  "dp4",
-  "merveilles-secretes":         "dp5",
-  "aube-majestueuse":            "dp6",
+  "merveilles-secretes":         "dp3",
+  "grands-envols":               "dp4",
+  "aube-majestueuse":            "dp5",
+  "eveil-des-legendes":          "dp6",
+  "tempete-dp":                  "dp7",
+  // ── EX ─────────────────────────────────────────────────────────────────
+  "rubis-et-saphir":             "ex1",
+  "tempete-de-sable":            "ex2",
+  "dragon-ex":                   "ex3",
+  "groudon-vs-kyogre":           "ex4",
+  "legendes-oubliees":           "ex5",
+  "fire-red-leaf-green":         "ex6",
+  "team-rocket-returns":         "ex7",
+  "deoxys":                      "ex8",
+  "emeraude":                    "ex9",
+  "forces-cachees":              "ex10",
+  "especes-delta":               "ex11",
+  "createurs-de-legendes":       "ex12",
+  "fantomes-holon":              "ex13",
+  "gardiens-de-cristal":         "ex14",
+  "gardiens-du-pouvoir":         "ex16",
+  // ── Wizards of the Coast ───────────────────────────────────────────────
+  "set-de-base":                 "base1",
+  "jungle":                      "base2",
+  "fossile":                     "base3",
+  "set-de-base-2":               "base4",
+  "team-rocket":                 "base5",
+  "gym-heroes":                  "gym1",
+  "gym-challenge":               "gym2",
+  "expedition":                  "ecard1",
+  "aquapolis":                   "ecard2",
+  "skyridge":                    "ecard3",
 };
 
 // ---------------------------------------------------------------------------

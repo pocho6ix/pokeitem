@@ -137,6 +137,7 @@ const TCGDEX_MAPPING: Record<string, string> = {
   ex4: "groudon-vs-kyogre",
   ex5: "legendes-oubliees",
   ex6: "fire-red-leaf-green",
+  ex7: "team-rocket-returns",
   ex8: "deoxys",
   ex9: "emeraude",
   ex10: "forces-cachees",
@@ -147,14 +148,12 @@ const TCGDEX_MAPPING: Record<string, string> = {
   ex16: "gardiens-du-pouvoir",
 
   // ── Wizards of the Coast ──────────────────────────────────────────────────
+  // TCGdex FR uniquement disponible pour : base1-base5, ecard1-ecard2
+  // gym1/gym2 (Gym Heroes/Challenge), base4 (Base Set 2), ecard3 (Skyridge) → absents de TCGdex FR
   base1: "set-de-base",
   base2: "jungle",
   base3: "fossile",
   base5: "team-rocket",
-  neo1: "gym-heroes",
-  neo2: "gym-challenge",
-  neo3: "expedition",
-  neo4: "aquapolis",
   ecard1: "expedition",
   ecard2: "aquapolis",
 };
