@@ -34,6 +34,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   actualite: "Actualité",
   investissement: "Investissement",
   top: "Top",
+  "serie-guide": "Guide Série",
 };
 
 // ---------------------------------------------------------------------------
@@ -119,21 +120,43 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </ol>
       </nav>
 
-      <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
-        {/* Main content */}
-        <article className="min-w-0">
-          {/* Header */}
-          <header className="mb-8">
+      {/* Hero — cover image with title overlaid */}
+      <div className="mb-10 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
+        <div className="relative aspect-[21/9] w-full overflow-hidden sm:aspect-[3/1]">
+          {post.coverImage ? (
+            <>
+              <Image
+                src={post.coverImage}
+                alt={post.coverImageAlt ?? post.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+              </svg>
+            </div>
+          )}
+
+          {/* Title overlaid at bottom of image */}
+          <div className={`${post.coverImage ? "absolute bottom-0 left-0 right-0 p-6 text-white" : "p-6"}`}>
             <Badge
               variant={CATEGORY_VARIANTS[post.category] ?? "default"}
               className="mb-3"
             >
               {CATEGORY_LABELS[post.category] ?? post.category}
             </Badge>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className={`text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl ${post.coverImage ? "text-white" : "text-[var(--text-primary)]"}`}>
               {post.title}
             </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-[var(--text-secondary)]">
+            <div className={`mt-3 flex flex-wrap items-center gap-3 text-sm ${post.coverImage ? "text-white/75" : "text-[var(--text-secondary)]"}`}>
               <span>{post.author}</span>
               <span aria-hidden="true">&middot;</span>
               <time dateTime={post.publishedAt}>
@@ -146,40 +169,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <span aria-hidden="true">&middot;</span>
               <span>{post.readingTime} min de lecture</span>
             </div>
-          </header>
-
-          {/* Cover image */}
-          <div className="mb-8 aspect-[2/1] w-full overflow-hidden rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30">
-            {post.coverImage ? (
-              <Image
-                src={post.coverImage}
-                alt={post.coverImageAlt ?? post.title}
-                width={1200}
-                height={600}
-                className="h-full w-full object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-blue-300 dark:text-blue-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                  <circle cx="9" cy="9" r="2" />
-                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                </svg>
-              </div>
-            )}
           </div>
+        </div>
+      </div>
 
+      <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-10">
+        {/* Main content */}
+        <article className="min-w-0">
           {/* Article body */}
           {hasContent ? (
             <div

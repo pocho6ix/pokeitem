@@ -16,6 +16,7 @@ export interface BlogPostData {
   tags: string[];
   category: string;
   published: boolean;
+  pinned?: boolean;
   publishedAt: string;
   metaTitle: string;
   metaDescription: string;
@@ -43,6 +44,7 @@ const guideDebuterCollection: BlogPostData = {
   tags: ["guide", "débutant", "collection", "produits scellés", "Pokémon TCG"],
   category: "guide",
   published: true,
+  pinned: true,
   publishedAt: "2026-03-20",
   metaTitle:
     "Guide Débuter Collection Pokémon TCG 2026 | Produits Scellés, Budget & Conseils",
