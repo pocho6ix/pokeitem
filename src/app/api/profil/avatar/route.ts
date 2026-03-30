@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  // Convert file to base64 data URL — stored directly in DB (no external storage needed)
+  // Store image as base64 in DB — served via /api/avatar/[userId] (never in JWT cookie)
   const buffer = Buffer.from(await file.arrayBuffer());
   const base64 = buffer.toString("base64");
   const dataUrl = `data:${file.type};base64,${base64}`;
@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
     data: { image: dataUrl },
   });
 
-  return NextResponse.json({ image: dataUrl });
+  // Return only a boolean flag — the caller updates the JWT with hasAvatar: true
+  return NextResponse.json({ hasAvatar: true });
 }
 
 export async function DELETE() {
@@ -81,5 +82,5 @@ export async function DELETE() {
     data: { image: null },
   });
 
-  return NextResponse.json({ image: null });
+  return NextResponse.json({ hasAvatar: false });
 }

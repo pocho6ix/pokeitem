@@ -30,13 +30,27 @@ function getGreeting() {
   return "Bonsoir";
 }
 
+// ─── Avatar src helper ────────────────────────────────────────────────────────
+// Derives the avatar URL from session — never from the JWT cookie image field.
+// hasAvatar is a boolean stored in JWT; actual image served via /api/avatar/[id].
+
+function getAvatarSrc(
+  userId: string | null | undefined,
+  hasAvatar: boolean | undefined,
+): string | null {
+  if (!userId) return null;
+  if (hasAvatar) return `/api/avatar/${userId}`;
+  return getDefaultAvatar(userId);
+}
+
 // ─── Mobile top bar ───────────────────────────────────────────────────────────
 
 function MobileTopBar() {
   const { data: session } = useSession();
-  const pseudo  = session?.user?.name ?? null;
-  const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
-  const avatarSrc = session?.user?.image ?? (userId ? getDefaultAvatar(userId) : null);
+  const pseudo     = session?.user?.name ?? null;
+  const userId     = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const hasAvatar  = (session?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
+  const avatarSrc  = session ? getAvatarSrc(userId, hasAvatar) : null;
 
   return (
     <div className="flex h-14 items-center justify-between px-4 md:hidden">
@@ -92,8 +106,9 @@ export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
-  const desktopUserId  = (session?.user as { id?: string } | undefined)?.id ?? null;
-  const desktopAvatarSrc = session?.user?.image ?? (desktopUserId ? getDefaultAvatar(desktopUserId) : null);
+  const userId    = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const hasAvatar = (session?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
+  const avatarSrc = session ? getAvatarSrc(userId, hasAvatar) : null;
 
   return (
     <>
@@ -139,10 +154,10 @@ export function Header() {
             {session ? (
               <div className="flex items-center gap-2">
                 <Link href="/profil" title={session.user?.name ?? "Profil"} className="block h-8 w-8 shrink-0">
-                  {desktopAvatarSrc ? (
+                  {avatarSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={desktopAvatarSrc}
+                      src={avatarSrc}
                       alt={session.user?.name ?? "Profil"}
                       className="h-8 w-8 rounded-full object-cover ring-2 ring-blue-600/50"
                     />
@@ -169,7 +184,7 @@ export function Header() {
         </div>
       </header>
 
-      {/* Mobile slide-in menu (hamburger → Sheet) — still accessible via MobileNav on desktop */}
+      {/* Mobile slide-in menu */}
       <Sheet isOpen={mobileOpen} onClose={() => setMobileOpen(false)} title="Menu">
         <nav className="flex flex-col gap-1 pt-4">
           {NAV_ITEMS.map((item) => {

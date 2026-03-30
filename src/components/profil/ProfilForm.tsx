@@ -8,7 +8,7 @@ interface UserProfile {
   id: string;
   name: string | null;
   email: string;
-  image: string | null;
+  hasImage: boolean;
   createdAt: string;
 }
 
@@ -21,13 +21,21 @@ export function ProfilForm() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // cache-buster to force img reload after upload
+  const [avatarTs, setAvatarTs] = useState<number>(Date.now());
 
   useEffect(() => {
     fetch("/api/profil")
       .then((r) => r.json())
       .then((data) => {
         if (data.error) return;
-        setUser(data);
+        setUser({
+          id:       data.id,
+          name:     data.name ?? null,
+          email:    data.email,
+          hasImage: !!data.image,
+          createdAt: data.createdAt,
+        });
         setName(data.name ?? "");
       })
       .finally(() => setLoading(false));
@@ -79,8 +87,9 @@ export function ProfilForm() {
         showMessage("error", data.error ?? "Erreur lors de l'upload");
         return;
       }
-      setUser((prev) => (prev ? { ...prev, image: data.image } : prev));
-      await updateSession({ image: data.image });
+      setUser((prev) => (prev ? { ...prev, hasImage: true } : prev));
+      setAvatarTs(Date.now()); // force img cache bust
+      await updateSession({ hasAvatar: true });
       showMessage("success", "Photo mise à jour");
     } catch {
       showMessage("error", "Erreur réseau");
@@ -91,7 +100,7 @@ export function ProfilForm() {
   }
 
   async function handleRemoveAvatar() {
-    if (!user?.image) return;
+    if (!user?.hasImage) return;
     setUploading(true);
     try {
       const res = await fetch("/api/profil/avatar", { method: "DELETE" });
@@ -99,8 +108,8 @@ export function ProfilForm() {
         showMessage("error", "Erreur lors de la suppression");
         return;
       }
-      setUser((prev) => (prev ? { ...prev, image: null } : prev));
-      await updateSession({ image: null });
+      setUser((prev) => (prev ? { ...prev, hasImage: false } : prev));
+      await updateSession({ hasAvatar: false });
       showMessage("success", "Photo supprimée");
     } catch {
       showMessage("error", "Erreur réseau");
@@ -126,15 +135,12 @@ export function ProfilForm() {
     );
   }
 
-  const initials = (user.name ?? user.email)
-    .split(/[\s@]/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0].toUpperCase())
-    .join("");
-
   const hasChanged = name.trim() !== (user.name ?? "");
-  const avatarSrc = user.image ?? getDefaultAvatar(user.id);
+
+  // Avatar: use /api/avatar/[id] when user has a custom image, else default Pokémon
+  const avatarSrc = user.hasImage
+    ? `/api/avatar/${user.id}?t=${avatarTs}`
+    : getDefaultAvatar(user.id);
 
   return (
     <div className="space-y-8">
@@ -186,7 +192,7 @@ export function ProfilForm() {
               >
                 Changer la photo
               </button>
-              {user.image && (
+              {user.hasImage && (
                 <button
                   type="button"
                   onClick={handleRemoveAvatar}
@@ -223,7 +229,7 @@ export function ProfilForm() {
               htmlFor="profile-name"
               className="mb-1 block text-sm font-medium text-[var(--text-primary)]"
             >
-              Nom / Pseudo
+              Pseudo
             </label>
             <div className="flex gap-2">
               <input
@@ -231,7 +237,7 @@ export function ProfilForm() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Votre nom ou pseudo"
+                placeholder="Votre pseudo"
                 maxLength={50}
                 className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
               />

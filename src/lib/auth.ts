@@ -50,33 +50,42 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
+      // On sign-in: populate token from user object
       if (user) {
-        token.id    = user.id;
-        token.image = user.image ?? null;
-        token.name  = user.name  ?? null;
+        token.id       = user.id;
+        token.name     = user.name  ?? null;
+        // Store only a boolean — NEVER store base64 image in JWT (cookie size limit)
+        token.hasAvatar = !!user.image;
       }
+
       // Called when update() is invoked client-side (avatar / name change)
       if (trigger === "update") {
-        if (session?.image !== undefined) token.image = session.image;
-        if (session?.name  !== undefined) token.name  = session.name;
+        if (session?.hasAvatar !== undefined) token.hasAvatar = session.hasAvatar;
+        if (session?.name      !== undefined) token.name      = session.name;
       }
-      // For sessions issued before image/name were stored in the token,
-      // fetch fresh values from DB once (token.image will be undefined, not null)
-      if (token.id && token.image === undefined) {
+
+      // For sessions issued before hasAvatar was in token, fetch from DB once
+      if (token.id && token.hasAvatar === undefined) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { image: true, name: true },
         });
-        token.image = dbUser?.image ?? null;
+        token.hasAvatar = !!dbUser?.image;
         if (token.name === undefined) token.name = dbUser?.name ?? null;
       }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id: string; image?: string | null; name?: string | null }).id    = token.id    as string;
-        (session.user as { id: string; image?: string | null; name?: string | null }).image = token.image as string | null;
-        (session.user as { id: string; image?: string | null; name?: string | null }).name  = token.name  as string | null;
+        const u = session.user as {
+          id: string;
+          name?: string | null;
+          hasAvatar?: boolean;
+        };
+        u.id        = token.id       as string;
+        u.name      = token.name     as string | null;
+        u.hasAvatar = token.hasAvatar as boolean ?? false;
       }
       return session;
     },
