@@ -143,19 +143,33 @@ export function CardScanner() {
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
+  // ── Attach stream to video once scanning view is mounted ──────────────────
+  useEffect(() => {
+    if (state === "scanning" && videoRef.current && streamRef.current) {
+      const video = videoRef.current;
+      video.srcObject = streamRef.current;
+      video.play().catch(() => {
+        setError("Impossible de démarrer la vidéo.");
+        stopStream();
+        setState("idle");
+      });
+    }
+  }, [state, stopStream]);
+
   // ── Start camera ───────────────────────────────────────────────────────────
   const startCamera = useCallback(async () => {
     setError(null);
     setPermissionDenied(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: { ideal: "environment" },
+          width:  { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      // Set state first → triggers re-render → video element mounts → useEffect assigns stream
       setState("scanning");
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
@@ -193,12 +207,20 @@ export function CardScanner() {
 
   // ── Capture photo ──────────────────────────────────────────────────────────
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d")!.drawImage(video, 0, 0);
+    if (!video || !canvas) return;
+
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    if (!w || !h) {
+      setError("La caméra n'est pas encore prête. Réessayez dans un instant.");
+      return;
+    }
+
+    canvas.width  = w;
+    canvas.height = h;
+    canvas.getContext("2d")!.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
     stopStream();
     setPhoto(dataUrl);
@@ -647,8 +669,7 @@ export function CardScanner() {
         )}
       </div>
 
-      {/* Hidden video + canvas for non-fullscreen states */}
-      <video ref={videoRef} className="hidden" playsInline muted />
+      {/* Hidden canvas for file fallback capture */}
     </>
   );
 }
