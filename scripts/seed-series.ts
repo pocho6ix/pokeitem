@@ -93,6 +93,46 @@ const SERIES_DATA = [
   { name: "Ombres Ardentes", nameEn: "Burning Shadows", slug: "ombres-ardentes", abbreviation: "SL03", blocSlug: "soleil-lune", imageUrl: "/images/series/ombres-ardentes.png", releaseDate: "2017-08-04", order: 13 },
   { name: "Gardiens Ascendants", nameEn: "Guardians Rising", slug: "gardiens-ascendants", abbreviation: "SL02", blocSlug: "soleil-lune", imageUrl: "/images/series/gardiens-ascendants.png", releaseDate: "2017-05-05", order: 14 },
   { name: "Soleil et Lune", nameEn: "Sun & Moon", slug: "soleil-et-lune", abbreviation: "SL01", blocSlug: "soleil-lune", imageUrl: "/images/series/soleil-et-lune.png", releaseDate: "2017-02-03", order: 15 },
+  // XY
+  { name: "Évolutions XY", nameEn: "Evolutions", slug: "evolutions-xy", abbreviation: "XY12", blocSlug: "xy", imageUrl: "/images/series/evolutions-xy.png", releaseDate: "2016-11-02", order: 0 },
+  { name: "Offensive Vapeur", nameEn: "Steam Siege", slug: "offensive-vapeur", abbreviation: "XY11", blocSlug: "xy", imageUrl: "/images/series/offensive-vapeur.png", releaseDate: "2016-08-03", order: 1 },
+  { name: "Impact des Destins", nameEn: "Fates Collide", slug: "impact-des-destins", abbreviation: "XY10", blocSlug: "xy", imageUrl: "/images/series/impact-des-destins.png", releaseDate: "2016-05-02", order: 2 },
+  { name: "Générations", nameEn: "Generations", slug: "generations", abbreviation: "XY9.5", blocSlug: "xy", imageUrl: "/images/series/generations.png", releaseDate: "2016-02-22", order: 3 },
+  { name: "Rupture Turbo", nameEn: "BREAKpoint", slug: "rupture-turbo", abbreviation: "XY09", blocSlug: "xy", imageUrl: "/images/series/rupture-turbo.png", releaseDate: "2016-02-03", order: 4 },
+  { name: "Impulsion Turbo", nameEn: "BREAKthrough", slug: "impulsion-turbo", abbreviation: "XY08", blocSlug: "xy", imageUrl: "/images/series/impulsion-turbo.png", releaseDate: "2015-11-04", order: 5 },
+  { name: "Origines Antiques", nameEn: "Ancient Origins", slug: "origines-antiques", abbreviation: "XY07", blocSlug: "xy", imageUrl: "/images/series/origines-antiques.png", releaseDate: "2015-08-12", order: 6 },
+  { name: "Double Danger", nameEn: "Double Crisis", slug: "double-danger", abbreviation: "XY6.5", blocSlug: "xy", imageUrl: "/images/series/double-danger.png", releaseDate: "2015-03-25", order: 7 },
+  { name: "Ciel Rugissant", nameEn: "Roaring Skies", slug: "ciel-rugissant", abbreviation: "XY06", blocSlug: "xy", imageUrl: "/images/series/ciel-rugissant.png", releaseDate: "2015-05-06", order: 8 },
+  { name: "Primo-Choc", nameEn: "Primal Clash", slug: "primo-choc", abbreviation: "XY05", blocSlug: "xy", imageUrl: "/images/series/primo-choc.png", releaseDate: "2015-02-04", order: 9 },
+  { name: "Vigueur Spectrale", nameEn: "Phantom Forces", slug: "vigueur-spectrale", abbreviation: "XY04", blocSlug: "xy", imageUrl: "/images/series/vigueur-spectrale.png", releaseDate: "2014-11-05", order: 10 },
+  { name: "Poings Furieux", nameEn: "Furious Fists", slug: "poings-furieux", abbreviation: "XY03", blocSlug: "xy", imageUrl: "/images/series/poings-furieux.png", releaseDate: "2014-08-13", order: 11 },
+  { name: "Étincelles", nameEn: "Flashfire", slug: "etincelles-xy", abbreviation: "XY02", blocSlug: "xy", imageUrl: "/images/series/etincelles-xy.png", releaseDate: "2014-05-07", order: 12 },
+  { name: "XY", nameEn: "XY", slug: "xy-base", abbreviation: "XY01", blocSlug: "xy", imageUrl: "/images/series/xy-base.png", releaseDate: "2014-02-05", order: 13 },
+  // Noir & Blanc
+  { name: "Explosion Plasma", nameEn: "Plasma Blast", slug: "explosion-plasma", abbreviation: "NB10", blocSlug: "noir-blanc", imageUrl: "/images/series/explosion-plasma.png", releaseDate: "2013-08-14", order: 0 },
+  { name: "Glaciation Plasma", nameEn: "Plasma Freeze", slug: "glaciation-plasma", abbreviation: "NB09", blocSlug: "noir-blanc", imageUrl: "/images/series/glaciation-plasma.png", releaseDate: "2013-05-08", order: 1 },
+  { name: "Tempête Plasma", nameEn: "Plasma Storm", slug: "tempete-plasma", abbreviation: "NB08", blocSlug: "noir-blanc", imageUrl: "/images/series/tempete-plasma.png", releaseDate: "2013-02-06", order: 2 },
+  { name: "Frontières Franchies", nameEn: "Boundaries Crossed", slug: "frontieres-franchies", abbreviation: "NB07", blocSlug: "noir-blanc", imageUrl: "/images/series/frontieres-franchies.png", releaseDate: "2012-11-07", order: 3 },
+  { name: "Dragons Exaltés", nameEn: "Dragons Exalted", slug: "dragons-exaltes", abbreviation: "NB06", blocSlug: "noir-blanc", imageUrl: "/images/series/dragons-exaltes.png", releaseDate: "2012-08-15", order: 4 },
+  { name: "Explorateurs Obscurs", nameEn: "Dark Explorers", slug: "explorateurs-obscurs", abbreviation: "NB05", blocSlug: "noir-blanc", imageUrl: "/images/series/explorateurs-obscurs.png", releaseDate: "2012-05-09", order: 5 },
+  { name: "Destinées Futures", nameEn: "Next Destinies", slug: "destinees-futures", abbreviation: "NB04", blocSlug: "noir-blanc", imageUrl: "/images/series/destinees-futures.png", releaseDate: "2012-02-08", order: 6 },
+  { name: "Nobles Victoires", nameEn: "Noble Victories", slug: "nobles-victoires", abbreviation: "NB03", blocSlug: "noir-blanc", imageUrl: "/images/series/nobles-victoires.png", releaseDate: "2011-11-16", order: 7 },
+  { name: "Pouvoirs Émergents", nameEn: "Emerging Powers", slug: "pouvoirs-emergents", abbreviation: "NB02", blocSlug: "noir-blanc", imageUrl: "/images/series/pouvoirs-emergents.png", releaseDate: "2011-08-31", order: 8 },
+  { name: "Noir et Blanc", nameEn: "Black & White", slug: "noir-et-blanc", abbreviation: "NB01", blocSlug: "noir-blanc", imageUrl: "/images/series/noir-et-blanc.png", releaseDate: "2011-04-25", order: 9 },
+  // HeartGold SoulSilver
+  { name: "Triomphant", nameEn: "Triumphant", slug: "triomphe", abbreviation: "HGSS4", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/triomphe.png", releaseDate: "2010-11-03", order: 0 },
+  { name: "Indomptable", nameEn: "Undaunted", slug: "indomptable", abbreviation: "HGSS3", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/indomptable.png", releaseDate: "2010-08-18", order: 1 },
+  { name: "Déchaînement", nameEn: "Unleashed", slug: "dechainement", abbreviation: "HGSS2", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/dechainement.png", releaseDate: "2010-05-12", order: 2 },
+  { name: "HeartGold SoulSilver", nameEn: "HeartGold SoulSilver", slug: "heartgold-soulsilver-base", abbreviation: "HGSS1", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/heartgold-soulsilver-base.png", releaseDate: "2010-02-10", order: 3 },
+  // Platine
+  { name: "Vainqueurs Suprêmes", nameEn: "Supreme Victors", slug: "vainqueurs-supremes", abbreviation: "PL3", blocSlug: "platine", imageUrl: "/images/series/vainqueurs-supremes.png", releaseDate: "2009-08-19", order: 0 },
+  { name: "Rivaux Émergeants", nameEn: "Rising Rivals", slug: "rivaux-emergeants", abbreviation: "PL2", blocSlug: "platine", imageUrl: "/images/series/rivaux-emergeants.png", releaseDate: "2009-05-13", order: 1 },
+  { name: "Platine", nameEn: "Platinum", slug: "platine-base", abbreviation: "PL1", blocSlug: "platine", imageUrl: "/images/series/platine-base.png", releaseDate: "2009-02-11", order: 2 },
+  // Diamant & Perle
+  { name: "Éveil des Légendes", nameEn: "Legends Awakened", slug: "eveil-des-legendes", abbreviation: "DP6", blocSlug: "diamant-perle", imageUrl: "/images/series/eveil-des-legendes.png", releaseDate: "2008-08-20", order: 0 },
+  { name: "Aube Majestueuse", nameEn: "Majestic Dawn", slug: "aube-majestueuse", abbreviation: "DP5", blocSlug: "diamant-perle", imageUrl: "/images/series/aube-majestueuse.png", releaseDate: "2008-05-21", order: 1 },
+  { name: "Trésors Mystérieux", nameEn: "Mysterious Treasures", slug: "tresors-mysterieux", abbreviation: "DP2", blocSlug: "diamant-perle", imageUrl: "/images/series/tresors-mysterieux.png", releaseDate: "2007-08-22", order: 2 },
+  { name: "Diamant et Perle", nameEn: "Diamond & Pearl", slug: "diamant-et-perle", abbreviation: "DP1", blocSlug: "diamant-perle", imageUrl: "/images/series/diamant-et-perle.png", releaseDate: "2007-05-23", order: 3 },
 ];
 
 const prisma = new PrismaClient();
