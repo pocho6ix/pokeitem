@@ -40,6 +40,41 @@ const POPULAR_BLOCS = [
   { name: "Épée & Bouclier", slug: "epee-bouclier", series: 16, period: "2020 — 2023", image: "/images/blocs/epee-bouclier.png" },
 ];
 
+const FAQ_ITEMS = [
+  {
+    q: "PokeItem est-il gratuit ?",
+    a: "Oui, PokeItem est entièrement gratuit. Créez un compte en quelques secondes et commencez à cataloguer votre collection sans aucun frais.",
+  },
+  {
+    q: "Quels produits Pokémon TCG puis-je gérer sur PokeItem ?",
+    a: "PokeItem couvre tous les items scellés Pokémon TCG : displays, Elite Trainer Box (ETB), coffrets, boosters, tins et UPC. Le catalogue s'étend des extensions WOTC (Set de Base, 1999) jusqu'aux dernières sorties, en passant par XY, Soleil & Lune, Épée & Bouclier, Écarlate & Violet et Méga-Évolution.",
+  },
+  {
+    q: "Comment fonctionne le suivi de valeur ?",
+    a: "PokeItem agrège les prix des principales plateformes de revente (CardMarket, eBay, Vinted) et calcule la valeur estimée de votre collection en temps réel. Un historique vous permet de visualiser l'évolution et d'identifier les meilleures fenêtres d'achat ou de vente.",
+  },
+  {
+    q: "Comment ajouter des items à mon Classeur ?",
+    a: "Depuis la page Classeur, parcourez le catalogue par série ou utilisez la recherche. Cliquez sur un item pour l'ajouter, puis renseignez le prix d'achat, la quantité et l'état. Vos données sont sauvegardées instantanément.",
+  },
+  {
+    q: "PokeItem est-il disponible sur mobile ?",
+    a: "Une application native iOS et Android est en cours de développement. En attendant, le site est entièrement responsive et s'utilise confortablement sur smartphone et tablette.",
+  },
+  {
+    q: "Mes données de collection sont-elles sécurisées ?",
+    a: "Vos données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Vous pouvez exporter ou supprimer votre compte à tout moment depuis vos paramètres.",
+  },
+  {
+    q: "PokeItem est-il un site officiel Pokémon ?",
+    a: "Non, PokeItem est un projet indépendant et n'est pas affilié à Nintendo, GAME FREAK ou The Pokémon Company. Les noms et illustrations Pokémon sont la propriété de leurs auteurs respectifs.",
+  },
+  {
+    q: "Le Scanner de cartes est-il déjà disponible ?",
+    a: "Le Scanner alimenté par IA est en cours de développement. Il vous permettra d'identifier instantanément n'importe quelle carte ou item scellé en prenant une simple photo, et de l'ajouter automatiquement à votre Classeur.",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -152,6 +187,52 @@ export default function HomePage() {
       </section>
 
       <HomepageCTASection />
+
+      {/* FAQ */}
+      <section className="py-20 bg-[var(--bg-secondary)]">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-[var(--text-primary)]">Questions fréquentes</h2>
+            <p className="mt-3 text-[var(--text-secondary)]">
+              Tout ce que vous devez savoir sur PokeItem.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQ_ITEMS.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-4 open:pb-5"
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-semibold text-[var(--text-primary)] list-none [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span className="shrink-0 text-[var(--text-tertiary)] transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQ_ITEMS.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          }),
+        }}
+      />
 
       <Footer />
       <MobileNav />
