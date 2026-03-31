@@ -57,20 +57,22 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       select: {
-        quantity:  true,
-        version:   true,
-        createdAt: true,
+        quantity:      true,
+        version:       true,
+        createdAt:     true,
+        purchasePrice: true,
         card: { select: { price: true, priceReverse: true } },
       },
     });
 
-    // Build card contributions: { addedAt, valuePerUnit }
+    // Build card contributions: { addedAt, value, invested }
     const cardContribs = userCards.map((uc) => ({
-      addedAt: uc.createdAt,
+      addedAt:  uc.createdAt,
       value:
         (uc.version === "REVERSE"
           ? (uc.card.priceReverse ?? uc.card.price ?? 0)
           : (uc.card.price ?? 0)) * uc.quantity,
+      invested: (uc.purchasePrice ?? 0) * uc.quantity,
     }));
 
     // ── Generate daily data points ───────────────────────────────────────────
@@ -101,7 +103,8 @@ export async function GET(request: NextRequest) {
       // Cards (no historical prices — add current value if card was acquired by this date)
       for (const cc of cardContribs) {
         if (cc.addedAt <= currentDate) {
-          totalValue += cc.value;
+          totalValue    += cc.value;
+          totalInvested += cc.invested;
         }
       }
 

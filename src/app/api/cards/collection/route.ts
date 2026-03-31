@@ -9,12 +9,13 @@ import { z } from "zod";
 const CardVersionEnum = z.enum(["NORMAL", "REVERSE", "REVERSE_POKEBALL", "REVERSE_MASTERBALL"]);
 
 const UpsertCardSchema = z.object({
-  cardId:    z.string().min(1),
-  quantity:  z.number().int().min(0).max(999),
-  condition: z.string().optional().default("NEAR_MINT"),
-  language:  z.string().optional().default("FR"),
-  version:   CardVersionEnum.optional().default("NORMAL"),
-  foil:      z.boolean().optional().default(false),
+  cardId:        z.string().min(1),
+  quantity:      z.number().int().min(0).max(999),
+  condition:     z.string().optional().default("NEAR_MINT"),
+  language:      z.string().optional().default("FR"),
+  version:       CardVersionEnum.optional().default("NORMAL"),
+  foil:          z.boolean().optional().default(false),
+  purchasePrice: z.number().min(0).optional().nullable(),
 });
 
 const PostBodySchema = z.object({
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
   if (invalidIds.length > 0) return NextResponse.json({ error: "Cartes introuvables", invalidIds }, { status: 404 });
 
   const results = await Promise.all(
-    cards.map(async ({ cardId, quantity, condition, language, version, foil }) => {
+    cards.map(async ({ cardId, quantity, condition, language, version, foil, purchasePrice }) => {
       if (quantity <= 0) {
         await prisma.userCard.deleteMany({ where: { userId, cardId, version: version as never } });
         return { cardId, version, action: "deleted" };
@@ -83,8 +84,8 @@ export async function POST(req: NextRequest) {
 
       const record = await prisma.userCard.upsert({
         where:  { userId_cardId_version: { userId, cardId, version: version as never } },
-        create: { userId, cardId, quantity, condition: condition as never, language: language as never, version: version as never, foil },
-        update: { quantity, condition: condition as never, language: language as never, foil },
+        create: { userId, cardId, quantity, condition: condition as never, language: language as never, version: version as never, foil, purchasePrice: purchasePrice ?? null },
+        update: { quantity, condition: condition as never, language: language as never, foil, purchasePrice: purchasePrice ?? null },
         select: { id: true, cardId: true, quantity: true, condition: true, language: true, version: true, foil: true },
       });
 

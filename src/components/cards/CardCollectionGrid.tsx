@@ -23,6 +23,7 @@ export interface CardRow {
   rarity: CardRarity;
   imageUrl: string | null;
   price?: number | null;
+  priceReverse?: number | null;
 }
 
 export interface OwnedEntry {
@@ -188,24 +189,34 @@ const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
   { value: CardCondition.NEAR_MINT,   label: "État neuf" },
 ];
 
+type PriceMode = "packed" | "current" | "manual";
+
 function AddToCollectionModal({
   selectedCards, availableVersions, ownedMap, onSubmit, onClose, isPending,
 }: {
   selectedCards: CardRow[];
   availableVersions: CardVersion[];
   ownedMap: OwnedVersionMap;
-  onSubmit: (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean }) => void;
+  onSubmit: (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean; priceMode: PriceMode; manualPrice?: number }) => void;
   onClose: () => void;
   isPending: boolean;
 }) {
-  const [quantity,  setQuantity]  = useState(1);
-  const [condition, setCondition] = useState<CardCondition>(CardCondition.NEAR_MINT);
-  const [language,  setLanguage]  = useState("FR");
-  const [version,   setVersion]   = useState<CardVersion>(availableVersions[0]);
+  const [quantity,    setQuantity]    = useState(1);
+  const [condition,   setCondition]   = useState<CardCondition>(CardCondition.NEAR_MINT);
+  const [language,    setLanguage]    = useState("FR");
+  const [version,     setVersion]     = useState<CardVersion>(availableVersions[0]);
+  const [priceMode,   setPriceMode]   = useState<PriceMode>("packed");
+  const [manualPrice, setManualPrice] = useState("");
 
   const existingQty = selectedCards.length === 1
     ? ownedMap.get(selectedCards[0].id)?.get(version)?.quantity ?? 0
     : 0;
+
+  // Current price preview (single card only)
+  const singleCard   = selectedCards.length === 1 ? selectedCards[0] : null;
+  const currentPrice = singleCard
+    ? (version === CardVersion.NORMAL ? (singleCard.price ?? null) : (singleCard.priceReverse ?? singleCard.price ?? null))
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
@@ -285,7 +296,7 @@ function AddToCollectionModal({
           </div>
 
           {/* Language */}
-          <div className="mb-6">
+          <div className="mb-5">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Langue</p>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
               className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
@@ -293,8 +304,62 @@ function AddToCollectionModal({
             </select>
           </div>
 
+          {/* Purchase price */}
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Prix d&apos;achat</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => setPriceMode("packed")}
+                className={cn(
+                  "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                  priceMode === "packed"
+                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                )}>
+                Packé
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "packed" ? "text-white/70" : "text-[var(--text-tertiary)]")}>0,70&nbsp;€</span>
+              </button>
+              <button onClick={() => setPriceMode("current")}
+                className={cn(
+                  "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                  priceMode === "current"
+                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                )}>
+                Cote actuelle
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "current" ? "text-white/70" : "text-[var(--text-tertiary)]")}>
+                  {currentPrice != null ? `${currentPrice.toFixed(2)}\u00a0€` : "—"}
+                </span>
+              </button>
+              <button onClick={() => setPriceMode("manual")}
+                className={cn(
+                  "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                  priceMode === "manual"
+                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                )}>
+                Manuel
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "manual" ? "text-white/70" : "text-[var(--text-tertiary)]")}>Saisir</span>
+              </button>
+            </div>
+            {priceMode === "manual" && (
+              <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0,00"
+                  value={manualPrice}
+                  onChange={(e) => setManualPrice(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+                />
+                <span className="text-sm text-[var(--text-secondary)]">€</span>
+              </div>
+            )}
+          </div>
+
           {/* CTA */}
-          <button onClick={() => onSubmit({ quantity, condition, language, version, foil: false })}
+          <button
+            onClick={() => onSubmit({ quantity, condition, language, version, foil: false, priceMode, manualPrice: manualPrice ? parseFloat(manualPrice) : undefined })}
             disabled={isPending}
             className="w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white hover:bg-blue-700 active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-blue-600/30">
             {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
@@ -387,14 +452,25 @@ export function CardCollectionGrid({
   // ── Collection actions ────────────────────────────────────────────────────
 
   const handleAddToCollection = useCallback(
-    (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean }) => {
+    (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean; priceMode: PriceMode; manualPrice?: number }) => {
       if (!isAuthenticated) return;
+
+      const { priceMode, manualPrice, ...rest } = data;
+
+      const getPurchasePrice = (card: CardRow): number | null => {
+        if (priceMode === "packed") return 0.70;
+        if (priceMode === "manual") return manualPrice ?? null;
+        // current: use card's price based on version
+        return data.version === CardVersion.NORMAL
+          ? (card.price ?? null)
+          : (card.priceReverse ?? card.price ?? null);
+      };
 
       const optimistic = cloneOwnedMap(ownedMap);
       for (const card of selectedCards) {
-        const entry: OwnedEntry = { id: `tmp-${card.id}-${data.version}`, cardId: card.id, ...data };
+        const entry: OwnedEntry = { id: `tmp-${card.id}-${rest.version}`, cardId: card.id, ...rest };
         if (!optimistic.has(card.id)) optimistic.set(card.id, new Map());
-        optimistic.get(card.id)!.set(data.version, entry);
+        optimistic.get(card.id)!.set(rest.version, entry);
       }
       setOwnedMap(optimistic);
       setActiveModal(null);
@@ -405,7 +481,7 @@ export function CardCollectionGrid({
           const res = await fetch("/api/cards/collection", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cards: selectedCards.map((c) => ({ cardId: c.id, ...data })) }),
+            body: JSON.stringify({ cards: selectedCards.map((c) => ({ cardId: c.id, ...rest, purchasePrice: getPurchasePrice(c) })) }),
           });
           if (!res.ok) {
             setOwnedMap(buildOwnedMap(initialOwned));
@@ -417,7 +493,7 @@ export function CardCollectionGrid({
               for (const r of results) {
                 if (r.record) {
                   if (!m.has(r.cardId)) m.set(r.cardId, new Map());
-                  m.get(r.cardId)!.set(r.version as CardVersion, { id: r.record.id, cardId: r.cardId, ...data });
+                  m.get(r.cardId)!.set(r.version as CardVersion, { id: r.record.id, cardId: r.cardId, ...rest });
                 }
               }
               return m;

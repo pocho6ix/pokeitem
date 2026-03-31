@@ -70,12 +70,13 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
 
   // ── Shape cards for the grid ────────────────────────────────────────────
   const cards: CardRow[] = dbCards.map((c) => ({
-    id:       c.id,
-    number:   c.number,
-    name:     c.name,
-    rarity:   c.rarity as CardRarity,
-    imageUrl: c.imageUrl,
-    price:    c.price ?? null,
+    id:           c.id,
+    number:       c.number,
+    name:         c.name,
+    rarity:       c.rarity as CardRarity,
+    imageUrl:     c.imageUrl,
+    price:        c.price ?? null,
+    priceReverse: c.priceReverse ?? null,
   }));
 
   return (
