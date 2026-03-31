@@ -58,7 +58,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on all routes except static files and Next.js internals
-    "/((?!_next/static|_next/image|favicon.ico|images/).*)",
+    // Run on all page routes — exclude Next.js internals, static assets, and
+    // NextAuth's own API routes (must never be intercepted by middleware)
+    "/((?!_next/static|_next/image|favicon\\.ico|images/|api/).*)",
   ],
 };
