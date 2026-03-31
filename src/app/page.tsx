@@ -12,27 +12,27 @@ import Link from "next/link";
 const FAQ_ITEMS = [
   {
     q: "PokeItem est-il gratuit ?",
-    a: "Oui, PokeItem est entièrement gratuit. Créez un compte en quelques secondes et commencez à cataloguer votre collection sans aucun frais.",
+    a: "Oui, PokeItem est entièrement gratuit. Créez un compte en quelques secondes et commencez à gérer votre collection sans aucun frais.",
   },
   {
     q: "Quels produits Pokémon TCG puis-je gérer sur PokeItem ?",
-    a: "PokeItem couvre tous les items scellés Pokémon TCG : displays, Elite Trainer Box (ETB), coffrets, boosters, tins et UPC. Le catalogue s'étend des extensions WOTC (Set de Base, 1999) jusqu'aux dernières sorties, en passant par XY, Soleil & Lune, Épée & Bouclier, Écarlate & Violet et Méga-Évolution.",
+    a: "PokeItem couvre deux grandes catégories. Les cartes individuelles : toutes les extensions de tous les blocs, des Wizards of the Coast (Set de Base, 1999) jusqu'à Méga-Évolution, en passant par EX, Diamant & Perle, Noir & Blanc, XY, Soleil & Lune, Épée & Bouclier et Écarlate & Violet — soit plus de 100 extensions. Les items scellés : booster, display (36 boosters), ETB, coffret collection, UPC, tin, bundle, tripack, duopack, theme deck et trainer kit.",
   },
   {
     q: "Comment fonctionne le suivi de valeur ?",
-    a: "PokeItem agrège les prix des principales plateformes de revente (CardMarket, eBay, Vinted) et calcule la valeur estimée de votre collection en temps réel. Un historique vous permet de visualiser l'évolution et d'identifier les meilleures fenêtres d'achat ou de vente.",
+    a: "Les prix des cartes (normal et reverse) et des items scellés sont synchronisés depuis CardMarket. La valeur de votre collection est calculée automatiquement en multipliant ces prix par vos quantités. Un graphique d'évolution vous permet de visualiser la progression de votre patrimoine dans le temps, avec un filtre par extension.",
   },
   {
     q: "Comment ajouter des items à mon Classeur ?",
-    a: "Depuis la page Classeur, parcourez le catalogue par série ou utilisez la recherche. Cliquez sur un item pour l'ajouter, puis renseignez le prix d'achat, la quantité et l'état. Vos données sont sauvegardées instantanément.",
+    a: "Pour les scellés, parcourez le catalogue par série depuis la section Classeur et cliquez sur un produit pour l'ajouter avec votre prix d'achat et votre quantité. Pour les cartes, utilisez la section Cartes du Classeur : recherchez par extension et ajoutez chaque carte possédée (version normale ou reverse).",
   },
   {
     q: "PokeItem est-il disponible sur mobile ?",
-    a: "Une application native iOS et Android est en cours de développement. En attendant, le site est entièrement responsive et s'utilise confortablement sur smartphone et tablette.",
+    a: "Le site est entièrement optimisé pour mobile avec une navigation dédiée. Une application native iOS et Android est en cours de développement.",
   },
   {
     q: "Mes données de collection sont-elles sécurisées ?",
-    a: "Vos données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Vous pouvez exporter ou supprimer votre compte à tout moment depuis vos paramètres.",
+    a: "Vos données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Vous pouvez supprimer votre compte à tout moment depuis vos paramètres.",
   },
   {
     q: "PokeItem est-il un site officiel Pokémon ?",
@@ -40,7 +40,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Le Scanner de cartes est-il déjà disponible ?",
-    a: "Le Scanner alimenté par IA est en cours de développement. Il vous permettra d'identifier instantanément n'importe quelle carte ou item scellé en prenant une simple photo, et de l'ajouter automatiquement à votre Classeur.",
+    a: "Le Scanner est en cours de développement. Il vous permettra d'identifier une carte en prenant une photo et de l'ajouter directement à votre Classeur.",
   },
 ];
 
