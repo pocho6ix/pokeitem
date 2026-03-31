@@ -36,7 +36,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
+        // NEVER return image here — base64 would end up in token.picture (→ 494)
+        return { id: user.id, name: user.name, email: user.email, image: null };
       },
     }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -52,10 +53,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       // On sign-in: populate token from user object
       if (user) {
-        token.id       = user.id;
-        token.name     = user.name  ?? null;
-        // Store only a boolean — NEVER store base64 image in JWT (cookie size limit)
-        token.hasAvatar = !!user.image;
+        token.id   = user.id;
+        token.name = user.name ?? null;
+        // Fetch hasAvatar from DB — authorize() returns image:null so we can't rely on user.image
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { image: true },
+        });
+        token.hasAvatar = !!dbUser?.image;
+        // NextAuth auto-sets token.picture from user.image — explicitly clear it
+        // to guarantee no base64 ever leaks into the JWT cookie.
+        delete (token as Record<string, unknown>).picture;
+        delete (token as Record<string, unknown>).image;
       }
 
       // Called when update() is invoked client-side (avatar / name change)
