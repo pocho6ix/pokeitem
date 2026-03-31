@@ -160,15 +160,15 @@ export default async function HomePage() {
             <div className="mx-auto max-w-xl">
               <Link
                 href="/classeur"
-                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-emerald-500/40 hover:shadow-lg transition-all"
+                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-yellow-400/40 hover:shadow-lg transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-emerald-500/10 p-2.5 shrink-0">
-                    <TrendingUp className="h-5 w-5 text-emerald-400" />
+                  <div className="rounded-xl bg-yellow-400/10 p-2.5 shrink-0">
+                    <TrendingUp className="h-5 w-5 text-yellow-400" />
                   </div>
                   <div>
                     <p className="text-xs text-[var(--text-secondary)]">Valeur de ma collection</p>
-                    <p className="text-xl font-bold text-emerald-400 font-data">
+                    <p className="text-xl font-bold text-yellow-400 font-data">
                       {collectionValue.total.toLocaleString("fr-FR", {
                         style: "currency",
                         currency: "EUR",
@@ -188,7 +188,7 @@ export default async function HomePage() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-emerald-400 transition-colors shrink-0" />
+                <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-yellow-400 transition-colors shrink-0" />
               </Link>
             </div>
           </div>
