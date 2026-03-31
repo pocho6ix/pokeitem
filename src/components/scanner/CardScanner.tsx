@@ -528,12 +528,51 @@ export function CardScanner() {
           <div className="h-9 w-9" />
         </div>
 
-        {/* Center — inactive viewfinder */}
-        <div className="flex flex-1 flex-col items-center justify-center gap-6">
-          <Viewfinder dim />
-          <div className="text-center">
-            <p className="text-base font-semibold text-white">Scanner une carte</p>
-            <p className="mt-1 text-xs text-white/35">Cadrez la carte dans le viseur</p>
+        {/* Center — instructions */}
+        <div className="flex flex-1 flex-col px-5 pt-2 pb-2 overflow-y-auto">
+          <p className="mb-4 text-center text-sm font-semibold text-white/80">Comment bien scanner ?</p>
+
+          {/* Good vs bad examples */}
+          <div className="flex gap-3 mb-5">
+            {/* Correct */}
+            <div className="relative flex-1">
+              <div className="w-full overflow-hidden rounded-2xl border border-green-400/30" style={{ aspectRatio: "3/4" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/scan-correct.jpg" alt="Correct" className="h-full w-full object-cover" />
+              </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 shadow-lg">
+                <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="2 7 5.5 11 12 3"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Incorrect */}
+            <div className="relative flex-1">
+              <div className="w-full overflow-hidden rounded-2xl border border-red-400/30" style={{ aspectRatio: "3/4" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/scan-incorrect.jpg" alt="Incorrect" className="h-full w-full object-cover" />
+              </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 shadow-lg">
+                <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="mt-6 space-y-2.5">
+            {[
+              { icon: "💡", text: "Placez la carte dans un endroit bien éclairé" },
+              { icon: "📐", text: "Posez la carte à plat, sans la tenir en main" },
+              { icon: "🎯", text: "Cadrez toute la carte dans le viseur" },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-2.5">
+                <span className="text-base">{icon}</span>
+                <p className="text-xs text-white/60">{text}</p>
+              </div>
+            ))}
           </div>
         </div>
 
