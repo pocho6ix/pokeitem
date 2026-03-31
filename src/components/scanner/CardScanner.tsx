@@ -538,7 +538,7 @@ export function CardScanner() {
             <div className="relative flex-1">
               <div className="w-full overflow-hidden rounded-2xl border border-green-400/30" style={{ aspectRatio: "3/4" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/scan-correct.jpg" alt="Correct" className="h-full w-full object-cover" />
+                <img src="/images/scan-correct.jpg" alt="Correct" className="h-full w-full object-contain" />
               </div>
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 shadow-lg">
                 <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -564,12 +564,12 @@ export function CardScanner() {
           {/* Tips */}
           <div className="mt-6 space-y-2.5">
             {[
-              { icon: "💡", text: "Placez la carte dans un endroit bien éclairé" },
-              { icon: "📐", text: "Posez la carte à plat, sans la tenir en main" },
-              { icon: "🎯", text: "Cadrez toute la carte dans le viseur" },
-            ].map(({ icon, text }) => (
+              { text: "Placez la carte dans un endroit bien éclairé" },
+              { text: "Posez la carte à plat, sans la tenir en main" },
+              { text: "Cadrez toute la carte dans le viseur" },
+            ].map(({ text }) => (
               <div key={text} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-2.5">
-                <span className="text-base">{icon}</span>
+                <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
                 <p className="text-xs text-white/60">{text}</p>
               </div>
             ))}
