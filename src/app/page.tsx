@@ -138,12 +138,12 @@ export default async function HomePage() {
         <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-5">
-              <Star className="h-3.5 w-3.5 text-yellow-400" />
+              <Star className="h-3.5 w-3.5 text-[#E7BA76]" />
               La référence des collectionneurs Pokémon.
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl">
               Gérez votre collection{" "}
-              <span className="text-yellow-400">Pokémon TCG</span>
+              <span className="text-[#E7BA76]">Pokémon TCG</span>
             </h1>
             <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm sm:text-base">
               Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
@@ -160,15 +160,15 @@ export default async function HomePage() {
             <div className="mx-auto max-w-xl">
               <Link
                 href="/classeur"
-                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-yellow-400/40 hover:shadow-lg transition-all"
+                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-[#E7BA76]/40 hover:shadow-lg transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-yellow-400/10 p-2.5 shrink-0">
-                    <TrendingUp className="h-5 w-5 text-yellow-400" />
+                  <div className="rounded-xl bg-[#E7BA76]/10 p-2.5 shrink-0">
+                    <TrendingUp className="h-5 w-5 text-[#E7BA76]" />
                   </div>
                   <div>
                     <p className="text-xs text-[var(--text-secondary)]">Valeur de ma collection</p>
-                    <p className="text-xl font-bold text-yellow-400 font-data">
+                    <p className="text-xl font-bold text-[#E7BA76] font-data">
                       {collectionValue.total.toLocaleString("fr-FR", {
                         style: "currency",
                         currency: "EUR",
@@ -188,7 +188,7 @@ export default async function HomePage() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-yellow-400 transition-colors shrink-0" />
+                <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-[#E7BA76] transition-colors shrink-0" />
               </Link>
             </div>
           </div>
