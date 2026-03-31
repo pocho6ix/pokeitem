@@ -82,28 +82,40 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden text-white">
-        <Image
-          src="/images/hero-bg.jpg"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          sizes="100vw"
-        />
-        {/* Overlay gauche pour lisibilité du texte */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-950/60 to-blue-950/10" />
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm mb-6">
-              <Star className="h-4 w-4 text-yellow-400" />
+        {/* Pokémon banner — positioned to show all 3 starters */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/hero-pokemon.jpg"
+            alt=""
+            fill
+            priority
+            className="object-cover"
+            style={{ objectPosition: "60% center" }}
+            sizes="100vw"
+          />
+        </div>
+
+        {/* Dark veil — keeps text readable without fully hiding the Pokémon */}
+        <div className="absolute inset-0 bg-[#07111f]/60" />
+
+        {/* Stronger gradient on left for text legibility, fades to transparent right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07111f]/95 via-[#07111f]/55 to-transparent" />
+
+        {/* Bottom fade into page */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
+
+        {/* Content */}
+        <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24 sm:pb-28 lg:px-8">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur-sm mb-5 border border-white/10">
+              <Star className="h-3.5 w-3.5 text-yellow-400" />
               La référence des collectionneurs Pokémon.
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl leading-tight">
               Gérez votre collection{" "}
               <span className="text-yellow-400">Pokémon TCG</span>
             </h1>
-            <p className="mt-6 text-lg text-blue-100 max-w-xl">
-              La plateforme de référence pour les collectionneurs Pokémon.{" "}
+            <p className="mt-4 text-base text-white/55 max-w-sm leading-relaxed">
               Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
             </p>
             <HeroCTAButtons />
