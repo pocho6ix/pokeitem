@@ -81,8 +81,13 @@ export default function HomePage() {
       <Header />
 
       {/* ── Hero — full-width banner at natural aspect ratio, all viewports ── */}
-      {/* -mt-14 on mobile / -mt-16 on desktop pulls the section behind the transparent sticky header */}
+      {/* -mt-14/-mt-16 pulls the section behind the transparent sticky header.
+          The h-14/h-16 spacer then pushes the image to start exactly at the
+          header bottom, so the profile avatar never covers a Pokémon. */}
       <div className="-mt-14 md:-mt-16">
+        {/* Spacer = header height → tiny dark-bg gap above the image */}
+        <div className="h-14 md:h-16" />
+
         {/* Image at natural ratio → all 3 Pokémon always visible */}
         <div className="relative overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -91,8 +96,8 @@ export default function HomePage() {
             alt=""
             className="w-full h-auto block"
           />
-          {/* Top: darken behind transparent header */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#07111f]/60 via-transparent to-[var(--bg-primary)]" />
+          {/* Bottom fade into page bg */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]" />
         </div>
 
         {/* Text content — below the banner on a solid dark background */}
