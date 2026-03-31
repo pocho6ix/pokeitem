@@ -201,7 +201,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[var(--text-primary)]">
-                Mes cartes les plus chères
+                Aperçu de mes cartes
               </h2>
               <Link
                 href="/classeur/cartes"
@@ -210,12 +210,12 @@ export default async function HomePage() {
                 Voir tout
               </Link>
             </div>
-            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 scrollbar-none">
+            <div className="grid grid-cols-2 gap-3">
               {topCards.map((card) => (
                 <Link
                   key={`${card.cardId}-${card.version}`}
                   href={`/collection/cartes/${card.serieSlug}`}
-                  className="group shrink-0 w-28"
+                  className="group"
                 >
                   <div className="relative rounded-xl overflow-hidden border border-[var(--border-default)] bg-[var(--bg-card)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
