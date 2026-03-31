@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Héros Transcendants ME2.5 : Guide Complet Collection"
+
+A premium flat-lay photography of Pokémon TCG sealed products from the 'Ascended Heroes' set arranged elegantly on a dark marble surface with golden veins. Include a booster box, an ETB with metallic finish, mini tins, and scattered booster packs. Dramatic studio lighting with soft shadows and golden accent lighting. Futuristic neo-art deco aesthetic. No text overlay. Aspect ratio 1200x630, photorealistic style with high-end commercial photography quality.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-heros-transcendants.jpg
