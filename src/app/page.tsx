@@ -98,9 +98,9 @@ export default async function HomePage() {
         </div>
 
         {/* Text content — below the banner on a solid dark background */}
-        <div className="bg-[var(--bg-primary)] px-4 pb-6 pt-3 sm:px-6 lg:px-8">
+        <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-5">
               <Star className="h-3.5 w-3.5 text-yellow-400" />
               La référence des collectionneurs Pokémon.
             </div>
@@ -111,7 +111,7 @@ export default async function HomePage() {
             <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm sm:text-base">
               Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
             </p>
-            <div className="mt-5">
+            <div className="mt-6">
               <HeroCTAButtons />
             </div>
           </div>
@@ -119,7 +119,7 @@ export default async function HomePage() {
 
         {/* Collection value — directly below CTA buttons, only for authenticated users with a collection */}
         {collectionValue && collectionValue.total > 0 && (
-          <div className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+          <div className="bg-[var(--bg-primary)] px-4 pt-5 pb-10 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-xl">
               <Link
                 href="/classeur"
