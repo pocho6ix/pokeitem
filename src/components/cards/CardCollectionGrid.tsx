@@ -184,10 +184,18 @@ function OptionsModal({
 // ─── Sub-component: AddToCollectionModal ─────────────────────────────────────
 
 const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
-  { value: CardCondition.POOR,        label: "Mauvais état" },
-  { value: CardCondition.GOOD,        label: "Bon état" },
-  { value: CardCondition.NEAR_MINT,   label: "État neuf" },
+  { value: CardCondition.POOR,         label: "Mauvais état" },
+  { value: CardCondition.LIGHT_PLAYED, label: "Played" },
+  { value: CardCondition.GOOD,         label: "Bon état" },
+  { value: CardCondition.NEAR_MINT,    label: "Near Mint" },
 ];
+
+const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
+  [CardVersion.NORMAL]:             "Normale",
+  [CardVersion.REVERSE]:            "Reverse",
+  [CardVersion.REVERSE_POKEBALL]:   "Rev. PB",
+  [CardVersion.REVERSE_MASTERBALL]: "Rev. MB",
+};
 
 type PriceMode = "packed" | "current" | "manual";
 
@@ -220,15 +228,15 @@ function AddToCollectionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-t-3xl bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md rounded-t-3xl bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl flex flex-col max-h-[calc(100dvh-4rem)] sm:max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
         {/* Drag handle (mobile) */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="h-1 w-10 rounded-full bg-[var(--border-default)]" />
         </div>
 
-        <div className="px-6 pb-8 pt-3">
+        <div className="overflow-y-auto px-6 pt-3 pb-24 sm:pb-8">
           {/* Header */}
-          <div className="mb-4 flex items-start justify-between">
+          <div className="mb-3 flex items-start justify-between">
             <div>
               <h2 className="text-xl font-bold text-[var(--text-primary)]">Ajouter à ma collection</h2>
               <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
@@ -241,23 +249,23 @@ function AddToCollectionModal({
             </button>
           </div>
 
-          {/* Version pills */}
+          {/* Version pills — 4 colonnes horizontales */}
           {availableVersions.length > 1 && (
-            <div className="mb-5">
+            <div className="mb-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Version</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-4 gap-1.5">
                 {availableVersions.map((v) => {
                   const qty = selectedCards.length === 1 ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0 : 0;
                   return (
                     <button key={v} onClick={() => setVersion(v)}
                       className={cn(
-                        "flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-medium transition-all",
+                        "relative flex flex-col items-center rounded-xl border px-1 py-2 text-xs font-medium transition-all",
                         version === v
                           ? "border-blue-500 bg-blue-600 text-white shadow-sm"
                           : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
                       )}>
-                      {CARD_VERSION_LABELS[v]}
-                      {qty > 0 && <span className={cn("rounded-full px-1.5 text-[10px] font-bold", version === v ? "bg-white/30 text-white" : "bg-blue-500 text-white")}>×{qty}</span>}
+                      {MODAL_VERSION_LABELS[v]}
+                      {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", version === v ? "bg-white/30 text-white" : "bg-blue-500 text-white")}>×{qty}</span>}
                     </button>
                   );
                 })}
@@ -266,7 +274,7 @@ function AddToCollectionModal({
           )}
 
           {/* Quantity stepper */}
-          <div className="mb-5">
+          <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Quantité</p>
             <div className="flex items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -277,10 +285,10 @@ function AddToCollectionModal({
             </div>
           </div>
 
-          {/* Condition pills */}
-          <div className="mb-5">
+          {/* Condition pills — 4 options en 2×2 */}
+          <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {CONDITION_PILLS.map((c) => (
                 <button key={c.value} onClick={() => setCondition(c.value)}
                   className={cn(
@@ -296,7 +304,7 @@ function AddToCollectionModal({
           </div>
 
           {/* Language */}
-          <div className="mb-5">
+          <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Langue</p>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
               className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
@@ -305,7 +313,7 @@ function AddToCollectionModal({
           </div>
 
           {/* Purchase price */}
-          <div className="mb-6">
+          <div className="mb-4">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Prix d&apos;achat</p>
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => setPriceMode("packed")}
@@ -315,7 +323,7 @@ function AddToCollectionModal({
                     ? "border-blue-500 bg-blue-600 text-white shadow-sm"
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
                 )}>
-                Packé
+                Packée
                 <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "packed" ? "text-white/70" : "text-[var(--text-tertiary)]")}>0,70&nbsp;€</span>
               </button>
               <button onClick={() => setPriceMode("current")}
