@@ -43,6 +43,43 @@ const FAQ_ITEMS = [
   },
 ];
 
+async function getTopCards(userId: string) {
+  const userCards = await prisma.userCard.findMany({
+    where: { userId },
+    select: {
+      version: true,
+      card: {
+        select: {
+          id: true,
+          name: true,
+          number: true,
+          imageUrl: true,
+          price: true,
+          priceReverse: true,
+          serie: { select: { slug: true } },
+        },
+      },
+    },
+  });
+
+  return userCards
+    .map((uc) => ({
+      cardId:   uc.card.id,
+      name:     uc.card.name,
+      number:   uc.card.number,
+      imageUrl: uc.card.imageUrl,
+      version:  uc.version,
+      serieSlug: uc.card.serie.slug,
+      price:
+        uc.version === "REVERSE"
+          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
+          : (uc.card.price ?? 0),
+    }))
+    .filter((c) => c.price > 0 && c.imageUrl)
+    .sort((a, b) => b.price - a.price)
+    .slice(0, 10);
+}
+
 async function getCollectionValue(userId: string) {
   // Cards market value
   const userCards = await prisma.userCard.findMany({
@@ -74,6 +111,7 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions);
   const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
   const collectionValue = userId ? await getCollectionValue(userId) : null;
+  const topCards        = userId ? await getTopCards(userId)        : [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -157,10 +195,58 @@ export default async function HomePage() {
         )}
       </div>
 
+      {/* Top 10 most valuable cards — authenticated users only */}
+      {topCards.length > 0 && (
+        <section className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">
+                Mes cartes les plus chères
+              </h2>
+              <Link
+                href="/classeur/cartes"
+                className="text-xs font-medium text-blue-500 hover:underline"
+              >
+                Voir tout
+              </Link>
+            </div>
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 scrollbar-none">
+              {topCards.map((card) => (
+                <Link
+                  key={`${card.cardId}-${card.version}`}
+                  href={`/collection/cartes/${card.serieSlug}`}
+                  className="group shrink-0 w-28"
+                >
+                  <div className="relative rounded-xl overflow-hidden border border-[var(--border-default)] bg-[var(--bg-card)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={card.imageUrl!}
+                      alt={card.name}
+                      className="w-full h-auto block group-hover:scale-105 transition-transform duration-200"
+                    />
+                    {/* Price badge */}
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
+                      <span className="inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                        {card.price.toLocaleString("fr-FR", {
+                          style: "currency",
+                          currency: "EUR",
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <HomepageCTASection />
 
       {/* FAQ */}
-      <section className="py-20 bg-[var(--bg-secondary)]">
+      <section className="py-20 bg-[var(--bg-primary)]">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-[var(--text-primary)]">Questions fréquentes</h2>
