@@ -1,5 +1,3 @@
-import Link from "next/link";
-import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,40 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
-import { Package, TrendingUp, ShoppingBag, BarChart3, ArrowRight, Star, TrendingUp as TrendIcon } from "lucide-react";
-
-const FEATURES = [
-  {
-    icon: Package,
-    title: "Catalogue complet",
-    description:
-      "Tous les items scellés Pokémon TCG : displays, ETB, coffrets, boosters, de WOTC à Méga-Évolution.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Suivi de valeur",
-    description:
-      "Suivez la valeur de votre collection en temps réel avec des graphiques et des indicateurs de tendance.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Market intégré",
-    description:
-      "Trouvez les meilleures offres sur CardMarket, eBay, LeBonCoin et Vinted, centralisées en un seul endroit.",
-  },
-  {
-    icon: BarChart3,
-    title: "Dashboard Finary-like",
-    description:
-      "Visualisez votre patrimoine Pokémon comme un portefeuille d'investissement avec P&L, répartition et historique.",
-  },
-];
-
-const POPULAR_BLOCS = [
-  { name: "Méga-Évolution", slug: "mega-evolution", series: 4, period: "2025 — En cours", image: "/images/blocs/mega-evolution.png" },
-  { name: "Écarlate & Violet", slug: "ecarlate-violet", series: 15, period: "2023 — 2025", image: "/images/blocs/ecarlate-violet.png" },
-  { name: "Épée & Bouclier", slug: "epee-bouclier", series: 16, period: "2020 — 2023", image: "/images/blocs/epee-bouclier.png" },
-];
+import { ArrowRight, Star, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 const FAQ_ITEMS = [
   {
@@ -115,9 +81,6 @@ export default async function HomePage() {
       <Header />
 
       {/* ── Hero — full-width banner at natural aspect ratio, all viewports ── */}
-      {/* -mt-14/-mt-16 pulls the section behind the transparent sticky header.
-          The h-14/h-16 spacer then pushes the image to start exactly at the
-          header bottom, so the profile avatar never covers a Pokémon. */}
       <div className="-mt-14 md:-mt-16">
         {/* Spacer = header height → tiny dark-bg gap above the image */}
         <div className="h-14 md:h-16" />
@@ -135,7 +98,7 @@ export default async function HomePage() {
         </div>
 
         {/* Text content — below the banner on a solid dark background */}
-        <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-3 sm:px-6 lg:px-8">
+        <div className="bg-[var(--bg-primary)] px-4 pb-6 pt-3 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-4">
               <Star className="h-3.5 w-3.5 text-yellow-400" />
@@ -153,122 +116,47 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Features */}
-      <section className="py-20 bg-[var(--bg-primary)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-[var(--text-primary)]">
-              Tout ce qu&apos;il faut pour votre collection
-            </h2>
-            <p className="mt-3 text-[var(--text-secondary)] max-w-2xl mx-auto">
-              PokeItem réunit catalogue, suivi de valeur et market en une seule plateforme.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.title}
-                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="inline-flex rounded-xl bg-[var(--color-primary)]/10 p-3">
-                  <feature.icon className="h-6 w-6 text-[var(--color-primary)]" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm text-[var(--text-secondary)]">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Popular blocs */}
-      <section className="py-20 bg-[var(--bg-secondary)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h2 className="text-2xl font-bold text-[var(--text-primary)]">Séries populaires</h2>
-              <p className="mt-1 text-[var(--text-secondary)]">Explorez les dernières séries Pokémon TCG</p>
-            </div>
-            <Link
-              href="/collection"
-              className="text-sm font-medium text-[var(--color-primary)] hover:underline flex items-center gap-1"
-            >
-              Tout voir <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {POPULAR_BLOCS.map((bloc) => (
+        {/* Collection value — directly below CTA buttons, only for authenticated users with a collection */}
+        {collectionValue && collectionValue.total > 0 && (
+          <div className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-xl">
               <Link
-                key={bloc.slug}
-                href={`/collection/produits/${bloc.slug}`}
-                className="group rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 hover:shadow-lg hover:border-[var(--color-primary)]/30 transition-all"
+                href="/classeur"
+                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-emerald-500/40 hover:shadow-lg transition-all"
               >
-                <div className="h-32 rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex items-center justify-center mb-4 p-4">
-                  <Image
-                    src={bloc.image}
-                    alt={bloc.name}
-                    width={240}
-                    height={70}
-                    className="h-auto max-h-20 w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform"
-                  />
+                <div className="flex items-center gap-4">
+                  <div className="rounded-xl bg-emerald-500/10 p-2.5 shrink-0">
+                    <TrendingUp className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--text-secondary)]">Valeur de ma collection</p>
+                    <p className="text-xl font-bold text-emerald-400 font-data">
+                      {collectionValue.total.toLocaleString("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">
+                      Cartes&nbsp;
+                      <span className="font-medium text-[var(--text-secondary)]">
+                        {collectionValue.cardsValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
+                      </span>
+                      &nbsp;·&nbsp;Scellés&nbsp;
+                      <span className="font-medium text-[var(--text-secondary)]">
+                        {collectionValue.sealedValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
-                  {bloc.name}
-                </h3>
-                <p className="text-sm text-[var(--text-secondary)] mt-1">
-                  {bloc.series} extensions &middot; {bloc.period}
-                </p>
+                <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-emerald-400 transition-colors shrink-0" />
               </Link>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Collection value — only for authenticated users */}
-      {collectionValue && collectionValue.total > 0 && (
-        <section className="py-10 bg-[var(--bg-primary)]">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <Link
-              href="/classeur"
-              className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-5 hover:border-emerald-500/40 hover:shadow-lg transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl bg-emerald-500/10 p-3 shrink-0">
-                  <TrendIcon className="h-6 w-6 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-[var(--text-secondary)]">Valeur de ma collection</p>
-                  <p className="text-2xl font-bold text-emerald-400 font-data">
-                    {collectionValue.total.toLocaleString("fr-FR", {
-                      style: "currency",
-                      currency: "EUR",
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </p>
-                  <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">
-                    Cartes&nbsp;
-                    <span className="font-medium text-[var(--text-secondary)]">
-                      {collectionValue.cardsValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-                    </span>
-                    &nbsp;·&nbsp;Scellés&nbsp;
-                    <span className="font-medium text-[var(--text-secondary)]">
-                      {collectionValue.sealedValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-emerald-400 transition-colors shrink-0" />
-            </Link>
-          </div>
-        </section>
-      )}
+        )}
+      </div>
 
       <HomepageCTASection />
 
