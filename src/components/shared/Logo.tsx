@@ -46,7 +46,7 @@ export function Logo({ className, size = "md", variant = "full" }: LogoProps) {
       {variant !== "icon" && (
         <span className={cn("font-extrabold tracking-tight leading-none", TEXT_SIZES[size])}>
           <span className="text-[#1B2E6B] dark:text-white">POKE</span>
-          <span className="text-[#CC2222]">ITEM</span>
+          <span className="text-[#E7BA76]">ITEM</span>
         </span>
       )}
     </Link>
