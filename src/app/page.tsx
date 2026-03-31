@@ -1,11 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
-import { Package, TrendingUp, ShoppingBag, BarChart3, ArrowRight, Star } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, BarChart3, ArrowRight, Star, TrendingUp as TrendIcon } from "lucide-react";
 
 const FEATURES = [
   {
@@ -75,7 +78,38 @@ const FAQ_ITEMS = [
   },
 ];
 
-export default function HomePage() {
+async function getCollectionValue(userId: string) {
+  // Cards market value
+  const userCards = await prisma.userCard.findMany({
+    where: { userId },
+    select: { quantity: true, version: true, card: { select: { price: true, priceReverse: true } } },
+  });
+  const cardsValue = userCards.reduce((sum, uc) => {
+    const price =
+      uc.version === "REVERSE"
+        ? (uc.card.priceReverse ?? uc.card.price ?? 0)
+        : (uc.card.price ?? 0);
+    return sum + price * uc.quantity;
+  }, 0);
+
+  // Sealed items market value
+  const portfolioItems = await prisma.portfolioItem.findMany({
+    where: { userId },
+    select: { quantity: true, item: { select: { currentPrice: true, priceTrend: true } } },
+  });
+  const sealedValue = portfolioItems.reduce((sum, pi) => {
+    const price = pi.item.currentPrice ?? pi.item.priceTrend ?? 0;
+    return sum + price * pi.quantity;
+  }, 0);
+
+  return { cardsValue, sealedValue, total: cardsValue + sealedValue };
+}
+
+export default async function HomePage() {
+  const session = await getServerSession(authOptions);
+  const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const collectionValue = userId ? await getCollectionValue(userId) : null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -195,6 +229,46 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Collection value — only for authenticated users */}
+      {collectionValue && collectionValue.total > 0 && (
+        <section className="py-10 bg-[var(--bg-primary)]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Link
+              href="/classeur"
+              className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-5 hover:border-emerald-500/40 hover:shadow-lg transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="rounded-xl bg-emerald-500/10 p-3 shrink-0">
+                  <TrendIcon className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-[var(--text-secondary)]">Valeur de ma collection</p>
+                  <p className="text-2xl font-bold text-emerald-400 font-data">
+                    {collectionValue.total.toLocaleString("fr-FR", {
+                      style: "currency",
+                      currency: "EUR",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">
+                    Cartes&nbsp;
+                    <span className="font-medium text-[var(--text-secondary)]">
+                      {collectionValue.cardsValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
+                    </span>
+                    &nbsp;·&nbsp;Scellés&nbsp;
+                    <span className="font-medium text-[var(--text-secondary)]">
+                      {collectionValue.sealedValue.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-[var(--text-tertiary)] group-hover:text-emerald-400 transition-colors shrink-0" />
+            </Link>
+          </div>
+        </section>
+      )}
 
       <HomepageCTASection />
 
