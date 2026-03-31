@@ -8,6 +8,7 @@ import {
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,168 +39,135 @@ interface IdentifyResult {
 
 const SLIDES = [
   {
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-16 w-16 text-blue-400"
-      >
-        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-        <circle cx="12" cy="13" r="4" />
-      </svg>
-    ),
-    title: "Prêt à scanner tes cartes ?",
-    subtitle: "Pointez votre caméra vers une carte Pokémon et l'IA l'identifie instantanément.",
+    emoji: "📷",
+    title: "Scanner une carte",
+    subtitle: "Pointez votre caméra vers une carte Pokémon — l'IA l'identifie instantanément.",
   },
   {
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-16 w-16 text-yellow-400"
-      >
-        <circle cx="12" cy="12" r="5" />
-        <line x1="12" y1="1" x2="12" y2="3" />
-        <line x1="12" y1="21" x2="12" y2="23" />
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-        <line x1="1" y1="12" x2="3" y2="12" />
-        <line x1="21" y1="12" x2="23" y2="12" />
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-      </svg>
-    ),
-    title: "Un bon éclairage, c'est l'idéal !",
-    subtitle: "Évitez les reflets et les ombres. Une lumière naturelle ou une lampe de bureau suffisent.",
+    emoji: "☀️",
+    title: "Bonne lumière",
+    subtitle: "Évitez les reflets. Une lumière naturelle ou une lampe de bureau suffisent.",
   },
   {
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-16 w-16 text-green-400"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <line x1="3" y1="9" x2="21" y2="9" />
-        <line x1="3" y1="15" x2="21" y2="15" />
-        <line x1="9" y1="3" x2="9" y2="21" />
-        <line x1="15" y1="3" x2="15" y2="21" />
-      </svg>
-    ),
-    title: "Une carte bien posée, c'est la clé !",
-    subtitle: "Posez la carte à plat, face visible, et centrez-la dans le cadre de visée.",
+    emoji: "🎯",
+    title: "Bien cadrer",
+    subtitle: "Posez la carte à plat, face visible, et centrez-la dans le cadre.",
   },
 ];
 
 const ONBOARDING_KEY = "pokeitem_scanner_onboarding_done";
 
+// ─── Shared fullscreen wrapper ─────────────────────────────────────────────────
+
+function Screen({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`fixed inset-0 z-[60] flex flex-col bg-black ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Corner viewfinder ─────────────────────────────────────────────────────────
+
+function Viewfinder({ dim = false }: { dim?: boolean }) {
+  const color = dim ? "rgba(255,255,255,0.25)" : "white";
+  const size = 260;
+  const height = 370;
+  return (
+    <div className="relative" style={{ width: size, height }}>
+      {(["tl", "tr", "bl", "br"] as const).map((c) => (
+        <div
+          key={c}
+          className="absolute h-10 w-10"
+          style={{
+            top:    c.startsWith("t") ? 0 : "auto",
+            bottom: c.startsWith("b") ? 0 : "auto",
+            left:   c.endsWith("l")   ? 0 : "auto",
+            right:  c.endsWith("r")   ? 0 : "auto",
+            borderColor: color,
+            borderStyle: "solid",
+            borderTopWidth:    c.startsWith("t") ? 2.5 : 0,
+            borderBottomWidth: c.startsWith("b") ? 2.5 : 0,
+            borderLeftWidth:   c.endsWith("l")   ? 2.5 : 0,
+            borderRightWidth:  c.endsWith("r")   ? 2.5 : 0,
+            borderRadius:
+              c === "tl" ? "6px 0 0 0" :
+              c === "tr" ? "0 6px 0 0" :
+              c === "bl" ? "0 0 0 6px" :
+                           "0 0 6px 0",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CardScanner() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const router = useRouter();
+  const videoRef    = useRef<HTMLVideoElement>(null);
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const streamRef   = useRef<MediaStream | null>(null);
 
-  const [state, setState] = useState<ScannerState>("idle");
+  const [state, setState]                 = useState<ScannerState>("idle");
   const [onboardingSlide, setOnboardingSlide] = useState(0);
-  const [result, setResult] = useState<IdentifyResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult]               = useState<IdentifyResult | null>(null);
+  const [error, setError]                 = useState<string | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
+  const [photo, setPhoto]                 = useState<string | null>(null);
+  const [isAdding, setIsAdding]           = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<CardVersion>(CardVersion.NORMAL);
 
-  // ── Check onboarding on mount ──────────────────────────────────────────────
+  // Show onboarding on first visit
   useEffect(() => {
-    const done = localStorage.getItem(ONBOARDING_KEY);
-    if (!done) {
-      setState("onboarding");
-    }
+    if (!localStorage.getItem(ONBOARDING_KEY)) setState("onboarding");
   }, []);
 
-  // ── Clean up camera on unmount ─────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  // Clean up camera on unmount
+  useEffect(() => () => { streamRef.current?.getTracks().forEach((t) => t.stop()); }, []);
 
-  // ── Stop stream helper ─────────────────────────────────────────────────────
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
-  // ── Attach stream to video once scanning view is mounted ──────────────────
+  // Attach stream when scanning state mounts
   useEffect(() => {
     if (state === "scanning" && videoRef.current && streamRef.current) {
-      const video = videoRef.current;
-      video.srcObject = streamRef.current;
-      video.play().catch(() => {
-        setError("Impossible de démarrer la vidéo.");
-        stopStream();
-        setState("idle");
-      });
+      const v = videoRef.current;
+      v.srcObject = streamRef.current;
+      v.play().catch(() => { setError("Impossible de démarrer la vidéo."); stopStream(); setState("idle"); });
     }
   }, [state, stopStream]);
 
-  // ── Start camera ───────────────────────────────────────────────────────────
   const startCamera = useCallback(async () => {
     setError(null);
     setPermissionDenied(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width:  { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
-      // Set state first → triggers re-render → video element mounts → useEffect assigns stream
       setState("scanning");
     } catch (err) {
-      if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setPermissionDenied(true);
-      } else {
-        setError("Impossible d'accéder à la caméra.");
-      }
-      setState("idle");
+      if (err instanceof DOMException && err.name === "NotAllowedError") setPermissionDenied(true);
+      else setError("Impossible d'accéder à la caméra.");
     }
   }, []);
 
-  // ── Identify via API ───────────────────────────────────────────────────────
   const identify = useCallback(async (dataUrl: string) => {
     try {
-      const res = await fetch("/api/scanner/identify", {
+      const res  = await fetch("/api/scanner/identify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: dataUrl }),
       });
-
-      if (res.status === 500) {
-        setError("Scanner temporairement indisponible.");
-        setState("idle");
-        return;
-      }
-
-      const data: IdentifyResult = await res.json();
-      setResult(data);
+      if (res.status === 500) { setError("Scanner temporairement indisponible."); setState("idle"); return; }
+      setResult(await res.json());
       setState("result");
     } catch {
       setError("Erreur de connexion. Réessayez.");
@@ -207,21 +175,13 @@ export function CardScanner() {
     }
   }, []);
 
-  // ── Capture photo ──────────────────────────────────────────────────────────
   const capturePhoto = useCallback(() => {
-    const video = videoRef.current;
+    const video  = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
-
-    const w = video.videoWidth;
-    const h = video.videoHeight;
-    if (!w || !h) {
-      setError("La caméra n'est pas encore prête. Réessayez dans un instant.");
-      return;
-    }
-
-    canvas.width  = w;
-    canvas.height = h;
+    const w = video.videoWidth, h = video.videoHeight;
+    if (!w || !h) { setError("Caméra pas encore prête, réessayez."); return; }
+    canvas.width = w; canvas.height = h;
     canvas.getContext("2d")!.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
     stopStream();
@@ -230,24 +190,19 @@ export function CardScanner() {
     void identify(dataUrl);
   }, [identify, stopStream]);
 
-  // ── File fallback ──────────────────────────────────────────────────────────
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        setPhoto(dataUrl);
-        setState("captured");
-        void identify(dataUrl);
-      };
-      reader.readAsDataURL(file);
-    },
-    [identify]
-  );
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPhoto(dataUrl);
+      setState("captured");
+      void identify(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  }, [identify]);
 
-  // ── Add to collection ──────────────────────────────────────────────────────
   const addToCollection = useCallback(async () => {
     if (!result?.card) return;
     setIsAdding(true);
@@ -255,452 +210,328 @@ export function CardScanner() {
       const res = await fetch("/api/cards/collection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cards: [
-            {
-              cardId: result.card.id,
-              quantity: 1,
-              condition: "NEAR_MINT",
-              language: "FR",
-              version: selectedVersion,
-            },
-          ],
-        }),
+        body: JSON.stringify({ cards: [{ cardId: result.card.id, quantity: 1, condition: "NEAR_MINT", language: "FR", version: selectedVersion }] }),
       });
-      if (res.ok) {
-        setSuccessBanner(`${result.card.name} ajoutée à ta collection !`);
-        setTimeout(() => setSuccessBanner(null), 5000);
-      } else {
-        setError("Impossible d'ajouter la carte.");
-      }
-    } catch {
-      setError("Erreur de connexion.");
-    }
+      if (res.ok) { setSuccessBanner(`${result.card.name} ajoutée !`); setTimeout(() => setSuccessBanner(null), 4000); }
+      else setError("Impossible d'ajouter la carte.");
+    } catch { setError("Erreur de connexion."); }
     setIsAdding(false);
   }, [result, selectedVersion]);
 
-  // ── Reset ──────────────────────────────────────────────────────────────────
   const reset = useCallback(() => {
-    stopStream();
-    setResult(null);
-    setPhoto(null);
-    setError(null);
-    setSelectedVersion(CardVersion.NORMAL);
-    setState("idle");
+    stopStream(); setResult(null); setPhoto(null); setError(null);
+    setSelectedVersion(CardVersion.NORMAL); setState("idle");
   }, [stopStream]);
 
-  // ── Close camera ───────────────────────────────────────────────────────────
-  const closeCamera = useCallback(() => {
-    stopStream();
-    setState("idle");
-  }, [stopStream]);
+  const goBack = useCallback(() => { stopStream(); router.back(); }, [stopStream, router]);
 
-  // ── Onboarding controls ────────────────────────────────────────────────────
   const finishOnboarding = useCallback(() => {
-    localStorage.setItem(ONBOARDING_KEY, "1");
-    setState("idle");
+    localStorage.setItem(ONBOARDING_KEY, "1"); setState("idle");
   }, []);
 
-  const nextSlide = useCallback(() => {
-    if (onboardingSlide < SLIDES.length - 1) {
-      setOnboardingSlide((s) => s + 1);
-    } else {
-      finishOnboarding();
-    }
-  }, [onboardingSlide, finishOnboarding]);
+  const formatPrice = (p: number | null | undefined) =>
+    p == null ? null : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p);
 
-  // ── Format price ───────────────────────────────────────────────────────────
-  const formatPrice = (price: number | null | undefined) => {
-    if (price == null) return null;
-    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(price);
-  };
-
-  // ── Render ─────────────────────────────────────────────────────────────────
-
-  // ONBOARDING
+  // ── ONBOARDING ──────────────────────────────────────────────────────────────
   if (state === "onboarding") {
     const slide = SLIDES[onboardingSlide];
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-950 px-6 text-center">
-        <div className="mb-8">{slide.icon}</div>
-        <h1 className="mb-3 text-2xl font-bold text-white">{slide.title}</h1>
-        <p className="mb-10 max-w-xs text-sm text-gray-400">{slide.subtitle}</p>
-
-        {/* Dots */}
-        <div className="mb-8 flex gap-2">
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 rounded-full transition-all ${
-                i === onboardingSlide ? "w-6 bg-blue-400" : "w-1.5 bg-gray-600"
-              }`}
-            />
-          ))}
+      <Screen>
+        {/* Skip */}
+        <div className="flex justify-end px-5 pt-14">
+          <button onClick={finishOnboarding} className="text-xs text-white/40 hover:text-white/70 transition-colors">
+            Passer
+          </button>
         </div>
 
-        <button
-          onClick={nextSlide}
-          className="mb-4 w-full max-w-xs rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-        >
-          {onboardingSlide < SLIDES.length - 1 ? "Continuer" : "Commencer"}
-        </button>
-        <button
-          onClick={finishOnboarding}
-          className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          Passer l&apos;onboarding
-        </button>
-      </div>
+        {/* Content */}
+        <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+          <span className="mb-6 text-6xl">{slide.emoji}</span>
+          <h1 className="mb-3 text-xl font-bold text-white">{slide.title}</h1>
+          <p className="max-w-xs text-sm leading-relaxed text-white/50">{slide.subtitle}</p>
+        </div>
+
+        {/* Dots + CTA */}
+        <div className="flex flex-col items-center gap-5 pb-16 px-8">
+          <div className="flex gap-1.5">
+            {SLIDES.map((_, i) => (
+              <div key={i} className={`h-1 rounded-full transition-all ${i === onboardingSlide ? "w-5 bg-white" : "w-1 bg-white/20"}`} />
+            ))}
+          </div>
+          <button
+            onClick={() => onboardingSlide < SLIDES.length - 1 ? setOnboardingSlide((s) => s + 1) : finishOnboarding()}
+            className="w-full rounded-2xl bg-white py-3.5 text-sm font-semibold text-black transition-opacity active:opacity-80"
+          >
+            {onboardingSlide < SLIDES.length - 1 ? "Continuer" : "Commencer"}
+          </button>
+        </div>
+      </Screen>
     );
   }
 
-  // SCANNING (camera live)
+  // ── SCANNING ────────────────────────────────────────────────────────────────
   if (state === "scanning") {
     return (
-      <div className="fixed inset-0 z-50 bg-black">
-        {/* Video */}
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover"
-          playsInline
-          muted
-        />
+      <Screen>
+        <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover" playsInline muted />
 
-        {/* Dark overlay with viewfinder cutout (purely visual) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {/* Viewfinder */}
-          <div className="relative" style={{ width: 260, height: 370 }}>
-            {/* Corner brackets */}
-            {(["tl", "tr", "bl", "br"] as const).map((corner) => (
-              <div
-                key={corner}
-                className="absolute h-10 w-10"
-                style={{
-                  top: corner.startsWith("t") ? 0 : "auto",
-                  bottom: corner.startsWith("b") ? 0 : "auto",
-                  left: corner.endsWith("l") ? 0 : "auto",
-                  right: corner.endsWith("r") ? 0 : "auto",
-                  borderColor: "white",
-                  borderStyle: "solid",
-                  borderTopWidth: corner.startsWith("t") ? 3 : 0,
-                  borderBottomWidth: corner.startsWith("b") ? 3 : 0,
-                  borderLeftWidth: corner.endsWith("l") ? 3 : 0,
-                  borderRightWidth: corner.endsWith("r") ? 3 : 0,
-                  borderRadius:
-                    corner === "tl"
-                      ? "6px 0 0 0"
-                      : corner === "tr"
-                      ? "0 6px 0 0"
-                      : corner === "bl"
-                      ? "0 0 0 6px"
-                      : "0 0 6px 0",
-                }}
-              />
-            ))}
-            <p className="absolute -bottom-8 left-0 right-0 text-center text-xs text-white/70">
-              Centrez la carte dans le cadre
-            </p>
-          </div>
+        {/* Dim overlay */}
+        <div className="absolute inset-0 bg-black/30" />
+
+        {/* Viewfinder */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <Viewfinder />
+          <p className="text-[11px] tracking-widest text-white/50 uppercase">Centrez la carte</p>
         </div>
 
         {/* Top bar */}
-        <div className="absolute left-0 right-0 top-0 flex items-center justify-between px-4 pt-safe-top pb-4 pt-4">
-          <button
-            onClick={closeCamera}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white"
-            aria-label="Fermer"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+        <div className="absolute left-0 right-0 top-0 flex items-center justify-between px-5 pt-14 pb-4">
+          <button onClick={() => { stopStream(); setState("idle"); }} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+          <span className="text-sm font-medium text-white/80 tracking-wide">Scan d&apos;une carte</span>
+          {/* Search placeholder for symmetry */}
+          <button onClick={() => fileInputRef.current?.click()} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
             </svg>
           </button>
         </div>
 
         {/* Bottom controls */}
-        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-12 gap-6">
-          {/* Capture button */}
+        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-16 gap-5">
           <button
             onClick={capturePhoto}
-            className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-white/20 shadow-lg hover:bg-white/30 transition-colors active:scale-95"
+            className="flex h-20 w-20 items-center justify-center rounded-full border-[3px] border-white/80 bg-transparent active:scale-95 transition-transform"
             aria-label="Prendre la photo"
           >
-            <div className="h-14 w-14 rounded-full bg-white" />
+            <div className="h-[62px] w-[62px] rounded-full bg-white/90" />
           </button>
-
-          {/* File fallback */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="text-xs text-white/60 hover:text-white/90 transition-colors underline underline-offset-2"
-          >
-            Vous n&apos;arrivez pas à scanner ?
+          <button onClick={() => fileInputRef.current?.click()} className="text-[11px] tracking-wide text-white/40 hover:text-white/70 transition-colors">
+            Importer depuis la galerie
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
         </div>
 
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         <canvas ref={canvasRef} className="hidden" />
-      </div>
+      </Screen>
     );
   }
 
-  // CAPTURED / LOADING
+  // ── CAPTURED / LOADING ──────────────────────────────────────────────────────
   if (state === "captured") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-950">
+      <Screen className="items-center justify-center gap-6">
         {photo && (
-          <div className="mb-6 h-48 w-36 overflow-hidden rounded-xl border border-white/10">
+          <div className="h-52 w-36 overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo} alt="Card photo" className="h-full w-full object-cover" />
+            <img src={photo} alt="" className="h-full w-full object-cover" />
           </div>
         )}
-        <div className="flex items-center gap-3 text-white">
-          <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        <div className="flex items-center gap-2.5 text-white/70">
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
           </svg>
-          <span className="text-sm font-medium">Identification en cours…</span>
+          <span className="text-xs tracking-widest uppercase">Identification…</span>
         </div>
-      </div>
+        <canvas ref={canvasRef} className="hidden" />
+      </Screen>
     );
   }
 
-  // IDLE / RESULT — both rendered in page context
-  return (
-    <>
-      {/* Hidden canvas for capture (only needed when camera is live, but keep here as fallback) */}
-      <canvas ref={canvasRef} className="hidden" />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+  // ── IDLE ─────────────────────────────────────────────────────────────────────
+  if (state === "idle") {
+    return (
+      <Screen>
+        <canvas ref={canvasRef} className="hidden" />
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
-      {/* Success banner */}
-      {successBanner && result?.serie && (
-        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-medium text-white shadow-lg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 flex-shrink-0">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span>
-            <Link
-              href={`/collection/cartes/${result.serie.blocSlug}/${result.serie.slug}`}
-              className="underline underline-offset-2"
-            >
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-5 pt-14 pb-4">
+          <button onClick={goBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span className="text-sm font-medium text-white/70 tracking-wide">Scanner</span>
+          <div className="h-9 w-9" />
+        </div>
+
+        {/* Center — inactive viewfinder */}
+        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+          <Viewfinder dim />
+          <div className="text-center">
+            <p className="text-base font-semibold text-white">Scanner une carte</p>
+            <p className="mt-1 text-xs text-white/35">Cadrez la carte dans le viseur</p>
+          </div>
+        </div>
+
+        {/* Errors */}
+        {(error || permissionDenied) && (
+          <div className="mx-5 mb-4 rounded-xl bg-red-950/60 px-4 py-3 text-xs text-red-400 text-center">
+            {permissionDenied ? "Accès caméra refusé — " : ""}{error ?? "Autorisez l'accès à la caméra dans vos réglages."}
+          </div>
+        )}
+
+        {/* Bottom actions */}
+        <div className="flex flex-col items-center gap-4 pb-16 px-6">
+          <button
+            onClick={() => void startCamera()}
+            className="w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity active:opacity-80"
+          >
+            Ouvrir la caméra
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="text-xs text-white/35 hover:text-white/60 transition-colors"
+          >
+            Choisir depuis la galerie
+          </button>
+        </div>
+      </Screen>
+    );
+  }
+
+  // ── RESULT ───────────────────────────────────────────────────────────────────
+  if (state === "result" && result) {
+    return (
+      <Screen>
+        {/* Success toast */}
+        {successBanner && result.serie && (
+          <div className="absolute top-14 left-4 right-4 z-10 flex items-center gap-2 rounded-xl bg-green-600/90 backdrop-blur-sm px-4 py-3 text-xs font-medium text-white shadow-lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <Link href={`/collection/cartes/${result.serie.blocSlug}/${result.serie.slug}`} className="underline underline-offset-2">
               {successBanner}
             </Link>
-          </span>
+          </div>
+        )}
+
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-5 pt-14 pb-2 shrink-0">
+          <button onClick={reset} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <span className="text-sm font-medium text-white/70">Résultat</span>
+          <div className="h-9 w-9" />
         </div>
-      )}
 
-      <div className="mx-auto max-w-md px-4 py-12">
-        {/* Error message */}
-        {error && (
-          <div className="mb-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-400">
-            {error}
-          </div>
-        )}
-
-        {/* Permission denied */}
-        {permissionDenied && (
-          <div className="mb-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
-            Accès caméra refusé.{" "}
-            <a href="/collection/cartes" className="underline">
-              Recherche manuelle
-            </a>
-          </div>
-        )}
-
-        {/* RESULT STATE */}
-        {state === "result" && result && (
-          <div>
-            {result.found && result.card && result.serie ? (
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden shadow-sm">
-                {/* Card image */}
-                <div className="flex justify-center bg-gradient-to-b from-blue-50 to-transparent dark:from-blue-950/20 py-6">
-                  {result.card.imageUrl ? (
-                    <Image
-                      src={result.card.imageUrl}
-                      alt={result.card.name}
-                      width={160}
-                      height={224}
-                      className="rounded-lg shadow-md object-contain"
-                    />
-                  ) : (
-                    <div className="flex h-56 w-40 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-12 w-12 text-gray-400">
-                        <rect x="2" y="3" width="20" height="18" rx="2" />
-                        <circle cx="12" cy="10" r="3" />
-                        <path d="M2 18l4-4 4 4 4-6 4 6" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-
-                {/* Card info */}
-                <div className="px-5 pb-6">
-                  <h2 className="text-lg font-bold text-[var(--text-primary)] mb-0.5">
-                    {result.card.name}
-                  </h2>
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    {result.serie.name} · #{result.card.number}
-                  </p>
-
-                  <div className="flex items-center gap-2 mb-5">
-                    {/* Price */}
-                    {result.card.price != null && (
-                      <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                        {formatPrice(result.card.price)}
-                      </span>
-                    )}
-                    {/* Rarity */}
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400 capitalize">
-                      {result.card.rarity.toLowerCase().replace(/_/g, " ")}
-                    </span>
-                    {/* Confidence */}
-                    <span className="ml-auto text-xs text-[var(--text-secondary)]">
-                      {result.confidence}% confiance
-                    </span>
-                  </div>
-
-                  {/* Version picker */}
-                  {(() => {
-                    const availableVersions = getSerieVersions(result.serie.slug, result.serie.blocSlug);
-                    if (availableVersions.length <= 1) return null;
-                    return (
-                      <div className="mb-5">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-                          Version
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {availableVersions.map((v) => (
-                            <button
-                              key={v}
-                              onClick={() => setSelectedVersion(v)}
-                              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                                selectedVersion === v
-                                  ? "border-blue-600 bg-blue-600 text-white"
-                                  : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
-                              }`}
-                            >
-                              {CARD_VERSION_LABELS[v]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-3">
-                    <button
-                      onClick={() => void addToCollection()}
-                      disabled={isAdding}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
-                    >
-                      {isAdding ? (
-                        <>
-                          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                          Ajout…
-                        </>
-                      ) : (
-                        "Ajouter à ma collection"
-                      )}
-                    </button>
-                    <button
-                      onClick={reset}
-                      className="rounded-xl border border-[var(--border-default)] py-3 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                    >
-                      Réessayer
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Not found */
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-10 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-gray-400">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    <line x1="11" y1="8" x2="11" y2="14" />
-                    <line x1="8" y1="11" x2="14" y2="11" />
+        {result.found && result.card && result.serie ? (
+          /* ── FOUND ──────────────────────────────────────────────────────── */
+          <div className="flex flex-1 flex-col overflow-y-auto">
+            {/* Card image */}
+            <div className="flex justify-center py-6">
+              {result.card.imageUrl ? (
+                <Image
+                  src={result.card.imageUrl}
+                  alt={result.card.name}
+                  width={160}
+                  height={224}
+                  className="rounded-xl shadow-2xl shadow-black/60 object-contain"
+                />
+              ) : (
+                <div className="flex h-56 w-40 items-center justify-center rounded-xl bg-white/5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-10 w-10 text-white/20">
+                    <rect x="2" y="3" width="20" height="18" rx="2"/>
+                    <circle cx="12" cy="10" r="3"/>
+                    <path d="M2 18l4-4 4 4 4-6 4 6"/>
                   </svg>
                 </div>
-                <h2 className="mb-2 text-base font-semibold text-[var(--text-primary)]">
-                  Carte non reconnue
-                </h2>
-                <p className="mb-6 text-sm text-[var(--text-secondary)]">
-                  Essayez sous un meilleur éclairage ou repositionnez la carte.
-                </p>
-                <button
-                  onClick={reset}
-                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-                >
-                  Réessayer
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* IDLE STATE */}
-        {state === "idle" && (
-          <div className="flex flex-col items-center text-center">
-            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-12 w-12 text-white"
-              >
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
+              )}
             </div>
 
-            <h1 className="mb-2 text-2xl font-bold text-[var(--text-primary)]">
-              Scanner de cartes
-            </h1>
-            <p className="mb-8 max-w-xs text-sm text-[var(--text-secondary)]">
-              Prenez en photo une carte Pokémon pour l&apos;identifier et l&apos;ajouter à votre collection.
-            </p>
+            {/* Info card */}
+            <div className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4">
+              <h2 className="text-base font-bold text-white mb-0.5">{result.card.name}</h2>
+              <p className="text-xs text-white/40 mb-3">{result.serie.name} · #{result.card.number}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                {result.card.price != null && (
+                  <span className="rounded-full bg-blue-500/20 px-2.5 py-1 text-[11px] font-semibold text-blue-400">
+                    {formatPrice(result.card.price)}
+                  </span>
+                )}
+                <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] text-white/40 capitalize">
+                  {result.card.rarity.toLowerCase().replace(/_/g, " ")}
+                </span>
+                <span className="ml-auto text-[11px] text-white/25">{result.confidence}% confiance</span>
+              </div>
+            </div>
 
-            <button
-              onClick={() => void startCamera()}
-              className="mb-4 flex w-full max-w-xs items-center justify-center gap-2 rounded-xl bg-blue-600 py-4 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
+            {/* Version picker */}
+            {(() => {
+              const versions = getSerieVersions(result.serie.slug, result.serie.blocSlug);
+              if (versions.length <= 1) return null;
+              return (
+                <div className="mx-4 mb-4">
+                  <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-white/30">Version</p>
+                  <div className="flex flex-wrap gap-2">
+                    {versions.map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setSelectedVersion(v)}
+                        className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${
+                          selectedVersion === v
+                            ? "border-white/80 bg-white text-black"
+                            : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"
+                        }`}
+                      >
+                        {CARD_VERSION_LABELS[v]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Actions */}
+            <div className="mx-4 flex flex-col gap-2.5 pb-10">
+              <button
+                onClick={() => void addToCollection()}
+                disabled={isAdding}
+                className="flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-sm font-semibold text-black disabled:opacity-50 transition-opacity active:opacity-80"
+              >
+                {isAdding ? (
+                  <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Ajout…</>
+                ) : "Ajouter à ma collection"}
+              </button>
+              <button
+                onClick={reset}
+                className="rounded-2xl border border-white/15 py-3.5 text-sm font-medium text-white/50 hover:text-white/80 transition-colors"
+              >
+                Rescanner
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── NOT FOUND ──────────────────────────────────────────────────── */
+          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/8">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-white/30">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
               </svg>
-              Ouvrir la caméra
-            </button>
-
+            </div>
+            <div>
+              <p className="font-semibold text-white">Carte non reconnue</p>
+              <p className="mt-1 text-xs text-white/35">Essayez sous un meilleur éclairage ou repositionnez la carte.</p>
+            </div>
             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-sm text-[var(--text-secondary)] underline underline-offset-2 hover:text-[var(--text-primary)] transition-colors"
+              onClick={reset}
+              className="w-full max-w-xs rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity active:opacity-80"
             >
-              Choisir une photo depuis la galerie
+              Réessayer
             </button>
           </div>
         )}
-      </div>
+      </Screen>
+    );
+  }
 
-      {/* Hidden canvas for file fallback capture */}
-    </>
-  );
+  return null;
 }
