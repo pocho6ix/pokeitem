@@ -12,11 +12,7 @@ const FOOTER_LINKS = {
     { href: "/collection/produits/mega-evolution", label: "Mega-Evolution" },
   ],
   Ressources: [
-    { href: "/blog", label: "Blog" },
     { href: "/market", label: "Market" },
-    { href: "/blog/guide-debuter-collection-pokemon-tcg", label: "Guide du débutant" },
-    { href: "/blog/top-10-produits-scelles-rentables-2025", label: "Top 10 produits rentables" },
-    { href: "/blog/investir-etb-strategie-conseils", label: "Investir dans les ETB" },
   ],
   Légal: [
     { href: "/mentions-legales", label: "Mentions légales" },

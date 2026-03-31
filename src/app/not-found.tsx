@@ -29,12 +29,6 @@ export default function NotFound() {
         >
           Collection
         </Link>
-        <Link
-          href="/blog"
-          className="rounded-lg border border-[var(--border-default)] px-5 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-        >
-          Blog
-        </Link>
       </div>
     </div>
   );
