@@ -197,7 +197,7 @@ export default async function HomePage() {
 
       {/* Top 10 most valuable cards — authenticated users only */}
       {topCards.length > 0 && (
-        <section className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+        <section className="bg-[var(--bg-primary)] px-4 pt-8 pb-10 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[var(--text-primary)]">
