@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Package, ShoppingBag, FileText, ScanLine, BookOpen, User, LogOut } from "lucide-react";
@@ -45,7 +45,7 @@ function getAvatarSrc(
 
 // ─── Mobile top bar ───────────────────────────────────────────────────────────
 
-function MobileTopBar() {
+function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
   const { data: session } = useSession();
   const pseudo     = session?.user?.name ?? null;
   const userId     = (session?.user as { id?: string } | undefined)?.id ?? null;
@@ -60,11 +60,11 @@ function MobileTopBar() {
         <div className="leading-tight">
           {pseudo ? (
             <>
-              <p className="text-[11px] text-[var(--text-tertiary)]">{getGreeting()},</p>
-              <p className="text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
+              <p className={cn("text-[11px]", isTransparent ? "text-white/60" : "text-[var(--text-tertiary)]")}>{getGreeting()},</p>
+              <p className={cn("text-sm font-bold", isTransparent ? "text-white" : "text-[var(--text-primary)]")}>{pseudo}</p>
             </>
           ) : (
-            <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
+            <p className={cn("text-sm font-bold", isTransparent ? "text-white" : "text-[var(--text-primary)]")}>PokeItem</p>
           )}
         </div>
       </div>
@@ -78,7 +78,7 @@ function MobileTopBar() {
               <img
                 src={avatarSrc}
                 alt={pseudo ?? "Profil"}
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-blue-600/50"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-white/40"
               />
             ) : (
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm">
@@ -89,7 +89,12 @@ function MobileTopBar() {
         ) : (
           <Link
             href="/connexion"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
+              isTransparent
+                ? "border-white/30 bg-white/10 text-white"
+                : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+            )}
             title="Connexion"
           >
             <User className="h-4 w-4" />
@@ -105,18 +110,38 @@ function MobileTopBar() {
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { data: session } = useSession();
   const userId    = (session?.user as { id?: string } | undefined)?.id ?? null;
   const hasAvatar = (session?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
   const avatarSrc = session ? getAvatarSrc(userId, hasAvatar) : null;
 
+  // Track scroll to toggle header transparency on the homepage
+  useEffect(() => {
+    if (pathname !== "/") return;
+    setScrolled(window.scrollY > 80);
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
+  // Transparent only on homepage before the user scrolls past the hero
+  const isTransparent = pathname === "/" && !scrolled;
+
   return (
     <>
       {/* ── Unified header shell ── */}
-      <header className="sticky top-0 z-50 w-full border-b border-[var(--border-default)] bg-[var(--bg-primary)]/80 backdrop-blur-xl">
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full transition-all duration-300",
+          isTransparent
+            ? "border-b border-transparent bg-transparent"
+            : "border-b border-[var(--border-default)] bg-[var(--bg-primary)]/80 backdrop-blur-xl"
+        )}
+      >
 
         {/* Mobile top bar */}
-        <MobileTopBar />
+        <MobileTopBar isTransparent={isTransparent} />
 
         {/* Desktop nav bar */}
         <div className="mx-auto hidden h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 md:flex">

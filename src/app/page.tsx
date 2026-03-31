@@ -80,8 +80,42 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden text-white">
+      {/* ── Mobile hero — confounded with transparent header ── */}
+      {/* -mt-14 pulls the section up behind the 56px sticky header */}
+      <div className="-mt-14 md:hidden">
+        {/* Banner at natural aspect ratio → all 3 Pokémon visible */}
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero-pokemon.jpg"
+            alt=""
+            className="w-full h-auto block"
+          />
+          {/* Gradient: darker at top (header area) fading to bg at bottom */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#07111f]/55 via-transparent to-[var(--bg-primary)]" />
+        </div>
+
+        {/* Text content below the banner */}
+        <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-2">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-4">
+            <Star className="h-3.5 w-3.5 text-yellow-400" />
+            La référence des collectionneurs Pokémon.
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-[var(--text-primary)]">
+            Gérez votre collection{" "}
+            <span className="text-yellow-400">Pokémon TCG</span>
+          </h1>
+          <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm">
+            Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
+          </p>
+          <div className="mt-5">
+            <HeroCTAButtons />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop hero — unchanged ── */}
+      <section className="hidden md:block relative overflow-hidden text-white">
         {/* Pokémon banner — positioned to show all 3 starters */}
         <div className="absolute inset-0">
           <Image
