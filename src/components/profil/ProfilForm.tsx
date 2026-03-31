@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 
 interface UserProfile {
@@ -144,6 +144,25 @@ export function ProfilForm() {
 
   return (
     <div className="space-y-8">
+      {/* S'abonner — Pro banner */}
+      <button
+        type="button"
+        className="w-full rounded-xl p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
+        style={{
+          background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-base font-bold text-black/80">S&apos;abonner</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70 backdrop-blur-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="" className="h-3.5 w-3.5 object-contain" />
+            Pro
+          </span>
+        </div>
+        <p className="mt-0.5 text-xs text-black/50">Débloquer toutes les fonctionnalités</p>
+      </button>
+
       {/* Toast message */}
       {message && (
         <div
@@ -188,7 +207,7 @@ export function ProfilForm() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-[#E7BA76] px-3 py-1.5 text-sm font-medium text-black hover:bg-[#d4a660] disabled:opacity-50 transition-colors"
               >
                 Changer la photo
               </button>
@@ -239,13 +258,13 @@ export function ProfilForm() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Votre pseudo"
                 maxLength={50}
-                className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-primary)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[#E7BA76] focus:outline-none focus:ring-1 focus:ring-[#E7BA76] transition-colors"
               />
               <button
                 type="button"
                 onClick={handleSaveName}
                 disabled={saving || !hasChanged}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-[#E7BA76] px-4 py-2 text-sm font-medium text-black hover:bg-[#d4a660] disabled:opacity-50 transition-colors"
               >
                 {saving ? "..." : "Enregistrer"}
               </button>
@@ -292,6 +311,14 @@ export function ProfilForm() {
           </div>
         </div>
       </section>
+      {/* Logout */}
+      <button
+        type="button"
+        onClick={() => signOut({ callbackUrl: "/" })}
+        className="w-full rounded-xl border border-red-500/30 bg-red-500/10 py-3 text-sm font-semibold text-red-500 hover:bg-red-500/20 transition-colors"
+      >
+        Déconnexion
+      </button>
     </div>
   );
 }

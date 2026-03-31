@@ -77,10 +77,10 @@ function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
               <img
                 src={avatarSrc}
                 alt={pseudo ?? "Profil"}
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-white/40"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-[#E7BA76]/50"
               />
             ) : (
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E7BA76] text-sm font-bold text-black shadow-sm">
                 {pseudo?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
               </span>
             )}
@@ -160,7 +160,7 @@ export function Header() {
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                      ? "bg-[#E7BA76]/10 text-[#E7BA76]"
                       : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                   )}
                 >
@@ -183,10 +183,10 @@ export function Header() {
                     <img
                       src={avatarSrc}
                       alt={session.user?.name ?? "Profil"}
-                      className="h-8 w-8 rounded-full object-cover ring-2 ring-blue-600/50"
+                      className="h-8 w-8 rounded-full object-cover ring-2 ring-[#E7BA76]/50"
                     />
                   ) : (
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E7BA76] text-sm font-bold text-black">
                       {session.user?.name?.charAt(0).toUpperCase() ?? <User className="h-4 w-4" />}
                     </span>
                   )}
@@ -222,7 +222,7 @@ export function Header() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                    ? "bg-[#E7BA76]/10 text-[#E7BA76]"
                     : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                 )}
               >

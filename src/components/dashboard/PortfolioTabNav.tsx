@@ -23,7 +23,7 @@ export function PortfolioTabNav() {
             href={tab.href}
             className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
               active
-                ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+                ? "border-[#E7BA76] text-[#E7BA76]"
                 : "border-transparent text-[var(--text-secondary)] hover:border-[var(--border-default)] hover:text-[var(--text-primary)]"
             }`}
           >

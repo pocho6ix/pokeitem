@@ -24,7 +24,7 @@ export function TabNav({ tabs }: TabNavProps) {
           href={tab.href}
           className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
             tab.active
-              ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
+              ? "border-[#E7BA76] text-[#E7BA76]"
               : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)]"
           }`}
         >

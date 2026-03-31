@@ -123,15 +123,15 @@ export default async function HomePage() {
         <div className="h-14 md:h-16" />
 
         {/* Image at natural ratio → all 3 Pokémon always visible */}
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden bg-[var(--bg-primary)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/hero-pokemon.jpg"
+            src="/images/hero-pokemon.png"
             alt=""
             className="w-full h-auto block"
           />
           {/* Bottom fade into page bg */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-primary)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-primary)]/10 via-transparent to-[var(--bg-primary)]" />
         </div>
 
         {/* Text content — below the banner on a solid dark background */}
@@ -205,7 +205,7 @@ export default async function HomePage() {
               </h2>
               <Link
                 href="/classeur/cartes"
-                className="text-xs font-medium text-blue-500 hover:underline"
+                className="text-xs font-medium text-[#E7BA76] hover:underline"
               >
                 Voir tout
               </Link>
@@ -226,7 +226,7 @@ export default async function HomePage() {
                     />
                     {/* Price badge */}
                     <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                      <span className="inline-flex items-center rounded-full bg-[#E7BA76] px-2 py-0.5 text-[10px] font-bold text-black shadow">
                         {card.price.toLocaleString("fr-FR", {
                           style: "currency",
                           currency: "EUR",

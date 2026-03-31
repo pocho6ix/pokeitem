@@ -202,8 +202,8 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 function EmptyPortfolio() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="mb-6 rounded-full bg-blue-100 p-6 dark:bg-blue-900/30">
-        <Package className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+      <div className="mb-6 rounded-full bg-[#E7BA76]/20 p-6 dark:bg-[#E7BA76]/10">
+        <Package className="h-12 w-12 text-[#E7BA76]" />
       </div>
       <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">
         Votre portfolio est vide
@@ -213,7 +213,7 @@ function EmptyPortfolio() {
       </p>
       <Link
         href="/collection"
-        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 transition-colors"
+        className="inline-flex items-center gap-2 rounded-xl bg-[#E7BA76] px-6 py-3 font-medium text-black hover:bg-[#d4a660] transition-colors"
       >
         <Search className="h-4 w-4" />
         Explorer le catalogue
@@ -325,7 +325,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
           </h2>
           <Link
             href="/connexion?callbackUrl=/portfolio"
-            className="mt-4 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            className="mt-4 rounded-xl bg-[#E7BA76] px-6 py-3 font-medium text-black hover:bg-[#d4a660]"
           >
             Se connecter
           </Link>
@@ -413,7 +413,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
                     onClick={() => setPeriod(p)}
                     className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                       period === p
-                        ? "bg-[var(--color-primary)] text-white"
+                        ? "bg-[var(--color-primary)] text-black"
                         : "text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]"
                     }`}
                   >
@@ -653,7 +653,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setPricingItem(row.item)}
-                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-950/30 transition-colors"
+                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76] transition-colors"
                             title="Actualiser le prix"
                           >
                             <RefreshCw className="h-4 w-4" />

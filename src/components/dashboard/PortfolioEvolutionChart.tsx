@@ -112,7 +112,7 @@ export function PortfolioEvolutionChart() {
               onClick={() => setPeriod(p)}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
                 period === p
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#E7BA76] text-black"
                   : "text-[var(--text-tertiary)] hover:bg-[var(--bg-secondary)]"
               }`}
             >
@@ -129,7 +129,7 @@ export function PortfolioEvolutionChart() {
             onClick={() => setSelectedSerie(null)}
             className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               selectedSerie === null
-                ? "bg-blue-600 text-white"
+                ? "bg-[#E7BA76] text-black"
                 : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
             }`}
           >
@@ -141,7 +141,7 @@ export function PortfolioEvolutionChart() {
               onClick={() => setSelectedSerie(s.slug === selectedSerie ? null : s.slug)}
               className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 selectedSerie === s.slug
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#E7BA76] text-black"
                   : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
               }`}
             >

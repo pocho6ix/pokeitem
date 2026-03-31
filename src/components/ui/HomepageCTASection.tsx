@@ -20,7 +20,7 @@ export function HomepageCTASection() {
         </p>
         <Link
           href="/inscription"
-          className="mt-8 inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-white shadow-lg hover:bg-[var(--color-primary-dark)] transition-colors"
+          className="mt-8 inline-flex items-center justify-center rounded-xl bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-black shadow-lg hover:bg-[var(--color-primary-dark)] transition-colors"
         >
           Créer mon compte gratuitement
           <ArrowRight className="ml-2 h-4 w-4" />

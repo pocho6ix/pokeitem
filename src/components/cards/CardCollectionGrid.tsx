@@ -106,7 +106,7 @@ function SortModal({
           {OPTS.map((opt) => (
             <label key={opt.value} className="flex cursor-pointer items-center gap-3">
               <input type="radio" name="sortBy" value={opt.value} checked={localBy === opt.value}
-                onChange={() => setLocalBy(opt.value)} className="accent-blue-500" />
+                onChange={() => setLocalBy(opt.value)} className="accent-[#E7BA76]" />
               <span className="text-sm text-[var(--text-primary)]">{opt.label}</span>
             </label>
           ))}
@@ -116,7 +116,7 @@ function SortModal({
           {(["asc", "desc"] as const).map((o) => (
             <label key={o} className="flex cursor-pointer items-center gap-3">
               <input type="radio" name="sortOrder" value={o} checked={localOrder === o}
-                onChange={() => setLocalOrder(o)} className="accent-blue-500" />
+                onChange={() => setLocalOrder(o)} className="accent-[#E7BA76]" />
               <span className="text-sm text-[var(--text-primary)]">{o === "asc" ? "Croissant" : "Décroissant"}</span>
             </label>
           ))}
@@ -127,7 +127,7 @@ function SortModal({
             Réinitialiser
           </button>
           <button onClick={() => { onApply(localBy, localOrder); onClose(); }}
-            className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
+            className="flex-1 rounded-xl bg-[#E7BA76] py-2.5 text-sm font-medium text-black hover:bg-[#d4a660]">
             Appliquer
           </button>
         </div>
@@ -155,7 +155,7 @@ function OptionsModal({
         </div>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Affichage</p>
         <label className="mb-5 flex cursor-pointer items-start gap-3">
-          <input type="checkbox" checked={showTransparency} onChange={onToggleTransparency} className="mt-0.5 accent-blue-500" />
+          <input type="checkbox" checked={showTransparency} onChange={onToggleTransparency} className="mt-0.5 accent-[#E7BA76]" />
           <div>
             <p className="text-sm font-medium text-[var(--text-primary)]">Transparence des cartes manquantes</p>
             <p className="text-xs text-[var(--text-secondary)]">Rendre les cartes non possédées plus transparentes</p>
@@ -241,7 +241,7 @@ function AddToCollectionModal({
               <h2 className="text-xl font-bold text-[var(--text-primary)]">Ajouter à ma collection</h2>
               <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
                 {selectedCards.length === 1 ? selectedCards[0].name : `${selectedCards.length} cartes`}
-                {existingQty > 0 && <span className="ml-1.5 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">déjà ×{existingQty}</span>}
+                {existingQty > 0 && <span className="ml-1.5 rounded-full bg-[#E7BA76]/20 px-2 py-0.5 text-xs font-semibold text-[#1B2E6B] dark:bg-[#E7BA76]/20 dark:text-[#E7BA76]">déjà ×{existingQty}</span>}
               </p>
             </div>
             <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]">
@@ -261,11 +261,11 @@ function AddToCollectionModal({
                       className={cn(
                         "relative flex flex-col items-center rounded-xl border px-1 py-2 text-xs font-medium transition-all",
                         version === v
-                          ? "border-blue-500 bg-blue-600 text-white shadow-sm"
-                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                          ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}>
                       {MODAL_VERSION_LABELS[v]}
-                      {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", version === v ? "bg-white/30 text-white" : "bg-blue-500 text-white")}>×{qty}</span>}
+                      {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", version === v ? "bg-black/20 text-black" : "bg-[#E7BA76] text-black")}>×{qty}</span>}
                     </button>
                   );
                 })}
@@ -294,8 +294,8 @@ function AddToCollectionModal({
                   className={cn(
                     "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                     condition === c.value
-                      ? "border-blue-500 bg-blue-600 text-white shadow-sm"
-                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                      ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                   )}>
                   {c.label}
                 </button>
@@ -307,7 +307,7 @@ function AddToCollectionModal({
           <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Langue</p>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}
-              className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500">
+              className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76]">
               {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
@@ -320,8 +320,8 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "packed"
-                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Packée
                 <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "packed" ? "text-white/70" : "text-[var(--text-tertiary)]")}>0,70&nbsp;€</span>
@@ -330,8 +330,8 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "current"
-                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Cote actuelle
                 <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "current" ? "text-white/70" : "text-[var(--text-tertiary)]")}>
@@ -342,8 +342,8 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "manual"
-                    ? "border-blue-500 bg-blue-600 text-white shadow-sm"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400"
+                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Manuel
                 <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "manual" ? "text-white/70" : "text-[var(--text-tertiary)]")}>Saisir</span>
@@ -369,7 +369,7 @@ function AddToCollectionModal({
           <button
             onClick={() => onSubmit({ quantity, condition, language, version, foil: false, priceMode, manualPrice: manualPrice ? parseFloat(manualPrice) : undefined })}
             disabled={isPending}
-            className="w-full rounded-2xl bg-blue-600 py-4 text-base font-bold text-white hover:bg-blue-700 active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-blue-600/30">
+            className="w-full rounded-2xl bg-[#E7BA76] py-4 text-base font-bold text-black hover:bg-[#d4a660] active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-[#E7BA76]/30">
             {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
           </button>
         </div>
@@ -381,7 +381,7 @@ function AddToCollectionModal({
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
 const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
-  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-blue-600" },
+  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-[#E7BA76]" },
   [CardVersion.REVERSE]:            { label: "R",  cls: "bg-violet-600" },
   [CardVersion.REVERSE_POKEBALL]:   { label: "RP", cls: "bg-purple-600" },
   [CardVersion.REVERSE_MASTERBALL]: { label: "RM", cls: "bg-amber-500" },
@@ -588,9 +588,9 @@ export function CardCollectionGrid({
 
       {/* Auth banner */}
       {!isAuthenticated && (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm dark:border-blue-800 dark:bg-blue-950/30">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          <span className="text-blue-700 dark:text-blue-300">
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/10 px-4 py-3 text-sm dark:border-[#E7BA76]/30 dark:bg-[#E7BA76]/10">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[#E7BA76]"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span className="text-[#1B2E6B] dark:text-[#E7BA76]">
             <a href="/connexion" className="font-semibold underline">Connectez-vous</a> pour gérer votre collection.
           </span>
         </div>
@@ -604,7 +604,7 @@ export function CardCollectionGrid({
             <span className="font-semibold text-[var(--text-primary)]">{progressPct}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
-            <div className="h-full rounded-full bg-blue-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
+            <div className="h-full rounded-full bg-[#E7BA76] transition-all duration-500" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
       )}
@@ -618,7 +618,7 @@ export function CardCollectionGrid({
         ] as { value: ViewFilter; label: string }[]).map((tab) => (
           <button key={tab.value} onClick={() => setViewFilter(tab.value)}
             className={cn("rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-              viewFilter === tab.value ? "bg-blue-600 text-white" : "bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]")}>
+              viewFilter === tab.value ? "bg-[#E7BA76] text-black" : "bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]")}>
             {tab.label}
           </button>
         ))}
@@ -629,7 +629,7 @@ export function CardCollectionGrid({
         <div className="relative flex-1 min-w-[180px]">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input type="text" placeholder="Nom ou numéro…" value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] py-2 pl-8 pr-3 text-sm text-[var(--text-primary)] outline-none focus:border-blue-500 placeholder:text-[var(--text-tertiary)]" />
+            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] py-2 pl-8 pr-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76] placeholder:text-[var(--text-tertiary)]" />
           {search && (
             <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -637,13 +637,13 @@ export function CardCollectionGrid({
           )}
         </div>
         <button onClick={() => setActiveModal("sort")}
-          className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600">
+          className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
           Trier
         </button>
         {isAuthenticated && (
           <button onClick={() => setActiveModal("options")}
-            className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600">
+            className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
             Options
           </button>
@@ -660,8 +660,8 @@ export function CardCollectionGrid({
               <button key={rarity} onClick={() => setRarityFilter(active ? null : rarity)}
                 title={CARD_RARITY_LABELS[rarity]}
                 className={cn("flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
-                  active ? "border-blue-500 bg-blue-500 text-white"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600")}>
+                  active ? "border-[#E7BA76] bg-[#E7BA76] text-black"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
                 <span>{CARD_RARITY_SYMBOL[rarity]}</span>
                 <span>{count}</span>
               </button>
@@ -679,8 +679,8 @@ export function CardCollectionGrid({
             return (
               <button key={v} onClick={() => setVersionFilter(active ? null : v)}
                 className={cn("rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                  active ? "border-blue-500 bg-blue-500 text-white"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-blue-400 hover:text-blue-600")}>
+                  active ? "border-[#E7BA76] bg-[#E7BA76] text-black"
+                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
                 {CARD_VERSION_LABELS[v]}
               </button>
             );
@@ -690,11 +690,11 @@ export function CardCollectionGrid({
 
       {/* Selection banner */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 flex items-center justify-between rounded-xl border border-blue-300 bg-blue-50 px-4 py-2.5 dark:border-blue-700 dark:bg-blue-950/30">
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/10 px-4 py-2.5 dark:border-[#E7BA76]/30 dark:bg-[#E7BA76]/10">
+          <span className="text-sm font-medium text-[#1B2E6B] dark:text-[#E7BA76]">
             {selectedIds.size} carte{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
           </span>
-          <button onClick={deselectAll} className="text-xs text-blue-600 underline dark:text-blue-400">Tout désélectionner</button>
+          <button onClick={deselectAll} className="text-xs text-[#E7BA76] underline">Tout désélectionner</button>
         </div>
       )}
 
@@ -722,7 +722,7 @@ export function CardCollectionGrid({
                   "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all",
                   isAuthenticated && "group-hover:-translate-y-0.5 group-hover:shadow-md",
                   dim && "opacity-40",
-                  isSelected && "ring-2 ring-blue-500 ring-offset-1"
+                  isSelected && "ring-2 ring-[#E7BA76] ring-offset-1"
                 )}>
                   {card.imageUrl ? (
                     <Image src={card.imageUrl} alt={`${card.name} — ${card.number}`} fill
@@ -758,8 +758,8 @@ export function CardCollectionGrid({
 
                   {/* Selection overlay */}
                   {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#E7BA76]/20">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E7BA76] text-black shadow">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                     </div>
@@ -784,7 +784,7 @@ export function CardCollectionGrid({
           <div className="mx-auto max-w-7xl px-4 pb-4 sm:pb-6">
             <div className="flex items-center gap-3 rounded-2xl bg-[var(--bg-card)] p-3 shadow-2xl border border-[var(--border-default)]">
               <button onClick={selectAll} title="Tout sélectionner"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/30">
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
               <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">
@@ -795,7 +795,7 @@ export function CardCollectionGrid({
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
               </button>
               <button onClick={() => setActiveModal("add-collection")}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                className="flex items-center gap-1.5 rounded-xl bg-[#E7BA76] px-4 py-2 text-sm font-semibold text-black hover:bg-[#d4a660]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 Collection
               </button>
