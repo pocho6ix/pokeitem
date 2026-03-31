@@ -76,11 +76,9 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
       return db - da;
     });
 
-    return {
-      blocSlug:         bloc.slug,
-      blocName:         bloc.name,
-      blocAbbreviation: bloc.abbreviation ?? null,
-      series: sorted.map((serie) => ({
+    // Only keep series where the user owns at least one card
+    const seriesWithCards = sorted
+      .map((serie) => ({
         serieSlug:         serie.slug,
         serieName:         serie.name,
         serieAbbreviation: serie.abbreviation ?? null,
@@ -88,9 +86,17 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
         totalCards:   countBySlug.get(serie.slug) ?? 0,
         ownedCards:   ownedBySerieId.get(serie.id) ?? 0,
         marketValue:  Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
-      })),
+      }))
+      .filter((s) => s.ownedCards > 0);
+
+    return {
+      blocSlug:         bloc.slug,
+      blocName:         bloc.name,
+      blocAbbreviation: bloc.abbreviation ?? null,
+      series: seriesWithCards,
     };
-  });
+  // Drop blocs with no owned series
+  }).filter((bloc) => bloc.series.length > 0);
 }
 
 export default async function PortfolioCartesPage() {
