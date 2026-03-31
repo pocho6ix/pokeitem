@@ -67,9 +67,21 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                       <span className="truncate text-sm font-medium text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {serie.serieName}
                       </span>
-                      <span className="shrink-0 font-data text-xs text-[var(--text-secondary)]">
-                        {serie.ownedCards}/{serie.totalCards || "?"}&nbsp;·&nbsp;{pct}%
-                      </span>
+                      <div className="flex shrink-0 items-baseline gap-2">
+                        <span className="font-data text-xs text-[var(--text-secondary)]">
+                          {serie.ownedCards}/{serie.totalCards || "?"}&nbsp;·&nbsp;{pct}%
+                        </span>
+                        {serie.marketValue > 0 && (
+                          <span className="font-data text-xs font-semibold text-emerald-400">
+                            {serie.marketValue.toLocaleString("fr-FR", {
+                              style: "currency",
+                              currency: "EUR",
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Progress bar */}

@@ -27,17 +27,38 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
     },
   });
 
-  // Owned card counts per serie (unique cards only — not counting versions separately)
+  // Owned card counts + market values per serie
   const ownedBySerieId = new Map<string, number>();
+  const valueBySerieId = new Map<string, number>();
+
   if (userId) {
-    const owned = await prisma.userCard.findMany({
+    // Unique-card count (distinct cardId for completion %)
+    const ownedDistinct = await prisma.userCard.findMany({
       where: { userId },
       select: { card: { select: { serieId: true } }, cardId: true },
       distinct: ["cardId"],
     });
-    for (const uc of owned) {
+    for (const uc of ownedDistinct) {
       const sid = uc.card.serieId;
       ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
+    }
+
+    // Market value = price × quantity; REVERSE version uses priceReverse
+    const ownedWithPrices = await prisma.userCard.findMany({
+      where: { userId },
+      select: {
+        quantity: true,
+        version:  true,
+        card: { select: { serieId: true, price: true, priceReverse: true } },
+      },
+    });
+    for (const uc of ownedWithPrices) {
+      const sid   = uc.card.serieId;
+      const price =
+        uc.version === "REVERSE"
+          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
+          : (uc.card.price ?? 0);
+      valueBySerieId.set(sid, (valueBySerieId.get(sid) ?? 0) + price * uc.quantity);
     }
   }
 
@@ -64,8 +85,9 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
         serieName:         serie.name,
         serieAbbreviation: serie.abbreviation ?? null,
         serieImageUrl:     serie.imageUrl ?? null,
-        totalCards:  countBySlug.get(serie.slug) ?? 0,
-        ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
+        totalCards:   countBySlug.get(serie.slug) ?? 0,
+        ownedCards:   ownedBySerieId.get(serie.id) ?? 0,
+        marketValue:  Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
       })),
     };
   });

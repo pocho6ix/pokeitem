@@ -31,6 +31,7 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
 
   // ── Fetch owned card counts per serie for this user ───────────────────
   const ownedBySerieId = new Map<string, number>();
+  const valueBySerieId = new Map<string, number>();
 
   if (userId) {
     // Count unique cards per serie (one card = one slot, regardless of versions owned)
@@ -42,6 +43,24 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
     for (const uc of owned) {
       const sid = uc.card.serieId;
       ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
+    }
+
+    // Market value = price × quantity; REVERSE uses priceReverse
+    const ownedWithPrices = await prisma.userCard.findMany({
+      where: { userId },
+      select: {
+        quantity: true,
+        version:  true,
+        card: { select: { serieId: true, price: true, priceReverse: true } },
+      },
+    });
+    for (const uc of ownedWithPrices) {
+      const sid   = uc.card.serieId;
+      const price =
+        uc.version === "REVERSE"
+          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
+          : (uc.card.price ?? 0);
+      valueBySerieId.set(sid, (valueBySerieId.get(sid) ?? 0) + price * uc.quantity);
     }
   }
 
@@ -73,6 +92,7 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
         serieImageUrl:     serie.imageUrl ?? null,
         totalCards:  countBySlug.get(serie.slug) ?? 0,
         ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
+        marketValue: Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
       })),
     };
   });

@@ -20,6 +20,12 @@ interface ChartDataPoint {
   invested: number;
 }
 
+interface SerieMeta {
+  slug: string;
+  name: string;
+  abbreviation: string | null;
+}
+
 const PERIODS = ["7J", "1M", "3M", "6M", "1A", "MAX"] as const;
 type Period = (typeof PERIODS)[number];
 
@@ -52,17 +58,22 @@ function ChartTooltip({
 
 export function PortfolioEvolutionChart() {
   const { status } = useSession();
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [period, setPeriod]       = useState<Period>("1M");
-  const [loading, setLoading]     = useState(true);
+  const [chartData,     setChartData]     = useState<ChartDataPoint[]>([]);
+  const [series,        setSeries]        = useState<SerieMeta[]>([]);
+  const [period,        setPeriod]        = useState<Period>("1M");
+  const [selectedSerie, setSelectedSerie] = useState<string | null>(null);
+  const [loading,       setLoading]       = useState(true);
 
-  const fetchChart = useCallback(async (p: Period) => {
+  const fetchChart = useCallback(async (p: Period, serie: string | null) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/portfolio/chart?period=${p}`);
+      const url = `/api/portfolio/chart?period=${p}${serie ? `&serie=${serie}` : ""}`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setChartData(data.data ?? []);
+        // Only update series list on first fetch (no filter) to keep full list available
+        if (!serie) setSeries(data.series ?? []);
       }
     } catch {
       // ignore
@@ -72,9 +83,9 @@ export function PortfolioEvolutionChart() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") fetchChart(period);
+    if (status === "authenticated") fetchChart(period, selectedSerie);
     else if (status !== "loading") setLoading(false);
-  }, [period, status, fetchChart]);
+  }, [period, selectedSerie, status, fetchChart]);
 
   // Don't render until we know auth status and have data
   if (status !== "authenticated") return null;
@@ -92,7 +103,7 @@ export function PortfolioEvolutionChart() {
   return (
     <div className="mb-6 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4">
       {/* Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="font-semibold text-[var(--text-primary)]">Évolution de mon classeur</p>
         <div className="flex gap-1">
           {PERIODS.map((p) => (
@@ -110,6 +121,35 @@ export function PortfolioEvolutionChart() {
           ))}
         </div>
       </div>
+
+      {/* Serie filter chips — only rendered when there are multiple series */}
+      {series.length > 1 && (
+        <div className="mb-4 -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 scrollbar-none">
+          <button
+            onClick={() => setSelectedSerie(null)}
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              selectedSerie === null
+                ? "bg-blue-600 text-white"
+                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+            }`}
+          >
+            Tout
+          </button>
+          {series.map((s) => (
+            <button
+              key={s.slug}
+              onClick={() => setSelectedSerie(s.slug === selectedSerie ? null : s.slug)}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                selectedSerie === s.slug
+                  ? "bg-blue-600 text-white"
+                  : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+              }`}
+            >
+              {s.abbreviation ?? s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Chart */}
       {loading ? (

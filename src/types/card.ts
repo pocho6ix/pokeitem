@@ -76,6 +76,8 @@ export interface SerieCardProgress {
   serieImageUrl: string | null;
   totalCards: number;
   ownedCards: number;
+  /** Sum of card market prices × quantity for owned cards in this series */
+  marketValue: number;
 }
 
 // Progress summary per bloc
