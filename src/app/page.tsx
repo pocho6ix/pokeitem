@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
@@ -206,7 +205,6 @@ export default async function HomePage() {
         }}
       />
 
-      <Footer />
       <MobileNav />
     </div>
   );

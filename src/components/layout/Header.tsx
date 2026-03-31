@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, FileText, ScanLine, BookOpen, User, LogOut } from "lucide-react";
+import { Package, ShoppingBag, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
@@ -17,7 +17,6 @@ const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; authReq
   { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen, authRequired: true },
-  { href: "/blog", label: "Blog", icon: FileText },
 ];
 
 // ─── Greeting helper ──────────────────────────────────────────────────────────
