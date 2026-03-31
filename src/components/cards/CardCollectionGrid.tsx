@@ -193,8 +193,8 @@ const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
 const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "Normale",
   [CardVersion.REVERSE]:            "Reverse",
-  [CardVersion.REVERSE_POKEBALL]:   "Rev. PB",
-  [CardVersion.REVERSE_MASTERBALL]: "Rev. MB",
+  [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
+  [CardVersion.REVERSE_MASTERBALL]: "Masterball",
 };
 
 type PriceMode = "packed" | "current" | "manual";
