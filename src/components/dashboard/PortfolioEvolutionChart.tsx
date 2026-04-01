@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { ProButton } from "@/components/subscription/ProButton";
 import {
   AreaChart,
   Area,
@@ -58,6 +60,7 @@ function ChartTooltip({
 
 export function PortfolioEvolutionChart() {
   const { status } = useSession();
+  const { isPro, isLoading: subLoading } = useSubscription();
   const [chartData,     setChartData]     = useState<ChartDataPoint[]>([]);
   const [series,        setSeries]        = useState<SerieMeta[]>([]);
   const [period,        setPeriod]        = useState<Period>("1M");
@@ -83,12 +86,26 @@ export function PortfolioEvolutionChart() {
   }, []);
 
   useEffect(() => {
-    if (status === "authenticated") fetchChart(period, selectedSerie);
+    if (status === "authenticated" && isPro) fetchChart(period, selectedSerie);
     else if (status !== "loading") setLoading(false);
-  }, [period, selectedSerie, status, fetchChart]);
+  }, [period, selectedSerie, status, fetchChart, isPro]);
 
-  // Don't render until we know auth status and have data
+  // Don't render until we know auth status
   if (status !== "authenticated") return null;
+
+  // Free user — show locked placeholder
+  if (!subLoading && !isPro) {
+    return (
+      <div className="mb-6 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4">
+        <p className="mb-4 font-semibold text-[var(--text-primary)]">Évolution de mon classeur</p>
+        <div className="flex h-36 flex-col items-center justify-center gap-3 rounded-xl bg-[var(--bg-subtle)]">
+          <p className="text-sm text-[var(--text-secondary)]">Graphique réservé aux abonnés Pro</p>
+          <ProButton size="md" />
+        </div>
+      </div>
+    );
+  }
+
   if (!loading && chartData.length < 2) return null;
 
   const formatted = chartData.map((d) => ({

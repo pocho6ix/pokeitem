@@ -2,10 +2,11 @@
 // Pokecardex-style series list grouped by bloc
 // Shows owned/total progress per series
 // ---------------------------------------------------------------------------
-
+'use client'
 import Link from "next/link";
 import Image from "next/image";
 import type { BlocCardProgress } from "@/types/card";
+import { CollectionValue } from "@/components/collection/CollectionValue";
 
 interface BlocSerieCardListProps {
   blocs: BlocCardProgress[];
@@ -72,14 +73,10 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                           {serie.ownedCards}/{serie.totalCards || "?"}&nbsp;·&nbsp;{pct}%
                         </span>
                         {serie.marketValue > 0 && (
-                          <span className="font-data text-xs font-semibold text-emerald-400">
-                            {serie.marketValue.toLocaleString("fr-FR", {
-                              style: "currency",
-                              currency: "EUR",
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
+                          <CollectionValue
+                            value={serie.marketValue}
+                            className="font-data text-xs font-semibold text-emerald-400"
+                          />
                         )}
                       </div>
                     </div>
