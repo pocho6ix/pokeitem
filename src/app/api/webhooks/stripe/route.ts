@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
+import { rewardReferrer } from '@/lib/referral'
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
@@ -48,6 +49,12 @@ export async function POST(req: NextRequest) {
         create: { userId, plan: 'PRO', source: 'stripe', status: 'active', currentPeriodEnd: periodEnd },
         update: { plan: 'PRO', status: 'active', currentPeriodEnd: periodEnd },
       })
+
+      // Reward referrer if applicable
+      const referredById = session.metadata?.referredById
+      if (referredById) {
+        await rewardReferrer(referredById)
+      }
       break
     }
     case 'customer.subscription.deleted': {

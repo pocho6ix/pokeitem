@@ -32,6 +32,12 @@ model User {
   scanCount            Int       @default(0)
   scanCountResetAt     DateTime  @default(now())
 
+  referralCode        String    @unique @default(cuid())
+  referredById        String?
+  referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals           User[]    @relation("Referrals")
+  referralRewardGiven Boolean   @default(false)
+
   accounts         Account[]
   sessions         Session[]
   portfolio        PortfolioItem[]

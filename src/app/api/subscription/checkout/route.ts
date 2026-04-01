@@ -13,7 +13,14 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as { id: string }).id
-  const user = await prisma.user.findUnique({ where: { id: userId } })
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      email: true,
+      stripeCustomerId: true,
+      referredById: true,
+    }
+  })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   // period: 'monthly' | 'annual'
@@ -34,6 +41,18 @@ export async function POST(req: Request) {
     await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customerId } })
   }
 
+  // Apply -5€ coupon for referred users on annual plan
+  let discounts: { coupon: string }[] | undefined = undefined
+  if (user.referredById && period === 'annual') {
+    const coupon = await stripe.coupons.create({
+      amount_off: 500,
+      currency: 'eur',
+      duration: 'once',
+      name: 'Réduction parrainage',
+    })
+    discounts = [{ coupon: coupon.id }]
+  }
+
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: 'subscription',
@@ -41,7 +60,8 @@ export async function POST(req: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXTAUTH_URL}/pricing?success=1`,
     cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=1`,
-    metadata: { userId },
+    metadata: { userId, referredById: user.referredById ?? '' },
+    ...(discounts ? { discounts } : {}),
   })
 
   return NextResponse.json({ url: checkoutSession.url })

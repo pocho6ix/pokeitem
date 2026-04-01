@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { ReferralBlock } from "@/components/profil/ReferralBlock";
+import { useApplyReferral } from "@/hooks/useApplyReferral";
 
 interface UserProfile {
   id: string;
@@ -16,6 +18,7 @@ interface UserProfile {
 export function ProfilForm() {
   const { update: updateSession } = useSession();
   const router = useRouter();
+  useApplyReferral();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -322,6 +325,9 @@ export function ProfilForm() {
       >
         Déconnexion
       </button>
+
+      {/* Referral */}
+      <ReferralBlock />
     </div>
   );
 }
