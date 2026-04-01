@@ -210,7 +210,7 @@ export default async function HomePage() {
                     />
                     {/* Price badge */}
                     <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center rounded-full bg-[#E7BA76] px-2 py-0.5 text-[10px] font-bold text-black shadow">
+                      <span className="inline-flex items-center rounded-full bg-green-400 px-2 py-0.5 text-[10px] font-bold text-black shadow">
                         {card.price.toLocaleString("fr-FR", {
                           style: "currency",
                           currency: "EUR",
