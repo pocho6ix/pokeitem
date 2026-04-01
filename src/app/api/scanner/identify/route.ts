@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
+import { checkFeature, incrementScanCount } from "@/lib/subscription";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+
+    // 1b. Subscription check
+    const userId = (session.user as { id: string }).id;
+    const scanCheck = await checkFeature(userId, 'SCAN_CARD')
+    if (!scanCheck.allowed) {
+      return NextResponse.json({ error: 'LIMIT_REACHED', reason: scanCheck.reason, limit: scanCheck.limit, current: scanCheck.current }, { status: 403 })
     }
 
     // 2. Parse body
@@ -302,6 +310,9 @@ Respond with JSON only, no other text.`,
     if (!cardSerie) {
       return NextResponse.json<IdentifyResponse>({ found: false, confidence });
     }
+
+    // Increment scan count after successful identification
+    await incrementScanCount(userId);
 
     return NextResponse.json<IdentifyResponse>({
       found: true,

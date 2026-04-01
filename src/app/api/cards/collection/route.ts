@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { checkFeature } from "@/lib/subscription";
 
 // ─── Validation schemas ───────────────────────────────────────────────────────
 
@@ -62,6 +63,11 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const userId = (session.user as { id: string }).id;
+
+  const check = await checkFeature(userId, 'ADD_CARD')
+  if (!check.allowed) {
+    return NextResponse.json({ error: 'LIMIT_REACHED', reason: check.reason, limit: check.limit, current: check.current }, { status: 403 })
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = PostBodySchema.safeParse(body);

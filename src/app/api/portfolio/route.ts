@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SERIES } from "@/data/series";
 import { BLOCS } from "@/data/blocs";
+import { checkFeature } from "@/lib/subscription";
 
 export async function GET() {
   try {
@@ -115,6 +116,12 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = (session.user as { id: string }).id;
+
+    const check = await checkFeature(userId, 'ADD_SEALED_ITEM')
+    if (!check.allowed) {
+      return NextResponse.json({ error: 'LIMIT_REACHED', reason: check.reason, limit: check.limit, current: check.current }, { status: 403 })
+    }
+
     const body = await request.json();
     const {
       itemId,
