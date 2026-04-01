@@ -70,7 +70,9 @@ export function SettingsTab() {
     if (res.ok) setCancelInfo(data)
   }
 
-  const canSave = username.length >= 3 && (username === initialUsername || available === true)
+  // Allow saving if: valid length + not currently saving + pseudo not explicitly taken
+  // Server-side validation handles the uniqueness check on submit
+  const canSave = username.length >= 3 && !saving && available !== false
 
   return (
     <div className="space-y-6">
