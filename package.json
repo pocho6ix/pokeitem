@@ -12,7 +12,8 @@
     "seed:cards": "npx tsx scripts/seed-cards.ts",
     "seed:cards:dry": "npx tsx scripts/seed-cards.ts --dry-run",
     "seed:prices": "npx tsx scripts/seed-card-prices.ts",
-    "seed:prices:dry": "npx tsx scripts/seed-card-prices.ts --dry-run"
+    "seed:prices:dry": "npx tsx scripts/seed-card-prices.ts --dry-run",
+    "migrate-avatars": "tsx scripts/migrate-avatars-to-blob.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -64,6 +65,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sharp": "^0.32.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "eslint-config-prettier": "^10.1.8",

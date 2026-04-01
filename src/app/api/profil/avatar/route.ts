@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { put, del } from "@vercel/blob";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import sharp from "sharp";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -41,25 +43,44 @@ export async function POST(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true },
+    select: { id: true, image: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  // Store image as base64 in DB — served via /api/avatar/[userId] (never in JWT cookie)
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const base64 = buffer.toString("base64");
-  const dataUrl = `data:${file.type};base64,${base64}`;
+  // Compress: 400×400 center crop, WebP quality 80
+  const inputBuffer = Buffer.from(await file.arrayBuffer());
+  const compressedBuffer = await sharp(inputBuffer)
+    .resize(400, 400, { fit: "cover", position: "center", withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { image: dataUrl },
+  // Delete old Vercel Blob image if one exists
+  if (user.image?.includes("blob.vercel-storage.com")) {
+    try {
+      await del(user.image);
+    } catch {
+      // silencieux — ne pas bloquer l'upload si la suppression échoue
+    }
+  }
+
+  // Upload to Vercel Blob
+  const filename = `avatars/${user.id}-${Date.now()}.webp`;
+  const blob = await put(filename, compressedBuffer, {
+    access: "public",
+    contentType: "image/webp",
+    addRandomSuffix: false,
   });
 
-  // Return only a boolean flag — the caller updates the JWT with hasAvatar: true
-  return NextResponse.json({ hasAvatar: true });
+  // Save URL in DB
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { image: blob.url },
+  });
+
+  return NextResponse.json({ hasAvatar: true, url: blob.url });
 }
 
 export async function DELETE() {
@@ -70,11 +91,20 @@ export async function DELETE() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true },
+    select: { id: true, image: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
+  }
+
+  // Delete from Vercel Blob if applicable
+  if (user.image?.includes("blob.vercel-storage.com")) {
+    try {
+      await del(user.image);
+    } catch {
+      // silencieux
+    }
   }
 
   await prisma.user.update({

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Public route — serves a user's avatar image from DB
-// Cached privately for 1 hour; revalidated on upload via cache-busting query param
+// Public route — serves a user's avatar image
+// New: image is a Vercel Blob URL → redirect to it
+// Legacy: image is stored as "data:<mime>;base64,<data>" → decode and serve
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
@@ -17,7 +18,17 @@ export async function GET(
     return new NextResponse(null, { status: 404 });
   }
 
-  // image is stored as "data:<mime>;base64,<data>"
+  // New format: Vercel Blob URL — redirect permanently
+  if (user.image.startsWith("https://")) {
+    return NextResponse.redirect(user.image, {
+      status: 302,
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
+  // Legacy format: "data:<mime>;base64,<data>" — decode and serve
   const [header, data] = user.image.split(",");
   const mimeMatch = header?.match(/data:([^;]+)/);
   const mimeType = mimeMatch?.[1] ?? "image/jpeg";

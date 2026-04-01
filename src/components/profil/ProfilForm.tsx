@@ -31,6 +31,8 @@ export function ProfilForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // cache-buster to force img reload after upload
   const [avatarTs, setAvatarTs] = useState<number>(Date.now());
+  // immediate local preview URL (objectURL) while upload is in progress
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/profil")
@@ -82,6 +84,10 @@ export function ProfilForm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Immediate local preview before upload completes
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
     setUploading(true);
     try {
       const formData = new FormData();
@@ -92,14 +98,19 @@ export function ProfilForm() {
       });
       const data = await res.json();
       if (!res.ok) {
+        setPreviewUrl(null); // revert preview on error
         showMessage("error", data.error ?? "Erreur lors de l'upload");
         return;
       }
       setUser((prev) => (prev ? { ...prev, hasImage: true } : prev));
       setAvatarTs(Date.now()); // force img cache bust
+      setPreviewUrl(null); // release objectURL now that the real image is ready
+      URL.revokeObjectURL(objectUrl);
       await updateSession({ hasAvatar: true });
       showMessage("success", "Photo mise à jour");
     } catch {
+      setPreviewUrl(null);
+      URL.revokeObjectURL(objectUrl);
       showMessage("error", "Erreur réseau");
     } finally {
       setUploading(false);
@@ -112,11 +123,13 @@ export function ProfilForm() {
     setUploading(true);
     try {
       const res = await fetch("/api/profil/avatar", { method: "DELETE" });
+      const data = await res.json();
       if (!res.ok) {
-        showMessage("error", "Erreur lors de la suppression");
+        showMessage("error", data.error ?? "Erreur lors de la suppression");
         return;
       }
       setUser((prev) => (prev ? { ...prev, hasImage: false } : prev));
+      setPreviewUrl(null);
       await updateSession({ hasAvatar: false });
       showMessage("success", "Photo supprimée");
     } catch {
@@ -145,8 +158,10 @@ export function ProfilForm() {
 
   const hasChanged = name.trim() !== (user.name ?? "");
 
-  // Avatar: use /api/avatar/[id] when user has a custom image, else default Pokémon
-  const avatarSrc = user.hasImage
+  // Avatar: use previewUrl during upload, then /api/avatar/[id] once saved, else default Pokémon
+  const avatarSrc = previewUrl
+    ? previewUrl
+    : user.hasImage
     ? `/api/avatar/${user.id}?t=${avatarTs}`
     : getDefaultAvatar(user.id);
 
