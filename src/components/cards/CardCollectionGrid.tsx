@@ -324,7 +324,7 @@ function AddToCollectionModal({
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Packée
-                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "packed" ? "text-white/70" : "text-[var(--text-tertiary)]")}>0,70&nbsp;€</span>
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "packed" ? "text-black/60" : "text-[var(--text-tertiary)]")}>0,70&nbsp;€</span>
               </button>
               <button onClick={() => setPriceMode("current")}
                 className={cn(
@@ -334,7 +334,7 @@ function AddToCollectionModal({
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Cote actuelle
-                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "current" ? "text-white/70" : "text-[var(--text-tertiary)]")}>
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "current" ? "text-black/60" : "text-[var(--text-tertiary)]")}>
                   {currentPrice != null ? `${currentPrice.toFixed(2)}\u00a0€` : "—"}
                 </span>
               </button>
@@ -346,7 +346,7 @@ function AddToCollectionModal({
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Manuel
-                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "manual" ? "text-white/70" : "text-[var(--text-tertiary)]")}>Saisir</span>
+                <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "manual" ? "text-black/60" : "text-[var(--text-tertiary)]")}>Saisir</span>
               </button>
             </div>
             {priceMode === "manual" && (
