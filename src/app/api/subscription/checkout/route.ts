@@ -58,6 +58,10 @@ export async function POST(req: Request) {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
+    subscription_data: {
+      trial_period_days: 7,
+      metadata: { userId, referredById: user.referredById ?? '' },
+    },
     success_url: `${process.env.NEXTAUTH_URL ?? 'https://www.pokeitem.fr'}/portfolio/cartes?success=1`,
     cancel_url: `${process.env.NEXTAUTH_URL ?? 'https://www.pokeitem.fr'}/pricing?canceled=1`,
     metadata: { userId, referredById: user.referredById ?? '' },

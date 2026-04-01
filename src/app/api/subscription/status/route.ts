@@ -15,7 +15,11 @@ export async function GET() {
   })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const isPro = user.plan === 'PRO' && (!user.planExpiresAt || user.planExpiresAt > new Date())
+  const isTrialing = !!(user?.trialEndsAt && new Date(user.trialEndsAt) > new Date())
+  const isPro = isTrialing || (
+    user?.plan === 'PRO' &&
+    (!user?.planExpiresAt || new Date(user.planExpiresAt) > new Date())
+  )
 
   const now = new Date()
   const resetAt = new Date(user.scanCountResetAt)
@@ -26,8 +30,11 @@ export async function GET() {
 
   return NextResponse.json({
     isPro,
+    isTrialing,
+    trialEndsAt: user?.trialEndsAt ?? null,
     plan: isPro ? 'PRO' : 'FREE',
     planExpiresAt: user.planExpiresAt,
+    cancelAtPeriodEnd: false,
     usage: {
       cards: { current: user._count.userCards, limit: isPro ? null : FREE_LIMITS.CARDS },
       sealedItems: { current: user._count.portfolio, limit: isPro ? null : FREE_LIMITS.SEALED_ITEMS },

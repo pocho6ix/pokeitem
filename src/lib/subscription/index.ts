@@ -41,8 +41,9 @@ export async function checkFeature(
 
   if (!user) return { allowed: false, isPro: false }
 
+  const isTrialing = !!(user.trialEndsAt && user.trialEndsAt > new Date())
   const isPro =
-    user.plan === Plan.PRO && (!user.planExpiresAt || user.planExpiresAt > new Date())
+    isTrialing || (user.plan === Plan.PRO && (!user.planExpiresAt || user.planExpiresAt > new Date()))
 
   if (isPro) return { allowed: true, isPro: true }
 

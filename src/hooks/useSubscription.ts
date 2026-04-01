@@ -19,6 +19,8 @@ export function useSubscription() {
 
   return {
     isPro: data?.isPro ?? false,
+    isTrialing: data?.isTrialing ?? false,
+    trialEndsAt: data?.trialEndsAt ? new Date(data.trialEndsAt) : null,
     plan: (data?.plan ?? 'FREE') as 'FREE' | 'PRO',
     isLoading: !data && !!session,
     usage,

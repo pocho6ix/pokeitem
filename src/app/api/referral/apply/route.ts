@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { validateReferralCode } from '@/lib/referral'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -25,9 +24,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Too late to apply referral' }, { status: 400 })
   }
 
-  const referrer = await validateReferralCode(referralCode)
+  const referrer = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { referralCode: referralCode },
+        { username: { equals: referralCode, mode: 'insensitive' } }
+      ],
+      NOT: { id: userId }
+    },
+    select: { id: true, name: true }
+  })
   if (!referrer) return NextResponse.json({ error: 'Invalid referral code' }, { status: 404 })
-  if (referrer.id === userId) return NextResponse.json({ error: 'Cannot refer yourself' }, { status: 400 })
 
   await prisma.user.update({
     where: { id: userId },

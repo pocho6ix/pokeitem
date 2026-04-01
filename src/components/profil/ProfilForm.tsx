@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
-import { ReferralBlock } from "@/components/profil/ReferralBlock";
+import { ProfileTabs } from "@/components/profil/ProfileTabs";
 import { useApplyReferral } from "@/hooks/useApplyReferral";
 import { UsageBars } from "@/components/subscription/UsageBars";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -21,7 +21,7 @@ export function ProfilForm() {
   const { update: updateSession } = useSession();
   const router = useRouter();
   useApplyReferral();
-  const { isPro } = useSubscription();
+  const { isPro, isTrialing, trialEndsAt } = useSubscription();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -252,6 +252,11 @@ export function ProfilForm() {
               ★ Pro
             </span>
           )}
+          {isPro && isTrialing && trialEndsAt && (
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold">
+              Essai — {trialEndsAt.toLocaleDateString('fr-FR')}
+            </span>
+          )}
         </h2>
         <div className="space-y-4">
           {/* Name field */}
@@ -335,8 +340,8 @@ export function ProfilForm() {
       {/* Usage bars for free users */}
       <UsageBars />
 
-      {/* Referral */}
-      <ReferralBlock />
+      {/* Tabs: Parrainage / Paramètres / Support */}
+      <ProfileTabs />
     </div>
   );
 }

@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
           plan: 'PRO',
           stripeSubscriptionId: sub.id,
           planExpiresAt: periodEnd,
+          trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
         },
       })
       await prisma.subscription.upsert({
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       const sub = event.data.object as Stripe.Subscription
       const user = await prisma.user.findFirst({ where: { stripeSubscriptionId: sub.id } })
       if (!user) break
-      await prisma.user.update({ where: { id: user.id }, data: { plan: 'FREE', planExpiresAt: null, stripeSubscriptionId: null } })
+      await prisma.user.update({ where: { id: user.id }, data: { plan: 'FREE', planExpiresAt: null, stripeSubscriptionId: null, trialEndsAt: null } })
       await prisma.subscription.updateMany({ where: { userId: user.id }, data: { status: 'canceled' } })
       break
     }
@@ -70,7 +71,15 @@ export async function POST(req: NextRequest) {
       const user = await prisma.user.findFirst({ where: { stripeSubscriptionId: sub.id } })
       if (!user) break
       const periodEnd = getPeriodEnd(sub)
-      await prisma.user.update({ where: { id: user.id }, data: { planExpiresAt: periodEnd } })
+      const isActive = sub.status === 'active' || sub.status === 'trialing'
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          plan: isActive ? 'PRO' : 'FREE',
+          planExpiresAt: periodEnd,
+          trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+        }
+      })
       break
     }
   }

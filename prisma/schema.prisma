@@ -32,6 +32,9 @@ model User {
   scanCount            Int       @default(0)
   scanCountResetAt     DateTime  @default(now())
 
+  username            String?   @unique
+  trialEndsAt         DateTime?
+
   referralCode        String    @unique @default(cuid())
   referredById        String?
   referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])
