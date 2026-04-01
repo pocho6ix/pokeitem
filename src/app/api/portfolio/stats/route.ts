@@ -30,10 +30,10 @@ export async function GET() {
       0
     );
 
-    // ── Cards (collection) — market value only, purchase cost TBD ──────────
+    // ── Cards (collection) ─────────────────────────────────────────────────
     const userCards = await prisma.userCard.findMany({
       where: { userId },
-      select: { quantity: true, card: { select: { price: true } } },
+      select: { quantity: true, purchasePrice: true, card: { select: { price: true } } },
     });
 
     const cardsValue = userCards.reduce(
@@ -41,11 +41,17 @@ export async function GET() {
       0
     );
 
-    const totalValue = itemsValue + cardsValue;
+    const cardsInvested = userCards.reduce(
+      (sum, uc) => sum + (uc.purchasePrice ?? 0) * uc.quantity,
+      0
+    );
 
-    const profitLoss = totalValue - totalInvested;
+    const totalValue = itemsValue + cardsValue;
+    const totalInvestedAll = totalInvested + cardsInvested;
+
+    const profitLoss = totalValue - totalInvestedAll;
     const profitLossPercent =
-      totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+      totalInvestedAll > 0 ? (profitLoss / totalInvestedAll) * 100 : 0;
 
     // Distribution by type
     const distributionMap = new Map<string, { count: number; value: number }>();
@@ -80,7 +86,7 @@ export async function GET() {
     return NextResponse.json({
       totalItems,
       totalValue: Math.round(totalValue * 100) / 100,
-      totalInvested: Math.round(totalInvested * 100) / 100,
+      totalInvested: Math.round(totalInvestedAll * 100) / 100,
       profitLoss: Math.round(profitLoss * 100) / 100,
       profitLossPercent: Math.round(profitLossPercent * 100) / 100,
       distributionByType,
