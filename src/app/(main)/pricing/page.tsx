@@ -193,7 +193,7 @@ function PricingContent() {
                 disabled={loading}
                 className="w-full rounded-2xl bg-[#E7BA76] py-3.5 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-60"
               >
-                {loading ? 'Redirection…' : `S'abonner ${billing === 'annual' ? '— 39,99€/an' : '— 3,99€/mois'} →`}
+                {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '39,99€/an' : '3,99€/mois'} →`}
               </button>
             </div>
           </div>
