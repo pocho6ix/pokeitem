@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
+}
 
 function getPeriodEnd(sub: Stripe.Subscription): Date {
   // In newer Stripe API versions, current_period_end moved to SubscriptionItem
@@ -15,6 +17,7 @@ function getPeriodEnd(sub: Stripe.Subscription): Date {
 }
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
   const body = await req.text()
   const signature = req.headers.get('stripe-signature')!
 
