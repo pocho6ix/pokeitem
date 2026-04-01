@@ -167,23 +167,25 @@ export function ProfilForm() {
 
   return (
     <div className="space-y-8">
-      {/* S'abonner — Pro banner */}
-      <button
-        type="button"
-        onClick={() => router.push('/pricing')}
-        className="w-full rounded-xl p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
-        style={{
-          background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <span className="text-base font-bold text-black/80">S&apos;abonner</span>
-          <span className="flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70 backdrop-blur-sm">
-            ★ Pro
-          </span>
-        </div>
-        <p className="mt-0.5 text-xs text-black/50">Débloquer toutes les fonctionnalités</p>
-      </button>
+      {/* S'abonner — Pro banner (hidden for Pro/trialing users) */}
+      {!isPro && !isTrialing && (
+        <button
+          type="button"
+          onClick={() => router.push('/pricing')}
+          className="w-full rounded-xl p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
+          style={{
+            background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-base font-bold text-black/80">S&apos;abonner</span>
+            <span className="flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70 backdrop-blur-sm">
+              ★ Pro
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-black/50">Débloquer toutes les fonctionnalités</p>
+        </button>
+      )}
 
       {/* Toast message */}
       {message && (

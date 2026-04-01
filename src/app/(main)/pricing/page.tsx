@@ -138,6 +138,9 @@ function PricingContent() {
                 </>
               )}
               <p className="text-[var(--text-secondary)] text-sm mt-2">Pour les vrais collectionneurs.</p>
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                🎁 7 jours d&apos;essai gratuit — résiliable à tout moment
+              </p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1 relative">
@@ -175,6 +178,9 @@ function PricingContent() {
                 <span className="text-[var(--text-secondary)] text-sm">/ mois</span>
               </div>
               <p className="text-[var(--text-secondary)] text-sm mt-2">Pour débuter ta collection Pokémon.</p>
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] px-3 py-1 text-xs font-semibold text-[var(--text-tertiary)]">
+                Passe à Pro — 7 jours d&apos;essai gratuit inclus
+              </p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1">
