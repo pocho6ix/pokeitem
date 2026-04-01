@@ -11,19 +11,27 @@ import Link from "next/link";
 const FAQ_ITEMS = [
   {
     q: "PokeItem est-il gratuit ?",
-    a: "Oui, PokeItem est entièrement gratuit. Créez un compte en quelques secondes et commencez à gérer votre collection sans aucun frais.",
+    a: "Oui, PokeItem propose une version gratuite complète : jusqu'à 100 cartes dans ta collection, 5 items scellés dans le Classeur et 10 scans par mois. Pour une expérience illimitée, l'abonnement Pro est disponible à 3,99€/mois ou 39,99€/an.",
+  },
+  {
+    q: "Que comprend l'abonnement Pro ?",
+    a: "L'abonnement Pro donne accès à : collection de cartes illimitée, items scellés illimités, scans illimités, valeur totale de la collection, graphique d'évolution du Classeur et statistiques avancées avec P&L. Deux formules : 3,99€/mois ou 39,99€/an (soit 3,33€/mois, l'équivalent de 2 mois offerts).",
+  },
+  {
+    q: "Comment résilier l'abonnement Pro ?",
+    a: "L'abonnement est sans engagement et peut être annulé à tout moment depuis ton profil, rubrique « Gérer mon abonnement ». Tu gardes l'accès Pro jusqu'à la fin de la période en cours.",
   },
   {
     q: "Quels produits Pokémon TCG puis-je gérer sur PokeItem ?",
-    a: "PokeItem couvre deux grandes catégories. Les cartes individuelles : toutes les extensions de tous les blocs, des Wizards of the Coast (Set de Base, 1999) jusqu'à Méga-Évolution, en passant par EX, Diamant & Perle, Noir & Blanc, XY, Soleil & Lune, Épée & Bouclier et Écarlate & Violet — soit plus de 100 extensions. Les items scellés : booster, display (36 boosters), ETB, coffret collection, UPC, tin, bundle, tripack, duopack, theme deck et trainer kit.",
+    a: "PokeItem couvre deux grandes catégories. Les cartes individuelles : toutes les extensions de tous les blocs, des Wizards of the Coast (Set de Base, 1999) jusqu'à Écarlate & Violet — soit plus de 100 extensions. Les items scellés : booster, display, ETB, coffret collection, UPC, tin, bundle, tripack, duopack, theme deck et trainer kit.",
   },
   {
     q: "Comment fonctionne le suivi de valeur ?",
-    a: "Les prix des cartes (normal et reverse) et des items scellés sont synchronisés depuis CardMarket. La valeur de votre collection est calculée automatiquement en multipliant ces prix par vos quantités. Un graphique d'évolution vous permet de visualiser la progression de votre patrimoine dans le temps, avec un filtre par extension.",
+    a: "Les prix des cartes (normal et reverse) et des items scellés sont synchronisés depuis CardMarket. La valeur de ta collection est calculée automatiquement en multipliant ces prix par tes quantités. Le graphique d'évolution (Pro) te permet de visualiser la progression de ton patrimoine dans le temps.",
   },
   {
     q: "Comment ajouter des items à mon Classeur ?",
-    a: "Pour les scellés, parcourez le catalogue par série depuis la section Classeur et cliquez sur un produit pour l'ajouter avec votre prix d'achat et votre quantité. Pour les cartes, utilisez la section Cartes du Classeur : recherchez par extension et ajoutez chaque carte possédée (version normale ou reverse).",
+    a: "Pour les scellés, parcours le catalogue par série depuis la section Classeur et clique sur un produit pour l'ajouter avec ton prix d'achat et ta quantité. Pour les cartes, utilise la section Collection : recherche par extension et ajoute chaque carte possédée (version normale ou reverse).",
   },
   {
     q: "PokeItem est-il disponible sur mobile ?",
@@ -31,15 +39,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Mes données de collection sont-elles sécurisées ?",
-    a: "Vos données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Vous pouvez supprimer votre compte à tout moment depuis vos paramètres.",
+    a: "Tes données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Tu peux supprimer ton compte à tout moment depuis tes paramètres.",
   },
   {
     q: "PokeItem est-il un site officiel Pokémon ?",
     a: "Non, PokeItem est un projet indépendant et n'est pas affilié à Nintendo, GAME FREAK ou The Pokémon Company. Les noms et illustrations Pokémon sont la propriété de leurs auteurs respectifs.",
-  },
-  {
-    q: "Le Scanner de cartes est-il déjà disponible ?",
-    a: "Le Scanner est en cours de développement. Il vous permettra d'identifier une carte en prenant une photo et de l'ajouter directement à votre Classeur.",
   },
 ];
 
