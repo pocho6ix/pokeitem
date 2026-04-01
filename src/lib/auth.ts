@@ -50,10 +50,22 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
           }),
         ]
       : []),
   ],
+  events: {
+    async signIn({ user, account }) {
+      // Auto-verify email for Google sign-ins (Google already verifies emails)
+      if (account?.provider === 'google' && user.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        }).catch(() => {})
+      }
+    }
+  },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       // On sign-in: populate token from user object
