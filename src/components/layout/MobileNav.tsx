@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ScanLine, BookOpen } from "lucide-react";
+import { Home, Package, ScanLine, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 const MOBILE_NAV_ITEMS = [
-  { href: "/", label: "Accueil", icon: null },
+  { href: "/", label: "Accueil", icon: Home },
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen },
@@ -39,17 +38,7 @@ export function MobileNav() {
                   : "text-[var(--text-tertiary)]"
               )}
             >
-              {item.icon ? (
-                <item.icon className="h-5 w-5" />
-              ) : (
-                <Image
-                  src="/logo.png"
-                  alt="Accueil"
-                  width={20}
-                  height={20}
-                  className={cn("object-contain", isActive ? "opacity-100" : "opacity-40")}
-                />
-              )}
+              <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </Link>
           );
