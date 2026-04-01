@@ -71,9 +71,10 @@ export async function POST(request: NextRequest) {
       addRandomSuffix: false,
     });
   } catch (err) {
-    console.error("Vercel Blob upload error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Vercel Blob upload error:", msg);
     return NextResponse.json(
-      { error: "Impossible d'uploader la photo. Vérifiez la configuration du stockage." },
+      { error: `Blob error: ${msg}` },
       { status: 500 },
     );
   }
