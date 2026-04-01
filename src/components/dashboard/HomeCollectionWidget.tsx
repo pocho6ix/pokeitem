@@ -1,13 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { TrendingUp, ArrowRight } from 'lucide-react'
-import { useSubscription } from '@/hooks/useSubscription'
 import { ProButton } from '@/components/subscription/ProButton'
 
 interface HomeCollectionWidgetProps {
   total: number
   cardsValue: number
   sealedValue: number
+  /** Resolved server-side — no client loading state needed */
+  isPro: boolean
 }
 
 function fmt(n: number, decimals = 2) {
@@ -19,16 +20,12 @@ function fmt(n: number, decimals = 2) {
   })
 }
 
-export function HomeCollectionWidget({ total, cardsValue, sealedValue }: HomeCollectionWidgetProps) {
-  const { isPro, isLoading } = useSubscription()
-
-  if (isLoading) return null
-
+export function HomeCollectionWidget({ total, cardsValue, sealedValue, isPro }: HomeCollectionWidgetProps) {
   if (!isPro) {
     return (
-      <button
-        onClick={() => window.location.href = '/pricing'}
-        className="w-full group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-[#E7BA76]/40 hover:shadow-lg transition-all text-left"
+      <Link
+        href="/pricing"
+        className="w-full group flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] px-5 py-4 hover:border-[#E7BA76]/40 hover:shadow-lg transition-all"
       >
         <div className="flex items-center gap-4">
           <div className="rounded-xl bg-[var(--bg-subtle)] p-2.5 shrink-0">
@@ -40,7 +37,7 @@ export function HomeCollectionWidget({ total, cardsValue, sealedValue }: HomeCol
           </div>
         </div>
         <ProButton size="sm" />
-      </button>
+      </Link>
     )
   }
 
