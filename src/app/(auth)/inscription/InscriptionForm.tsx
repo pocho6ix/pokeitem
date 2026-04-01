@@ -86,36 +86,63 @@ export function InscriptionForm() {
 
   if (emailSent) {
     return (
-      <Card>
-        <CardHeader className="items-center space-y-4 pb-2">
-          <Logo size="lg" />
-        </CardHeader>
-        <CardContent className="space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <svg className="h-8 w-8 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect width="20" height="16" x="2" y="4" rx="2" />
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-            </svg>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="items-center space-y-4 pb-2">
+            <Logo size="lg" />
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <svg className="h-8 w-8 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+              Compte cr&eacute;&eacute; !
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Un email de confirmation a &eacute;t&eacute; envoy&eacute; &agrave; votre adresse.
+              Cliquez sur le lien pour activer votre compte.
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)]">
+              Le lien expire dans 24 heures. Pensez &agrave; v&eacute;rifier vos spams.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-2 w-full"
+              onClick={() => router.push("/connexion?registered=true")}
+            >
+              Aller &agrave; la connexion
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Pro upsell */}
+        <button
+          type="button"
+          onClick={() => router.push("/pricing")}
+          className="w-full rounded-2xl p-5 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
+          style={{
+            background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
+          }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-black/80">Découvrir PokeItem Pro</span>
+            <span className="rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70">
+              dès 3,99€/mois
+            </span>
           </div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">
-            V&eacute;rifiez votre email
-          </h2>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Un email de confirmation a &eacute;t&eacute; envoy&eacute; &agrave; votre adresse.
-            Cliquez sur le lien pour activer votre compte.
-          </p>
-          <p className="text-xs text-[var(--text-tertiary)]">
-            Le lien expire dans 24 heures. Pensez &agrave; v&eacute;rifier vos spams.
-          </p>
-          <Button
-            variant="outline"
-            className="mt-2"
-            onClick={() => router.push("/connexion?registered=true")}
-          >
-            Aller &agrave; la connexion
-          </Button>
-        </CardContent>
-      </Card>
+          <ul className="space-y-1">
+            {["Collection illimitée", "Scans illimités", "Valeur & statistiques avancées"].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-xs text-black/60">
+                <span className="text-black/40">✓</span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </button>
+      </div>
     );
   }
 

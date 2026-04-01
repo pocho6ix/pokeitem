@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 
 interface UserProfile {
@@ -14,6 +15,7 @@ interface UserProfile {
 
 export function ProfilForm() {
   const { update: updateSession } = useSession();
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -147,6 +149,7 @@ export function ProfilForm() {
       {/* S'abonner — Pro banner */}
       <button
         type="button"
+        onClick={() => router.push('/pricing')}
         className="w-full rounded-xl p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
         style={{
           background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
