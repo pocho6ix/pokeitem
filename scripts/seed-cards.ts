@@ -249,7 +249,7 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
     console.log(`${cards.length} cartes`);
 
     if (!dryRun && cards.length > 0) {
-      // Upsert par lot de 50
+      // Upsert par lot de 50 — inclut TOUTES les cartes (officielles + collector/promo)
       const BATCH = 50;
       for (let i = 0; i < cards.length; i += BATCH) {
         const batch = cards.slice(i, i + BATCH);
@@ -274,21 +274,21 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
         );
       }
 
-      // Mise à jour du cardCount sur la série
-      if (!seenSlugs.has(slug)) {
-        await prisma.serie.update({
-          where: { id: serieId },
-          data: { cardCount: setData.cardCount.official },
-        });
-      } else {
-        // Set double (ex: sv10.5b + sv10.5w dans la même série) — additionner
+      // Mise à jour du cardCount = nombre réel de cartes importées (total, pas officiel)
+      // Accumulation si le slug a déjà été traité (set double comme sv10.5b + sv10.5w)
+      if (seenSlugs.has(slug)) {
         const current = await prisma.serie.findUnique({
           where: { id: serieId },
           select: { cardCount: true },
         });
         await prisma.serie.update({
           where: { id: serieId },
-          data: { cardCount: (current?.cardCount ?? 0) + setData.cardCount.official },
+          data: { cardCount: (current?.cardCount ?? 0) + cards.length },
+        });
+      } else {
+        await prisma.serie.update({
+          where: { id: serieId },
+          data: { cardCount: cards.length },
         });
       }
     }
