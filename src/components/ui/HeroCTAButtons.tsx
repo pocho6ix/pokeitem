@@ -27,7 +27,7 @@ export function HeroCTAButtons() {
           <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
         <Link
-          href="/collection/produits"
+          href="/collection/cartes"
           className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
         >
           Explorer le catalogue
@@ -46,7 +46,7 @@ export function HeroCTAButtons() {
         <ArrowRight className="ml-2 h-4 w-4" />
       </Link>
       <Link
-        href="/collection/produits"
+        href="/collection/cartes"
         className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
       >
         Explorer le catalogue

@@ -6,5 +6,5 @@ interface Props {
 
 export default async function Page({ params }: Props) {
   const { blocSlug } = await params;
-  redirect(`/collection/produits/${blocSlug}`);
+  redirect(`/collection/cartes/${blocSlug}`);
 }

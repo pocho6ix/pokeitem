@@ -3,13 +3,13 @@ import { Logo } from "@/components/shared/Logo";
 
 const FOOTER_LINKS = {
   Collection: [
-    { href: "/collection", label: "Catalogue complet" },
-    { href: "/collection/produits/ecarlate-violet", label: "Ecarlate & Violet" },
-    { href: "/collection/produits/epee-bouclier", label: "Epee & Bouclier" },
-    { href: "/collection/produits/soleil-lune", label: "Soleil & Lune" },
-    { href: "/collection/produits/xy", label: "XY" },
-    { href: "/collection/produits/noir-blanc", label: "Noir & Blanc" },
-    { href: "/collection/produits/mega-evolution", label: "Mega-Evolution" },
+    { href: "/collection/cartes", label: "Catalogue complet" },
+    { href: "/collection/cartes/ecarlate-violet", label: "Ecarlate & Violet" },
+    { href: "/collection/cartes/epee-bouclier", label: "Epee & Bouclier" },
+    { href: "/collection/cartes/soleil-lune", label: "Soleil & Lune" },
+    { href: "/collection/cartes/xy", label: "XY" },
+    { href: "/collection/cartes/noir-blanc", label: "Noir & Blanc" },
+    { href: "/collection/cartes/mega-evolution", label: "Mega-Evolution" },
   ],
   Ressources: [
     { href: "/pricing", label: "Abonnement Pro" },

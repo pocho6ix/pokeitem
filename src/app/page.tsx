@@ -153,24 +153,21 @@ export default async function HomePage() {
             <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm sm:text-base">
               Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
             </p>
-            <div className="mt-6">
+            {/* Collection value widget — above CTA buttons, only for authenticated users */}
+            {collectionValue && (
+              <div className="mt-6">
+                <HomeCollectionWidget
+                  total={collectionValue.total}
+                  cardsValue={collectionValue.cardsValue}
+                  sealedValue={collectionValue.sealedValue}
+                />
+              </div>
+            )}
+            <div className={collectionValue ? "mt-4" : "mt-6"}>
               <HeroCTAButtons />
             </div>
           </div>
         </div>
-
-        {/* Collection value — directly below CTA buttons, only for authenticated users with a collection */}
-        {collectionValue && (
-          <div className="bg-[var(--bg-primary)] px-4 pt-5 pb-10 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-xl">
-              <HomeCollectionWidget
-                total={collectionValue.total}
-                cardsValue={collectionValue.cardsValue}
-                sealedValue={collectionValue.sealedValue}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Top 10 most valuable cards — authenticated users only */}

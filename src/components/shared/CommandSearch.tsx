@@ -31,7 +31,7 @@ function getStaticResults(query: string): SearchResult[] {
         id: `bloc-${bloc.slug}`,
         title: bloc.name,
         subtitle: bloc.abbreviation,
-        href: `/collection/produits/${bloc.slug}`,
+        href: `/collection/cartes/${bloc.slug}`,
         category: "blocs",
       });
     }
@@ -47,7 +47,7 @@ function getStaticResults(query: string): SearchResult[] {
         id: `serie-${serie.slug}`,
         title: serie.name,
         subtitle: serie.abbreviation,
-        href: `/collection/produits/${serie.blocSlug}/${serie.slug}`,
+        href: `/collection/cartes/${serie.blocSlug}/${serie.slug}`,
         category: "series",
       });
     }

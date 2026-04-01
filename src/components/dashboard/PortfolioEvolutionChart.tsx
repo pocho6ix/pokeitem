@@ -39,19 +39,19 @@ function ChartTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: Array<{ value: number }>;
+  payload?: Array<{ value: number; dataKey?: string }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
   const fmt = (n: number) =>
     n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+  const valueEntry    = payload.find((p) => p.dataKey === "value");
+  const investedEntry = payload.find((p) => p.dataKey === "invested");
   return (
     <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-2 shadow-lg">
       <p className="text-xs text-[var(--text-tertiary)]">{label}</p>
-      <p className="text-sm font-bold text-[var(--text-primary)]">{fmt(payload[0].value)}</p>
-      {payload[1] && (
-        <p className="text-xs text-[var(--text-tertiary)]">Investi : {fmt(payload[1].value)}</p>
-      )}
+      {valueEntry    && <p className="text-sm font-bold text-[var(--text-primary)]">{fmt(valueEntry.value)}</p>}
+      {investedEntry && <p className="text-xs text-[var(--text-tertiary)]">Investi : {fmt(investedEntry.value)}</p>}
     </div>
   );
 }
