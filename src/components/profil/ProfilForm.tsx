@@ -164,9 +164,7 @@ export function ProfilForm() {
         <div className="flex items-center justify-between">
           <span className="text-base font-bold text-black/80">S&apos;abonner</span>
           <span className="flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70 backdrop-blur-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-3.5 w-3.5 object-contain" />
-            Pro
+            ★ Pro
           </span>
         </div>
         <p className="mt-0.5 text-xs text-black/50">Débloquer toutes les fonctionnalités</p>
