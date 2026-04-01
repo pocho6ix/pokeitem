@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, ScanLine, BookOpen, User, LogOut } from "lucide-react";
+import { Home, Package, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
@@ -12,9 +12,9 @@ import { CommandSearch } from "@/components/shared/CommandSearch";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 
-const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; authRequired?: boolean }[] = [
+const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; exact?: boolean; authRequired?: boolean }[] = [
+  { href: "/", label: "Accueil", icon: Home, exact: true },
   { href: "/collection", label: "Collection", icon: Package },
-  { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen, authRequired: true },
 ];
@@ -152,7 +152,7 @@ export function Header() {
           <nav className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               if (item.authRequired && !session) return null;
-              const isActive = pathname.startsWith(item.href);
+              const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
