@@ -24,7 +24,8 @@ const MEGA_EVOLUTION_SERIES: SerieStatic[] = [
 // ==========================================================================
 
 const ECARLATE_VIOLET_SERIES: SerieStatic[] = [
-  { name: 'Foudre Noire / Flamme Blanche', nameEn: 'Black Lightning / White Flame', slug: 'foudre-noire-flamme-blanche', abbreviation: 'EV10.5', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/foudre-noire-flamme-blanche.png', releaseDate: '2025-07-01', order: 0 },
+  { name: 'Flamme Blanche', nameEn: 'White Flame', slug: 'flamme-blanche', abbreviation: 'EV10.5W', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/flamme-blanche.png', releaseDate: '2025-07-01', order: 0 },
+  { name: 'Foudre Noire', nameEn: 'Black Lightning', slug: 'foudre-noire', abbreviation: 'EV10.5B', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/foudre-noire.png', releaseDate: '2025-07-01', order: 0 },
   { name: 'Rivalités Destinées', nameEn: 'Destined Rivals', slug: 'rivalites-destinees', abbreviation: 'EV10', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/rivalites-destinees.png', releaseDate: '2025-05-30', order: 1 },
   { name: 'Aventures Ensemble', nameEn: 'Adventures Together', slug: 'aventures-ensemble', abbreviation: 'EV09', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/aventures-ensemble.png', releaseDate: '2025-03-28', order: 2 },
   { name: 'Évolutions Prismatiques', nameEn: 'Prismatic Evolutions', slug: 'evolutions-prismatiques', abbreviation: 'EV8.5', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/evolutions-prismatiques.png', releaseDate: '2025-01-17', order: 3 },

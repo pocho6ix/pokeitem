@@ -58,7 +58,8 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "evolutions-prismatiques":    V_MASTERBALL, // EV8.5
   "aventures-ensemble":         V_MASTERBALL, // EV09
   "rivalites-destinees":        V_MASTERBALL, // EV10
-  "foudre-noire-flamme-blanche": V_MASTERBALL, // EV10.5
+  "foudre-noire":               V_MASTERBALL, // EV10.5B
+  "flamme-blanche":             V_MASTERBALL, // EV10.5W
 
   // ── Épée & Bouclier — no Pokéball stamps ────────────────────────────────
   // All EB series use V_REVERSE (default fallback handles this via bloc)

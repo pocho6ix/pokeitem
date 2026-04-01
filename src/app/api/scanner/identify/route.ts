@@ -64,7 +64,8 @@ const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   "sv8pt5": "evolutions-prismatiques", "sv8.5": "evolutions-prismatiques",
   "sv9": "aventures-ensemble",
   "sv10": "rivalites-destinees",
-  "sv10.5": "foudre-noire-flamme-blanche",
+  "sv10.5b": "foudre-noire",
+  "sv10.5w": "flamme-blanche",
   // ── Épée & Bouclier ────────────────────────────────────────────────────────
   "swsh1": "epee-et-bouclier",
   "swsh2": "clash-des-rebelles",

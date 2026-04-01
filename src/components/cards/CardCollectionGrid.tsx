@@ -391,11 +391,23 @@ function AddToCollectionModal({
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
 const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
-  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-[#E7BA76]" },
-  [CardVersion.REVERSE]:            { label: "R",  cls: "bg-violet-600" },
-  [CardVersion.REVERSE_POKEBALL]:   { label: "RP", cls: "bg-purple-600" },
-  [CardVersion.REVERSE_MASTERBALL]: { label: "RM", cls: "bg-amber-500" },
+  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-[#E7BA76] text-black" },
+  [CardVersion.REVERSE]:            { label: "R",  cls: "bg-violet-600 text-white" },
+  [CardVersion.REVERSE_POKEBALL]:   { label: "RP", cls: "bg-purple-600 text-white" },
+  [CardVersion.REVERSE_MASTERBALL]: { label: "RM", cls: "bg-amber-500 text-white" },
 };
+
+/** Versions applicable for a card (special = NORMAL only) */
+function getCardVersions(card: CardRow, serieVersions: CardVersion[]): CardVersion[] {
+  return card.isSpecial ? [CardVersion.NORMAL] : serieVersions;
+}
+
+/** Missing versions for a card */
+function getMissingVersions(card: CardRow, owned: OwnedVersionMap, serieVersions: CardVersion[]): CardVersion[] {
+  const applicable = getCardVersions(card, serieVersions);
+  const ownedCard  = owned.get(card.id);
+  return applicable.filter((v) => !ownedCard?.has(v));
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -440,8 +452,9 @@ export function CardCollectionGrid({
     }
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
     // versionFilter changes display context only — does not hide cards
-    if (viewFilter === "owned")   result = result.filter((c) =>  ownedMap.has(c.id));
-    if (viewFilter === "missing") result = result.filter((c) => !ownedMap.has(c.id));
+    if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
+    // "missing" = at least one applicable version is not owned
+    if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
 
     return [...result].sort((a, b) => {
       let cmp = 0;
@@ -450,10 +463,14 @@ export function CardCollectionGrid({
       if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
       return sortOrder === "asc" ? cmp : -cmp;
     });
-  }, [cards, search, rarityFilter, versionFilter, viewFilter, sortBy, sortOrder, ownedMap]);
+  }, [cards, search, rarityFilter, versionFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
 
-  const ownedCount   = ownedMap.size;
-  const missingCount = cards.length - ownedCount;
+  const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
+  // Cards where at least one applicable version is missing
+  const missingCount = useMemo(
+    () => cards.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0).length,
+    [cards, ownedMap, availableVersions]
+  );
   const progressPct  = cards.length > 0 ? Math.round((ownedCount / cards.length) * 100) : 0;
 
   // ── Selection ─────────────────────────────────────────────────────────────
@@ -732,12 +749,16 @@ export function CardCollectionGrid({
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
           {filteredCards.map((card) => {
-            const isSelected = selectedIds.has(card.id);
-            const ownedTotal = totalOwned(ownedMap, card.id);
-            const isOwned    = ownedTotal > 0;
-            const dim        = showTransparency && isAuthenticated && !isOwned;
+            const isSelected    = selectedIds.has(card.id);
+            const ownedTotal    = totalOwned(ownedMap, card.id);
+            const isOwned       = ownedTotal > 0;
+            const dim           = showTransparency && isAuthenticated && !isOwned;
             // Collect owned version badges for display
             const ownedVersions = ownedMap.get(card.id) ? Array.from(ownedMap.get(card.id)!.keys()) : [];
+            // Missing versions — shown as dimmed badges when card is partially owned
+            const cardMissingVersions = isOwned
+              ? getMissingVersions(card, ownedMap, availableVersions)
+              : [];
 
             return (
               <div key={card.id} onClick={() => isAuthenticated && toggleSelect(card.id)}
@@ -773,15 +794,23 @@ export function CardCollectionGrid({
                     <span className="opacity-80">{CARD_RARITY_SYMBOL[card.rarity]}</span>
                   </div>
 
-                  {/* Version ownership pills — bottom right, stacked */}
-                  {ownedVersions.length > 0 && (
+                  {/* Version pills (owned + missing) — bottom right, stacked */}
+                  {(ownedVersions.length > 0 || cardMissingVersions.length > 0) && (
                     <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
                       {ownedVersions.map((v) => {
                         const qty = ownedMap.get(card.id)!.get(v)!.quantity;
                         const b   = VERSION_BADGE[v];
                         return (
-                          <span key={v} className={`rounded px-1 py-px text-[8px] font-bold leading-none text-white shadow-sm ${b.cls}`}>
+                          <span key={v} className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls}`}>
                             {b.label}{qty > 1 ? `×${qty}` : ""}
+                          </span>
+                        );
+                      })}
+                      {cardMissingVersions.map((v) => {
+                        const b = VERSION_BADGE[v];
+                        return (
+                          <span key={`missing-${v}`} className={`rounded px-1 py-px text-[8px] font-bold leading-none opacity-40 ring-1 ring-inset ring-white/40 ${b.cls}`}>
+                            {b.label}?
                           </span>
                         );
                       })}

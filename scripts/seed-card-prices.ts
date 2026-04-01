@@ -165,12 +165,13 @@ const SLUG_TO_TCGDEX: Record<string, string> = {
   "evolutions-prismatiques":    "sv08.5",
   "aventures-ensemble":         "sv09",
   "rivalites-destinees":        "sv10",
-  "foudre-noire-flamme-blanche":"sv10.5b",
+  "foudre-noire":               "sv10.5b",
+  "flamme-blanche":             "sv10.5w",
 };
 
 // Sets qui combinent deux IDs TCGdex (fetchés séparément puis fusionnés)
 const DUAL_TCGDEX_SETS: Record<string, string> = {
-  "foudre-noire-flamme-blanche": "sv10.5w",  // sv10.5b est déjà dans SLUG_TO_TCGDEX
+  // (aucun set double pour l'instant)
 }
 
 // ---------------------------------------------------------------------------

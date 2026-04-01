@@ -26,20 +26,33 @@ export const RARITY_BADGE_LABELS: Partial<Record<CardRarity, string>> = {
 }
 
 // Mapping TCGdex rarity string (FR) → CardRarity enum
+// Includes both "old-style" capitalization and actual API strings observed in production
 export const TCGDEX_RARITY_MAP: Record<string, CardRarity> = {
-  'Commune':                     CardRarity.COMMON,
-  'Peu Commune':                 CardRarity.UNCOMMON,
-  'Rare':                        CardRarity.RARE,
-  'Rare Holographique':          CardRarity.RARE,
-  'Double Rare':                 CardRarity.DOUBLE_RARE,
-  'Rare Illustration':           CardRarity.ILLUSTRATION_RARE,
-  'Rare Illustration Spéciale':  CardRarity.SPECIAL_ILLUSTRATION_RARE,
-  'Hyper Rare':                  CardRarity.HYPER_RARE,
-  "Rare As Spécial":             CardRarity.ACE_SPEC_RARE,
-  'Promo':                       CardRarity.PROMO,
-  // Anciens sets
-  'Commune Inversée':            CardRarity.COMMON,
-  'Peu Commune Inversée':        CardRarity.UNCOMMON,
+  // ── Communes / peu communes / rares ─────────────────────────────────────
+  'Commune':                       CardRarity.COMMON,
+  'Peu Commune':                   CardRarity.UNCOMMON,
+  'Rare':                          CardRarity.RARE,
+  'Rare Holographique':            CardRarity.RARE,
+  // ── Double Rare (EX, V, VMAX, VSTAR…) ───────────────────────────────────
+  'Double Rare':                   CardRarity.DOUBLE_RARE,  // EN-style key (kept for compat)
+  'Double rare':                   CardRarity.DOUBLE_RARE,  // actual FR API string
+  'Ultra Rare':                    CardRarity.DOUBLE_RARE,  // Full-Art EX in some sets
+  'Rare Noir Blanc':               CardRarity.DOUBLE_RARE,  // Foudre Noire / Flamme Blanche tier
+  // ── Illustration Rare (AR) ───────────────────────────────────────────────
+  'Rare Illustration':             CardRarity.ILLUSTRATION_RARE,   // old-style key
+  'Illustration rare':             CardRarity.ILLUSTRATION_RARE,   // actual FR API string
+  // ── Special Illustration Rare (SAR) ─────────────────────────────────────
+  'Rare Illustration Spéciale':    CardRarity.SPECIAL_ILLUSTRATION_RARE,  // old-style key
+  'Illustration spéciale rare':    CardRarity.SPECIAL_ILLUSTRATION_RARE,  // actual FR API string
+  // ── Hyper Rare (HR) ─────────────────────────────────────────────────────
+  'Hyper Rare':                    CardRarity.HYPER_RARE,
+  'Hyper rare':                    CardRarity.HYPER_RARE,  // lowercase variant
+  // ── ACE SPEC / Promo ────────────────────────────────────────────────────
+  "Rare As Spécial":               CardRarity.ACE_SPEC_RARE,
+  'Promo':                         CardRarity.PROMO,
+  // ── Anciens sets ────────────────────────────────────────────────────────
+  'Commune Inversée':              CardRarity.COMMON,
+  'Peu Commune Inversée':          CardRarity.UNCOMMON,
 }
 
 export function mapTcgdexRarity(tcgdexRarity?: string | null): CardRarity {

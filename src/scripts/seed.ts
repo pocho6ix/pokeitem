@@ -23,7 +23,8 @@ const SERIES_DATA = [
   { blocSlug: "mega-evolution", name: "Flammes Fantasmagoriques", abbreviation: "ME02", slug: "flammes-fantasmagoriques", releaseDate: new Date("2025-11-14"), order: 2 },
   { blocSlug: "mega-evolution", name: "Méga-Évolution", abbreviation: "ME01", slug: "mega-evolution-base", releaseDate: new Date("2025-09-26"), order: 3 },
   // Écarlate & Violet
-  { blocSlug: "ecarlate-violet", name: "Foudre Noire / Flamme Blanche", abbreviation: "EV10.5", slug: "foudre-noire-flamme-blanche", releaseDate: new Date("2025-07-01"), order: 0 },
+  { blocSlug: "ecarlate-violet", name: "Flamme Blanche", abbreviation: "EV10.5W", slug: "flamme-blanche", releaseDate: new Date("2025-07-01"), order: 0 },
+  { blocSlug: "ecarlate-violet", name: "Foudre Noire", abbreviation: "EV10.5B", slug: "foudre-noire", releaseDate: new Date("2025-07-01"), order: 0 },
   { blocSlug: "ecarlate-violet", name: "Rivalités Destinées", abbreviation: "EV10", slug: "rivalites-destinees", releaseDate: new Date("2025-05-30"), order: 1 },
   { blocSlug: "ecarlate-violet", name: "Aventures Ensemble", abbreviation: "EV09", slug: "aventures-ensemble", releaseDate: new Date("2025-03-28"), order: 2 },
   { blocSlug: "ecarlate-violet", name: "Évolutions Prismatiques", abbreviation: "EV8.5", slug: "evolutions-prismatiques", releaseDate: new Date("2025-01-17"), order: 3 },

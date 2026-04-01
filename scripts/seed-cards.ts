@@ -43,8 +43,8 @@ const TCGDEX_MAPPING: Record<string, string> = {
   "sv08.5": "evolutions-prismatiques",
   sv09: "aventures-ensemble",
   sv10: "rivalites-destinees",
-  "sv10.5b": "foudre-noire-flamme-blanche",
-  "sv10.5w": "foudre-noire-flamme-blanche",
+  "sv10.5b": "foudre-noire",
+  "sv10.5w": "flamme-blanche",
 
   // ── Épée & Bouclier ───────────────────────────────────────────────────────
   swsh1: "epee-et-bouclier",
@@ -247,7 +247,7 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
   // Filtre optionnel sur des sets précis
   const tcgdexIds = opts.sets ?? Object.keys(TCGDEX_MAPPING);
 
-  // Dédupliquer (sv10.5b et sv10.5w → même slug)
+  // Track processed slugs (for idempotency)
   const seenSlugs = new Set<string>();
 
   // Charger une fois tous les slugs de séries depuis la DB
@@ -268,9 +268,9 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
       continue;
     }
 
-    // Éviter de traiter deux fois le même slug (foudre-noire-flamme-blanche)
+    // Éviter de traiter deux fois le même slug
     if (seenSlugs.has(slug)) {
-      console.log(`⏭  ${tcgdexId} → "${slug}" déjà traité (set double), on fusionne`);
+      console.log(`⏭  ${tcgdexId} → "${slug}" déjà traité, ignoré`);
     }
 
     const serieId = serieBySlug.get(slug);

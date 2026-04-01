@@ -5,7 +5,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
   const resend = new Resend(key);
   const FROM_EMAIL = process.env.EMAIL_FROM ?? "PokeItem <noreply@pokeitem.fr>";
-  const BASE_URL = process.env.NEXTAUTH_URL ?? "https://www.pokeitem.fr";
+  const BASE_URL = process.env.NEXTAUTH_URL ?? "https://app.pokeitem.fr";
   const verifyUrl = `${BASE_URL}/verification?token=${token}`;
   await resend.emails.send({
     from: FROM_EMAIL,

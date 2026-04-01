@@ -11,6 +11,7 @@
  */
 
 import { PrismaClient, CardRarity } from "@prisma/client";
+import { TCGDEX_RARITY_MAP } from "../src/lib/pokemon/card-variants";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
@@ -21,6 +22,8 @@ const prisma = new PrismaClient();
 
 const SLUG_TO_PTCG: Record<string, string> = {
   "rivalites-destinees":         "sv10",
+  "foudre-noire":               "sv10.5b",
+  "flamme-blanche":             "sv10.5w",
   "ecarlate-et-violet":          "sv1",
   "evolutions-a-paldea":         "sv2",
   "flammes-obsidiennes":         "sv3",
@@ -147,8 +150,56 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.PROMO,
 ]);
 
+// ── Mapping : slug série → TCGdex set ID (fallback pour sets absents de PTCGIO) ──
+
+const SLUG_TO_TCGDEX: Record<string, string> = {
+  "foudre-noire":             "sv10.5b",
+  "flamme-blanche":           "sv10.5w",
+  "mega-evolution":           "me01",
+  "flammes-fantasmagoriques": "me02",
+  "heros-transcendants":      "me02.5",
+};
+
 function normalizeNumber(n: string): string {
   return n.replace(/^([A-Z]*)0+(\d+)$/, "$1$2");
+}
+
+// ── Fetch cards with rarity from TCGdex (FR) ─────────────────────────────────
+
+interface TCGdexCardMin { localId: string }
+interface TCGdexSetMin  { cards: TCGdexCardMin[] }
+interface TCGdexCardFull { localId: string; rarity?: string | null }
+
+async function fetchTCGdexRarities(setId: string): Promise<Map<string, CardRarity>> {
+  const map = new Map<string, CardRarity>();
+
+  // 1. Get card list
+  const setRes = await fetch(`https://api.tcgdex.net/v2/fr/sets/${setId}`);
+  if (!setRes.ok) { console.warn(`  ⚠ TCGdex set ${setId} → ${setRes.status}`); return map; }
+  const setData = (await setRes.json()) as TCGdexSetMin;
+  const cards = setData.cards ?? [];
+
+  // 2. Fetch each card individually (rarity only available at card level)
+  const BATCH = 8;
+  for (let i = 0; i < cards.length; i += BATCH) {
+    const batch = cards.slice(i, i + BATCH);
+    await Promise.all(batch.map(async (c) => {
+      try {
+        const r = await fetch(`https://api.tcgdex.net/v2/fr/cards/${setId}-${c.localId}`);
+        if (!r.ok) return;
+        const d = (await r.json()) as TCGdexCardFull;
+        if (!d.rarity) return;
+        const mapped = TCGDEX_RARITY_MAP[d.rarity];
+        if (!mapped) return;
+        const norm = normalizeNumber(c.localId);
+        map.set(c.localId, mapped);
+        map.set(norm, mapped);
+      } catch { /* skip */ }
+    }));
+    await new Promise((r) => setTimeout(r, 120));
+  }
+
+  return map;
 }
 
 // ── Fetch cards with rarity from pokemontcg.io ────────────────────────────────
@@ -186,6 +237,32 @@ async function fetchPTCGRarities(setId: string): Promise<Map<string, CardRarity>
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+async function applyRarityMap(
+  rarityMap: Map<string, CardRarity>,
+  dbCards: { id: string; number: string }[],
+  dryRun: boolean,
+): Promise<number> {
+  const toUpdate = dbCards
+    .map((c) => {
+      const rarity = rarityMap.get(c.number) ?? rarityMap.get(normalizeNumber(c.number));
+      if (!rarity) return null;
+      return { id: c.id, rarity, isSpecial: SPECIAL_RARITIES.has(rarity) };
+    })
+    .filter(Boolean) as { id: string; rarity: CardRarity; isSpecial: boolean }[];
+
+  if (!dryRun) {
+    const CHUNK = 50;
+    for (let i = 0; i < toUpdate.length; i += CHUNK) {
+      await Promise.all(
+        toUpdate.slice(i, i + CHUNK).map((u) =>
+          prisma.card.update({ where: { id: u.id }, data: { rarity: u.rarity, isSpecial: u.isSpecial } })
+        )
+      );
+    }
+  }
+  return toUpdate.length;
+}
+
 async function main(opts: { sets?: string[]; dryRun: boolean }) {
   const { dryRun } = opts;
   if (dryRun) console.log("🔍 Mode dry-run\n");
@@ -193,46 +270,49 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
   const seriesInDb = await prisma.serie.findMany({ select: { id: true, slug: true } });
   const serieBySlug = new Map(seriesInDb.map((s) => [s.slug, s.id]));
 
-  const slugs = opts.sets
-    ? Object.keys(SLUG_TO_PTCG).filter((s) => opts.sets!.includes(SLUG_TO_PTCG[s]))
-    : Object.keys(SLUG_TO_PTCG);
+  // All known slugs (union of PTCGIO + TCGdex)
+  const allSlugs = new Set([...Object.keys(SLUG_TO_PTCG), ...Object.keys(SLUG_TO_TCGDEX)]);
+
+  let slugs: string[];
+  if (opts.sets) {
+    slugs = [...allSlugs].filter((s) =>
+      opts.sets!.includes(s) ||
+      opts.sets!.includes(SLUG_TO_PTCG[s] ?? "") ||
+      opts.sets!.includes(SLUG_TO_TCGDEX[s] ?? "")
+    );
+  } else {
+    slugs = [...allSlugs];
+  }
 
   let totalUpdated = 0;
   let totalSets = 0;
 
   for (const slug of slugs) {
-    const ptcgId = SLUG_TO_PTCG[slug];
-    const serieId = serieBySlug.get(slug);
+    const ptcgId   = SLUG_TO_PTCG[slug];
+    const tcgdexId = SLUG_TO_TCGDEX[slug];
+    const serieId  = serieBySlug.get(slug);
     if (!serieId) { console.warn(`⚠ Série "${slug}" absente de la DB`); continue; }
 
-    process.stdout.write(`📦 ${ptcgId.padEnd(12)} → ${slug.padEnd(42)}`);
-    const rarityMap = await fetchPTCGRarities(ptcgId);
+    const label = ptcgId ?? `tcgdex:${tcgdexId}`;
+    process.stdout.write(`📦 ${label.padEnd(14)} → ${slug.padEnd(42)}`);
+
+    let rarityMap = new Map<string, CardRarity>();
+
+    // Try PTCGIO first
+    if (ptcgId) {
+      rarityMap = await fetchPTCGRarities(ptcgId);
+    }
+
+    // Fallback to TCGdex if PTCGIO returned nothing
+    if (rarityMap.size === 0 && tcgdexId) {
+      if (ptcgId) process.stdout.write(`(PTCGIO vide → TCGdex) `);
+      rarityMap = await fetchTCGdexRarities(tcgdexId);
+    }
+
     if (rarityMap.size === 0) { console.log(`aucune rareté`); continue; }
 
     const dbCards = await prisma.card.findMany({ where: { serieId }, select: { id: true, number: true } });
-
-    let updated = 0;
-    if (!dryRun) {
-      const CHUNK = 50;
-      const toUpdate = dbCards
-        .map((c) => {
-          const rarity = rarityMap.get(c.number) ?? rarityMap.get(normalizeNumber(c.number));
-          if (!rarity) return null;
-          return { id: c.id, rarity, isSpecial: SPECIAL_RARITIES.has(rarity) };
-        })
-        .filter(Boolean) as { id: string; rarity: CardRarity; isSpecial: boolean }[];
-
-      for (let i = 0; i < toUpdate.length; i += CHUNK) {
-        await Promise.all(
-          toUpdate.slice(i, i + CHUNK).map((u) =>
-            prisma.card.update({ where: { id: u.id }, data: { rarity: u.rarity, isSpecial: u.isSpecial } })
-          )
-        );
-      }
-      updated = toUpdate.length;
-    } else {
-      updated = dbCards.filter((c) => rarityMap.has(c.number) || rarityMap.has(normalizeNumber(c.number))).length;
-    }
+    const updated = await applyRarityMap(rarityMap, dbCards, dryRun);
 
     console.log(`${updated}/${dbCards.length} cartes`);
     totalUpdated += updated;
