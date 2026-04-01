@@ -42,8 +42,8 @@ const TCGDEX_MAPPING: Record<string, string> = {
   "sv08.5": "evolutions-prismatiques",
   sv09: "aventures-ensemble",
   sv10: "rivalites-destinees",
-  "sv10.5b": "foudre-noire-flamme-blanche",
-  "sv10.5w": "foudre-noire-flamme-blanche", // même slug (double set)
+  "sv10.5b": "foudre-noire",
+  "sv10.5w": "flamme-blanche",
 
   // ── Épée & Bouclier ───────────────────────────────────────────────────────
   swsh1: "epee-et-bouclier",

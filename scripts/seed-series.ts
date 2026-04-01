@@ -43,7 +43,8 @@ const SERIES_DATA = [
   { name: "Flammes Fantasmagoriques", nameEn: "Phantasmagoric Flames", slug: "flammes-fantasmagoriques", abbreviation: "ME02", blocSlug: "mega-evolution", imageUrl: "/images/series/flammes-fantasmagoriques.png", releaseDate: "2025-11-14", order: 2 },
   { name: "Méga-Évolution", nameEn: "Mega Evolution", slug: "mega-evolution", abbreviation: "ME01", blocSlug: "mega-evolution", imageUrl: "/images/series/mega-evolution.png", releaseDate: "2025-09-26", order: 3 },
   // Écarlate & Violet
-  { name: "Foudre Noire / Flamme Blanche", nameEn: "Black Lightning / White Flame", slug: "foudre-noire-flamme-blanche", abbreviation: "EV10.5", blocSlug: "ecarlate-violet", imageUrl: "/images/series/foudre-noire-flamme-blanche.png", releaseDate: "2025-07-01", order: 0 },
+  { name: "Flamme Blanche", nameEn: "White Flame", slug: "flamme-blanche", abbreviation: "EV10.5w", blocSlug: "ecarlate-violet", imageUrl: "/images/series/flamme-blanche.png", releaseDate: "2025-07-01", order: 0 },
+  { name: "Foudre Noire", nameEn: "Black Lightning", slug: "foudre-noire", abbreviation: "EV10.5b", blocSlug: "ecarlate-violet", imageUrl: "/images/series/foudre-noire.png", releaseDate: "2025-07-01", order: 1 },
   { name: "Rivalités Destinées", nameEn: "Destined Rivals", slug: "rivalites-destinees", abbreviation: "EV10", blocSlug: "ecarlate-violet", imageUrl: "/images/series/rivalites-destinees.png", releaseDate: "2025-05-30", order: 1 },
   { name: "Aventures Ensemble", nameEn: "Adventures Together", slug: "aventures-ensemble", abbreviation: "EV09", blocSlug: "ecarlate-violet", imageUrl: "/images/series/aventures-ensemble.png", releaseDate: "2025-03-28", order: 2 },
   { name: "Évolutions Prismatiques", nameEn: "Prismatic Evolutions", slug: "evolutions-prismatiques", abbreviation: "EV8.5", blocSlug: "ecarlate-violet", imageUrl: "/images/series/evolutions-prismatiques.png", releaseDate: "2025-01-17", order: 3 },
@@ -80,7 +81,7 @@ const SERIES_DATA = [
   { name: "Éclipse Cosmique", nameEn: "Cosmic Eclipse", slug: "eclipse-cosmique", abbreviation: "SL12", blocSlug: "soleil-lune", imageUrl: "/images/series/eclipse-cosmique.png", releaseDate: "2019-11-01", order: 0 },
   { name: "Destinées Occultes", nameEn: "Hidden Fates", slug: "destinees-occultes", abbreviation: "SL11.5", blocSlug: "soleil-lune", imageUrl: "/images/series/destinees-occultes.png", releaseDate: "2019-08-23", order: 1 },
   { name: "Harmonie des Esprits", nameEn: "Unified Minds", slug: "harmonie-des-esprits", abbreviation: "SL11", blocSlug: "soleil-lune", imageUrl: "/images/series/harmonie-des-esprits.png", releaseDate: "2019-08-02", order: 2 },
-  { name: "Méga Donjon", nameEn: "Detective Pikachu", slug: "mega-donjon", abbreviation: "SL10.5", blocSlug: "soleil-lune", imageUrl: "/images/series/mega-donjon.png", releaseDate: "2019-05-03", order: 3 },
+  // SL10.5 (Detective Pikachu) non sorti officiellement en FR — supprimé
   { name: "Alliance Infaillible", nameEn: "Unbroken Bonds", slug: "alliance-infaillible", abbreviation: "SL10", blocSlug: "soleil-lune", imageUrl: "/images/series/alliance-infaillible.png", releaseDate: "2019-05-03", order: 4 },
   { name: "Duo de Choc", nameEn: "Team Up", slug: "duo-de-choc", abbreviation: "SL09", blocSlug: "soleil-lune", imageUrl: "/images/series/duo-de-choc.png", releaseDate: "2019-02-01", order: 5 },
   { name: "Tonnerre Perdu", nameEn: "Lost Thunder", slug: "tonnerre-perdu", abbreviation: "SL08", blocSlug: "soleil-lune", imageUrl: "/images/series/tonnerre-perdu.png", releaseDate: "2018-11-02", order: 6 },
