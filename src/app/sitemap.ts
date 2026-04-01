@@ -21,9 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/market`,
+      url: `${BASE_URL}/pricing`,
       lastModified: new Date("2026-03-29"),
-      changeFrequency: "hourly",
+      changeFrequency: "weekly",
       priority: 0.8,
     },
     {

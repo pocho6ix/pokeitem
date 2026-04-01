@@ -12,7 +12,8 @@ const FOOTER_LINKS = {
     { href: "/collection/produits/mega-evolution", label: "Mega-Evolution" },
   ],
   Ressources: [
-    { href: "/market", label: "Market" },
+    { href: "/pricing", label: "Abonnement Pro" },
+    { href: "/scanner", label: "Scanner" },
   ],
   Légal: [
     { href: "/mentions-legales", label: "Mentions légales" },
