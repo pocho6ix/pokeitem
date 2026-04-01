@@ -168,6 +168,11 @@ const SLUG_TO_TCGDEX: Record<string, string> = {
   "foudre-noire-flamme-blanche":"sv10.5b",
 };
 
+// Sets qui combinent deux IDs TCGdex (fetchés séparément puis fusionnés)
+const DUAL_TCGDEX_SETS: Record<string, string> = {
+  "foudre-noire-flamme-blanche": "sv10.5w",  // sv10.5b est déjà dans SLUG_TO_TCGDEX
+}
+
 // ---------------------------------------------------------------------------
 // Types PokémonTCG.io
 // ---------------------------------------------------------------------------
@@ -375,6 +380,18 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
         if (price !== null) priceMap.set(localId, price);
       }
       if (!ptcgId) console.log(`${tcgdexPrices.size} cartes TCGdex`);
+    }
+
+    // Si ce slug a un second ID TCGdex (set combiné), fetch et merge
+    const extraTcgdexId = DUAL_TCGDEX_SETS[slug]
+    if (extraTcgdexId) {
+      const extraPrices = await fetchTCGdexPrices(extraTcgdexId)
+      for (const [localId, prices] of extraPrices) {
+        const normalized = normalizeNumber(localId)
+        const price = prices.normal ?? prices.holo ?? null
+        if (price !== null && !priceMap.has(normalized)) priceMap.set(normalized, price)
+        if (price !== null && !priceMap.has(localId)) priceMap.set(localId, price)
+      }
     }
 
     if (priceMap.size === 0) {

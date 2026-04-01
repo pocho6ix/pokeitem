@@ -98,6 +98,10 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "diamant-et-perle":            "dp1",
   "mysteres-de-la-jungle":       "dp2",
   "merveilles-secretes":         "dp3",
+  "set-de-base-2":               "base4",
+  "gym-heroes":                  "gym1",
+  "gym-challenge":               "gym2",
+  "skyridge":                    "ecard3",
 };
 
 // ── Mapping rareté PokémonTCG.io → CardRarity enum ───────────────────────────

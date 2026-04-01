@@ -43,8 +43,8 @@ const TCGDEX_MAPPING: Record<string, string> = {
   "sv08.5": "evolutions-prismatiques",
   sv09: "aventures-ensemble",
   sv10: "rivalites-destinees",
-  "sv10.5b": "foudre-noire",
-  "sv10.5w": "flamme-blanche",
+  "sv10.5b": "foudre-noire-flamme-blanche",
+  "sv10.5w": "foudre-noire-flamme-blanche",
 
   // ── Épée & Bouclier ───────────────────────────────────────────────────────
   swsh1: "epee-et-bouclier",
@@ -159,6 +159,14 @@ const TCGDEX_MAPPING: Record<string, string> = {
   ecard2: "aquapolis",
 };
 
+// Sets uniquement disponibles via pokemontcg.io (absents de TCGdex FR)
+const PTCG_ONLY_MAPPING: Record<string, string> = {
+  "base4":  "set-de-base-2",
+  "gym1":   "gym-heroes",
+  "gym2":   "gym-challenge",
+  "ecard3": "skyridge",
+}
+
 // ---------------------------------------------------------------------------
 // Types TCGdex
 // ---------------------------------------------------------------------------
@@ -175,6 +183,35 @@ interface TCGdexSet {
   name: string;
   cards: TCGdexCard[];
   cardCount: { official: number; total: number };
+}
+
+// ---------------------------------------------------------------------------
+// PokémonTCG.io fetcher — pour les sets absents de TCGdex FR (WOTC)
+// ---------------------------------------------------------------------------
+interface PTCGCardBasic {
+  id: string
+  number: string
+  name: string
+  images?: { small?: string; large?: string }
+  rarity?: string
+}
+
+async function fetchPTCGCardList(setId: string): Promise<PTCGCardBasic[]> {
+  const all: PTCGCardBasic[] = []
+  let page = 1
+  while (true) {
+    const url = `https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&pageSize=250&page=${page}&select=id,number,name,images,rarity`
+    try {
+      const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } })
+      if (!res.ok) { console.warn(`  ⚠ PTCG set ${setId} → HTTP ${res.status}`); break }
+      const json = (await res.json()) as { data: PTCGCardBasic[]; totalCount: number; count: number }
+      all.push(...json.data)
+      if (all.length >= json.totalCount || json.count < 250) break
+      page++
+      await new Promise(r => setTimeout(r, 200))
+    } catch (err) { console.warn(`  ⚠ Erreur réseau PTCG ${setId}:`, err); break }
+  }
+  return all
 }
 
 // ---------------------------------------------------------------------------
@@ -305,6 +342,55 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
 
     // Petite pause pour ne pas surcharger l'API
     await new Promise((r) => setTimeout(r, 100));
+  }
+
+  // ── Sets PTCG-only (absents de TCGdex FR) ──────────────────────────────────
+  const ptcgIds = opts.sets
+    ? opts.sets.filter(s => PTCG_ONLY_MAPPING[s])
+    : Object.keys(PTCG_ONLY_MAPPING)
+
+  for (const ptcgId of ptcgIds) {
+    const slug = PTCG_ONLY_MAPPING[ptcgId]
+    if (!slug) continue
+    const serieId = serieBySlug.get(slug)
+    if (!serieId) { console.warn(`⚠ Série "${slug}" absente de la DB — ignoré`); continue }
+
+    process.stdout.write(`📦 ${ptcgId.padEnd(12)} → ${slug.padEnd(40)}`)
+    const ptcgCards = await fetchPTCGCardList(ptcgId)
+    console.log(`${ptcgCards.length} cartes (pokemontcg.io)`)
+
+    if (!dryRun && ptcgCards.length > 0) {
+      const BATCH = 50
+      for (let i = 0; i < ptcgCards.length; i += BATCH) {
+        const batch = ptcgCards.slice(i, i + BATCH)
+        await Promise.all(
+          batch.map(card => {
+            const rarity = mapTcgdexRarity(card.rarity)
+            return prisma.card.upsert({
+              where: { serieId_number: { serieId, number: card.number } },
+              create: {
+                serieId,
+                number: card.number,
+                name: card.name,
+                imageUrl: card.images?.large ?? card.images?.small ?? null,
+                rarity,
+                isSpecial: isSpecialCard(rarity),
+              },
+              update: {
+                name: card.name,
+                imageUrl: card.images?.large ?? card.images?.small ?? null,
+                rarity,
+                isSpecial: isSpecialCard(rarity),
+              },
+            })
+          })
+        )
+      }
+      await prisma.serie.update({ where: { id: serieId }, data: { cardCount: ptcgCards.length } })
+      totalCards += ptcgCards.length
+      totalSets++
+    }
+    await new Promise(r => setTimeout(r, 200))
   }
 
   console.log(`\n✅ Terminé — ${totalSets} sets traités, ${skippedSets} ignorés, ${totalCards} cartes importées`);
