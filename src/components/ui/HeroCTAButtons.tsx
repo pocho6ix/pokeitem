@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export function HeroCTAButtons() {
@@ -24,7 +24,7 @@ export function HeroCTAButtons() {
           className="inline-flex items-center justify-center rounded-xl bg-[#E7BA76] px-6 py-3 text-sm font-semibold text-black shadow-lg hover:bg-[#d4a660] transition-colors"
         >
           Voir mon classeur
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <BookOpen className="ml-2 h-4 w-4" />
         </Link>
         <Link
           href="/collection/cartes"

@@ -697,11 +697,14 @@ export function CardCollectionGrid({
 
       {/* Selection banner */}
       {selectedIds.size > 0 && (
-        <div className="mb-4 flex items-center justify-between rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/10 px-4 py-2.5 dark:border-[#E7BA76]/30 dark:bg-[#E7BA76]/10">
-          <span className="text-sm font-medium text-[#1B2E6B] dark:text-[#E7BA76]">
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5">
+          <span className="text-sm font-medium text-green-400">
             {selectedIds.size} carte{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
           </span>
-          <button onClick={deselectAll} className="text-xs text-[#E7BA76] underline">Tout désélectionner</button>
+          <div className="flex items-center gap-3">
+            <button onClick={selectAll} className="text-xs text-[#E7BA76] underline">Tout sélectionner</button>
+            <button onClick={deselectAll} className="text-xs text-[var(--text-tertiary)] underline">Tout désélectionner</button>
+          </div>
         </div>
       )}
 
@@ -729,7 +732,7 @@ export function CardCollectionGrid({
                   "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all",
                   isAuthenticated && "group-hover:-translate-y-0.5 group-hover:shadow-md",
                   dim && "opacity-40",
-                  isSelected && "ring-2 ring-[#E7BA76] ring-offset-1"
+                  isSelected && "ring-2 ring-green-400 ring-offset-1"
                 )}>
                   {card.imageUrl ? (
                     <Image src={card.imageUrl} alt={`${card.name} — ${card.number}`} fill
@@ -765,8 +768,8 @@ export function CardCollectionGrid({
 
                   {/* Selection overlay */}
                   {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#E7BA76]/20">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E7BA76] text-black shadow">
+                    <div className="absolute inset-0 flex items-center justify-center bg-green-400/25">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-400 text-black shadow">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                     </div>

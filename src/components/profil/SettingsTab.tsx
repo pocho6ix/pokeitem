@@ -88,9 +88,9 @@ export function SettingsTab() {
               type="text"
               value={username}
               onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20))}
-              placeholder="monpseudo"
+              placeholder="Pseudo"
               maxLength={20}
-              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 pr-28 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76]"
+              className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 pr-16 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76]"
             />
             {username.length >= 3 && username !== initialUsername && (
               <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${
