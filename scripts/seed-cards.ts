@@ -11,6 +11,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { mapTcgdexRarity, isSpecialCard } from "../src/lib/pokemon/card-variants";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env" });
@@ -166,6 +167,7 @@ interface TCGdexCard {
   localId: string;
   name: string;
   image?: string;
+  rarity?: string;  // Ex: "Commune", "Rare Illustration", etc.
 }
 
 interface TCGdexSet {
@@ -263,11 +265,15 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
                 name: card.name,
                 imageUrl: buildImageUrl(card),
                 tcgdexId: card.id,
+                rarity: mapTcgdexRarity(card.rarity),
+                isSpecial: isSpecialCard(mapTcgdexRarity(card.rarity)),
               },
               update: {
                 name: card.name,
                 imageUrl: buildImageUrl(card),
                 tcgdexId: card.id,
+                rarity: mapTcgdexRarity(card.rarity),
+                isSpecial: isSpecialCard(mapTcgdexRarity(card.rarity)),
               },
             })
           )

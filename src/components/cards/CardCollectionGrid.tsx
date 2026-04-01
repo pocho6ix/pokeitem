@@ -12,6 +12,7 @@ import {
   CARD_LANGUAGES,
 } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
+import { RARITY_BADGE_LABELS } from "@/lib/pokemon/card-variants";
 import { SERIES } from "@/data/series";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
@@ -27,6 +28,7 @@ export interface CardRow {
   imageUrl: string | null;
   price?: number | null;
   priceReverse?: number | null;
+  isSpecial?: boolean;
 }
 
 export interface OwnedEntry {
@@ -275,6 +277,11 @@ function AddToCollectionModal({
               </div>
             </div>
           )}
+          {selectedCards.length === 1 && selectedCards[0].isSpecial && (
+            <p className="mt-1 text-xs text-[var(--text-tertiary)] italic">
+              Carte spéciale — pas de version Reverse
+            </p>
+          )}
 
           {/* Quantity stepper */}
           <div className="mb-3">
@@ -463,6 +470,14 @@ export function CardCollectionGrid({
   const deselectAll = () => setSelectedIds(new Set());
 
   const selectedCards = useMemo(() => cards.filter((c) => selectedIds.has(c.id)), [cards, selectedIds]);
+
+  // Versions disponibles pour le modal — si toutes les cartes sélectionnées sont spéciales → NORMAL uniquement
+  const modalVersions = useMemo(() => {
+    if (selectedCards.length > 0 && selectedCards.every(c => c.isSpecial)) {
+      return [CardVersion.NORMAL]
+    }
+    return availableVersions
+  }, [selectedCards, availableVersions]);
 
   // ── Collection actions ────────────────────────────────────────────────────
 
@@ -745,6 +760,13 @@ export function CardCollectionGrid({
                     </div>
                   )}
 
+                  {/* Badge rareté spéciale — top right */}
+                  {card.isSpecial && RARITY_BADGE_LABELS[card.rarity] && (
+                    <span className="absolute top-1 right-1 z-10 rounded px-1 py-px text-[8px] font-bold leading-none bg-[#E7BA76]/90 text-black shadow-sm">
+                      {RARITY_BADGE_LABELS[card.rarity]}
+                    </span>
+                  )}
+
                   {/* Number + rarity badge — bottom left */}
                   <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
@@ -840,7 +862,7 @@ export function CardCollectionGrid({
       {activeModal === "add-collection" && selectedCards.length > 0 && (
         <AddToCollectionModal
           selectedCards={selectedCards}
-          availableVersions={availableVersions}
+          availableVersions={modalVersions}
           ownedMap={ownedMap}
           onSubmit={handleAddToCollection}
           onClose={() => setActiveModal(null)}

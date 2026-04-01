@@ -77,6 +77,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     imageUrl:     c.imageUrl,
     price:        c.price ?? null,
     priceReverse: c.priceReverse ?? null,
+    isSpecial:    c.isSpecial,
   }));
 
   return (
