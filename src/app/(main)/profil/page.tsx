@@ -19,54 +19,6 @@ export default function ProfilPage() {
       </div>
 
       <ProfilForm />
-
-      {/* Settings placeholder */}
-      <section className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-card)]">
-        <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
-          Préférences
-        </h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                Devise
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Devise utilisée pour l&apos;affichage des prix
-              </p>
-            </div>
-            <span className="font-data text-sm text-[var(--text-primary)]">
-              EUR
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                Notifications
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Alertes de prix et nouveaux produits
-              </p>
-            </div>
-            <span className="text-sm text-[var(--text-tertiary)]">
-              Bientôt disponible
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                Export des données
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Télécharger votre collection au format CSV
-              </p>
-            </div>
-            <span className="text-sm text-[var(--text-tertiary)]">
-              Bientôt disponible
-            </span>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

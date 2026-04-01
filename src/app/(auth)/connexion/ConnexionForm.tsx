@@ -30,6 +30,7 @@ export function ConnexionForm() {
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
+  const reset = searchParams.get("reset");
 
   const {
     register,
@@ -84,6 +85,11 @@ export function ConnexionForm() {
         {registered && (
           <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
             Compte cr&eacute;&eacute; avec succ&egrave;s ! V&eacute;rifiez votre email pour activer votre compte.
+          </div>
+        )}
+        {reset && (
+          <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
+            Mot de passe mis &agrave; jour. Vous pouvez vous connecter.
           </div>
         )}
 

@@ -34,6 +34,7 @@ model User {
 
   username            String?   @unique
   trialEndsAt         DateTime?
+  deletedAt           DateTime?
 
   referralCode        String    @unique @default(cuid())
   referredById        String?

@@ -36,6 +36,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
+        // Block login if account has been deleted
+        if (user.deletedAt) {
+          throw new Error("ACCOUNT_DELETED");
+        }
+
         // NEVER return image here — base64 would end up in token.picture (→ 494)
         return { id: user.id, name: user.name, email: user.email, image: null };
       },
