@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { CollectionValue } from "@/components/collection/CollectionValue";
 
 interface Stats {
   totalValue: number;
@@ -35,18 +36,31 @@ export function PortfolioMiniStats() {
 
   const isPositive = (stats?.profitLoss ?? 0) >= 0;
 
-  const kpis = loading
-    ? [null, null, null, null]
-    : [
-        { label: "Valeur actuelle",  value: fmt(stats!.totalValue),        color: "text-[var(--text-primary)]" },
-        { label: "Investi total",    value: fmt(stats!.totalInvested),      color: "text-[var(--text-primary)]" },
-        { label: "P&L",              value: `${isPositive ? "+" : ""}${fmt(stats!.profitLoss)}`, color: isPositive ? "text-green-600 dark:text-green-400" : "text-red-500" },
-        { label: "P&L %",            value: `${isPositive ? "+" : ""}${stats!.profitLossPercent.toFixed(1)} %`, color: isPositive ? "text-green-600 dark:text-green-400" : "text-red-500" },
-      ];
-
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {kpis.map((kpi, i) => (
+      {/* Valeur actuelle — blurred for free users */}
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3">
+        {loading || !stats ? (
+          <div className="animate-pulse space-y-2">
+            <div className="h-3 w-20 rounded bg-[var(--bg-subtle)]" />
+            <div className="h-5 w-24 rounded bg-[var(--bg-subtle)]" />
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-[var(--text-secondary)]">Valeur actuelle</p>
+            <CollectionValue
+              value={stats.totalValue}
+              className="mt-0.5 text-lg font-bold text-[var(--text-primary)]"
+            />
+          </>
+        )}
+      </div>
+      {/* Remaining KPIs */}
+      {[
+        loading || !stats ? null : { label: "Investi total",    value: fmt(stats.totalInvested),      color: "text-[var(--text-primary)]" },
+        loading || !stats ? null : { label: "P&L",              value: `${isPositive ? "+" : ""}${fmt(stats.profitLoss)}`, color: isPositive ? "text-green-600 dark:text-green-400" : "text-red-500" },
+        loading || !stats ? null : { label: "P&L %",            value: `${isPositive ? "+" : ""}${stats.profitLossPercent.toFixed(1)} %`, color: isPositive ? "text-green-600 dark:text-green-400" : "text-red-500" },
+      ].map((kpi, i) => (
         <div
           key={i}
           className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-3"

@@ -8,20 +8,30 @@ export const FREE_LIMITS = {
 } as const
 
 export type Feature =
-  | 'VIEW_COLLECTION_VALUE'
   | 'ADD_CARD'
   | 'ADD_SEALED_ITEM'
   | 'SCAN_CARD'
-  | 'PORTFOLIO_CHART'
+  | 'VIEW_COLLECTION_VALUE'
+  | 'VIEW_PORTFOLIO_CHART'
+
+export type LimitReason =
+  | 'PRO_REQUIRED'
+  | 'CARD_LIMIT_REACHED'
+  | 'SEALED_LIMIT_REACHED'
+  | 'SCAN_LIMIT_REACHED'
 
 export interface FeatureCheck {
   allowed: boolean
-  reason?: string
+  reason?: LimitReason
   limit?: number
   current?: number
+  isPro: boolean
 }
 
-export async function checkFeature(userId: string, feature: Feature): Promise<FeatureCheck> {
+export async function checkFeature(
+  userId: string,
+  feature: Feature
+): Promise<FeatureCheck> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -29,35 +39,35 @@ export async function checkFeature(userId: string, feature: Feature): Promise<Fe
     },
   })
 
-  if (!user) return { allowed: false, reason: 'User not found' }
+  if (!user) return { allowed: false, isPro: false }
 
   const isPro =
     user.plan === Plan.PRO && (!user.planExpiresAt || user.planExpiresAt > new Date())
 
-  if (isPro) return { allowed: true }
+  if (isPro) return { allowed: true, isPro: true }
 
   switch (feature) {
     case 'VIEW_COLLECTION_VALUE':
-    case 'PORTFOLIO_CHART':
-      return { allowed: false, reason: 'PRO_REQUIRED' }
+    case 'VIEW_PORTFOLIO_CHART':
+      return { allowed: false, reason: 'PRO_REQUIRED', isPro: false }
 
     case 'ADD_CARD': {
-      const count = user._count.userCards
+      const current = user._count.userCards
+      const allowed = current < FREE_LIMITS.CARDS
       return {
-        allowed: count < FREE_LIMITS.CARDS,
-        reason: count >= FREE_LIMITS.CARDS ? 'CARD_LIMIT_REACHED' : undefined,
-        limit: FREE_LIMITS.CARDS,
-        current: count,
+        allowed, isPro: false,
+        reason: allowed ? undefined : 'CARD_LIMIT_REACHED',
+        limit: FREE_LIMITS.CARDS, current,
       }
     }
 
     case 'ADD_SEALED_ITEM': {
-      const count = user._count.portfolio
+      const current = user._count.portfolio
+      const allowed = current < FREE_LIMITS.SEALED_ITEMS
       return {
-        allowed: count < FREE_LIMITS.SEALED_ITEMS,
-        reason: count >= FREE_LIMITS.SEALED_ITEMS ? 'SEALED_LIMIT_REACHED' : undefined,
-        limit: FREE_LIMITS.SEALED_ITEMS,
-        current: count,
+        allowed, isPro: false,
+        reason: allowed ? undefined : 'SEALED_LIMIT_REACHED',
+        limit: FREE_LIMITS.SEALED_ITEMS, current,
       }
     }
 
@@ -65,24 +75,28 @@ export async function checkFeature(userId: string, feature: Feature): Promise<Fe
       const now = new Date()
       const resetAt = new Date(user.scanCountResetAt)
       const isNewMonth =
-        now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()
+        now.getMonth() !== resetAt.getMonth() ||
+        now.getFullYear() !== resetAt.getFullYear()
+
+      let current = user.scanCount
       if (isNewMonth) {
         await prisma.user.update({
           where: { id: userId },
           data: { scanCount: 0, scanCountResetAt: now },
         })
-        return { allowed: true, limit: FREE_LIMITS.SCANS_PER_MONTH, current: 0 }
+        current = 0
       }
+
+      const allowed = current < FREE_LIMITS.SCANS_PER_MONTH
       return {
-        allowed: user.scanCount < FREE_LIMITS.SCANS_PER_MONTH,
-        reason: user.scanCount >= FREE_LIMITS.SCANS_PER_MONTH ? 'SCAN_LIMIT_REACHED' : undefined,
-        limit: FREE_LIMITS.SCANS_PER_MONTH,
-        current: user.scanCount,
+        allowed, isPro: false,
+        reason: allowed ? undefined : 'SCAN_LIMIT_REACHED',
+        limit: FREE_LIMITS.SCANS_PER_MONTH, current,
       }
     }
 
     default:
-      return { allowed: true }
+      return { allowed: true, isPro: false }
   }
 }
 

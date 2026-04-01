@@ -8,6 +8,9 @@ import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
 import { ItemImage } from "@/components/shared/ItemImage";
 import { AddToPortfolioModal } from "@/components/portfolio/AddToPortfolioModal";
+import { useSubscription } from "@/hooks/useSubscription";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 interface ItemTypeData {
   type: string;
@@ -78,6 +81,9 @@ export function SerieItemsGrid({
   } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const { canAddSealed, usage } = useSubscription();
+  const { paywallState, showPaywall, closePaywall } = usePaywall();
+
   const imageSet = new Set(availableImageTypes ?? []);
 
   const allItems = itemTypes.filter((it) => it.typicalMsrp > 0);
@@ -91,6 +97,11 @@ export function SerieItemsGrid({
   });
 
   function handleAddToPortfolio(itemType: ItemTypeData) {
+    if (!canAddSealed) {
+      showPaywall('SEALED_LIMIT_REACHED', usage.sealedItems.current, usage.sealedItems.limit ?? 5);
+      return;
+    }
+
     const dbItem = dbItems?.find((i) => i.type === itemType.type);
 
     setSelectedItem({
@@ -188,6 +199,13 @@ export function SerieItemsGrid({
           }}
         />
       )}
+      <PaywallModal
+        isOpen={paywallState.isOpen}
+        reason={paywallState.reason}
+        current={paywallState.current}
+        limit={paywallState.limit}
+        onClose={closePaywall}
+      />
     </>
   );
 }

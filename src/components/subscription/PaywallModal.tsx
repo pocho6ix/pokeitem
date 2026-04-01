@@ -1,102 +1,119 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import type { PaywallReason } from '@/hooks/usePaywall'
 
-const FEATURE_LABELS: Record<string, { title: string; description: string; icon: string }> = {
-  ADD_CARD: {
+const CONTENT: Record<PaywallReason, {
+  icon: string
+  title: string
+  description: string
+  cta: string
+}> = {
+  CARD_LIMIT_REACHED: {
     icon: '🃏',
     title: 'Limite de cartes atteinte',
-    description: 'La version gratuite est limitée à 100 cartes. Passe à Pro pour une collection illimitée.',
+    description: 'Tu as atteint la limite de 100 cartes en version gratuite.',
+    cta: 'Débloquer la collection illimitée',
   },
-  ADD_SEALED_ITEM: {
+  SEALED_LIMIT_REACHED: {
     icon: '📦',
-    title: 'Limite d\'items scellés atteinte',
-    description: 'La version gratuite est limitée à 5 items scellés. Passe à Pro pour en ajouter autant que tu veux.',
+    title: 'Limite de produits scellés atteinte',
+    description: 'Tu as atteint la limite de 5 produits scellés en version gratuite.',
+    cta: 'Débloquer les produits illimités',
   },
-  SCAN_CARD: {
+  SCAN_LIMIT_REACHED: {
     icon: '📷',
     title: 'Limite de scans atteinte',
-    description: 'La version gratuite est limitée à 10 scans par mois. Passe à Pro pour des scans illimités.',
+    description: 'Tu as utilisé tes 10 scans gratuits ce mois-ci.',
+    cta: 'Débloquer le scanner illimité',
   },
-  VIEW_COLLECTION_VALUE: {
-    icon: '📈',
+  PRO_REQUIRED: {
+    icon: '⭐',
     title: 'Fonctionnalité Pro',
-    description: 'La valeur de ta collection et les statistiques avancées sont réservées aux membres Pro.',
-  },
-  PORTFOLIO_CHART: {
-    icon: '📊',
-    title: 'Graphique Pro',
-    description: 'Le graphique d\'évolution de ton classeur est réservé aux membres Pro.',
+    description: 'Cette fonctionnalité est réservée aux abonnés Pro.',
+    cta: 'Passer à Pro',
   },
 }
+
+const PRO_BENEFITS = [
+  'Collection de cartes illimitée',
+  'Items scellés illimités',
+  'Scans illimités',
+  'Valeur totale & statistiques avancées',
+]
 
 interface PaywallModalProps {
-  feature: string
-  onClose?: () => void
+  isOpen: boolean
+  reason: PaywallReason
+  current?: number
+  limit?: number
+  onClose: () => void
 }
 
-export function PaywallModal({ feature, onClose }: PaywallModalProps) {
+export function PaywallModal({ isOpen, reason, current, limit, onClose }: PaywallModalProps) {
   const router = useRouter()
-  const info = FEATURE_LABELS[feature] ?? FEATURE_LABELS['VIEW_COLLECTION_VALUE']
+
+  if (!isOpen) return null
+
+  const content = CONTENT[reason]
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-[var(--bg-card)] border border-[var(--border-default)] shadow-2xl overflow-hidden">
-        {/* Header gradient */}
-        <div
-          className="px-6 pt-8 pb-6 text-center"
-          style={{ background: 'linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)' }}
-        >
-          <div className="text-4xl mb-3">{info.icon}</div>
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-5 w-5 object-contain" />
-            <span className="text-sm font-bold text-black/70">PokeItem Pro</span>
-          </div>
-          <h2 className="text-lg font-bold text-black/80">{info.title}</h2>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div className="relative w-full sm:max-w-md bg-[var(--bg-card)] rounded-t-3xl sm:rounded-3xl border border-[var(--border-default)] shadow-2xl p-6 pb-8 sm:pb-6">
+        {/* Handle */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-[var(--border-default)] sm:hidden" />
+
+        {/* Icon + title */}
+        <div className="mt-2 text-center mb-5">
+          <div className="text-4xl mb-3">{content.icon}</div>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">{content.title}</h2>
+          <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
+            {content.description}
+            {current !== undefined && limit !== undefined && (
+              <span className="font-semibold text-[var(--text-primary)]"> ({current}/{limit})</span>
+            )}
+          </p>
         </div>
 
-        <div className="px-6 py-5">
-          <p className="text-sm text-[var(--text-secondary)] text-center mb-5">{info.description}</p>
+        {/* Benefits */}
+        <ul className="space-y-2 mb-6">
+          {PRO_BENEFITS.map((b) => (
+            <li key={b} className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-[#E7BA76]">
+                <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="1.5 5 3.5 7.5 8.5 2.5"/>
+                </svg>
+              </span>
+              {b}
+            </li>
+          ))}
+        </ul>
 
-          {/* Features list */}
-          <ul className="space-y-2 mb-6">
-            {[
-              'Collection de cartes illimitée',
-              'Items scellés illimités',
-              'Scans illimités',
-              'Valeur & graphiques du classeur',
-            ].map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-[#E7BA76]">
-                  <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="1.5 6 4.5 9.5 10.5 2.5"/>
-                  </svg>
-                </span>
-                {f}
-              </li>
-            ))}
-          </ul>
+        {/* Price hint */}
+        <p className="text-center text-xs text-[var(--text-tertiary)] mb-4">
+          À partir de <span className="font-semibold text-[var(--text-secondary)]">3,33€/mois</span> facturé 39,99€/an
+        </p>
 
-          {/* Price */}
-          <div className="mb-4 text-center">
-            <span className="text-2xl font-bold text-[var(--text-primary)]">3,99€</span>
-            <span className="text-sm text-[var(--text-secondary)]"> / mois</span>
-          </div>
-
+        {/* CTAs */}
+        <div className="flex flex-col gap-2">
           <button
-            onClick={() => router.push('/pricing')}
-            className="w-full rounded-2xl bg-[#E7BA76] py-3.5 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors mb-2"
+            onClick={() => { onClose(); router.push('/pricing') }}
+            className="w-full rounded-2xl bg-[#E7BA76] py-3.5 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors"
           >
-            Passer à Pro →
+            {content.cta} →
           </button>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="w-full py-2.5 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
-            >
-              Plus tard
-            </button>
-          )}
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Plus tard
+          </button>
         </div>
       </div>
     </div>

@@ -10,6 +10,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
+import { useSubscription } from "@/hooks/useSubscription";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -239,6 +242,9 @@ export function CardScanner() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef   = useRef<MediaStream | null>(null);
 
+  const { isPro, canScan, remainingScans, usage, refresh: refreshSubscription } = useSubscription();
+  const { paywallState, showPaywall, closePaywall } = usePaywall();
+
   const [state, setState]                 = useState<ScannerState>("idle");
   const [onboardingSlide, setOnboardingSlide] = useState(0);
   const [result, setResult]               = useState<IdentifyResult | null>(null);
@@ -273,6 +279,10 @@ export function CardScanner() {
   }, [state, stopStream]);
 
   const startCamera = useCallback(async () => {
+    if (!canScan) {
+      showPaywall('SCAN_LIMIT_REACHED', usage.scans.current, usage.scans.limit ?? 10);
+      return;
+    }
     setError(null);
     setPermissionDenied(false);
     try {
@@ -285,7 +295,7 @@ export function CardScanner() {
       if (err instanceof DOMException && err.name === "NotAllowedError") setPermissionDenied(true);
       else setError("Impossible d'accéder à la caméra.");
     }
-  }, []);
+  }, [canScan, showPaywall, usage.scans.current, usage.scans.limit]);
 
   const identify = useCallback(async (dataUrl: string) => {
     try {
@@ -294,14 +304,24 @@ export function CardScanner() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: dataUrl }),
       });
+      if (res.status === 403) {
+        const data = await res.json();
+        setPhoto(null);
+        setState("idle");
+        showPaywall('SCAN_LIMIT_REACHED', data.current, data.limit ?? 10);
+        return;
+      }
       if (res.status === 500) { setError("Scanner temporairement indisponible."); setState("idle"); return; }
-      setResult(await res.json());
+      const data = await res.json();
+      setResult(data);
       setState("result");
+      // Refresh subscription counters after a successful scan
+      if (data.found) refreshSubscription();
     } catch {
       setError("Erreur de connexion. Réessayez.");
       setState("idle");
     }
-  }, []);
+  }, [showPaywall, refreshSubscription]);
 
   const capturePhoto = useCallback(() => {
     const video  = videoRef.current;
@@ -585,6 +605,18 @@ export function CardScanner() {
 
         {/* Bottom actions */}
         <div className="flex flex-col items-center gap-4 pb-16 px-6">
+          {!isPro && remainingScans !== null && (
+            <p className={`text-sm text-center ${
+              remainingScans === 0 ? 'text-red-400' :
+              remainingScans <= 3 ? 'text-orange-400' :
+              'text-white/50'
+            }`}>
+              {remainingScans === 0
+                ? '⚠️ Limite mensuelle atteinte'
+                : `${remainingScans} scan${remainingScans > 1 ? 's' : ''} restant${remainingScans > 1 ? 's' : ''} ce mois`
+              }
+            </p>
+          )}
           <button
             onClick={() => void startCamera()}
             className="w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity active:opacity-80"
@@ -598,6 +630,13 @@ export function CardScanner() {
             Choisir depuis la galerie
           </button>
         </div>
+        <PaywallModal
+          isOpen={paywallState.isOpen}
+          reason={paywallState.reason}
+          current={paywallState.current}
+          limit={paywallState.limit}
+          onClose={closePaywall}
+        />
       </Screen>
     );
   }

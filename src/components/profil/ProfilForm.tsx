@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { useApplyReferral } from "@/hooks/useApplyReferral";
+import { UsageBars } from "@/components/subscription/UsageBars";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface UserProfile {
   id: string;
@@ -19,6 +21,7 @@ export function ProfilForm() {
   const { update: updateSession } = useSession();
   const router = useRouter();
   useApplyReferral();
+  const { isPro } = useSubscription();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -244,8 +247,13 @@ export function ProfilForm() {
 
       {/* Name & Email section */}
       <section className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-card)]">
-        <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
+        <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
           Informations
+          {isPro && (
+            <span className="px-2 py-0.5 rounded-full bg-[#E7BA76]/10 text-[#E7BA76] text-xs font-semibold">
+              ★ Pro
+            </span>
+          )}
         </h2>
         <div className="space-y-4">
           {/* Name field */}
@@ -325,6 +333,9 @@ export function ProfilForm() {
       >
         Déconnexion
       </button>
+
+      {/* Usage bars for free users */}
+      <UsageBars />
 
       {/* Referral */}
       <ReferralBlock />

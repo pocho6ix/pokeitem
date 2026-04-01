@@ -13,6 +13,9 @@ import {
 } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
+import { useSubscription } from "@/hooks/useSubscription";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -395,6 +398,10 @@ export function CardCollectionGrid({
 
   // ── Resolve available versions for this serie ────────────────────────────
   const availableVersions = useMemo(() => getSerieVersions(serieSlug, blocSlug), [serieSlug, blocSlug]);
+
+  // ── Subscription / paywall ────────────────────────────────────────────────
+  const { canAddCard, usage } = useSubscription();
+  const { paywallState, showPaywall, closePaywall } = usePaywall();
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [selectedIds,      setSelectedIds]      = useState<Set<string>>(new Set());
@@ -794,7 +801,13 @@ export function CardCollectionGrid({
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
               </button>
-              <button onClick={() => setActiveModal("add-collection")}
+              <button onClick={() => {
+                if (!canAddCard) {
+                  showPaywall('CARD_LIMIT_REACHED', usage.cards.current, usage.cards.limit ?? 100);
+                  return;
+                }
+                setActiveModal("add-collection");
+              }}
                 className="flex items-center gap-1.5 rounded-xl bg-[#E7BA76] px-4 py-2 text-sm font-semibold text-black hover:bg-[#d4a660]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 Collection
@@ -830,6 +843,13 @@ export function CardCollectionGrid({
           onClose={() => setActiveModal(null)}
           isPending={isPending} />
       )}
+      <PaywallModal
+        isOpen={paywallState.isOpen}
+        reason={paywallState.reason}
+        current={paywallState.current}
+        limit={paywallState.limit}
+        onClose={closePaywall}
+      />
     </div>
   );
 }
