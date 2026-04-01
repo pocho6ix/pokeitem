@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, ShoppingBag, ScanLine, BookOpen } from "lucide-react";
+import { Package, ScanLine, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const MOBILE_NAV_ITEMS = [
+  { href: "/", label: "Accueil", icon: null },
   { href: "/collection", label: "Collection", icon: Package },
-  { href: "/market", label: "Market", icon: ShoppingBag },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen },
 ];
@@ -24,7 +25,9 @@ export function MobileNav() {
       {/* Floating pill */}
       <div className="flex items-center justify-around rounded-2xl border border-[var(--border-default)] bg-[var(--bg-primary)]/90 backdrop-blur-xl shadow-2xl shadow-black/50 py-2.5">
         {MOBILE_NAV_ITEMS.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = item.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
@@ -36,7 +39,17 @@ export function MobileNav() {
                   : "text-[var(--text-tertiary)]"
               )}
             >
-              <item.icon className="h-5 w-5" />
+              {item.icon ? (
+                <item.icon className="h-5 w-5" />
+              ) : (
+                <Image
+                  src="/logo.png"
+                  alt="Accueil"
+                  width={20}
+                  height={20}
+                  className={cn("object-contain", isActive ? "opacity-100" : "opacity-40")}
+                />
+              )}
               <span>{item.label}</span>
             </Link>
           );
