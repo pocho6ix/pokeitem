@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Flammes Fantasmagoriques ME02 : Guide d'achat et prix"
+
+A premium flat-lay photography of Pokémon TCG sealed products from Flammes Fantasmagoriques arranged on a dark obsidian surface. Include a booster box, ETB, UPC, and scattered booster packs with mystical purple and orange flame effects. Dramatic studio lighting with ghostly purple accent lights creating atmospheric shadows. No text overlay. Aspect ratio 1200x630, photorealistic style with cinematic quality.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-flammes-fantasmagoriques.jpg
