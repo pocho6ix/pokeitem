@@ -1,4 +1,3 @@
-import { put, del } from "@vercel/blob";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -42,50 +41,23 @@ export async function POST(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true, image: true },
+    select: { id: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  // Store as base64 data URL in DB — works in all environments without external storage config
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-  // Delete old Vercel Blob image if one exists
-  if (user.image?.includes("blob.vercel-storage.com")) {
-    try {
-      await del(user.image);
-    } catch {
-      // silencieux — ne pas bloquer l'upload si la suppression échoue
-    }
-  }
-
-  // Upload to Vercel Blob
-  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const filename = `avatars/${user.id}-${Date.now()}.${ext}`;
-  let blob: Awaited<ReturnType<typeof put>>;
-  try {
-    blob = await put(filename, fileBuffer, {
-      access: "public",
-      contentType: file.type,
-      addRandomSuffix: false,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("Vercel Blob upload error:", msg);
-    return NextResponse.json(
-      { error: `Blob error: ${msg}` },
-      { status: 500 },
-    );
-  }
-
-  // Save URL in DB
   await prisma.user.update({
     where: { id: user.id },
-    data: { image: blob.url },
+    data: { image: base64 },
   });
 
-  return NextResponse.json({ hasAvatar: true, url: blob.url });
+  return NextResponse.json({ hasAvatar: true });
 }
 
 export async function DELETE() {
@@ -96,20 +68,11 @@ export async function DELETE() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { id: true, image: true },
+    select: { id: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
-  }
-
-  // Delete from Vercel Blob if applicable
-  if (user.image?.includes("blob.vercel-storage.com")) {
-    try {
-      await del(user.image);
-    } catch {
-      // silencieux
-    }
   }
 
   await prisma.user.update({
