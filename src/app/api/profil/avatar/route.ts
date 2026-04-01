@@ -2,7 +2,6 @@ import { put, del } from "@vercel/blob";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -50,12 +49,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   }
 
-  // Compress: 400×400 center crop, WebP quality 80
-  const inputBuffer = Buffer.from(await file.arrayBuffer());
-  const compressedBuffer = await sharp(inputBuffer)
-    .resize(400, 400, { fit: "cover", position: "center", withoutEnlargement: true })
-    .webp({ quality: 80 })
-    .toBuffer();
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
 
   // Delete old Vercel Blob image if one exists
   if (user.image?.includes("blob.vercel-storage.com")) {
@@ -67,12 +61,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Upload to Vercel Blob
-  const filename = `avatars/${user.id}-${Date.now()}.webp`;
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const filename = `avatars/${user.id}-${Date.now()}.${ext}`;
   let blob: Awaited<ReturnType<typeof put>>;
   try {
-    blob = await put(filename, compressedBuffer, {
+    blob = await put(filename, fileBuffer, {
       access: "public",
-      contentType: "image/webp",
+      contentType: file.type,
       addRandomSuffix: false,
     });
   } catch (err) {
