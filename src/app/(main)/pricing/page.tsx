@@ -102,40 +102,6 @@ function PricingContent() {
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {/* FREE */}
-          <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-default)] p-7 flex flex-col">
-            <div className="mb-6">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-[var(--bg-secondary)] text-[var(--text-secondary)] mb-3">
-                Gratuit
-              </span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-[var(--text-primary)]">0€</span>
-                <span className="text-[var(--text-secondary)] text-sm">/ mois</span>
-              </div>
-              <p className="text-[var(--text-secondary)] text-sm mt-2">Pour débuter ta collection Pokémon.</p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-1">
-              {FREE_FEATURES.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)]">
-                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-[var(--text-tertiary)]">
-                    <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="1.5 5 3.5 7.5 8.5 2.5"/>
-                    </svg>
-                  </span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => router.push('/collection')}
-              className="w-full rounded-2xl border border-[var(--border-default)] py-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            >
-              Commencer gratuitement
-            </button>
-          </div>
-
           {/* PRO */}
           <div className="rounded-3xl bg-[var(--bg-card)] border-2 border-[#E7BA76] p-7 flex flex-col relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top right, rgba(231,186,118,0.08) 0%, transparent 60%)' }} />
@@ -196,6 +162,40 @@ function PricingContent() {
                 {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '39,99€/an' : '3,99€/mois'} →`}
               </button>
             </div>
+          </div>
+
+          {/* FREE */}
+          <div className="rounded-3xl bg-[var(--bg-card)] border border-[var(--border-default)] p-7 flex flex-col">
+            <div className="mb-6">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-[var(--bg-secondary)] text-[var(--text-secondary)] mb-3">
+                Gratuit
+              </span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-bold text-[var(--text-primary)]">0€</span>
+                <span className="text-[var(--text-secondary)] text-sm">/ mois</span>
+              </div>
+              <p className="text-[var(--text-secondary)] text-sm mt-2">Pour débuter ta collection Pokémon.</p>
+            </div>
+
+            <ul className="space-y-3 mb-8 flex-1">
+              {FREE_FEATURES.map((f) => (
+                <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--text-primary)]">
+                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] text-[var(--text-tertiary)]">
+                    <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="1.5 5 3.5 7.5 8.5 2.5"/>
+                    </svg>
+                  </span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => router.push('/collection')}
+              className="w-full rounded-2xl border border-[var(--border-default)] py-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              Commencer gratuitement
+            </button>
           </div>
         </div>
 
