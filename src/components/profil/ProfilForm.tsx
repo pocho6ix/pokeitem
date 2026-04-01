@@ -5,7 +5,6 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { ProfileTabs } from "@/components/profil/ProfileTabs";
-import { useApplyReferral } from "@/hooks/useApplyReferral";
 import { UsageBars } from "@/components/subscription/UsageBars";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -20,7 +19,6 @@ interface UserProfile {
 export function ProfilForm() {
   const { update: updateSession } = useSession();
   const router = useRouter();
-  useApplyReferral();
   const { isPro, isTrialing, trialEndsAt } = useSubscription();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);

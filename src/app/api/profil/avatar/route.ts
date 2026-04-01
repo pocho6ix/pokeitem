@@ -68,11 +68,20 @@ export async function POST(request: NextRequest) {
 
   // Upload to Vercel Blob
   const filename = `avatars/${user.id}-${Date.now()}.webp`;
-  const blob = await put(filename, compressedBuffer, {
-    access: "public",
-    contentType: "image/webp",
-    addRandomSuffix: false,
-  });
+  let blob: Awaited<ReturnType<typeof put>>;
+  try {
+    blob = await put(filename, compressedBuffer, {
+      access: "public",
+      contentType: "image/webp",
+      addRandomSuffix: false,
+    });
+  } catch (err) {
+    console.error("Vercel Blob upload error:", err);
+    return NextResponse.json(
+      { error: "Impossible d'uploader la photo. Vérifiez la configuration du stockage." },
+      { status: 500 },
+    );
+  }
 
   // Save URL in DB
   await prisma.user.update({

@@ -116,7 +116,7 @@ export function SettingsTab() {
         )}
         {username.length >= 3 && (
           <p className="mt-2 text-xs text-[var(--text-tertiary)]">
-            Lien : pokeitem.fr/inscription?ref=<span className="text-[var(--text-secondary)]">{username}</span>
+            Lien : app.pokeitem.fr/inscription?ref=<span className="text-[var(--text-secondary)]">{username}</span>
           </p>
         )}
       </section>

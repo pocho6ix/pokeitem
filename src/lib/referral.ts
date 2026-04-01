@@ -11,7 +11,8 @@ export async function getReferralLink(userId: string): Promise<string> {
     select: { username: true, referralCode: true }
   })
   const code = user?.username ?? user?.referralCode ?? ''
-  return `https://www.pokeitem.fr/inscription?ref=${encodeURIComponent(code)}`
+  const base = process.env.NEXTAUTH_URL ?? 'https://app.pokeitem.fr'
+  return `${base}/inscription?ref=${encodeURIComponent(code)}`
 }
 
 export async function validateReferralCode(code: string) {
