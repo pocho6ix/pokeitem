@@ -12,6 +12,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // sharp uses native binaries — must be treated as external in serverless
+  serverExternalPackages: ['sharp'],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
