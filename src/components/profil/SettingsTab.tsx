@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { signOut } from 'next-auth/react'
-import Link from 'next/link'
 import { useSubscription } from '@/hooks/useSubscription'
 
 export function SettingsTab() {
@@ -172,20 +171,6 @@ export function SettingsTab() {
           )}
         </section>
       )}
-      {/* Password change */}
-      <section className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-5">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Mot de passe</h3>
-        <p className="text-xs text-[var(--text-secondary)] mb-4">
-          Modifiez votre mot de passe de connexion.
-        </p>
-        <Link
-          href="/mot-de-passe-oublie"
-          className="inline-block rounded-xl border border-[var(--border-default)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-        >
-          Changer mon mot de passe
-        </Link>
-      </section>
-
       {/* Delete account */}
       <section className="rounded-xl border border-red-500/20 bg-red-500/5 p-5">
         <h3 className="text-sm font-semibold text-red-500 mb-1">Zone de danger</h3>
