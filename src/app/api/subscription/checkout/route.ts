@@ -6,12 +6,20 @@ import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-03-25.dahlia' })
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as { id: string }).id
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // period: 'monthly' | 'annual'
+  const body = await req.json().catch(() => ({}))
+  const period: 'monthly' | 'annual' = body.period === 'annual' ? 'annual' : 'monthly'
+  const priceId =
+    period === 'annual'
+      ? process.env.STRIPE_PRO_PRICE_ID_ANNUAL!
+      : process.env.STRIPE_PRO_PRICE_ID!
 
   let customerId = user.stripeCustomerId
   if (!customerId) {
@@ -27,7 +35,7 @@ export async function POST() {
     customer: customerId,
     mode: 'subscription',
     payment_method_types: ['card'],
-    line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXTAUTH_URL}/pricing?success=1`,
     cancel_url: `${process.env.NEXTAUTH_URL}/pricing?canceled=1`,
     metadata: { userId },

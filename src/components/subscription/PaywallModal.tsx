@@ -79,7 +79,7 @@ export function PaywallModal({ feature, onClose }: PaywallModalProps) {
 
           {/* Price */}
           <div className="mb-4 text-center">
-            <span className="text-2xl font-bold text-[var(--text-primary)]">4,99€</span>
+            <span className="text-2xl font-bold text-[var(--text-primary)]">3,99€</span>
             <span className="text-sm text-[var(--text-secondary)]"> / mois</span>
           </div>
 
