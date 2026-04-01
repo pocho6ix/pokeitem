@@ -14,7 +14,7 @@ const SESSION_COOKIE_NAMES = [
 // Max acceptable cookie size (8 KB) — anything larger is a corrupt/legacy JWT
 const MAX_COOKIE_BYTES = 8 * 1024;
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── Guard: if any session cookie is oversized, clear it and redirect to home.
