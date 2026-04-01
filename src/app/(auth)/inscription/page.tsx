@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { InscriptionForm } from "./InscriptionForm";
 
 export const metadata: Metadata = {
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function InscriptionPage() {
-  return <InscriptionForm />;
+  return (
+    <Suspense>
+      <InscriptionForm />
+    </Suspense>
+  );
 }
