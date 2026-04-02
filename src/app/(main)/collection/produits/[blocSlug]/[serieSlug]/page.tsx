@@ -9,6 +9,7 @@ import { ITEM_TYPES } from "@/data/item-types";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 import { SerieItemsGrid } from "@/components/collection/SerieItemsGrid";
+import { BackButton } from "@/components/ui/BackButton";
 import { prisma } from "@/lib/prisma";
 import {
   generateBreadcrumbJsonLd,
@@ -148,6 +149,11 @@ export default async function SeriePage({ params }: SeriePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
       />
+
+      {/* Back */}
+      <div className="mb-4">
+        <BackButton />
+      </div>
 
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-2 text-sm text-[var(--text-secondary)]">

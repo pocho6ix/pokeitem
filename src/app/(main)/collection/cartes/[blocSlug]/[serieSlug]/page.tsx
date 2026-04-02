@@ -8,6 +8,7 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
 import { CardCollectionGrid } from "@/components/cards/CardCollectionGrid";
+import { BackButton } from "@/components/ui/BackButton";
 import type { CardRow, OwnedEntry } from "@/components/cards/CardCollectionGrid";
 import { CardRarity } from "@/types/card";
 
@@ -82,6 +83,11 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+      {/* Back */}
+      <div className="mb-4">
+        <BackButton />
+      </div>
 
       {/* Breadcrumb */}
       <nav aria-label="Fil d'Ariane" className="mb-6 text-sm text-[var(--text-secondary)]">
