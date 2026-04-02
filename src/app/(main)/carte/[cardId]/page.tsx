@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { CARD_RARITY_LABELS, CARD_RARITY_SYMBOL, CardRarity } from "@/types/card";
 import { CARD_VERSION_LABELS, CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
+import { RemoveCardButton } from "@/components/cards/RemoveCardButton";
 import { ExternalLink } from "lucide-react";
 
 interface PageProps {
@@ -104,12 +105,11 @@ export default async function CardDetailPage({ params }: PageProps) {
   const avg7       = cmPrices?.avg7        ?? null;
   const avg30      = cmPrices?.avg30       ?? null;
 
-  // Construct marketplace links
-  const encodedSerie = encodeURIComponent(card.serie.name);
+  // Marketplace links — use TCGdex URLs when available, fallback to search
   const encodedCard  = encodeURIComponent(card.name);
   const cardmarketUrl =
     tcgdex?.pricing?.cardmarket?.url ??
-    `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${encodedSerie}/${encodedCard}`;
+    `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encodedCard}`;
   const tcgplayerUrl =
     tcgdex?.pricing?.tcgplayer?.url ??
     `https://www.tcgplayer.com/search/pokemon/product?q=${encodedCard}`;
@@ -261,6 +261,11 @@ export default async function CardDetailPage({ params }: PageProps) {
             </a>
           </div>
         </div>
+      )}
+
+      {/* Remove from collection */}
+      {ownedVersions.length > 0 && (
+        <RemoveCardButton cardId={card.id} versions={ownedVersions} />
       )}
     </div>
   );
