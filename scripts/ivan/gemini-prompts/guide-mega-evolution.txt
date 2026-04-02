@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Série Méga-Évolution ME01 : Guide Complet Pokémon TCG"
+
+A premium flat-lay photography of Pokémon TCG Mega Evolution sealed products arranged on a luxurious dark marble surface. Include a Mega Evolution booster box, Mega-Lucario ETB, Mega-Latias ex collection box, and scattered booster packs with holographic mega evolution artwork. Dramatic studio lighting with golden accents reflecting off the metallic packaging. No text overlay. Aspect ratio 1200x630, photorealistic editorial style.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-mega-evolution.jpg
