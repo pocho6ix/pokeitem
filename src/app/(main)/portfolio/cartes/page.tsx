@@ -107,11 +107,11 @@ export default async function PortfolioCartesPage() {
 
   // The layout (layout.tsx) renders the title, stats and TabNav.
   // This page only renders the card list itself.
-  // baseUrl points to /collection/cartes so clicking a serie opens the interactive card grid.
+  // baseUrl points to /portfolio/cartes so navigation stays in classeur context.
   return (
     <BlocSerieCardList
       blocs={blocs}
-      baseUrl="/collection/cartes"
+      baseUrl="/portfolio/cartes"
     />
   );
 }

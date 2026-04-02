@@ -508,7 +508,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
                       nameKey="name"
                     >
                       {distributionByType.map((entry, index) => (
-                        <Cell key={entry.type} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <Legend
@@ -538,7 +538,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
               <div className="divide-y divide-[var(--border-default)]">
                 {topPerformers.map((item, i) => (
                   <TopPerformerRow
-                    key={item.name}
+                    key={i}
                     rank={i + 1}
                     name={item.name}
                     purchasePrice={item.purchasePrice}

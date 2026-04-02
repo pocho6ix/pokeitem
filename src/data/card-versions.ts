@@ -2,12 +2,20 @@
 // Card version availability per serie / bloc
 //
 // Rules derived from Pokémon TCG print history (French market):
-//  • EX / WOTC            → Normale + Reverse
-//  • DP / PL / HGSS / NB / XY / SL / EB → Normale + Reverse
-//  • EV01–EV02            → Normale + Reverse + Reverse Pokéball
-//  • EV03–EV10.5          → Normale + Reverse + Reverse Pokéball + Reverse Masterball
-//  • ME01 (new bloc)      → Normale + Reverse  (no stamp — deliberate design choice)
-//  • ME02+                → Normale + Reverse + Reverse Pokéball
+//
+//  WOTC era
+//  • Set de Base → Neo Destiny  (pre-Reverse)   → Normale + Holo only
+//  • Expédition, Aquapolis, Skyridge (e-Card)    → Normale + Reverse (first sets with Reverse)
+//
+//  EX → EB blocs                                 → Normale + Reverse
+//
+//  Écarlate & Violet (EV)
+//  • EV01–EV10, EV4.5, EV6.5                    → Normale + Reverse
+//  • Évolutions Prismatiques, Foudre Noire, Flamme Blanche → Normale + Reverse + Poké Ball + Master Ball
+//
+//  Méga-Évolution (ME) — new 2025 bloc
+//  • ME01, ME02                                  → Normale + Reverse
+//  • Héros Transcendants (ME2.5), Équilibre Parfait (ME03) → + Reverse Poké Ball
 // ---------------------------------------------------------------------------
 
 export enum CardVersion {
@@ -34,57 +42,51 @@ const V_MASTERBALL = [CardVersion.NORMAL, CardVersion.REVERSE, CardVersion.REVER
 // ── Per-serie overrides (most specific, checked first) ───────────────────────
 
 const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
-  // ── Méga-Évolution bloc (new, 2025–) ────────────────────────────────────
-  "mega-evolution":             V_REVERSE,    // ME01 — no Pokéball stamp
-  "flammes-fantasmagoriques":   V_POKEBALL,   // ME02
-  "heros-transcendants":        V_POKEBALL,   // ME2.5
-  "equilibre-parfait":          V_POKEBALL,   // ME03
+  // ── WOTC — pre-Reverse era (Set de Base → Neo Destiny) ──────────────────
+  // These sets predate the Reverse mechanic — Normale + Holo only.
+  // Expédition, Aquapolis, Skyridge (e-Card) DO have Reverse → wotc bloc default applies.
+  "set-de-base":      V_NORMAL,
+  "jungle":           V_NORMAL,
+  "fossile":          V_NORMAL,
+  "set-de-base-2":    V_NORMAL,
+  "team-rocket":      V_NORMAL,
+  "gym-heroes":       V_NORMAL,
+  "gym-challenge":    V_NORMAL,
+  "neo-genesis":      V_NORMAL,
+  "neo-discovery":    V_NORMAL,
+  "neo-revelation":   V_NORMAL,
+  "neo-destiny":      V_NORMAL,
 
-  // ── Écarlate & Violet bloc ───────────────────────────────────────────────
-  // EV01-EV02: Pokéball stamp, no Masterball
-  "ecarlate-et-violet":         V_POKEBALL,   // EV01
-  "evolutions-a-paldea":        V_POKEBALL,   // EV02
+  // ── Épée & Bouclier — special sets with Reverse ─────────────────────────
+  "celebrations":        V_REVERSE, // Célébrations
+  "destinees-radieuses": V_REVERSE, // Destinées Radieuses
+  "stars-etincelantes":  V_REVERSE, // Stars Étincelantes (EB09)
+  "la-voie-du-maitre":   V_REVERSE, // La Voie du Maître
 
-  // EV03+: Pokéball + Masterball
-  "flammes-obsidiennes":        V_MASTERBALL, // EV03
-  "pokemon-151":                V_MASTERBALL, // EV3.5
-  "faille-paradoxe":            V_MASTERBALL, // EV04
-  "destinees-de-paldea":        V_MASTERBALL, // EV4.5
-  "forces-temporelles":         V_MASTERBALL, // EV05
-  "mascarade-crepusculaire":    V_MASTERBALL, // EV06
-  "fable-nebuleuse":            V_MASTERBALL, // EV6.5
-  "couronne-stellaire":         V_MASTERBALL, // EV07
-  "etincelles-deferlantes":     V_MASTERBALL, // EV08
-  "evolutions-prismatiques":    V_MASTERBALL, // EV8.5
-  "aventures-ensemble":         V_MASTERBALL, // EV09
-  "rivalites-destinees":        V_MASTERBALL, // EV10
-  "foudre-noire":               V_MASTERBALL, // EV10.5B
-  "flamme-blanche":             V_MASTERBALL, // EV10.5W
+  // ── Écarlate & Violet — only 3 sets carry the Master Ball stamp ─────────
+  "evolutions-prismatiques": V_MASTERBALL, // EV8.5
+  "foudre-noire":            V_MASTERBALL, // EV10.5b
+  "flamme-blanche":          V_MASTERBALL, // EV10.5w
 
-  // ── Épée & Bouclier — no Pokéball stamps ────────────────────────────────
-  // All EB series use V_REVERSE (default fallback handles this via bloc)
-
-  // ── Special / promo-only sets (no reverse) ──────────────────────────────
-  "celebrations":               V_NORMAL,
-  "destinees-radieuses":        V_NORMAL,
-  "stars-etincelantes":         V_NORMAL,
-  "la-voie-du-maitre":          V_NORMAL,
+  // ── Méga-Évolution — Héros Transcendants & Équilibre Parfait add Poké Ball
+  "heros-transcendants": V_POKEBALL, // ME2.5 — Reverse (type symbol) + Poké Ball
+  "equilibre-parfait":   V_POKEBALL, // ME03
 };
 
 // ── Bloc-level defaults (fallback when serie not in map above) ───────────────
 
 const BLOC_DEFAULT_VERSIONS: Record<string, readonly CardVersion[]> = {
-  "mega-evolution":      V_POKEBALL,   // new ME bloc default (ME02+)
-  "ecarlate-violet":     V_MASTERBALL, // EV default (most sets have Masterball)
-  "epee-bouclier":       V_REVERSE,
-  "soleil-lune":         V_REVERSE,
-  "xy":                  V_REVERSE,
-  "noir-blanc":          V_REVERSE,
+  "mega-evolution":       V_REVERSE, // ME01, ME02: Normale + Reverse (no stamp)
+  "ecarlate-violet":      V_REVERSE, // EV01–EV10: Normale + Reverse (most sets)
+  "epee-bouclier":        V_REVERSE,
+  "soleil-lune":          V_REVERSE,
+  "xy":                   V_REVERSE,
+  "noir-blanc":           V_REVERSE,
   "heartgold-soulsilver": V_REVERSE,
-  "platine":             V_REVERSE,
-  "diamant-perle":       V_REVERSE,
-  "ex":                  V_REVERSE,
-  "wotc":                V_REVERSE,
+  "platine":              V_REVERSE,
+  "diamant-perle":        V_REVERSE,
+  "ex":                   V_REVERSE,
+  "wotc":                 V_REVERSE, // Expédition, Aquapolis, Skyridge have Reverse
 };
 
 // ── Public helper ────────────────────────────────────────────────────────────

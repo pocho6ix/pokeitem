@@ -188,7 +188,7 @@ export default async function HomePage() {
                 Aperçu de mes cartes
               </h2>
               <Link
-                href="/classeur/cartes"
+                href="/portfolio/cartes"
                 className="text-xs font-medium text-[#E7BA76] hover:underline"
               >
                 Voir tout
@@ -198,7 +198,7 @@ export default async function HomePage() {
               {topCards.map((card) => (
                 <Link
                   key={`${card.cardId}-${card.version}`}
-                  href={`/collection/cartes/${card.serieSlug}`}
+                  href={`/carte/${card.cardId}`}
                   className="group"
                 >
                   <div className="relative rounded-xl overflow-hidden border border-[var(--border-default)] bg-[var(--bg-card)]">
