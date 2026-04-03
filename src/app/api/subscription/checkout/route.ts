@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       email: true,
       stripeCustomerId: true,
       referredById: true,
+      betaTrialActivatedAt: true,
     }
   })
   if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -41,9 +42,19 @@ export async function POST(req: Request) {
     await prisma.user.update({ where: { id: userId }, data: { stripeCustomerId: customerId } })
   }
 
-  // Apply -5€ coupon for referred users on annual plan
+  // Determine discount: beta testeur (-10€) takes precedence over referral (-5€) on annual
+  const betaDiscount = body.betaDiscount === true && period === 'annual' && !!user.betaTrialActivatedAt
   let discounts: { coupon: string }[] | undefined = undefined
-  if (user.referredById && period === 'annual') {
+
+  if (betaDiscount) {
+    const coupon = await stripe.coupons.create({
+      amount_off: 1000, // -10€ → 29,99€ instead of 39,99€
+      currency: 'eur',
+      duration: 'once',
+      name: 'Offre bêta testeur -10€',
+    })
+    discounts = [{ coupon: coupon.id }]
+  } else if (user.referredById && period === 'annual') {
     const coupon = await stripe.coupons.create({
       amount_off: 500,
       currency: 'eur',

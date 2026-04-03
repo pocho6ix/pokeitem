@@ -1,6 +1,7 @@
 import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
 import { PortfolioEvolutionChart } from "@/components/dashboard/PortfolioEvolutionChart";
 import { PortfolioTabNav } from "@/components/dashboard/PortfolioTabNav";
+import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,9 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
           Suivez la valeur de vos items et gérez votre collection de cartes
         </p>
       </div>
+
+      {/* Beta offer for new non-subscribed users */}
+      <ClasseurBetaOffer />
 
       {/* Portfolio KPI metrics — always visible on all tabs */}
       <PortfolioMiniStats />

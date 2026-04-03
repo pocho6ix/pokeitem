@@ -8,7 +8,8 @@ import { BackButton } from "@/components/ui/BackButton";
 import { BETA_VIDEO_ID, BETA_VIDEO_ENABLED } from "@/config/beta";
 import { CheckCircle2, Smartphone, Gift } from "lucide-react";
 
-// ── Typings for the deferred install prompt ───────────────────────────────────
+// ── Typings ──────────────────────────────────────────────────────────────────
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -19,10 +20,8 @@ type Platform = "ios" | "android" | "desktop" | "unknown";
 function detectPlatform(): Platform {
   if (typeof window === "undefined") return "unknown";
   const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/.test(ua);
-  const isAndroid = /Android/.test(ua);
-  if (isIOS) return "ios";
-  if (isAndroid) return "android";
+  if (/iPhone|iPad|iPod/.test(ua)) return "ios";
+  if (/Android/.test(ua)) return "android";
   return "desktop";
 }
 
@@ -32,6 +31,7 @@ function isAlreadyInstalled(): boolean {
 }
 
 // ── Features list ─────────────────────────────────────────────────────────────
+
 const FEATURES = [
   "Toutes les features Pro",
   "Valeur collection en temps réel",
@@ -40,7 +40,29 @@ const FEATURES = [
   "Aucun paiement requis",
 ];
 
+// ── iOS share icon (SVG inline) ───────────────────────────────────────────────
+
+function IosSShareIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="inline-block h-4 w-4 align-middle"
+      aria-hidden="true"
+    >
+      <path d="M8 6L12 2l4 4" />
+      <path d="M12 2v13" />
+      <path d="M20 12v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8" />
+    </svg>
+  );
+}
+
 // ── Install instructions modal ────────────────────────────────────────────────
+
 function InstallModal({
   platform,
   onDone,
@@ -58,15 +80,19 @@ function InstallModal({
           </h2>
         </div>
 
-        {platform === "ios" && (
-          <ol className="space-y-4 text-sm text-[var(--text-primary)]">
+        {(platform === "ios") && (
+          <ol className="space-y-5 text-sm text-[var(--text-primary)]">
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-xs font-bold text-[#E7BA76]">
                 1
               </span>
               <span>
-                Appuie sur le bouton de partage{" "}
-                <span className="font-semibold">⬆</span> en bas de Safari
+                Appuie sur le bouton{" "}
+                <span className="font-semibold">
+                  &laquo;&nbsp;Partager&nbsp;&raquo;
+                </span>{" "}
+                <IosSShareIcon />{" "}
+                en bas de Safari ou de ton navigateur
               </span>
             </li>
             <li className="flex gap-3">
@@ -74,25 +100,19 @@ function InstallModal({
                 2
               </span>
               <span>
-                Scrolle et appuie sur{" "}
+                Appuie sur{" "}
+                <span className="font-semibold">En voir plus</span>, scrolle et
+                appuie sur{" "}
                 <span className="font-semibold">
-                  &laquo;&nbsp;Sur l&rsquo;écran d&rsquo;accueil&nbsp;&raquo;
+                  Sur l&rsquo;écran d&rsquo;accueil
                 </span>
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-xs font-bold text-[#E7BA76]">
-                3
-              </span>
-              <span>
-                Appuie sur <span className="font-semibold">Ajouter</span>
               </span>
             </li>
           </ol>
         )}
 
         {platform === "android" && (
-          <ol className="space-y-4 text-sm text-[var(--text-primary)]">
+          <ol className="space-y-5 text-sm text-[var(--text-primary)]">
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-xs font-bold text-[#E7BA76]">
                 1
@@ -113,14 +133,6 @@ function InstallModal({
                 </span>
               </span>
             </li>
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-xs font-bold text-[#E7BA76]">
-                3
-              </span>
-              <span>
-                Appuie sur <span className="font-semibold">Ajouter</span>
-              </span>
-            </li>
           </ol>
         )}
 
@@ -130,8 +142,8 @@ function InstallModal({
             <span className="font-semibold text-[var(--text-primary)]">
               app.pokeitem.fr
             </span>{" "}
-            sur ton téléphone pour installer l&rsquo;app et profiter du mois
-            offert.
+            sur ton téléphone pour installer l&rsquo;app et profiter des 2
+            semaines offertes.
           </p>
         )}
 
@@ -152,6 +164,7 @@ function InstallModal({
 }
 
 // ── Success screen ────────────────────────────────────────────────────────────
+
 function SuccessScreen() {
   const router = useRouter();
   return (
@@ -161,11 +174,11 @@ function SuccessScreen() {
           <CheckCircle2 className="h-14 w-14 text-emerald-400" />
         </div>
         <h2 className="text-2xl font-bold text-[var(--text-primary)]">
-          Bienvenue dans la bêta !
+          Bienvenue dans la bêta&nbsp;!
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          Ton abonnement Pro est activé pour 30 jours. Merci de nous aider à
-          améliorer PokéItem 💪
+          Ton abonnement Pro est activé pour 14 jours. Merci de nous aider à
+          améliorer PokéItem&nbsp;💪
         </p>
         <button
           onClick={() => router.push("/portfolio")}
@@ -179,6 +192,7 @@ function SuccessScreen() {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+
 export function BetaPageContent() {
   const { data: session, status } = useSession();
   const { isPro, betaTrialUsed, isLoading: subLoading } = useSubscription();
@@ -211,7 +225,6 @@ export function BetaPageContent() {
     try {
       const res = await fetch("/api/beta/activate", { method: "POST" });
       if (res.status === 409) {
-        // Already used — just go home
         router.push("/portfolio");
         return;
       }
@@ -229,22 +242,18 @@ export function BetaPageContent() {
       router.push("/connexion?callbackUrl=/beta");
       return;
     }
-
     if (platform === "android" && deferredPrompt.current) {
-      // Native Android prompt available
       await deferredPrompt.current.prompt();
       deferredPrompt.current = null;
       await activateTrial();
       return;
     }
-
-    // iOS, manual Android, desktop → show instructions
     setShowModal(true);
   }
 
   async function handleModalDone() {
     setShowModal(false);
-    if (platform === "desktop") return; // Desktop: just close, no activation
+    if (platform === "desktop") return;
     await activateTrial();
   }
 
@@ -267,7 +276,7 @@ export function BetaPageContent() {
         <div className="mb-6 flex items-center gap-3">
           <Gift className="h-8 w-8 text-[#E7BA76] shrink-0" />
           <h1 className="text-2xl font-extrabold text-[var(--text-primary)]">
-            Profite d&rsquo;1 mois offert
+            Profite de 2 semaines offertes
           </h1>
         </div>
 
@@ -295,7 +304,7 @@ export function BetaPageContent() {
             En attendant, tu peux l&rsquo;installer directement sur ton écran
             d&rsquo;accueil et profiter de toutes les fonctionnalités Pro{" "}
             <span className="font-semibold text-[var(--text-primary)]">
-              gratuitement pendant 1 mois
+              gratuitement pendant 2 semaines
             </span>
             .
           </p>
@@ -325,20 +334,20 @@ export function BetaPageContent() {
         {isReady && (
           <>
             {betaTrialUsed || isPro ? (
-              // Already subscribed or used trial
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-center text-sm text-emerald-400">
                 {betaTrialUsed
-                  ? "Tu as déjà activé ton mois offert."
+                  ? "Tu as déjà activé tes 2 semaines offertes."
                   : "Tu es déjà abonné Pro."}
               </div>
             ) : alreadyInstalled ? (
-              // Already installed — skip instructions, just activate
               <button
                 onClick={activateTrial}
                 disabled={activating}
                 className="w-full rounded-xl bg-[#E7BA76] py-3.5 text-sm font-semibold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-60"
               >
-                {activating ? "Activation…" : "🎁 Activer mon mois offert"}
+                {activating
+                  ? "Activation…"
+                  : "🎁 Activer mon abonnement Pro 2 semaines offertes"}
               </button>
             ) : (
               <button
