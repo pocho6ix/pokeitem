@@ -26,10 +26,17 @@ export enum CardVersion {
 }
 
 export const CARD_VERSION_LABELS: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "Normale",
+  [CardVersion.NORMAL]:             "Commune",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Reverse (Pokéball)",
   [CardVersion.REVERSE_MASTERBALL]: "Reverse (Masterball)",
+};
+
+export const VERSION_SORT_ORDER: Record<CardVersion, number> = {
+  [CardVersion.NORMAL]:             0,
+  [CardVersion.REVERSE]:            1,
+  [CardVersion.REVERSE_POKEBALL]:   2,
+  [CardVersion.REVERSE_MASTERBALL]: 3,
 };
 
 // ── Shorthand version sets ───────────────────────────────────────────────────

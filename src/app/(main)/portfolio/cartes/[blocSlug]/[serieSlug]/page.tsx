@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
-import { CardRarity } from "@/types/card";
+import { CardRarity, CardCondition } from "@/types/card";
 import { CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
 import { ClasseurCardGrid, type ClasseurCard } from "@/components/cards/ClasseurCardGrid";
@@ -70,14 +70,16 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
         : uc.card.price;
 
     return {
-      id:       uc.id,
-      cardId:   uc.card.id,
+      id:         uc.id,
+      cardId:     uc.card.id,
       version,
-      number:   uc.card.number,
-      name:     uc.card.name,
-      rarity:   uc.card.rarity as CardRarity,
-      imageUrl: uc.card.imageUrl,
-      price:    price ?? null,
+      condition:  (uc.condition as CardCondition) ?? CardCondition.NEAR_MINT,
+      gradeValue: uc.gradeValue ?? null,
+      number:     uc.card.number,
+      name:       uc.card.name,
+      rarity:     uc.card.rarity as CardRarity,
+      imageUrl:   uc.card.imageUrl,
+      price:      price ?? null,
     };
   });
 

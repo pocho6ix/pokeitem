@@ -4,19 +4,31 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Trash2, X, CheckSquare } from "lucide-react";
-import { CARD_RARITY_SYMBOL, CardRarity } from "@/types/card";
+import { CARD_RARITY_SYMBOL, CardRarity, CardCondition } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS } from "@/data/card-versions";
 
 export interface ClasseurCard {
   id: string;        // UserCard.id (not used for API, kept for React key)
   cardId: string;    // Card.id
   version: CardVersion;
+  condition: CardCondition;
+  gradeValue: number | null;
   number: string;
   name: string;
   rarity: CardRarity;
   imageUrl: string | null;
   price: number | null;
 }
+
+// Condition badge — only shown when not NEAR_MINT (default)
+const CONDITION_SHORT: Partial<Record<CardCondition, string>> = {
+  [CardCondition.MINT]:         "Mint",
+  [CardCondition.EXCELLENT]:    "EX",
+  [CardCondition.GOOD]:         "G",
+  [CardCondition.LIGHT_PLAYED]: "LP",
+  [CardCondition.PLAYED]:       "PL",
+  [CardCondition.POOR]:         "PR",
+};
 
 interface Props {
   cards: ClasseurCard[];
@@ -211,12 +223,23 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                 {uc.version !== CardVersion.NORMAL && (
                   <span className="absolute top-1.5 right-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] font-bold text-white">
                     {uc.version === CardVersion.REVERSE
-                      ? "REV"
+                      ? "R"
                       : uc.version === CardVersion.REVERSE_POKEBALL
-                      ? "BALL"
-                      : "MBALL"}
+                      ? "P"
+                      : "M"}
                   </span>
                 )}
+
+                {/* Condition badge — GRADED in gold, others in grey (skip NEAR_MINT default) */}
+                {uc.condition === CardCondition.GRADED ? (
+                  <span className="absolute bottom-1.5 right-1.5 rounded bg-amber-400/90 px-1 py-px text-[9px] font-bold leading-none text-black shadow-sm">
+                    ⭐{uc.gradeValue != null ? uc.gradeValue : ""}
+                  </span>
+                ) : uc.condition !== CardCondition.NEAR_MINT && CONDITION_SHORT[uc.condition] ? (
+                  <span className="absolute bottom-1.5 right-1.5 rounded bg-black/50 px-1 py-px text-[9px] font-bold leading-none text-white/80 shadow-sm">
+                    {CONDITION_SHORT[uc.condition]}
+                  </span>
+                ) : null}
 
                 {/* Selection overlay */}
                 {editMode && (

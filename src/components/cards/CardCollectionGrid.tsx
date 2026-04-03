@@ -11,7 +11,7 @@ import {
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
-import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
+import { CardVersion, CARD_VERSION_LABELS, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
 import { RARITY_BADGE_LABELS } from "@/lib/pokemon/card-variants";
 import { SERIES } from "@/data/series";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -39,6 +39,7 @@ export interface OwnedEntry {
   language: string;
   foil: boolean;
   version: CardVersion;
+  gradeValue?: number | null;
 }
 
 interface Props {
@@ -193,10 +194,13 @@ const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
   { value: CardCondition.LIGHT_PLAYED, label: "Played" },
   { value: CardCondition.GOOD,         label: "Bon état" },
   { value: CardCondition.NEAR_MINT,    label: "Near Mint" },
+  { value: CardCondition.GRADED,       label: "Gradée ⭐" },
 ];
 
+const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
+
 const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "Normale",
+  [CardVersion.NORMAL]:             "Commune",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
   [CardVersion.REVERSE_MASTERBALL]: "Masterball",
@@ -210,26 +214,38 @@ function AddToCollectionModal({
   selectedCards: CardRow[];
   availableVersions: CardVersion[];
   ownedMap: OwnedVersionMap;
-  onSubmit: (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean; priceMode: PriceMode; manualPrice?: number }) => void;
+  onSubmit: (data: { quantity: number; condition: CardCondition; language: string; versions: CardVersion[]; foil: boolean; priceMode: PriceMode; manualPrice?: number; gradeValue?: number | null }) => void;
   onClose: () => void;
   isPending: boolean;
 }) {
-  const [quantity,    setQuantity]    = useState(1);
-  const [condition,   setCondition]   = useState<CardCondition>(CardCondition.NEAR_MINT);
-  const [language,    setLanguage]    = useState("FR");
-  const [version,     setVersion]     = useState<CardVersion>(availableVersions[0]);
-  const [priceMode,   setPriceMode]   = useState<PriceMode>("packed");
-  const [manualPrice, setManualPrice] = useState("");
+  const [quantity,         setQuantity]         = useState(1);
+  const [condition,        setCondition]        = useState<CardCondition>(CardCondition.NEAR_MINT);
+  const [language,         setLanguage]         = useState("FR");
+  const [selectedVersions, setSelectedVersions] = useState<Set<CardVersion>>(new Set([availableVersions[0]]));
+  const [priceMode,        setPriceMode]        = useState<PriceMode>("packed");
+  const [manualPrice,      setManualPrice]      = useState("");
+  const [gradeValue,       setGradeValue]       = useState<number | null>(null);
 
-  const existingQty = selectedCards.length === 1
-    ? ownedMap.get(selectedCards[0].id)?.get(version)?.quantity ?? 0
-    : 0;
+  function toggleVersion(v: CardVersion) {
+    setSelectedVersions((prev) => {
+      const next = new Set(prev);
+      if (next.has(v)) {
+        if (next.size > 1) next.delete(v); // keep at least one
+      } else {
+        next.add(v);
+      }
+      return next;
+    });
+  }
 
-  // Current price preview (single card only)
-  const singleCard   = selectedCards.length === 1 ? selectedCards[0] : null;
-  const currentPrice = singleCard
-    ? (version === CardVersion.NORMAL ? (singleCard.price ?? null) : (singleCard.priceReverse ?? singleCard.price ?? null))
+  // Current price preview (single card + single version only)
+  const singleCard    = selectedCards.length === 1 ? selectedCards[0] : null;
+  const singleVersion = selectedVersions.size === 1 ? Array.from(selectedVersions)[0] : null;
+  const currentPrice  = singleCard && singleVersion
+    ? (singleVersion === CardVersion.NORMAL ? (singleCard.price ?? null) : (singleCard.priceReverse ?? singleCard.price ?? null))
     : null;
+
+  const versionsArray = Array.from(selectedVersions);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
@@ -246,7 +262,6 @@ function AddToCollectionModal({
               <h2 className="text-xl font-bold text-[var(--text-primary)]">Ajouter à ma collection</h2>
               <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
                 {selectedCards.length === 1 ? selectedCards[0].name : `${selectedCards.length} cartes`}
-                {existingQty > 0 && <span className="ml-1.5 rounded-full bg-[#E7BA76]/20 px-2 py-0.5 text-xs font-semibold text-[#1B2E6B] dark:bg-[#E7BA76]/20 dark:text-[#E7BA76]">déjà ×{existingQty}</span>}
               </p>
             </div>
             <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]">
@@ -254,27 +269,31 @@ function AddToCollectionModal({
             </button>
           </div>
 
-          {/* Version pills — 4 colonnes horizontales */}
+          {/* Version checkboxes — multi-select */}
           {availableVersions.length > 1 && (
             <div className="mb-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Version</p>
               <div className="grid grid-cols-4 gap-1.5">
                 {availableVersions.map((v) => {
-                  const qty = selectedCards.length === 1 ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0 : 0;
+                  const qty       = selectedCards.length === 1 ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0 : 0;
+                  const isChecked = selectedVersions.has(v);
                   return (
-                    <button key={v} onClick={() => setVersion(v)}
+                    <button key={v} onClick={() => toggleVersion(v)}
                       className={cn(
                         "relative flex flex-col items-center rounded-xl border px-1 py-2 text-xs font-medium transition-all",
-                        version === v
+                        isChecked
                           ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
                           : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}>
                       {MODAL_VERSION_LABELS[v]}
-                      {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", version === v ? "bg-black/20 text-black" : "bg-[#E7BA76] text-black")}>×{qty}</span>}
+                      {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", isChecked ? "bg-black/20 text-black" : "bg-[#E7BA76] text-black")}>×{qty}</span>}
                     </button>
                   );
                 })}
               </div>
+              {selectedVersions.size > 1 && (
+                <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">{selectedVersions.size} versions sélectionnées</p>
+              )}
             </div>
           )}
           {selectedCards.length === 1 && selectedCards[0].isSpecial && (
@@ -295,12 +314,12 @@ function AddToCollectionModal({
             </div>
           </div>
 
-          {/* Condition pills — 4 options en 2×2 */}
+          {/* Condition pills */}
           <div className="mb-3">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
             <div className="grid grid-cols-2 gap-2">
               {CONDITION_PILLS.map((c) => (
-                <button key={c.value} onClick={() => setCondition(c.value)}
+                <button key={c.value} onClick={() => { setCondition(c.value); if (c.value !== CardCondition.GRADED) setGradeValue(null); }}
                   className={cn(
                     "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                     condition === c.value
@@ -311,6 +330,25 @@ function AddToCollectionModal({
                 </button>
               ))}
             </div>
+            {/* Grade value chips — shown only when GRADED is selected */}
+            {condition === CardCondition.GRADED && (
+              <div className="mt-2">
+                <p className="mb-1.5 text-xs text-[var(--text-tertiary)]">Note PSA / BGS</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {GRADE_VALUES.map((g) => (
+                    <button key={g} onClick={() => setGradeValue(gradeValue === g ? null : g)}
+                      className={cn(
+                        "rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
+                        gradeValue === g
+                          ? "border-amber-400 bg-amber-400 text-black shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-amber-400/70"
+                      )}>
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Language */}
@@ -377,7 +415,7 @@ function AddToCollectionModal({
 
           {/* CTA */}
           <button
-            onClick={() => onSubmit({ quantity, condition, language, version, foil: false, priceMode, manualPrice: manualPrice ? parseFloat(manualPrice) : undefined })}
+            onClick={() => onSubmit({ quantity, condition, language, versions: versionsArray, foil: false, priceMode, manualPrice: manualPrice ? parseFloat(manualPrice) : undefined, gradeValue })}
             disabled={isPending}
             className="w-full rounded-2xl bg-[#E7BA76] py-4 text-base font-bold text-black hover:bg-[#d4a660] active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-[#E7BA76]/30">
             {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
@@ -391,10 +429,10 @@ function AddToCollectionModal({
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
 const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
-  [CardVersion.NORMAL]:             { label: "N",  cls: "bg-[#E7BA76] text-black" },
-  [CardVersion.REVERSE]:            { label: "R",  cls: "bg-violet-600 text-white" },
-  [CardVersion.REVERSE_POKEBALL]:   { label: "RP", cls: "bg-purple-600 text-white" },
-  [CardVersion.REVERSE_MASTERBALL]: { label: "RM", cls: "bg-amber-500 text-white" },
+  [CardVersion.NORMAL]:             { label: "C", cls: "bg-[#E7BA76] text-black" },
+  [CardVersion.REVERSE]:            { label: "R", cls: "bg-violet-600 text-white" },
+  [CardVersion.REVERSE_POKEBALL]:   { label: "P", cls: "bg-purple-600 text-white" },
+  [CardVersion.REVERSE_MASTERBALL]: { label: "M", cls: "bg-amber-500 text-white" },
 };
 
 /** Versions applicable for a card (special = NORMAL only) */
@@ -499,25 +537,32 @@ export function CardCollectionGrid({
   // ── Collection actions ────────────────────────────────────────────────────
 
   const handleAddToCollection = useCallback(
-    (data: { quantity: number; condition: CardCondition; language: string; version: CardVersion; foil: boolean; priceMode: PriceMode; manualPrice?: number }) => {
+    (data: { quantity: number; condition: CardCondition; language: string; versions: CardVersion[]; foil: boolean; priceMode: PriceMode; manualPrice?: number; gradeValue?: number | null }) => {
       if (!isAuthenticated) return;
 
-      const { priceMode, manualPrice, ...rest } = data;
+      const { priceMode, manualPrice, versions, gradeValue, ...rest } = data;
 
-      const getPurchasePrice = (card: CardRow): number | null => {
+      const getPurchasePrice = (card: CardRow, version: CardVersion): number | null => {
         if (priceMode === "packed") return 0.70;
         if (priceMode === "manual") return manualPrice ?? null;
-        // current: use card's price based on version
-        return data.version === CardVersion.NORMAL
-          ? (card.price ?? null)
-          : (card.priceReverse ?? card.price ?? null);
+        return version === CardVersion.NORMAL ? (card.price ?? null) : (card.priceReverse ?? card.price ?? null);
       };
 
-      const optimistic = cloneOwnedMap(ownedMap);
+      // Build (card, version) pairs — special cards are NORMAL only
+      const pairs: { card: CardRow; version: CardVersion }[] = [];
       for (const card of selectedCards) {
-        const entry: OwnedEntry = { id: `tmp-${card.id}-${rest.version}`, cardId: card.id, ...rest };
+        const applicableVersions = card.isSpecial ? [CardVersion.NORMAL] : versions;
+        for (const version of applicableVersions) {
+          pairs.push({ card, version });
+        }
+      }
+      if (pairs.length === 0) return;
+
+      const optimistic = cloneOwnedMap(ownedMap);
+      for (const { card, version } of pairs) {
+        const entry: OwnedEntry = { id: `tmp-${card.id}-${version}`, cardId: card.id, ...rest, version, gradeValue };
         if (!optimistic.has(card.id)) optimistic.set(card.id, new Map());
-        optimistic.get(card.id)!.set(rest.version, entry);
+        optimistic.get(card.id)!.set(version, entry);
       }
       setOwnedMap(optimistic);
       setActiveModal(null);
@@ -528,7 +573,13 @@ export function CardCollectionGrid({
           const res = await fetch("/api/cards/collection", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cards: selectedCards.map((c) => ({ cardId: c.id, ...rest, purchasePrice: getPurchasePrice(c) })) }),
+            body: JSON.stringify({
+              cards: pairs.map(({ card, version }) => ({
+                cardId: card.id, ...rest, version,
+                purchasePrice: getPurchasePrice(card, version),
+                ...(gradeValue != null ? { gradeValue } : {}),
+              })),
+            }),
           });
           if (!res.ok) {
             setOwnedMap(buildOwnedMap(initialOwned));
@@ -540,7 +591,7 @@ export function CardCollectionGrid({
               for (const r of results) {
                 if (r.record) {
                   if (!m.has(r.cardId)) m.set(r.cardId, new Map());
-                  m.get(r.cardId)!.set(r.version as CardVersion, { id: r.record.id, cardId: r.cardId, ...rest });
+                  m.get(r.cardId)!.set(r.version as CardVersion, { id: r.record.id, cardId: r.cardId, ...rest, version: r.version as CardVersion, gradeValue: r.record.gradeValue });
                 }
               }
               return m;
@@ -753,8 +804,10 @@ export function CardCollectionGrid({
             const ownedTotal    = totalOwned(ownedMap, card.id);
             const isOwned       = ownedTotal > 0;
             const dim           = showTransparency && isAuthenticated && !isOwned;
-            // Collect owned version badges for display
-            const ownedVersions = ownedMap.get(card.id) ? Array.from(ownedMap.get(card.id)!.keys()) : [];
+            // Collect owned version badges for display — sorted C→R→P→M
+            const ownedVersions = ownedMap.get(card.id)
+              ? Array.from(ownedMap.get(card.id)!.keys()).sort((a, b) => VERSION_SORT_ORDER[a] - VERSION_SORT_ORDER[b])
+              : [];
             // Missing versions — shown as dimmed badges when card is partially owned
             const cardMissingVersions = isOwned
               ? getMissingVersions(card, ownedMap, availableVersions)

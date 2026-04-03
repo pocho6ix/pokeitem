@@ -18,7 +18,7 @@ export function ClasseurBetaOffer() {
       <Gift className="h-5 w-5 shrink-0 text-[#E7BA76]" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[#E7BA76]">
-          🎁 2 semaines offertes — Rejoins la bêta
+          🎁 1 semaine offerte — Rejoins la bêta
         </p>
         <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
           Accès Pro complet · Résiliable à tout moment

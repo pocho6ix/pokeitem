@@ -22,7 +22,7 @@ export async function POST() {
   }
 
   const now = new Date();
-  const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   await prisma.user.update({
     where: { id: userId },

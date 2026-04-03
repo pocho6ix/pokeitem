@@ -177,7 +177,7 @@ function SuccessScreen() {
           Bienvenue dans la bêta&nbsp;!
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          Ton abonnement Pro est activé pour 14 jours. Merci de nous aider à
+          Ton abonnement Pro est activé pour 7 jours. Merci de nous aider à
           améliorer PokéItem&nbsp;💪
         </p>
         <button
@@ -276,7 +276,7 @@ export function BetaPageContent() {
         <div className="mb-6 flex items-center gap-3">
           <Gift className="h-8 w-8 text-[#E7BA76] shrink-0" />
           <h1 className="text-2xl font-extrabold text-[var(--text-primary)]">
-            Profite de 2 semaines offertes
+            Profite d&apos;1 semaine offerte
           </h1>
         </div>
 
@@ -304,7 +304,7 @@ export function BetaPageContent() {
             En attendant, tu peux l&rsquo;installer directement sur ton écran
             d&rsquo;accueil et profiter de toutes les fonctionnalités Pro{" "}
             <span className="font-semibold text-[var(--text-primary)]">
-              gratuitement pendant 2 semaines
+              gratuitement pendant 1 semaine
             </span>
             .
           </p>
@@ -336,7 +336,7 @@ export function BetaPageContent() {
             {betaTrialUsed || isPro ? (
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-center text-sm text-emerald-400">
                 {betaTrialUsed
-                  ? "Tu as déjà activé tes 2 semaines offertes."
+                  ? "Tu as déjà activé ta semaine offerte."
                   : "Tu es déjà abonné Pro."}
               </div>
             ) : alreadyInstalled ? (
@@ -347,7 +347,7 @@ export function BetaPageContent() {
               >
                 {activating
                   ? "Activation…"
-                  : "🎁 Activer mon abonnement Pro 2 semaines offertes"}
+                  : "🎁 Activer mon abonnement Pro 1 semaine offerte"}
               </button>
             ) : (
               <button

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { onReferralEmailVerified } from '@/lib/referral'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
@@ -40,6 +41,10 @@ export async function POST(req: Request) {
     where: { id: userId },
     data: { referredById: referrer.id }
   })
+
+  // Award a week Pro to the referrer if the referee's email is already verified
+  // (covers both Google OAuth users and credential users who verify before first login)
+  await onReferralEmailVerified(userId).catch(() => {})
 
   return NextResponse.json({ success: true, referrerName: referrer.name })
 }

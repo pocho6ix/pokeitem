@@ -42,6 +42,7 @@ model User {
   referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])
   referrals           User[]    @relation("Referrals")
   referralRewardGiven Boolean   @default(false)
+  referralWeeksGiven  Int       @default(0)
 
   accounts         Account[]
   sessions         Session[]
@@ -376,6 +377,7 @@ model UserCard {
   language      Language      @default(FR)
   version       CardVersion   @default(NORMAL)
   purchasePrice Float?
+  gradeValue    Float?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -431,6 +433,7 @@ enum CardCondition {
   LIGHT_PLAYED
   PLAYED
   POOR
+  GRADED
 }
 
 // ─── BLOG ────────────────────────────────────────────────────

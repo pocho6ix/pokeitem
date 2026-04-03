@@ -25,6 +25,7 @@ export enum CardCondition {
   LIGHT_PLAYED = 'LIGHT_PLAYED',
   PLAYED = 'PLAYED',
   POOR = 'POOR',
+  GRADED = 'GRADED',
 }
 
 export enum DoubleAvailability {
@@ -132,6 +133,7 @@ export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {
   [CardCondition.LIGHT_PLAYED]: 'Légèrement Jouée',
   [CardCondition.PLAYED]: 'Jouée',
   [CardCondition.POOR]: 'Mauvais État',
+  [CardCondition.GRADED]: 'Gradée',
 };
 
 export const DOUBLE_AVAILABILITY_LABELS: Record<DoubleAvailability, string> = {

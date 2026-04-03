@@ -1,87 +1,342 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
-import { Copy, Check, Gift, Users } from 'lucide-react'
+import { Copy, Check, Share2, Trophy, Gift, Users, Clock } from 'lucide-react'
+import { CONTEST_CONFIG } from '@/config/contest'
+import type { LeaderboardEntry } from '@/lib/referral'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type SlotState = 'validated' | 'pending' | 'empty'
+
+// ─── Contest countdown hook ───────────────────────────────────────────────────
+
+function useCountdown(endDate: Date | null): string | null {
+  const [remaining, setRemaining] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!endDate) return
+
+    function update() {
+      const diff = endDate!.getTime() - Date.now()
+      if (diff <= 0) { setRemaining(null); return }
+      const days    = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      setRemaining(`${days}j ${hours}h ${minutes}min`)
+    }
+
+    update()
+    const id = setInterval(update, 60_000)
+    return () => clearInterval(id)
+  }, [endDate])
+
+  return remaining
+}
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+function Avatar({ username, size = 32 }: { username: string; size?: number }) {
+  const initial = (username[0] ?? '?').toUpperCase()
+  return (
+    <div
+      className="rounded-full bg-[#E7BA76]/20 flex items-center justify-center text-[#E7BA76] font-bold shrink-0"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.4) }}
+    >
+      {initial}
+    </div>
+  )
+}
+
+// ─── Slot component ───────────────────────────────────────────────────────────
+
+const SLOT_STYLES: Record<SlotState, string> = {
+  validated: 'border-green-500 bg-green-500/15',
+  pending:   'border-yellow-400/60 bg-yellow-400/10',
+  empty:     'border-[var(--border-default)] bg-[var(--bg-secondary)]',
+}
+
+const SLOT_ICON: Record<SlotState, string> = {
+  validated: '✅',
+  pending:   '🟡',
+  empty:     '⚪',
+}
+
+function Slot({ state, index }: { state: SlotState; index: number }) {
+  return (
+    <div className={`flex-1 rounded-xl border-2 p-3 flex flex-col items-center gap-1.5 transition-all ${SLOT_STYLES[state]}`}>
+      <span className="text-lg leading-none">{SLOT_ICON[state]}</span>
+      <span className="text-xs font-semibold text-[var(--text-secondary)]">Sem {index + 1}</span>
+    </div>
+  )
+}
+
+// ─── Leaderboard row ──────────────────────────────────────────────────────────
+
+const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+
+const TOP3_BG: Record<number, string> = {
+  1: 'bg-amber-400/8 border-amber-400/30',
+  2: 'bg-slate-400/8 border-slate-400/20',
+  3: 'bg-amber-700/8 border-amber-700/20',
+}
+
+function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
+  const medal  = MEDAL[entry.rank]
+  const top3bg = TOP3_BG[entry.rank] ?? ''
+  const isMe   = entry.isCurrentUser
+
+  const bg = isMe
+    ? 'border-[#E7BA76]/50'
+    : (top3bg || 'border-[var(--border-default)]')
+
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${bg}`}
+      style={isMe ? { backgroundColor: 'rgba(231,186,118,0.06)' } : undefined}
+    >
+      {/* Rank */}
+      <span className="w-8 text-center text-sm font-bold shrink-0 text-[var(--text-secondary)]">
+        {medal ?? `#${entry.rank}`}
+      </span>
+
+      {/* Avatar */}
+      <Avatar username={entry.username} size={30} />
+
+      {/* Username */}
+      <span className={`flex-1 text-sm font-medium truncate ${isMe ? 'text-[#E7BA76]' : 'text-[var(--text-primary)]'}`}>
+        {entry.username}
+      </span>
+
+      {/* Count */}
+      <span className="text-sm font-bold text-[var(--text-primary)] shrink-0">
+        {entry.referralCount}
+      </span>
+      <span className="text-xs text-[var(--text-tertiary)] shrink-0">
+        parr.
+      </span>
+
+      {/* "← Toi" badge */}
+      {isMe && (
+        <span className="text-[10px] font-bold text-[#E7BA76] shrink-0 rounded-full bg-[#E7BA76]/15 px-1.5 py-0.5">
+          Toi
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ─── Fetcher ──────────────────────────────────────────────────────────────────
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export function ReferralBlock() {
-  const { data: stats, isLoading } = useSWR('/api/referral/stats', fetcher)
+  const { data: stats, isLoading: statsLoading } = useSWR('/api/referral/stats',      fetcher)
+  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/referral/leaderboard', fetcher)
+
   const [copied, setCopied] = useState(false)
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(stats?.referralLink ?? '')
+  const contestEndDate = CONTEST_CONFIG.active ? new Date(CONTEST_CONFIG.endDate) : null
+  const countdown      = useCountdown(contestEndDate)
+
+  const validatedCount = (stats?.validatedCount ?? 0) as number
+  const slots          = (stats?.slots ?? ['empty', 'empty', 'empty']) as SlotState[]
+  const progressPct    = Math.round((Math.min(validatedCount, 3) / 3) * 100)
+  const maxReached     = validatedCount >= 3
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(stats?.referralLink ?? '').catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  if (isLoading) return <div className="animate-pulse h-40 rounded-2xl bg-white/5" />
+  async function shareLink() {
+    const link = stats?.referralLink ?? ''
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'PokéItem — Gère ta collection Pokémon TCG',
+          text: 'Rejoins PokéItem et suis la valeur de ta collection Pokémon ! Inscris-toi avec mon lien :',
+          url: link,
+        })
+        return
+      } catch {}
+    }
+    // Fallback: copy
+    await navigator.clipboard.writeText(link).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const lbEntries: LeaderboardEntry[] = lb?.rankings ?? []
+  const currentUser: LeaderboardEntry | null = lb?.currentUser ?? null
+  const currentUserInTop = lbEntries.some(e => e.isCurrentUser)
+  const totalParticipants: number = lb?.totalParticipants ?? 0
 
   return (
-    <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-[#E7BA76]/10">
-          <Gift className="w-5 h-5 text-[#E7BA76]" />
+    <div className="space-y-4">
+
+      {/* ── Progression des semaines ────────────────────────────────────── */}
+      <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-[#E7BA76]/10">
+            <Gift className="w-5 h-5 text-[#E7BA76]" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-[var(--text-primary)]">Parrainage</h3>
+            <p className="text-sm text-[var(--text-secondary)]">Invite tes amis et gagne du temps Pro !</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-[var(--text-primary)]">Parrainage</h3>
-          <p className="text-sm text-[var(--text-secondary)]">Invite tes amis et gagne 1 mois offert</p>
+
+        {/* Rule callout */}
+        <div
+          className="rounded-xl border border-[#E7BA76]/25 px-4 py-3"
+          style={{ backgroundColor: 'rgba(231,186,118,0.06)' }}
+        >
+          <p className="text-sm font-semibold text-[#E7BA76]">
+            Pour chaque ami invité : +1 semaine Pro offerte 🎉
+          </p>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+            Maximum 3 semaines · Continue d&apos;inviter pour le leaderboard
+          </p>
         </div>
+
+        {/* Slots + progress */}
+        {statsLoading ? (
+          <div className="animate-pulse h-24 rounded-xl bg-white/5" />
+        ) : (
+          <div className="space-y-3">
+            {/* 3 slots */}
+            <div className="flex gap-3">
+              {slots.map((state, i) => (
+                <Slot key={i} state={state} index={i} />
+              ))}
+            </div>
+
+            {/* Progress bar */}
+            <div>
+              <div className="mb-1.5 flex items-center justify-between text-xs text-[var(--text-secondary)]">
+                <span>{Math.min(validatedCount, 3)}/3 amis invités</span>
+                <span className="font-semibold text-[var(--text-primary)]">{progressPct}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
+                <div
+                  className="h-full rounded-full bg-[#E7BA76] transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              {maxReached && (
+                <p className="mt-2 text-center text-xs font-semibold text-[#E7BA76]">
+                  🏆 Maximum atteint ! Continue d&apos;inviter pour le leaderboard
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Rewards grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-[var(--bg-secondary)] p-3 text-center">
-          <p className="text-xl font-bold text-[#E7BA76]">-5€</p>
-          <p className="text-xs text-[var(--text-secondary)] mt-1">pour ton filleul</p>
-          <p className="text-xs text-[var(--text-tertiary)]">sur l&apos;abonnement annuel</p>
-        </div>
-        <div className="rounded-xl bg-[var(--bg-secondary)] p-3 text-center">
-          <p className="text-xl font-bold text-green-400">+1 mois</p>
-          <p className="text-xs text-[var(--text-secondary)] mt-1">offert pour toi</p>
-          <p className="text-xs text-[var(--text-tertiary)]">dès sa souscription</p>
-        </div>
-      </div>
-
-      {/* Referral link */}
-      <div>
-        <label className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2 block">
+      {/* ── Lien de parrainage ──────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
           Ton lien de parrainage
-        </label>
+        </p>
         <div className="flex gap-2">
-          <div className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-default)] rounded-xl px-4 py-3 text-sm text-[var(--text-secondary)] truncate font-mono">
+          <div className="flex-1 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)] truncate font-mono">
             {stats?.referralLink ?? '—'}
           </div>
           <button
             onClick={copyLink}
-            className="px-4 py-3 rounded-xl bg-[#E7BA76] hover:bg-[#d4a660] transition-colors text-black font-medium flex items-center gap-2 shrink-0"
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-default)] px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/60 transition-colors"
           >
-            {copied ? <><Check className="w-4 h-4" />Copié</> : <><Copy className="w-4 h-4" />Copier</>}
+            {copied ? <><Check className="w-4 h-4 text-green-400" />Copié</> : <><Copy className="w-4 h-4" />Copier</>}
           </button>
         </div>
+        <button
+          onClick={shareLink}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E7BA76] py-3 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors active:scale-[0.98]"
+        >
+          <Share2 className="w-4 h-4" />
+          Partager le lien
+        </button>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center justify-between pt-2 border-t border-[var(--border-default)]">
-        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-          <Users className="w-4 h-4" />
-          <span>
-            <span className="text-[var(--text-primary)] font-medium">{stats?.totalReferrals ?? 0}</span>
-            {' '}filleul{(stats?.totalReferrals ?? 0) !== 1 ? 's' : ''}
-          </span>
-          {(stats?.convertedReferrals ?? 0) > 0 && (
-            <span className="text-[var(--text-tertiary)]">
-              · <span className="text-green-400 font-medium">{stats.convertedReferrals}</span> Pro
+      {/* ── Concours ────────────────────────────────────────────────────── */}
+      {CONTEST_CONFIG.active && (
+        <div
+          className="rounded-2xl border border-[#E7BA76]/35 p-5 space-y-3"
+          style={{ background: 'linear-gradient(135deg, rgba(231,186,118,0.08) 0%, rgba(231,186,118,0.03) 100%)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-[#E7BA76] shrink-0" />
+            <h4 className="text-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">
+              {CONTEST_CONFIG.title}
+            </h4>
+          </div>
+          <p className="text-xs text-[var(--text-secondary)]">
+            Jusqu&apos;au dimanche 31 mai 2026 à 17h
+          </p>
+          <p className="text-sm text-[var(--text-primary)]">
+            Le parrain le plus actif remporte {CONTEST_CONFIG.prize}&nbsp;! {CONTEST_CONFIG.emoji}
+          </p>
+          {countdown !== null ? (
+            <div className="flex items-center gap-2 rounded-xl bg-[var(--bg-secondary)] px-3 py-2">
+              <Clock className="w-4 h-4 text-[#E7BA76] shrink-0" />
+              <span className="text-sm font-bold text-[#E7BA76]">{countdown}</span>
+              <span className="text-xs text-[var(--text-tertiary)]">restant</span>
+            </div>
+          ) : (
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
+              🏆 Concours terminé — Résultats bientôt !
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Leaderboard ─────────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-[#E7BA76]" />
+          <h4 className="font-semibold text-[var(--text-primary)]">Leaderboard</h4>
+          {totalParticipants > 0 && (
+            <span className="ml-auto text-xs text-[var(--text-tertiary)]">
+              {totalParticipants} participant{totalParticipants > 1 ? 's' : ''}
             </span>
           )}
         </div>
-        {stats?.rewardEarned && (
-          <span className="text-xs bg-green-500/10 text-green-400 px-2 py-1 rounded-full">
-            ✓ 1 mois crédité
-          </span>
+
+        {lbLoading ? (
+          <div className="animate-pulse space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-11 rounded-xl bg-white/5" />
+            ))}
+          </div>
+        ) : lbEntries.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Users className="mb-2 h-8 w-8 text-[var(--text-tertiary)]" />
+            <p className="text-sm text-[var(--text-secondary)]">
+              Sois le premier à parrainer !
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {lbEntries.map(entry => (
+              <LeaderboardRow key={entry.userId} entry={entry} />
+            ))}
+
+            {/* Current user row if outside top 10 */}
+            {currentUser && !currentUserInTop && (
+              <>
+                <p className="text-center text-xs text-[var(--text-tertiary)] py-1">· · ·</p>
+                <LeaderboardRow entry={currentUser} />
+              </>
+            )}
+          </div>
         )}
       </div>
+
     </div>
   )
 }

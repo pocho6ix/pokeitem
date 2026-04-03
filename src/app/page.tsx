@@ -8,6 +8,7 @@ import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
 import { Star } from "lucide-react";
 import Link from "next/link";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
+import { ReferralBlock } from "@/components/profil/ReferralBlock";
 
 const FAQ_ITEMS = [
   {
@@ -220,6 +221,15 @@ export default async function HomePage() {
       )}
 
       <HomepageCTASection />
+
+      {/* Referral block — authenticated users only */}
+      {userId && (
+        <section className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-xl">
+            <ReferralBlock />
+          </div>
+        </section>
+      )}
 
       {/* FAQ */}
       <section className="py-20 bg-[var(--bg-primary)]">
