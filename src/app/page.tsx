@@ -118,13 +118,6 @@ export default async function HomePage() {
   const collectionValue = userId ? await getCollectionValue(userId) : null;
   const topCards        = userId ? await getTopCards(userId)        : [];
 
-  // Resolve isPro server-side so HomeCollectionWidget renders without a loading flash
-  const userPlan = userId
-    ? await prisma.user.findUnique({ where: { id: userId }, select: { plan: true, planExpiresAt: true } })
-    : null;
-  const isPro =
-    userPlan?.plan === 'PRO' &&
-    (!userPlan?.planExpiresAt || new Date(userPlan.planExpiresAt) > new Date());
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -168,7 +161,6 @@ export default async function HomePage() {
                   total={collectionValue.total}
                   cardsValue={collectionValue.cardsValue}
                   sealedValue={collectionValue.sealedValue}
-                  isPro={isPro}
                 />
               </div>
             )}
