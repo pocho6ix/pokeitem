@@ -21,7 +21,7 @@ export function ClasseurBetaOffer() {
           🎁 1 semaine offerte — Rejoins la bêta
         </p>
         <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
-          Accès Pro complet · Résiliable à tout moment
+          Accès Pro complet
         </p>
       </div>
       <span className="shrink-0 text-xs text-[#E7BA76]/60">→</span>

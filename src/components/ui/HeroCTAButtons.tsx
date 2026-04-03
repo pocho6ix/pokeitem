@@ -106,9 +106,6 @@ export function HeroCTAButtons() {
             className="inline-flex flex-col items-center justify-center rounded-xl border border-[#E7BA76]/50 bg-[#E7BA76]/10 px-6 py-2.5 text-sm font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/20 transition-colors"
           >
             <span>🎁 1 semaine offerte — Rejoins la bêta</span>
-            <span className="text-[10px] font-normal text-[#E7BA76]/70 mt-0.5">
-              Résiliable à tout moment
-            </span>
           </Link>
         ) : (
           <Link
