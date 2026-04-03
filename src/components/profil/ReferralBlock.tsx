@@ -124,7 +124,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
         {entry.referralCount}
       </span>
       <span className="text-xs text-[var(--text-tertiary)] shrink-0">
-        parr.
+        {entry.referralCount > 1 ? "parrainages" : "parrainage"}
       </span>
 
       {/* "← Toi" badge */}
