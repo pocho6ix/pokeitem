@@ -74,7 +74,7 @@ export function HeroCTAButtons() {
           >
             {activating
               ? "Activation…"
-              : "🎁 Activer et profiter d&apos;1 semaine Pro offerte"}
+              : "🎁 Activer et profiter d'1 semaine Pro offerte"}
           </button>
           <Link
             href="/portfolio"
