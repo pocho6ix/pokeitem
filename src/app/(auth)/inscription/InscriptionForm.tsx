@@ -125,30 +125,6 @@ export function InscriptionForm() {
           </CardContent>
         </Card>
 
-        {/* Pro upsell */}
-        <button
-          type="button"
-          onClick={() => router.push("/pricing")}
-          className="w-full rounded-2xl p-5 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
-          style={{
-            background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
-          }}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold text-black/80">Découvrir PokeItem Pro</span>
-            <span className="rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70">
-              dès 3,99€/mois
-            </span>
-          </div>
-          <ul className="space-y-1">
-            {["Collection illimitée", "Scans illimités", "Valeur & statistiques avancées"].map((f) => (
-              <li key={f} className="flex items-center gap-2 text-xs text-black/60">
-                <span className="text-black/40">✓</span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-        </button>
       </div>
     );
   }
