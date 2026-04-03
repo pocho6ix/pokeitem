@@ -70,6 +70,7 @@ export async function POST(req: Request) {
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
     subscription_data: {
+      trial_period_days: 7,
       metadata: { userId, referredById: user.referredById ?? '' },
     },
     success_url: `${process.env.NEXTAUTH_URL ?? 'https://app.pokeitem.fr'}/portfolio/cartes?success=1`,
