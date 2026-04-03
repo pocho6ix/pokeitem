@@ -32,9 +32,10 @@ model User {
   scanCount            Int       @default(0)
   scanCountResetAt     DateTime  @default(now())
 
-  username            String?   @unique
-  trialEndsAt         DateTime?
-  deletedAt           DateTime?
+  username               String?   @unique
+  trialEndsAt            DateTime?
+  betaTrialActivatedAt   DateTime?
+  deletedAt              DateTime?
 
   referralCode        String    @unique @default(cuid())
   referredById        String?

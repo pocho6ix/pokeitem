@@ -32,6 +32,7 @@ export async function GET() {
     isPro,
     isTrialing,
     trialEndsAt: user?.trialEndsAt ?? null,
+    betaTrialUsed: !!user?.betaTrialActivatedAt,
     plan: isPro ? 'PRO' : 'FREE',
     planExpiresAt: user.planExpiresAt,
     cancelAtPeriodEnd: false,
