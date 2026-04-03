@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Évolutions Prismatiques : Guide d'investissement 2025"
+
+A premium flat-lay photography of Pokémon TCG sealed products from Prismatic Evolutions arranged elegantly on a dark marble surface with golden veining. Show a booster box bundle as centerpiece, flanked by an Elite Trainer Box and several booster packs. Add soft prismatic light reflections creating rainbow effects. Professional studio lighting with dramatic shadows. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-evolutions-prismatiques.jpg
