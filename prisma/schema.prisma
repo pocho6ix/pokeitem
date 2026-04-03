@@ -436,6 +436,28 @@ enum CardCondition {
   GRADED
 }
 
+// ─── SCANNER FEEDBACK ─────────────────────────────────────────
+
+model ScanCorrection {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  userId             String
+
+  aiTopCardId        String?
+  aiTopConfidence    Int?
+
+  userSelectedCardId String
+  selectionSource    String   // "auto" | "suggestion" | "search"
+
+  ocrName            String?
+  ocrNumber          String?
+  ocrSetCode         String?
+
+  @@index([userId])
+  @@index([userSelectedCardId])
+  @@map("scan_corrections")
+}
+
 // ─── BLOG ────────────────────────────────────────────────────
 
 model BlogPost {

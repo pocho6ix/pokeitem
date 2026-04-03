@@ -7,17 +7,21 @@ import { checkFeature, incrementScanCount } from "@/lib/subscription";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ClaudeCardResult {
+interface ClaudeCandidate {
   name: string;
   number: string;
   setCode: string;
   confidence: number;
 }
 
-interface IdentifyResponse {
-  found: boolean;
+interface ClaudeResponse {
+  candidates: ClaudeCandidate[];
+}
+
+export interface CardCandidate {
+  cardId: string;
   confidence: number;
-  card?: {
+  card: {
     id: string;
     name: string;
     number: string;
@@ -25,22 +29,23 @@ interface IdentifyResponse {
     price: number | null;
     rarity: string;
   };
-  serie?: {
+  serie: {
     id: string;
     slug: string;
     name: string;
     blocSlug: string;
   };
-  raw?: {
-    name: string;
-    number: string;
-    setCode: string;
-  };
+}
+
+export interface IdentifyResponse {
+  level: "high" | "medium" | "low";
+  topConfidence: number;
+  candidates: CardCandidate[];
+  raw: { name: string; number: string; setCode: string } | null;
+  scanId: string;
 }
 
 // ─── Mapping : code imprimé sur la carte → slug série ────────────────────────
-// Les cartes françaises impriment le code international (sv9, swsh1…) en bas,
-// mais notre DB stocke des abréviations françaises (EV09, EB01…).
 const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   // ── Méga-Évolution (codes FR imprimés tels quels) ──────────────────────────
   "me01": "mega-evolution",
@@ -145,30 +150,93 @@ const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   "ecard2": "aquapolis",   "ecard3": "skyridge",
 };
 
+// ─── DB lookup helper ─────────────────────────────────────────────────────────
+
+async function lookupCard(name: string, number: string, setCode: string) {
+  const normalizedNumber = (number ?? "").replace(/^0+/, "") || "0";
+  const normalizedSetCode = (setCode ?? "").toLowerCase().trim();
+
+  const slugFromMap = PRINTED_CODE_TO_SLUG[normalizedSetCode];
+  let serie = slugFromMap
+    ? await prisma.serie.findUnique({
+        where: { slug: slugFromMap },
+        include: { bloc: { select: { slug: true } } },
+      })
+    : null;
+
+  if (!serie && normalizedSetCode) {
+    serie = await prisma.serie.findFirst({
+      where: { abbreviation: { equals: normalizedSetCode, mode: "insensitive" } },
+      include: { bloc: { select: { slug: true } } },
+    });
+  }
+
+  let card = serie
+    ? await prisma.card.findFirst({
+        where: {
+          serieId: serie.id,
+          OR: [
+            { number: normalizedNumber },
+            { number: normalizedNumber.padStart(3, "0") },
+          ],
+        },
+      })
+    : null;
+
+  if (!card && name && normalizedNumber !== "0") {
+    card = await prisma.card.findFirst({
+      where: {
+        name: { contains: name, mode: "insensitive" },
+        number: { in: [normalizedNumber, normalizedNumber.padStart(3, "0")] },
+      },
+    });
+  }
+
+  if (!card && name) {
+    card = await prisma.card.findFirst({
+      where: { name: { contains: name, mode: "insensitive" } },
+      orderBy: { serieId: "asc" },
+    });
+  }
+
+  if (!card) return null;
+
+  const cardSerie =
+    serie && serie.id === card.serieId
+      ? serie
+      : await prisma.serie.findUnique({
+          where: { id: card.serieId },
+          include: { bloc: { select: { slug: true } } },
+        });
+
+  if (!cardSerie) return null;
+
+  return { card, serie: cardSerie };
+}
+
 // ─── POST /api/scanner/identify ──────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    // 1. Auth check
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    // 1b. Subscription check
     const userId = (session.user as { id: string }).id;
-    const scanCheck = await checkFeature(userId, 'SCAN_CARD')
+    const scanCheck = await checkFeature(userId, "SCAN_CARD");
     if (!scanCheck.allowed) {
-      return NextResponse.json({ error: 'LIMIT_REACHED', reason: scanCheck.reason, limit: scanCheck.limit, current: scanCheck.current }, { status: 403 })
+      return NextResponse.json(
+        { error: "LIMIT_REACHED", reason: scanCheck.reason, limit: scanCheck.limit, current: scanCheck.current },
+        { status: 403 }
+      );
     }
 
-    // 2. Parse body
     const body = await req.json().catch(() => null);
     if (!body?.image || typeof body.image !== "string") {
       return NextResponse.json({ error: "image requis (base64 data URL)" }, { status: 400 });
     }
 
-    // 3. Extract base64 from data URL (e.g. "data:image/jpeg;base64,/9j/...")
     const dataUrl: string = body.image;
     const commaIdx = dataUrl.indexOf(",");
     if (commaIdx === -1) {
@@ -176,37 +244,40 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     const base64Data = dataUrl.slice(commaIdx + 1);
 
-    // 4. Call Claude claude-haiku-4-5 with vision
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY_SCANNER ?? process.env.ANTHROPIC_API_KEY });
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY_SCANNER ?? process.env.ANTHROPIC_API_KEY,
+    });
 
     const claudeResponse = await anthropic.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 256,
+      max_tokens: 768,
       messages: [
         {
           role: "user",
           content: [
             {
               type: "image",
-              source: {
-                type: "base64",
-                media_type: "image/jpeg",
-                data: base64Data,
-              },
+              source: { type: "base64", media_type: "image/jpeg", data: base64Data },
             },
             {
               type: "text",
               text: `You are analyzing a Pokémon TCG card photo. Look at the bottom of the card for the set code and card number (e.g. "sv9 · 177/159" or "SV9 177/159").
 
-Extract ONLY these fields and respond with valid JSON:
-{
-  "name": "<exact card name as printed on card>",
-  "number": "<card number WITHOUT the total, e.g. '177' from '177/159', no leading zeros>",
-  "setCode": "<set code printed on bottom of card in lowercase, e.g. 'sv9', 'sv8.5', 'sv8pt5', 'me01', 'swsh1', 'xy1'>",
-  "confidence": <0-100, be conservative — lower if the card number or set code is not clearly visible>
-}
-IMPORTANT: The set code is usually printed at the very bottom of the card (e.g. 'sv9', 'swsh12pt5', 'xy6', 'dp4'). Do NOT confuse it with the card number.
-If you cannot identify the card clearly, return { "confidence": 0 }.
+Return a JSON object with "candidates": an array of up to 5 possible card matches, sorted by confidence (highest first).
+
+For each candidate:
+- "name": card name as printed on the card
+- "number": card number WITHOUT the total (e.g. "177" from "177/159", no leading zeros)
+- "setCode": set code printed at the bottom (e.g. "sv9", "sv10", "swsh1", "xy1") in lowercase
+- "confidence": 0-100 integer (how sure you are about this specific candidate)
+
+Rules:
+- If top candidate is ≥85% confident, 1-2 candidates is fine
+- If 50-84%, return 3-5 alternatives (same Pokémon in different sets, or similar-looking Pokémon)
+- If <50%, return whatever you can partially read, with low confidence
+- If image is unreadable, return {"candidates": [{"name":"","number":"","setCode":"","confidence":0}]}
+- The set code is usually at the very bottom (e.g. "sv9", "swsh12pt5"). Do NOT confuse it with the card number.
+
 Respond with JSON only, no other text.`,
             },
           ],
@@ -214,125 +285,79 @@ Respond with JSON only, no other text.`,
       ],
     });
 
-    // 5. Parse Claude's JSON response
     const rawText =
       claudeResponse.content[0].type === "text"
         ? claudeResponse.content[0].text.trim()
         : "";
 
-    let parsed: ClaudeCardResult;
+    let parsed: ClaudeResponse;
     try {
-      // Strip potential markdown code fences
       const jsonStr = rawText.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
-      parsed = JSON.parse(jsonStr) as ClaudeCardResult;
+      parsed = JSON.parse(jsonStr) as ClaudeResponse;
     } catch {
-      return NextResponse.json<IdentifyResponse>({ found: false, confidence: 0 });
+      const scanId = crypto.randomUUID();
+      return NextResponse.json<IdentifyResponse>({ level: "low", topConfidence: 0, candidates: [], raw: null, scanId });
     }
 
-    const { name, number, setCode, confidence } = parsed;
+    const candidates = Array.isArray(parsed.candidates) ? parsed.candidates : [];
+    const top = candidates[0];
 
-    // 6. Low-confidence early exit
-    if (!confidence || confidence < 40) {
-      return NextResponse.json<IdentifyResponse>({
-        found: false,
-        confidence: confidence ?? 0,
-        raw: { name, number, setCode },
-      });
+    if (!top || (top.confidence ?? 0) < 10) {
+      const scanId = crypto.randomUUID();
+      return NextResponse.json<IdentifyResponse>({ level: "low", topConfidence: 0, candidates: [], raw: null, scanId });
     }
 
-    // 7. Search DB
-    // Normalize number (strip leading zeros)
-    const normalizedNumber = (number ?? "").replace(/^0+/, "") || "0";
-    const normalizedSetCode = (setCode ?? "").toLowerCase().trim();
-
-    // Try to find serie: 1st by printed-code map, 2nd by abbreviation
-    const slugFromMap = PRINTED_CODE_TO_SLUG[normalizedSetCode];
-    let serie = slugFromMap
-      ? await prisma.serie.findUnique({
-          where: { slug: slugFromMap },
-          include: { bloc: { select: { slug: true } } },
-        })
-      : null;
-
-    if (!serie && normalizedSetCode) {
-      serie = await prisma.serie.findFirst({
-        where: { abbreviation: { equals: normalizedSetCode, mode: "insensitive" } },
-        include: { bloc: { select: { slug: true } } },
-      });
-    }
-
-    let card = serie
-      ? await prisma.card.findFirst({
-          where: {
-            serieId: serie.id,
-            OR: [
-              { number: normalizedNumber },
-              { number: normalizedNumber.padStart(3, "0") },
-            ],
+    // DB lookup for each candidate in parallel
+    const lookupResults = await Promise.all(
+      candidates.slice(0, 5).map(async (c) => {
+        const found = await lookupCard(c.name ?? "", c.number ?? "", c.setCode ?? "");
+        if (!found) return null;
+        return {
+          cardId: found.card.id,
+          confidence: Math.min(100, Math.max(0, Math.round(c.confidence ?? 0))),
+          card: {
+            id: found.card.id,
+            name: found.card.name,
+            number: found.card.number,
+            imageUrl: found.card.imageUrl,
+            price: found.card.price,
+            rarity: found.card.rarity,
           },
-        })
-      : null;
+          serie: {
+            id: found.serie.id,
+            slug: found.serie.slug,
+            name: found.serie.name,
+            blocSlug: found.serie.bloc.slug,
+          },
+        } satisfies CardCandidate;
+      })
+    );
 
-    // Fallback: search by name + number (more precise than name alone)
-    if (!card && name && normalizedNumber !== "0") {
-      card = await prisma.card.findFirst({
-        where: {
-          name: { contains: name, mode: "insensitive" },
-          number: { in: [normalizedNumber, normalizedNumber.padStart(3, "0")] },
-        },
-      });
+    // Deduplicate by cardId, preserve order (highest confidence first)
+    const seenCardIds = new Set<string>();
+    const finalCandidates: CardCandidate[] = [];
+    for (const r of lookupResults) {
+      if (!r || seenCardIds.has(r.cardId)) continue;
+      seenCardIds.add(r.cardId);
+      finalCandidates.push(r);
     }
 
-    // Last resort: name only (least precise)
-    if (!card && name) {
-      card = await prisma.card.findFirst({
-        where: { name: { contains: name, mode: "insensitive" } },
-        orderBy: { serieId: "asc" }, // stable order
-      });
+    const topConfidence = finalCandidates[0]?.confidence ?? 0;
+    const level: IdentifyResponse["level"] =
+      topConfidence >= 85 ? "high" : topConfidence >= 50 ? "medium" : "low";
+
+    if (finalCandidates.length > 0) {
+      await incrementScanCount(userId);
     }
 
-    if (!card) {
-      return NextResponse.json<IdentifyResponse>({
-        found: false,
-        confidence,
-        raw: { name, number, setCode },
-      });
-    }
-
-    // Fetch serie for found card (may differ from serie found by setCode above)
-    const cardSerie =
-      serie && serie.id === card.serieId
-        ? serie
-        : await prisma.serie.findUnique({
-            where: { id: card.serieId },
-            include: { bloc: { select: { slug: true } } },
-          });
-
-    if (!cardSerie) {
-      return NextResponse.json<IdentifyResponse>({ found: false, confidence });
-    }
-
-    // Increment scan count after successful identification
-    await incrementScanCount(userId);
+    const scanId = crypto.randomUUID();
 
     return NextResponse.json<IdentifyResponse>({
-      found: true,
-      confidence,
-      card: {
-        id: card.id,
-        name: card.name,
-        number: card.number,
-        imageUrl: card.imageUrl,
-        price: card.price,
-        rarity: card.rarity,
-      },
-      serie: {
-        id: cardSerie.id,
-        slug: cardSerie.slug,
-        name: cardSerie.name,
-        blocSlug: cardSerie.bloc.slug,
-      },
-      raw: { name, number, setCode },
+      level,
+      topConfidence,
+      candidates: finalCandidates,
+      raw: top ? { name: top.name, number: top.number, setCode: top.setCode } : null,
+      scanId,
     });
   } catch (err) {
     console.error("[scanner/identify]", err);

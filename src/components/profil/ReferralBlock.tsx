@@ -36,8 +36,19 @@ function useCountdown(endDate: Date | null): string | null {
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
-function Avatar({ username, size = 32 }: { username: string; size?: number }) {
+function Avatar({ username, image, size = 32 }: { username: string; image?: string | null; size?: number }) {
   const initial = (username[0] ?? '?').toUpperCase()
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image}
+        alt={username}
+        className="rounded-full shrink-0 object-cover"
+        style={{ width: size, height: size }}
+      />
+    )
+  }
   return (
     <div
       className="rounded-full bg-[#E7BA76]/20 flex items-center justify-center text-[#E7BA76] font-bold shrink-0"
@@ -101,7 +112,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
       </span>
 
       {/* Avatar */}
-      <Avatar username={entry.username} size={30} />
+      <Avatar username={entry.username} image={entry.image} size={30} />
 
       {/* Username */}
       <span className={`flex-1 text-sm font-medium truncate ${isMe ? 'text-[#E7BA76]' : 'text-[var(--text-primary)]'}`}>

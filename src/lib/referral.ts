@@ -115,6 +115,7 @@ export interface LeaderboardEntry {
   rank: number
   userId: string
   username: string
+  image: string | null
   referralCount: number
   isCurrentUser: boolean
 }
@@ -127,8 +128,9 @@ export async function getLeaderboard(currentUserId: string) {
     },
     select: {
       id: true,
-      username: true,
       name: true,
+      username: true,
+      image: true,
       referrals: {
         where: { emailVerified: { not: null } },
         select: { emailVerified: true },
@@ -155,7 +157,8 @@ export async function getLeaderboard(currentUserId: string) {
   const rankings: LeaderboardEntry[] = sorted.map((u, i) => ({
     rank:          i + 1,
     userId:        u.id,
-    username:      u.username ?? u.name ?? `Utilisateur`,
+    username:      u.name ?? u.username ?? `Utilisateur`,
+    image:         u.image ?? null,
     referralCount: u._count.referrals,
     isCurrentUser: u.id === currentUserId,
   }))
