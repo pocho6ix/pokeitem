@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
-import { Copy, Check, Share2, Trophy, Gift, Users, Clock } from 'lucide-react'
+import { Copy, Check, Share2, Trophy, Gift, Users } from 'lucide-react'
 import { CONTEST_CONFIG } from '@/config/contest'
 import type { LeaderboardEntry } from '@/lib/referral'
 
@@ -189,45 +189,38 @@ export function ReferralBlock() {
   return (
     <div className="space-y-4">
 
-      {/* ── Progression des semaines ────────────────────────────────────── */}
+      {/* ── Progression + Concours ──────────────────────────────────────── */}
       <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[#E7BA76]/10">
-            <Gift className="w-5 h-5 text-[#E7BA76]" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[#E7BA76]/10">
+              <Gift className="w-5 h-5 text-[#E7BA76]" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[var(--text-primary)]">Parrainage</h3>
+              <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro offerte par ami invité 🎉</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-[var(--text-primary)]">Parrainage</h3>
-            <p className="text-sm text-[var(--text-secondary)]">Invite tes amis et gagne du temps Pro !</p>
-          </div>
-        </div>
-
-        {/* Rule callout */}
-        <div
-          className="rounded-xl border border-[#E7BA76]/25 px-4 py-3"
-          style={{ backgroundColor: 'rgba(231,186,118,0.06)' }}
-        >
-          <p className="text-sm font-semibold text-[#E7BA76]">
-            Pour chaque ami invité : +1 semaine Pro offerte 🎉
-          </p>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-            Maximum 3 semaines · Continue d&apos;inviter pour le leaderboard
-          </p>
+          {/* Concours countdown inline */}
+          {CONTEST_CONFIG.active && countdown !== null && (
+            <div className="flex items-center gap-1.5 rounded-full border border-[#E7BA76]/30 bg-[#E7BA76]/8 px-2.5 py-1 shrink-0">
+              <Trophy className="w-3.5 h-3.5 text-[#E7BA76]" />
+              <span className="text-xs font-bold text-[#E7BA76]">{countdown}</span>
+            </div>
+          )}
         </div>
 
         {/* Slots + progress */}
         {statsLoading ? (
-          <div className="animate-pulse h-24 rounded-xl bg-white/5" />
+          <div className="animate-pulse h-16 rounded-xl bg-white/5" />
         ) : (
           <div className="space-y-3">
-            {/* 3 slots */}
             <div className="flex gap-3">
               {slots.map((state, i) => (
                 <Slot key={i} state={state} index={i} />
               ))}
             </div>
-
-            {/* Progress bar */}
             <div>
               <div className="mb-1.5 flex items-center justify-between text-xs text-[var(--text-secondary)]">
                 <span>{Math.min(validatedCount, 3)}/3 amis invités</span>
@@ -246,6 +239,14 @@ export function ReferralBlock() {
               )}
             </div>
           </div>
+        )}
+
+        {/* Concours prize line */}
+        {CONTEST_CONFIG.active && (
+          <p className="text-xs text-[var(--text-secondary)] border-t border-[var(--border-default)] pt-3">
+            🏆 <span className="font-semibold text-[var(--text-primary)]">{CONTEST_CONFIG.title}</span>
+            {' · '}Le parrain le plus actif remporte {CONTEST_CONFIG.prize} {CONTEST_CONFIG.emoji}
+          </p>
         )}
       </div>
 
@@ -273,38 +274,6 @@ export function ReferralBlock() {
           Partager le lien
         </button>
       </div>
-
-      {/* ── Concours ────────────────────────────────────────────────────── */}
-      {CONTEST_CONFIG.active && (
-        <div
-          className="rounded-2xl border border-[#E7BA76]/35 p-5 space-y-3"
-          style={{ background: 'linear-gradient(135deg, rgba(231,186,118,0.08) 0%, rgba(231,186,118,0.03) 100%)' }}
-        >
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-[#E7BA76] shrink-0" />
-            <h4 className="text-sm font-bold uppercase tracking-wide text-[var(--text-primary)]">
-              {CONTEST_CONFIG.title}
-            </h4>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Jusqu&apos;au dimanche 31 mai 2026 à 17h
-          </p>
-          <p className="text-sm text-[var(--text-primary)]">
-            Le parrain le plus actif remporte {CONTEST_CONFIG.prize}&nbsp;! {CONTEST_CONFIG.emoji}
-          </p>
-          {countdown !== null ? (
-            <div className="flex items-center gap-2 rounded-xl bg-[var(--bg-secondary)] px-3 py-2">
-              <Clock className="w-4 h-4 text-[#E7BA76] shrink-0" />
-              <span className="text-sm font-bold text-[#E7BA76]">{countdown}</span>
-              <span className="text-xs text-[var(--text-tertiary)]">restant</span>
-            </div>
-          ) : (
-            <p className="text-sm font-medium text-[var(--text-secondary)]">
-              🏆 Concours terminé — Résultats bientôt !
-            </p>
-          )}
-        </div>
-      )}
 
       {/* ── Leaderboard ─────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">

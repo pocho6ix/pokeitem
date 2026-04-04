@@ -186,7 +186,7 @@ export default async function HomePage() {
 
       {/* Referral block — authenticated users only */}
       {userId && (
-        <section className="bg-[var(--bg-primary)] px-4 pb-10 sm:px-6 lg:px-8">
+        <section className="bg-[var(--bg-primary)] px-4 pb-28 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <ReferralBlock />
           </div>
