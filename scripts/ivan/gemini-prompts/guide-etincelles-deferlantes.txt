@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Étincelles Déferlantes : Guide Complet de la Série EV08"
+
+A premium flat-lay photography of Pokémon TCG sealed products from the Surging Sparks set arranged on a sleek dark surface with electric blue accent lighting. Include a booster box, an ETB, mini tins, and scattered booster packs. Dramatic studio lighting with electric spark effects in the background. No text overlay. Aspect ratio 1200x630, photorealistic editorial style.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-etincelles-deferlantes.jpg
