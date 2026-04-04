@@ -158,6 +158,7 @@ const SLUG_TO_TCGDEX: Record<string, string> = {
   "mega-evolution":           "me01",
   "flammes-fantasmagoriques": "me02",
   "heros-transcendants":      "me02.5",
+  "equilibre-parfait":        "me03",
 };
 
 function normalizeNumber(n: string): string {

@@ -26,7 +26,7 @@ const TCGDEX_MAPPING: Record<string, string> = {
   me01: "mega-evolution",
   me02: "flammes-fantasmagoriques",
   "me02.5": "heros-transcendants",
-  // me03 = Équilibre Parfait (pas encore sur TCGdex au 2026-03-30)
+  me03: "equilibre-parfait",
 
   // ── Écarlate & Violet ─────────────────────────────────────────────────────
   sv01: "ecarlate-et-violet",
