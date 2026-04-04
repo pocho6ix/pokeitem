@@ -10,44 +10,6 @@ import Link from "next/link";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 
-const FAQ_ITEMS = [
-  {
-    q: "PokeItem est-il gratuit ?",
-    a: "Oui, PokeItem propose une version gratuite complète : jusqu'à 100 cartes dans ta collection, 5 items scellés dans le Classeur et 10 scans par mois. Pour une expérience illimitée, l'abonnement Pro est disponible à 3,99€/mois ou 39,99€/an.",
-  },
-  {
-    q: "Que comprend l'abonnement Pro ?",
-    a: "L'abonnement Pro donne accès à : collection de cartes illimitée, items scellés illimités, scans illimités, valeur totale de la collection, graphique d'évolution du Classeur et statistiques avancées avec P&L. Deux formules : 3,99€/mois ou 39,99€/an (soit 3,33€/mois, l'équivalent de 2 mois offerts).",
-  },
-  {
-    q: "Comment résilier l'abonnement Pro ?",
-    a: "L'abonnement est sans engagement et peut être annulé à tout moment depuis ton profil, rubrique « Gérer mon abonnement ». Tu gardes l'accès Pro jusqu'à la fin de la période en cours.",
-  },
-  {
-    q: "Quels produits Pokémon TCG puis-je gérer sur PokeItem ?",
-    a: "PokeItem couvre deux grandes catégories. Les cartes individuelles : toutes les extensions de tous les blocs, des Wizards of the Coast (Set de Base, 1999) jusqu'à Écarlate & Violet — soit plus de 100 extensions. Les items scellés : booster, display, ETB, coffret collection, UPC, tin, bundle, tripack, duopack, theme deck et trainer kit.",
-  },
-  {
-    q: "Comment fonctionne le suivi de valeur ?",
-    a: "Les prix des cartes (normal et reverse) et des items scellés sont synchronisés depuis CardMarket. La valeur de ta collection est calculée automatiquement en multipliant ces prix par tes quantités. Le graphique d'évolution (Pro) te permet de visualiser la progression de ton patrimoine dans le temps.",
-  },
-  {
-    q: "Comment ajouter des items à mon Classeur ?",
-    a: "Pour les scellés, parcours le catalogue par série depuis la section Classeur et clique sur un produit pour l'ajouter avec ton prix d'achat et ta quantité. Pour les cartes, utilise la section Collection : recherche par extension et ajoute chaque carte possédée (version normale ou reverse).",
-  },
-  {
-    q: "PokeItem est-il disponible sur mobile ?",
-    a: "Le site est entièrement optimisé pour mobile avec une navigation dédiée. Une application native iOS et Android est en cours de développement.",
-  },
-  {
-    q: "Mes données de collection sont-elles sécurisées ?",
-    a: "Tes données sont stockées de manière sécurisée et ne sont jamais partagées ou revendues à des tiers. Tu peux supprimer ton compte à tout moment depuis tes paramètres.",
-  },
-  {
-    q: "PokeItem est-il un site officiel Pokémon ?",
-    a: "Non, PokeItem est un projet indépendant et n'est pas affilié à Nintendo, GAME FREAK ou The Pokémon Company. Les noms et illustrations Pokémon sont la propriété de leurs auteurs respectifs.",
-  },
-];
 
 async function getTopCards(userId: string) {
   const userCards = await prisma.userCard.findMany({
@@ -230,52 +192,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* FAQ */}
-      <section className="py-20 bg-[var(--bg-primary)]">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[var(--text-primary)]">Questions fréquentes</h2>
-            <p className="mt-3 text-[var(--text-secondary)]">
-              Tout ce que vous devez savoir sur PokeItem.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {FAQ_ITEMS.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-6 py-4 open:pb-5"
-              >
-                <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-semibold text-[var(--text-primary)] list-none [&::-webkit-details-marker]:hidden">
-                  {item.q}
-                  <span className="shrink-0 text-[var(--text-tertiary)] transition-transform group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {item.a}
-                </p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: FAQ_ITEMS.map((item) => ({
-              "@type": "Question",
-              name: item.q,
-              acceptedAnswer: { "@type": "Answer", text: item.a },
-            })),
-          }),
-        }}
-      />
 
       <MobileNav />
     </div>
