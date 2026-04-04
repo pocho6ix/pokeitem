@@ -134,9 +134,18 @@ export default async function HomePage() {
         </div>
       </div>
 
+      {/* Referral block — authenticated users only */}
+      {userId && (
+        <section className={`bg-[var(--bg-primary)] px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? 'pb-4' : 'pb-28'}`}>
+          <div className="mx-auto max-w-xl">
+            <ReferralBlock />
+          </div>
+        </section>
+      )}
+
       {/* Top 10 most valuable cards — authenticated users only */}
       {topCards.length > 0 && (
-        <section className="bg-[var(--bg-primary)] px-4 pt-3 pb-10 sm:px-6 lg:px-8">
+        <section className="bg-[var(--bg-primary)] px-4 pt-3 pb-28 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[var(--text-primary)]">
@@ -183,15 +192,6 @@ export default async function HomePage() {
       )}
 
       <HomepageCTASection />
-
-      {/* Referral block — authenticated users only */}
-      {userId && (
-        <section className="bg-[var(--bg-primary)] px-4 pb-28 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-xl">
-            <ReferralBlock />
-          </div>
-        </section>
-      )}
 
       <MobileNav />
     </div>

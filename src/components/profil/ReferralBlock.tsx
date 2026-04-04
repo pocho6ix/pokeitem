@@ -198,7 +198,7 @@ export function ReferralBlock() {
               <Gift className="w-5 h-5 text-[#E7BA76]" />
             </div>
             <div>
-              <h3 className="font-semibold text-[var(--text-primary)]">Parrainage</h3>
+              <h3 className="font-semibold text-[var(--text-primary)]">Invite un ami</h3>
               <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro offerte par ami invité 🎉</p>
             </div>
           </div>
