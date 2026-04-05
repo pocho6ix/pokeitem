@@ -26,8 +26,8 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "heros-transcendants":         "me2pt5",
   "equilibre-parfait":           "me3",
   "rivalites-destinees":         "sv10",
-  "foudre-noire":               "sv10.5b",
-  "flamme-blanche":             "sv10.5w",
+  "foudre-noire":               "zsv10pt5",
+  "flamme-blanche":             "rsv10pt5",
   "ecarlate-et-violet":          "sv1",
   "evolutions-a-paldea":         "sv2",
   "flammes-obsidiennes":         "sv3",
@@ -44,9 +44,9 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "epee-et-bouclier":            "swsh1",
   "clash-des-rebelles":          "swsh2",
   "tenebres-embrasees":          "swsh3",
-  "la-voie-du-maitre":           "swsh3pt5",
+  "la-voie-du-maitre":           "swsh35",
   "voltage-eclatant":            "swsh4",
-  "destinees-radieuses":         "swsh4pt5",
+  "destinees-radieuses":         "swsh45",
   "styles-de-combat":            "swsh5",
   "regne-de-glace":              "swsh6",
   "evolution-celeste":           "swsh7",
@@ -61,12 +61,12 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "soleil-et-lune":              "sm1",
   "gardiens-ascendants":         "sm2",
   "ombres-ardentes":             "sm3",
-  "legendes-brillantes":         "sm3pt5",
+  "legendes-brillantes":         "sm35",
   "invasion-carmin":             "sm4",
   "ultra-prisme":                "sm5",
   "lumiere-interdite":           "sm6",
   "tempete-celeste":             "sm7",
-  "majeste-des-dragons":         "sm7pt5",
+  "majeste-des-dragons":         "sm75",
   "tonnerre-perdu":              "sm8",
   "duo-de-choc":                 "sm9",
   "alliance-infaillible":        "sm10",
@@ -98,17 +98,48 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "heartgold-soulsilver-base":   "hgss1",
   "triomphe":                    "hgss2",
   "indomptable":                 "hgss3",
-  "tempete":                     "pl3",
+  "dechainement":                "hgss4",
   "platine-base":                "pl1",
   "rivaux-emergeants":           "pl2",
+  "vainqueurs-supremes":         "pl3",
   "arceus":                      "pl4",
   "diamant-et-perle":            "dp1",
-  "mysteres-de-la-jungle":       "dp2",
+  "tresors-mysterieux":          "dp2",
   "merveilles-secretes":         "dp3",
+  "grands-envols":               "dp4",
+  "aube-majestueuse":            "dp5",
+  "eveil-des-legendes":          "dp6",
+  "tempete-dp":                  "dp7",
+  // ── EX era ────────────────────────────────────────────────────────────────
+  "rubis-et-saphir":             "ex1",
+  "tempete-de-sable":            "ex2",
+  "dragon-ex":                   "ex3",
+  "groudon-vs-kyogre":           "ex4",
+  "legendes-oubliees":           "ex5",
+  "fire-red-leaf-green":         "ex6",
+  "team-rocket-returns":         "ex7",
+  "deoxys":                      "ex8",
+  "emeraude":                    "ex9",
+  "forces-cachees":              "ex10",
+  "especes-delta":               "ex11",
+  "createurs-de-legendes":       "ex12",
+  "fantomes-holon":              "ex13",
+  "gardiens-de-cristal":         "ex14",
+  "gardiens-du-pouvoir":         "ex16",
+  // ── WOTC era ──────────────────────────────────────────────────────────────
+  "set-de-base":                 "base1",
+  "jungle":                      "base2",
+  "fossile":                     "base3",
   "set-de-base-2":               "base4",
+  "team-rocket":                 "base5",
   "gym-heroes":                  "gym1",
   "gym-challenge":               "gym2",
+  "expedition":                  "ecard1",
+  "aquapolis":                   "ecard2",
   "skyridge":                    "ecard3",
+  // ── XY special sets ───────────────────────────────────────────────────────
+  "double-danger":               "dc1",
+  "generations":                 "g1",
 };
 
 // ── Mapping rareté PokémonTCG.io → CardRarity enum ───────────────────────────
@@ -139,6 +170,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Amazing Rare":              CardRarity.RARE,
   "Radiant Rare":              CardRarity.ILLUSTRATION_RARE,
   "LEGEND":                    CardRarity.RARE,
+  "Rare Shiny":                CardRarity.ILLUSTRATION_RARE,
   "Shiny Rare":                CardRarity.ILLUSTRATION_RARE,
   "Shiny Ultra Rare":          CardRarity.HYPER_RARE,
   "Rare Shining":              CardRarity.ILLUSTRATION_RARE,
@@ -157,6 +189,12 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.ACE_SPEC_RARE,
   CardRarity.PROMO,
 ]);
+
+// ── Sets avec un sous-set PTCGIO séparé (ex: Shiny Vault) ────────────────────
+
+const SLUG_TO_PTCG_SECONDARY: Record<string, string> = {
+  "destinees-radieuses": "swsh45sv", // Shining Fates Shiny Vault
+};
 
 // ── Mapping : slug série → TCGdex set ID (fallback pour sets absents de PTCGIO) ──
 
@@ -280,7 +318,7 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
   const serieBySlug = new Map(seriesInDb.map((s) => [s.slug, s.id]));
 
   // All known slugs (union of PTCGIO + TCGdex)
-  const allSlugs = new Set([...Object.keys(SLUG_TO_PTCG), ...Object.keys(SLUG_TO_TCGDEX)]);
+  const allSlugs = new Set([...Object.keys(SLUG_TO_PTCG), ...Object.keys(SLUG_TO_PTCG_SECONDARY), ...Object.keys(SLUG_TO_TCGDEX)]);
 
   let slugs: string[];
   if (opts.sets) {
@@ -310,6 +348,13 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
     // Try PTCGIO first
     if (ptcgId) {
       rarityMap = await fetchPTCGRarities(ptcgId);
+    }
+
+    // Merge secondary PTCGIO set (e.g. Shiny Vault) into rarityMap
+    const ptcgSecondaryId = SLUG_TO_PTCG_SECONDARY[slug];
+    if (ptcgSecondaryId) {
+      const secondary = await fetchPTCGRarities(ptcgSecondaryId);
+      for (const [k, v] of secondary) rarityMap.set(k, v);
     }
 
     // Fallback to TCGdex if PTCGIO returned nothing
