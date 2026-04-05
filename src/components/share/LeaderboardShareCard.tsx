@@ -14,31 +14,38 @@ interface LeaderboardShareCardProps {
   questsTotal: number
 }
 
-// ─── Medal SVG ────────────────────────────────────────────────────────────────
+// ─── Medal circle ─────────────────────────────────────────────────────────────
 
-function MedalSvg({ rank }: { rank: number }) {
-  const gold   = { fill: '#F59E0B', stroke: '#D97706', text: '#92400E', ribbon1: '#3B82F6', ribbon2: '#2563EB' }
-  const silver = { fill: '#94A3B8', stroke: '#64748B', text: '#1E293B', ribbon1: '#6B7280', ribbon2: '#4B5563' }
-  const bronze = { fill: '#D97706', stroke: '#B45309', text: '#451A03', ribbon1: '#EF4444', ribbon2: '#DC2626' }
-  const t = rank === 1 ? gold : rank === 2 ? silver : bronze
+function Medal({ rank }: { rank: number }) {
+  const styles = {
+    1: { bg: 'linear-gradient(135deg, #F5D060 0%, #D4A020 100%)', border: '#F5E6A0', glow: 'rgba(245,208,96,0.4)', text: '#7C5A00' },
+    2: { bg: 'linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%)', border: '#E5E7EB', glow: 'rgba(0,0,0,0.3)', text: '#4B5563' },
+    3: { bg: 'linear-gradient(135deg, #D4A574 0%, #A0724A 100%)', border: '#D4A574', glow: 'rgba(0,0,0,0.3)', text: '#5C3A1A' },
+  } as Record<number, { bg: string; border: string; glow: string; text: string }>
+  const s = styles[rank]
+
+  if (!s) {
+    return (
+      <div style={{
+        width: 56, height: 56, borderRadius: '50%',
+        background: '#1C2C3C', border: '2px solid #2A3A4A',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 22, fontWeight: 700, color: '#6B7F95' }}>{rank}</span>
+      </div>
+    )
+  }
 
   return (
-    <svg width="72" height="88" viewBox="0 0 72 88">
-      {/* Ribbon top */}
-      <polygon points="20,0 36,26 52,0" fill={t.ribbon1} />
-      <polygon points="20,0 36,26 4,26" fill={t.ribbon2} />
-      <polygon points="52,0 36,26 68,26" fill={t.ribbon2} />
-      {/* Medal circle */}
-      <circle cx="36" cy="57" r="28" fill={t.fill} stroke={t.stroke} strokeWidth="2.5" />
-      <circle cx="36" cy="57" r="22" fill="none" stroke={t.stroke} strokeWidth="1" opacity="0.5" />
-      <text x="36" y="65" textAnchor="middle" fill={t.text}
-        fontSize="22" fontWeight="900" fontFamily="Inter, system-ui, sans-serif">{rank}</text>
-      {/* Crown for #1 */}
-      {rank === 1 && (
-        <polygon points="36,14 38.5,21 46,21 40,25.5 42.5,32.5 36,28 29.5,32.5 32,25.5 26,21 33.5,21"
-          fill="#FFD700" opacity="0.95" />
-      )}
-    </svg>
+    <div style={{
+      width: 64, height: 64, borderRadius: '50%',
+      background: s.bg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: `0 4px 20px ${s.glow}`,
+      border: `2px solid ${s.border}`,
+    }}>
+      <span style={{ fontSize: 28, fontWeight: 900, color: s.text }}>{rank}</span>
+    </div>
   )
 }
 
@@ -47,7 +54,7 @@ function MedalSvg({ rank }: { rank: number }) {
 export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareCardProps>(
   function LeaderboardShareCard(props, ref) {
     const {
-      rank, username, avatarUrl, totalPoints,
+      rank, totalParticipants, username, avatarUrl, totalPoints,
       cardCount, referralCount, questsCompleted, questsTotal,
     } = props
 
@@ -93,8 +100,8 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center',
-            opacity: 0.08,
-            filter: 'saturate(0.3) brightness(0.6)',
+            opacity: 0.14,
+            filter: 'saturate(0.4) brightness(0.7)',
             pointerEvents: 'none',
           }}
         />
@@ -103,7 +110,7 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse at center, rgba(8,12,18,0.3) 0%, rgba(8,12,18,0.85) 100%)',
+          background: 'radial-gradient(ellipse at center, rgba(8,12,18,0.1) 0%, rgba(8,12,18,0.7) 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -149,21 +156,23 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
               justifyContent: 'space-between',
               marginBottom: 36,
             }}>
-              <span style={{
-                fontSize: 100,
-                fontWeight: 900,
-                color: '#D4A853',
-                lineHeight: 1,
-                fontFamily: "'Inter', system-ui, sans-serif",
-              }}>
-                #{rank ?? '—'}
-              </span>
-              {rank != null && rank <= 3
-                ? <MedalSvg rank={rank} />
-                : <span style={{ fontSize: 40, fontWeight: 700, color: '#4B5563' }}>
-                    {rank != null ? `#${rank}` : '—'}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                <span style={{
+                  fontSize: 100,
+                  fontWeight: 900,
+                  color: '#D4A853',
+                  lineHeight: 1,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                }}>
+                  #{rank ?? '—'}
+                </span>
+                {totalParticipants > 0 && (
+                  <span style={{ fontSize: 32, fontWeight: 600, color: '#6B7F95', lineHeight: 1 }}>
+                    / {totalParticipants}
                   </span>
-              }
+                )}
+              </div>
+              <Medal rank={rank ?? 0} />
             </div>
 
             {/* Avatar + Username + Points */}
