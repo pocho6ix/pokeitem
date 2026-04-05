@@ -1,15 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
-import { Copy, Check, Share2, Trophy, Gift, Users } from 'lucide-react'
+import { Copy, Check, Share2, Trophy, Users } from 'lucide-react'
 import { CONTEST_CONFIG } from '@/config/contest'
 import type { PointsLeaderboardEntry } from '@/lib/points'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
 import { useShareCard } from '@/hooks/useShareCard'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type SlotState = 'validated' | 'pending' | 'empty'
 
 // ─── Contest countdown hook ───────────────────────────────────────────────────
 
@@ -57,29 +53,6 @@ function Avatar({ username, image, size = 32 }: { username: string; image?: stri
       style={{ width: size, height: size, fontSize: Math.round(size * 0.4) }}
     >
       {initial}
-    </div>
-  )
-}
-
-// ─── Slot component ───────────────────────────────────────────────────────────
-
-const SLOT_STYLES: Record<SlotState, string> = {
-  validated: 'border-green-500 bg-green-500/15',
-  pending:   'border-yellow-400/60 bg-yellow-400/10',
-  empty:     'border-[var(--border-default)] bg-[var(--bg-secondary)]',
-}
-
-const SLOT_ICON: Record<SlotState, string> = {
-  validated: '✅',
-  pending:   '🟡',
-  empty:     '⚪',
-}
-
-function Slot({ state, index }: { state: SlotState; index: number }) {
-  return (
-    <div className={`flex-1 rounded-xl border-2 p-3 flex flex-col items-center gap-1.5 transition-all ${SLOT_STYLES[state]}`}>
-      <span className="text-lg leading-none">{SLOT_ICON[state]}</span>
-      <span className="text-xs font-semibold text-[var(--text-secondary)]">Sem {index + 1}</span>
     </div>
   )
 }
@@ -164,9 +137,6 @@ export function ReferralBlock() {
   const countdown      = useCountdown(contestEndDate)
 
   const validatedCount = (stats?.validatedCount ?? 0) as number
-  const slots          = (stats?.slots ?? ['empty', 'empty', 'empty']) as SlotState[]
-  const progressPct    = Math.round((Math.min(validatedCount, 3) / 3) * 100)
-  const maxReached     = validatedCount >= 3
 
   async function copyLink() {
     await navigator.clipboard.writeText(stats?.referralLink ?? '').catch(() => {})
@@ -203,59 +173,65 @@ export function ReferralBlock() {
       {/* ── Progression + Concours ──────────────────────────────────────── */}
       <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#E7BA76]/10">
-              <Gift className="w-5 h-5 text-[#E7BA76]" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-[var(--text-primary)]">Invite un ami</h3>
-              <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro offerte par ami invité 🎉</p>
-            </div>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="font-semibold text-[var(--text-primary)]">Invite un ami</h3>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1 semaine Pro par ami invité</p>
           </div>
-          {/* Concours countdown inline */}
           {CONTEST_CONFIG.active && countdown !== null && (
-            <div className="flex items-center gap-1.5 rounded-full border border-[#E7BA76]/30 bg-[#E7BA76]/8 px-2.5 py-1 shrink-0">
-              <Trophy className="w-3.5 h-3.5 text-[#E7BA76]" />
-              <span className="text-xs font-bold text-[#E7BA76]">{countdown}</span>
-            </div>
+            <span className="shrink-0 rounded-full border border-[var(--border-default)] px-3 py-1 text-xs text-[var(--text-tertiary)]">
+              {countdown}
+            </span>
           )}
         </div>
 
-        {/* Slots + progress */}
+        {/* Stepper */}
         {statsLoading ? (
-          <div className="animate-pulse h-16 rounded-xl bg-white/5" />
+          <div className="animate-pulse h-8 rounded-xl bg-white/5" />
         ) : (
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              {slots.map((state, i) => (
-                <Slot key={i} state={state} index={i} />
-              ))}
-            </div>
-            <div>
-              <div className="mb-1.5 flex items-center justify-between text-xs text-[var(--text-secondary)]">
-                <span>{Math.min(validatedCount, 3)}/3 amis invités</span>
-                <span className="font-semibold text-[var(--text-primary)]">{progressPct}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
-                <div
-                  className="h-full rounded-full bg-[#E7BA76] transition-all duration-500"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              {maxReached && (
-                <p className="mt-2 text-center text-xs font-semibold text-[#E7BA76]">
-                  🏆 Maximum atteint ! Continue d&apos;inviter pour le leaderboard
-                </p>
-              )}
-            </div>
+          <div className="flex items-center px-1">
+            {[0, 1, 2].map((i) => {
+              const completed = i < validatedCount
+              const isLast = i === 2
+              return (
+                <div key={i} className="flex items-center" style={{ flex: isLast ? undefined : 1 }}>
+                  <div
+                    className="shrink-0 flex items-center justify-center rounded-full transition-all"
+                    style={{
+                      width: 32, height: 32,
+                      backgroundColor: completed ? '#D4A853' : 'transparent',
+                      border: completed ? 'none' : '2px solid #2A3A4A',
+                    }}
+                  >
+                    {completed && (
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 7L5.5 10.5L12 3.5" stroke="#080C12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  {!isLast && (
+                    <div
+                      className="flex-1 transition-all duration-500"
+                      style={{
+                        height: 2,
+                        backgroundColor: i < validatedCount - 1 ? '#D4A853' : '#1E2D3D',
+                        margin: '0 6px',
+                      }}
+                    />
+                  )}
+                </div>
+              )
+            })}
+            <span className="ml-4 shrink-0 text-sm text-[var(--text-secondary)]">
+              {Math.min(validatedCount, 3)}/3 invités
+            </span>
           </div>
         )}
 
         {/* Concours prize line */}
         {CONTEST_CONFIG.active && (
-          <p className="text-xs text-[var(--text-secondary)] border-t border-[var(--border-default)] pt-3">
-            🏆 <span className="font-semibold text-[var(--text-primary)]">{CONTEST_CONFIG.title}</span>
+          <p className="text-xs text-[var(--text-tertiary)] border-t border-[var(--border-default)] pt-3 leading-relaxed">
+            <span className="font-semibold text-[#D4A853]">Concours</span>
             {' · '}Le joueur avec le plus de points remporte {CONTEST_CONFIG.prize}
           </p>
         )}
