@@ -59,13 +59,17 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
       cardCount, referralCount, questsCompleted, questsTotal,
     } = props
 
-    // Pre-fetch avatar as data URL so html2canvas doesn't need to fetch
-    // relative URLs (which fail silently on mobile)
+    // Pre-fetch avatar as data URL so html2canvas can render it
+    // Use the avatar endpoint directly (same-origin, handles legacy base64 + Blob URLs)
     const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null)
     useEffect(() => {
       if (!avatarUrl) return
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(avatarUrl)}`
-      fetch(proxyUrl)
+      // If already a data URI (legacy format), use directly
+      if (avatarUrl.startsWith('data:')) {
+        setAvatarDataUrl(avatarUrl)
+        return
+      }
+      fetch(avatarUrl)
         .then(r => r.blob())
         .then(blob => {
           const reader = new FileReader()

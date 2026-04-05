@@ -29,7 +29,7 @@ export async function GET() {
     rank,
     totalParticipants,
     username: me?.name ?? me?.username ?? 'Dresseur',
-    avatar: me?.image ?? null,
+    avatar: me ? `/api/avatar/${userId}` : null,
     totalPoints: total,
     cardCount,
     referralCount,
