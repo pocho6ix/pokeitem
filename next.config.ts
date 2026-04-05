@@ -37,6 +37,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "assets.tcgdex.net",
       },
+      {
+        protocol: "https",
+        hostname: "images.pokemontcg.io",
+      },
     ],
   },
   async headers() {
