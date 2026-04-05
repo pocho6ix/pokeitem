@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { PriceHistoryChart } from "./PriceHistoryChart";
-import { CARD_RARITY_LABELS, CARD_RARITY_SYMBOL } from "@/types/card";
+import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -108,7 +108,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
 
   const rarity = card?.rarity as keyof typeof CARD_RARITY_LABELS | undefined;
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
-  const raritySymbol = rarity ? CARD_RARITY_SYMBOL[rarity] : null;
+  const rarityImage = rarity ? CARD_RARITY_IMAGE[rarity] : null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
@@ -161,8 +161,10 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                 </p>
               )}
               {rarityLabel && (
-                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
-                  {raritySymbol && <span>{raritySymbol}</span>}
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
+                  {rarityImage && (
+                    <Image src={rarityImage} alt="" width={16} height={16} className="w-4 h-4 object-contain" />
+                  )}
                   {rarityLabel}
                 </span>
               )}
