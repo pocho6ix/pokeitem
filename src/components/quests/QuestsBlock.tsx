@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import useSWR, { mutate } from 'swr'
+import { Copy, Check } from 'lucide-react'
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -23,6 +24,43 @@ function TikTokIcon({ className }: { className?: string }) {
 const PLATFORM_ICON: Record<string, React.ReactNode> = {
   follow_instagram: <InstagramIcon className="w-3.5 h-3.5" />,
   follow_tiktok:   <TikTokIcon className="w-3.5 h-3.5" />,
+}
+
+// ─── Referral pinned row ──────────────────────────────────────────────────────
+
+function ReferralRow({ validatedCount, referralLink }: { validatedCount: number; referralLink: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(referralLink).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3.5 py-3">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Invite un ami</span>
+          <span className="text-xs font-bold text-[#E7BA76]">+1000 pts</span>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+          {validatedCount} ami{validatedCount !== 1 ? 's' : ''} invité{validatedCount !== 1 ? 's' : ''}
+        </p>
+        <div className="mt-2">
+          <button
+            onClick={copyLink}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/50 transition-colors"
+          >
+            {copied
+              ? <><Check className="w-3.5 h-3.5 text-green-400" />Copié</>
+              : <><Copy className="w-3.5 h-3.5" />Copier le lien</>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -139,11 +177,14 @@ function QuestRow({ quest }: { quest: QuestState }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function QuestsBlock() {
-  const { data, isLoading } = useSWR<PointsData>('/api/user/points', fetcher)
+  const { data, isLoading }           = useSWR<PointsData>('/api/user/points', fetcher)
+  const { data: referralData }        = useSWR('/api/referral/stats', fetcher)
 
-  const quests      = data?.quests ?? []
-  const totalPoints = data?.totalPoints ?? 0
-  const rank        = data?.rank ?? null
+  const quests         = data?.quests ?? []
+  const totalPoints    = data?.totalPoints ?? 0
+  const rank           = data?.rank ?? null
+  const validatedCount = (referralData?.validatedCount ?? 0) as number
+  const referralLink   = (referralData?.referralLink ?? '') as string
 
   const completedCount = quests.filter(q => q.completed).length
 
@@ -169,12 +210,13 @@ export function QuestsBlock() {
       {/* Quest list */}
       {isLoading ? (
         <div className="animate-pulse space-y-2">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <div key={i} className="h-14 rounded-xl bg-white/5" />
           ))}
         </div>
       ) : (
         <div className="space-y-2">
+          <ReferralRow validatedCount={validatedCount} referralLink={referralLink} />
           {quests.map(quest => (
             <QuestRow key={quest.id} quest={quest} />
           ))}
