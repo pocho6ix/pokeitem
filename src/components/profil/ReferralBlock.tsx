@@ -242,7 +242,7 @@ export function ReferralBlock() {
         {CONTEST_CONFIG.active && (
           <p className="text-xs text-[var(--text-secondary)] border-t border-[var(--border-default)] pt-3">
             🏆 <span className="font-semibold text-[var(--text-primary)]">{CONTEST_CONFIG.title}</span>
-            {' · '}Le parrain le plus actif remporte {CONTEST_CONFIG.prize} {CONTEST_CONFIG.emoji}
+            {' · '}Le joueur avec le plus de points remporte {CONTEST_CONFIG.prize}
           </p>
         )}
       </div>
