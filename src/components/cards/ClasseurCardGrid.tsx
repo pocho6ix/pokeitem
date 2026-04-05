@@ -23,6 +23,7 @@ export interface ClasseurCard {
   rarity: CardRarity;
   imageUrl: string | null;
   price: number | null;
+  isSpecial?: boolean;
 }
 
 // Condition badge — only shown when not NEAR_MINT (default)
@@ -337,8 +338,8 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                   </div>
                 )}
 
-                {/* Version badge */}
-                {uc.version !== CardVersion.NORMAL && (
+                {/* Version badge — hidden for special cards (≥Double Rare) */}
+                {!uc.isSpecial && uc.version !== CardVersion.NORMAL && (
                   <span className="absolute top-1.5 right-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] font-bold text-white">
                     {uc.version === CardVersion.REVERSE
                       ? "R"

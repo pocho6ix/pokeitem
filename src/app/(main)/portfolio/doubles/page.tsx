@@ -32,6 +32,7 @@ interface DoubleRow {
   cardNumber: string;
   cardImageUrl: string | null;
   cardPrice: number | null;
+  cardIsSpecial: boolean;
   serieSlug: string;
   serieName: string;
   blocSlug: string;
@@ -71,10 +72,11 @@ export default async function PortfolioDoublesPage() {
       version:  true,
       card: {
         select: {
-          name:     true,
-          number:   true,
-          imageUrl: true,
-          price:    true,
+          name:      true,
+          number:    true,
+          imageUrl:  true,
+          price:     true,
+          isSpecial: true,
           serie: {
             select: {
               slug: true,
@@ -98,8 +100,9 @@ export default async function PortfolioDoublesPage() {
     cardId:       uc.cardId,
     cardName:     uc.card.name,
     cardNumber:   uc.card.number,
-    cardImageUrl: uc.card.imageUrl,
-    cardPrice:    uc.card.price ?? null,
+    cardImageUrl:  uc.card.imageUrl,
+    cardPrice:     uc.card.price ?? null,
+    cardIsSpecial: uc.card.isSpecial,
     serieSlug:    uc.card.serie.slug,
     serieName:    uc.card.serie.name,
     blocSlug:     uc.card.serie.bloc.slug,
@@ -215,10 +218,10 @@ export default async function PortfolioDoublesPage() {
                               {card.cardNumber}
                             </div>
 
-                            {/* Version + quantity — bottom right */}
+                            {/* Version + quantity — bottom right (hide version for special cards) */}
                             <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                              <span className={`rounded px-1 py-px text-[8px] font-bold leading-none text-white shadow-sm ${badge.cls}`}>
-                                {badge.label}×{card.quantity}
+                              <span className={`rounded px-1 py-px text-[8px] font-bold leading-none text-white shadow-sm ${card.cardIsSpecial ? "bg-[#E7BA76] text-black" : badge.cls}`}>
+                                {card.cardIsSpecial ? "" : `${badge.label}`}×{card.quantity}
                               </span>
                             </div>
                           </div>

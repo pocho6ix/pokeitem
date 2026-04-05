@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       const record = await prisma.userCard.upsert({
         where:  { userId_cardId_version: { userId, cardId, version: version as never } },
         create: { userId, cardId, quantity, condition: condition as never, language: language as never, version: version as never, foil, purchasePrice: purchasePrice ?? null, gradeValue: gradeValue ?? null },
-        update: { quantity, condition: condition as never, language: language as never, foil, purchasePrice: purchasePrice ?? null, gradeValue: gradeValue ?? null },
+        update: { quantity: { increment: quantity }, condition: condition as never, language: language as never, foil, purchasePrice: purchasePrice ?? null, gradeValue: gradeValue ?? null },
         select: { id: true, cardId: true, quantity: true, condition: true, language: true, version: true, foil: true, gradeValue: true },
       });
 

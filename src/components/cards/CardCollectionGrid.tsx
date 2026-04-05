@@ -11,7 +11,7 @@ import {
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
-import { CardVersion, CARD_VERSION_LABELS, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
+import { CardVersion, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
 import { POKEMON_TYPES, POKEMON_TYPE_MAP } from "@/lib/pokemon-types";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -211,6 +211,19 @@ const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
   [CardVersion.REVERSE_MASTERBALL]: "Masterball",
 };
 
+/** Rarity-aware version labels:
+ *  - COMMON / UNCOMMON → Commune / Reverse
+ *  - RARE             → Holo / Reverse Holo
+ *  - ≥ DOUBLE_RARE    → (no version picker, locked to NORMAL)
+ */
+function getVersionLabel(v: CardVersion, rarity?: CardRarity): string {
+  if (rarity === CardRarity.RARE) {
+    if (v === CardVersion.NORMAL)  return "Holo";
+    if (v === CardVersion.REVERSE) return "Reverse Holo";
+  }
+  return MODAL_VERSION_LABELS[v];
+}
+
 type PriceMode = "packed" | "current" | "manual";
 
 function AddToCollectionModal({
@@ -274,14 +287,15 @@ function AddToCollectionModal({
             </button>
           </div>
 
-          {/* Version checkboxes — multi-select */}
-          {availableVersions.length > 1 && (
+          {/* Version checkboxes — multi-select (hidden for special cards) */}
+          {availableVersions.length > 1 && !selectedCards.every((c) => c.isSpecial) && (
             <div className="mb-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Version</p>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className={cn("grid gap-1.5", availableVersions.length <= 2 ? "grid-cols-2" : "grid-cols-4")}>
                 {availableVersions.map((v) => {
                   const qty       = selectedCards.length === 1 ? ownedMap.get(selectedCards[0].id)?.get(v)?.quantity ?? 0 : 0;
                   const isChecked = selectedVersions.has(v);
+                  const label     = selectedCards.length === 1 ? getVersionLabel(v, selectedCards[0].rarity) : MODAL_VERSION_LABELS[v];
                   return (
                     <button key={v} onClick={() => toggleVersion(v)}
                       className={cn(
@@ -290,7 +304,7 @@ function AddToCollectionModal({
                           ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
                           : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}>
-                      {MODAL_VERSION_LABELS[v]}
+                      {label}
                       {qty > 0 && <span className={cn("mt-0.5 rounded-full px-1 text-[9px] font-bold", isChecked ? "bg-black/20 text-black" : "bg-[#E7BA76] text-black")}>×{qty}</span>}
                     </button>
                   );
@@ -302,8 +316,8 @@ function AddToCollectionModal({
             </div>
           )}
           {selectedCards.length === 1 && selectedCards[0].isSpecial && (
-            <p className="mt-1 text-xs text-[var(--text-tertiary)] italic">
-              Carte spéciale — pas de version Reverse
+            <p className="mb-2 text-xs text-[var(--text-tertiary)] italic">
+              Carte spéciale — version unique
             </p>
           )}
 
@@ -440,6 +454,15 @@ const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
   [CardVersion.REVERSE_MASTERBALL]: { label: "M", cls: "bg-amber-500 text-white" },
 };
 
+/** Rarity-aware version badge: RARE cards show H (Holo) instead of C (Commune) */
+function getVersionBadge(v: CardVersion, rarity?: CardRarity): { label: string; cls: string } {
+  if (rarity === CardRarity.RARE) {
+    if (v === CardVersion.NORMAL)  return { label: "H", cls: "bg-yellow-500 text-black" };
+    if (v === CardVersion.REVERSE) return { label: "RH", cls: "bg-violet-600 text-white" };
+  }
+  return VERSION_BADGE[v];
+}
+
 /** Versions applicable for a card (special = NORMAL only) */
 function getCardVersions(card: CardRow, serieVersions: CardVersion[]): CardVersion[] {
   return card.isSpecial ? [CardVersion.NORMAL] : serieVersions;
@@ -469,7 +492,6 @@ export function CardCollectionGrid({
   const [selectedIds,      setSelectedIds]      = useState<Set<string>>(new Set());
   const [search,           setSearch]           = useState("");
   const [rarityFilter,     setRarityFilter]     = useState<CardRarity | null>(null);
-  const [versionFilter,    setVersionFilter]    = useState<CardVersion | null>(null);
   const [viewFilter,       setViewFilter]       = useState<ViewFilter>("all");
   const [sortBy,           setSortBy]           = useState<SortKey>("number");
   const [sortOrder,        setSortOrder]        = useState<SortOrder>("asc");
@@ -513,7 +535,6 @@ export function CardCollectionGrid({
     }
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
     if (typeFilter.size > 0) result = result.filter((c) => c.types?.some((t) => typeFilter.has(t)));
-    // versionFilter changes display context only — does not hide cards
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
     // "missing" = at least one applicable version is not owned
     if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
@@ -525,7 +546,7 @@ export function CardCollectionGrid({
       if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
       return sortOrder === "asc" ? cmp : -cmp;
     });
-  }, [cards, search, rarityFilter, typeFilter, versionFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
+  }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
 
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
   // Cards where at least one applicable version is missing
@@ -789,23 +810,6 @@ export function CardCollectionGrid({
         </div>
       )}
 
-      {/* Version filter chips — only show if the serie has more than just NORMAL+REVERSE */}
-      {availableVersions.length > 2 && isAuthenticated && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          <span className="self-center text-xs text-[var(--text-tertiary)]">Version :</span>
-          {availableVersions.map((v) => {
-            const active = versionFilter === v;
-            return (
-              <button key={v} onClick={() => setVersionFilter(active ? null : v)}
-                className={cn("rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                  active ? "border-[#E7BA76] bg-[#E7BA76] text-black"
-                    : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
-                {CARD_VERSION_LABELS[v]}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Type filter chips */}
       {typeCounts.size > 0 && (
@@ -898,12 +902,12 @@ export function CardCollectionGrid({
                     <img src={CARD_RARITY_IMAGE[card.rarity]} alt="" className="h-3 w-auto object-contain opacity-90" />
                   </div>
 
-                  {/* Version pills (owned + missing) — bottom right, stacked */}
-                  {(ownedVersions.length > 0 || cardMissingVersions.length > 0) && (
+                  {/* Version pills (owned + missing) — bottom right, stacked (hidden for special cards) */}
+                  {!card.isSpecial && (ownedVersions.length > 0 || cardMissingVersions.length > 0) && (
                     <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
                       {ownedVersions.map((v) => {
                         const qty = ownedMap.get(card.id)!.get(v)!.quantity;
-                        const b   = VERSION_BADGE[v];
+                        const b   = getVersionBadge(v, card.rarity);
                         return (
                           <span key={v} className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls}`}>
                             {b.label}{qty > 1 ? `×${qty}` : ""}
@@ -911,7 +915,7 @@ export function CardCollectionGrid({
                         );
                       })}
                       {cardMissingVersions.map((v) => {
-                        const b = VERSION_BADGE[v];
+                        const b = getVersionBadge(v, card.rarity);
                         return (
                           <span key={`missing-${v}`} className={`rounded px-1 py-px text-[8px] font-bold leading-none opacity-40 ring-1 ring-inset ring-white/40 ${b.cls}`}>
                             {b.label}?

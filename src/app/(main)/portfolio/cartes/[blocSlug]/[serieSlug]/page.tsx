@@ -56,6 +56,7 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
           imageUrl:     true,
           price:        true,
           priceReverse: true,
+          isSpecial:    true,
         },
       },
     },
@@ -80,6 +81,7 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       rarity:     uc.card.rarity as CardRarity,
       imageUrl:   uc.card.imageUrl,
       price:      price ?? null,
+      isSpecial:  uc.card.isSpecial,
     };
   });
 
