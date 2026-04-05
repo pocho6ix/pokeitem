@@ -158,7 +158,7 @@ export default async function HomePage() {
                 Voir tout
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {topCards.map((card) => (
                 <Link
                   key={`${card.cardId}-${card.version}`}
