@@ -120,7 +120,7 @@ function LeaderboardRow({ entry }: { entry: PointsLeaderboardEntry }) {
       </span>
 
       {/* Points */}
-      <span className="text-sm font-bold text-amber-400 shrink-0">
+      <span className="text-sm font-bold text-[#E7BA76] shrink-0">
         {entry.totalPoints.toLocaleString('fr-FR')} pts
       </span>
 
