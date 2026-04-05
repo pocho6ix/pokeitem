@@ -38,7 +38,7 @@ export function HomeCardPreview({ cards }: Props) {
               />
               {/* Price badge */}
               <div className="absolute bottom-1.5 right-1.5">
-                <span className="inline-flex items-center gap-0.5 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white shadow backdrop-blur-sm">
+                <span suppressHydrationWarning className="inline-flex items-center gap-0.5 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white shadow backdrop-blur-sm">
                   🇫🇷
                   {card.price.toLocaleString("fr-FR", {
                     style: "currency",
