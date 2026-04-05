@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { awardReferralPoints } from '@/lib/points'
 
 /** @deprecated Kept for backward compat — referral rewards are now week-based (onReferralEmailVerified). */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -107,6 +108,9 @@ export async function onReferralEmailVerified(refereeId: string) {
       referralWeeksGiven: referrer.referralWeeksGiven + weeksToGive,
     },
   })
+
+  // Award points for this referral (idempotent)
+  await awardReferralPoints(referee.referredById, refereeId).catch(() => {})
 }
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────

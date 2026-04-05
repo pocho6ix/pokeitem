@@ -52,6 +52,9 @@ model User {
   userCards        UserCard[]
   userCardDoubles  UserCardDouble[]
   subscription     Subscription?
+  pointEvents      PointEvent[]
+  userQuests       UserQuest[]
+  userPoints       UserPoints?
 
   @@map("users")
 }
@@ -507,4 +510,47 @@ model BlogPost {
 
   @@index([published, publishedAt])
   @@map("blog_posts")
+}
+
+// ─── GAMIFICATION ────────────────────────────────────────────
+
+model PointEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int
+  source    String   // "referral" | "quest" | "bonus"
+  questId   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("point_events")
+}
+
+model UserQuest {
+  id          String    @id @default(cuid())
+  userId      String
+  questId     String
+  completed   Boolean   @default(false)
+  progress    Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questId])
+  @@index([userId])
+  @@map("user_quests")
+}
+
+model UserPoints {
+  userId    String   @id
+  total     Int      @default(0)
+  updatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_points")
 }

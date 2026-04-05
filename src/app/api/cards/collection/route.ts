@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { checkFeature } from "@/lib/subscription";
+import { checkProgressiveQuests } from "@/lib/points";
 
 // ─── Validation schemas ───────────────────────────────────────────────────────
 
@@ -99,6 +100,9 @@ export async function POST(req: NextRequest) {
       return { cardId, version, action: "upserted", record };
     })
   );
+
+  // Check progressive quests (fire-and-forget)
+  checkProgressiveQuests(userId).catch(() => {})
 
   return NextResponse.json({ results });
 }

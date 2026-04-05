@@ -9,7 +9,8 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
-import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
+import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
+import { QuestsBlock } from "@/components/quests/QuestsBlock";
 
 
 async function getTopCards(userId: string) {
@@ -135,11 +136,12 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Referral block — authenticated users only */}
+      {/* Referral + Quests blocks — authenticated users only */}
       {userId && (
         <section className={`bg-[var(--bg-primary)] px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? 'pb-4' : 'pb-28'}`}>
-          <div className="mx-auto max-w-xl">
+          <div className="mx-auto max-w-xl space-y-4">
             <ReferralBlock />
+            <QuestsBlock />
           </div>
         </section>
       )}

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { Copy, Check, Share2, Trophy, Gift, Users } from 'lucide-react'
 import { CONTEST_CONFIG } from '@/config/contest'
-import type { LeaderboardEntry } from '@/lib/referral'
+import type { PointsLeaderboardEntry } from '@/lib/points'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ const TOP3_BG: Record<number, string> = {
   3: 'bg-amber-700/8 border-amber-700/20',
 }
 
-function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
+function LeaderboardRow({ entry }: { entry: PointsLeaderboardEntry }) {
   const medal  = MEDAL[entry.rank]
   const top3bg = TOP3_BG[entry.rank] ?? ''
   const isMe   = entry.isCurrentUser
@@ -119,12 +119,9 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
         {entry.username}
       </span>
 
-      {/* Count */}
-      <span className="text-sm font-bold text-[var(--text-primary)] shrink-0">
-        {entry.referralCount}
-      </span>
-      <span className="text-xs text-[var(--text-tertiary)] shrink-0">
-        {entry.referralCount > 1 ? "parrainages" : "parrainage"}
+      {/* Points */}
+      <span className="text-sm font-bold text-amber-400 shrink-0">
+        {entry.totalPoints.toLocaleString('fr-FR')} pts
       </span>
 
       {/* "← Toi" badge */}
@@ -144,8 +141,8 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ReferralBlock() {
-  const { data: stats, isLoading: statsLoading } = useSWR('/api/referral/stats',      fetcher)
-  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/referral/leaderboard', fetcher)
+  const { data: stats, isLoading: statsLoading } = useSWR('/api/referral/stats', fetcher)
+  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/leaderboard',         fetcher)
 
   const [copied, setCopied] = useState(false)
 
@@ -181,8 +178,8 @@ export function ReferralBlock() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const lbEntries: LeaderboardEntry[] = lb?.rankings ?? []
-  const currentUser: LeaderboardEntry | null = lb?.currentUser ?? null
+  const lbEntries: PointsLeaderboardEntry[] = lb?.rankings ?? []
+  const currentUser: PointsLeaderboardEntry | null = lb?.currentUser ?? null
   const currentUserInTop = lbEntries.some(e => e.isCurrentUser)
   const totalParticipants: number = lb?.totalParticipants ?? 0
 
