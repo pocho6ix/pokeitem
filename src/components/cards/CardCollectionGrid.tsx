@@ -13,7 +13,7 @@ import {
 } from "@/types/card";
 import { CardVersion, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
-import { POKEMON_TYPES, POKEMON_TYPE_MAP } from "@/lib/pokemon-types";
+import { POKEMON_TYPES, POKEMON_TYPE_MAP, type TypeConfig } from "@/lib/pokemon-types";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
@@ -34,6 +34,9 @@ export interface CardRow {
   priceReverse?: number | null;
   isSpecial?: boolean;
   types?: string[];
+  category?: string | null;
+  trainerType?: string | null;
+  energyType?: string | null;
 }
 
 export interface OwnedEntry {
@@ -511,10 +514,16 @@ export function CardCollectionGrid({
     return m;
   }, [cards]);
 
+  /** Counts how many cards match each TypeConfig filter key */
   const typeCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const c of cards) {
+      // Pokemon energy types
       if (c.types) for (const t of c.types) m.set(t, (m.get(t) ?? 0) + 1);
+      // Trainer subtypes
+      if (c.trainerType) m.set(c.trainerType, (m.get(c.trainerType) ?? 0) + 1);
+      // Energy subtypes
+      if (c.energyType) m.set(c.energyType, (m.get(c.energyType) ?? 0) + 1);
     }
     return m;
   }, [cards]);
@@ -527,6 +536,19 @@ export function CardCollectionGrid({
     });
   }
 
+  /** Check if a card matches ANY of the selected type filters (OR logic) */
+  function cardMatchesTypeFilter(c: CardRow, selectedKeys: Set<string>): boolean {
+    if (selectedKeys.size === 0) return true;
+    for (const key of selectedKeys) {
+      const cfg = POKEMON_TYPE_MAP[key];
+      if (!cfg) continue;
+      if (cfg.matchField === "types" && c.types?.includes(cfg.matchValue)) return true;
+      if (cfg.matchField === "trainerType" && c.trainerType === cfg.matchValue) return true;
+      if (cfg.matchField === "energyType" && c.energyType === cfg.matchValue) return true;
+    }
+    return false;
+  }
+
   const filteredCards = useMemo(() => {
     let result = cards;
     if (search.trim()) {
@@ -534,7 +556,7 @@ export function CardCollectionGrid({
       result = result.filter((c) => c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q));
     }
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
-    if (typeFilter.size > 0) result = result.filter((c) => c.types?.some((t) => typeFilter.has(t)));
+    if (typeFilter.size > 0) result = result.filter((c) => cardMatchesTypeFilter(c, typeFilter));
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
     // "missing" = at least one applicable version is not owned
     if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
@@ -811,7 +833,7 @@ export function CardCollectionGrid({
       )}
 
 
-      {/* Type filter chips */}
+      {/* Type filter chips (pokemon types + trainer subtypes + energy subtypes) */}
       {typeCounts.size > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {POKEMON_TYPES.filter((t) => typeCounts.has(t.key)).map((t) => {
@@ -822,8 +844,14 @@ export function CardCollectionGrid({
                 className={cn("flex h-8 w-8 items-center justify-center rounded-full border transition-all",
                   active ? "border-white bg-white/15 ring-1 ring-white/40"
                     : "border-[var(--border-default)] bg-transparent opacity-50 hover:opacity-80")}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={t.image} alt={t.label} className="h-5 w-5 object-contain" />
+                {t.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={t.image} alt={t.label} className="h-5 w-5 object-contain" />
+                ) : (
+                  <span className={cn("text-[9px] font-bold leading-none", active ? "text-white" : "text-gray-300")}>
+                    {t.abbreviation}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -948,27 +976,24 @@ export function CardCollectionGrid({
 
       {/* Sticky action bar */}
       {isAuthenticated && (
-        <div className={cn("fixed bottom-16 left-0 right-0 z-40 transition-all duration-200 sm:bottom-0",
+        <div className={cn("fixed bottom-16 left-0 right-0 z-[60] transition-all duration-200 sm:bottom-0",
           selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none")}>
           <div className="mx-auto max-w-7xl px-4 pb-4 sm:pb-6">
-            <div className="flex items-center gap-3 rounded-2xl bg-[var(--bg-card)] p-3 shadow-2xl border border-[var(--border-default)]">
+            <div className="flex items-center gap-2 rounded-2xl bg-[var(--bg-card)] p-3 shadow-2xl border border-[var(--border-default)]">
               <button onClick={selectAll} title="Tout sélectionner"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
               </button>
               <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">
-                {selectedIds.size} carte{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
+                {selectedIds.size} carte{selectedIds.size > 1 ? "s" : ""}
               </span>
               {selectedIds.size === 1 && (
-                <button onClick={() => setDetailCardId(Array.from(selectedIds)[0])} title="Voir les détails"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76]">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                <button onClick={() => setDetailCardId(Array.from(selectedIds)[0])}
+                  className="flex items-center gap-1 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  Détail
                 </button>
               )}
-              <button onClick={handleRemoveSelected} title="Retirer de ma collection"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-              </button>
               <button onClick={() => {
                 if (!canAddCard) {
                   showPaywall('CARD_LIMIT_REACHED', usage.cards.current, usage.cards.limit ?? 100);
@@ -976,9 +1001,12 @@ export function CardCollectionGrid({
                 }
                 setActiveModal("add-collection");
               }}
-                className="flex items-center gap-1.5 rounded-xl bg-[#E7BA76] px-4 py-2 text-sm font-semibold text-black hover:bg-[#d4a660]">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                Collection
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E7BA76] text-black hover:bg-[#d4a660]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <button onClick={handleRemoveSelected} title="Retirer de ma collection"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
               </button>
               <button onClick={deselectAll}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-default)]">

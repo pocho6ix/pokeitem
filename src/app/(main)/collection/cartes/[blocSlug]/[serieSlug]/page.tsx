@@ -80,6 +80,9 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     priceReverse: c.priceReverse ?? null,
     isSpecial:    c.isSpecial,
     types:        c.types,
+    category:     c.category,
+    trainerType:  c.trainerType,
+    energyType:   c.energyType,
   }));
 
   return (
