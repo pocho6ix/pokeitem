@@ -4,6 +4,7 @@ import { forwardRef } from 'react'
 
 interface LeaderboardShareCardProps {
   rank: number | null
+  totalParticipants: number
   username: string
   avatarUrl: string | null
   totalPoints: number
@@ -92,7 +93,7 @@ function TrophySvg() {
 
 export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareCardProps>(
   function LeaderboardShareCard(props, ref) {
-    const { rank, username, avatarUrl, totalPoints, cardCount, referralCount, questsCompleted, questsTotal } = props
+    const { rank, totalParticipants, username, avatarUrl, totalPoints, cardCount, referralCount, questsCompleted, questsTotal } = props
 
     const proxiedAvatar = avatarUrl
       ? `/api/proxy-image?url=${encodeURIComponent(avatarUrl)}`
@@ -237,7 +238,7 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
                 </defs>
                 <text x="140" y="115" textAnchor="middle" fill="url(#rankGold)"
                   fontSize="120" fontWeight="900" fontFamily="Inter, system-ui, sans-serif">
-                  {rank != null ? `#${rank}` : '—'}
+                  {rank != null ? `#${rank}/${totalParticipants}` : '—'}
                 </text>
               </svg>
             </div>

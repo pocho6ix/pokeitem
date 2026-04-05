@@ -354,6 +354,7 @@ export function QuestsBlock() {
         <LeaderboardShareCard
           ref={cardRef}
           rank={shareData.rank}
+          totalParticipants={shareData.totalParticipants ?? 0}
           username={shareData.username}
           avatarUrl={shareData.avatar}
           totalPoints={shareData.totalPoints}

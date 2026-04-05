@@ -18,12 +18,16 @@ export async function GET() {
   ])
 
   const total = points?.total ?? 0
-  const rank = total > 0
-    ? (await prisma.userPoints.count({ where: { total: { gt: total } } })) + 1
-    : null
+  const [rank, totalParticipants] = total > 0
+    ? await Promise.all([
+        prisma.userPoints.count({ where: { total: { gt: total } } }).then(n => n + 1),
+        prisma.userPoints.count({ where: { total: { gt: 0 } } }),
+      ])
+    : [null, await prisma.userPoints.count({ where: { total: { gt: 0 } } })]
 
   return NextResponse.json({
     rank,
+    totalParticipants,
     username: me?.name ?? me?.username ?? 'Dresseur',
     avatar: me?.image ?? null,
     totalPoints: total,
