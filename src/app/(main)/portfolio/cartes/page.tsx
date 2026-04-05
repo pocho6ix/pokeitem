@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 0; // dynamic — owned data is per-user
 
-async function buildBlocProgress(userId: string | null): Promise<BlocCardProgress[]> {
+async function buildBlocProgress(userId: string | null, rarityFilter?: string | null): Promise<BlocCardProgress[]> {
   const seriesInDb = await prisma.serie.findMany({
     select: {
       id:           true,
@@ -30,11 +30,15 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
   // Owned card counts + market values per serie
   const ownedBySerieId = new Map<string, number>();
   const valueBySerieId = new Map<string, number>();
+  // Total cards per serie for the active rarity (used when filter is active)
+  const totalByRaritySerieId = new Map<string, number>();
 
   if (userId) {
+    const rarityWhere = rarityFilter ? { card: { rarity: rarityFilter as never } } : {};
+
     // Unique-card count (distinct cardId for completion %)
     const ownedDistinct = await prisma.userCard.findMany({
-      where: { userId },
+      where: { userId, ...rarityWhere },
       select: { card: { select: { serieId: true } }, cardId: true },
       distinct: ["cardId"],
     });
@@ -45,7 +49,7 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
 
     // Market value = price × quantity; REVERSE version uses priceReverse
     const ownedWithPrices = await prisma.userCard.findMany({
-      where: { userId },
+      where: { userId, ...rarityWhere },
       select: {
         quantity: true,
         version:  true,
@@ -59,6 +63,18 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
           ? (uc.card.priceReverse ?? uc.card.price ?? 0)
           : (uc.card.price ?? 0);
       valueBySerieId.set(sid, (valueBySerieId.get(sid) ?? 0) + price * uc.quantity);
+    }
+
+    // When rarity filter is active: compute total cards of that rarity per serie
+    if (rarityFilter) {
+      const totalByRarity = await prisma.card.groupBy({
+        by: ["serieId"],
+        where: { rarity: rarityFilter as never },
+        _count: { id: true },
+      });
+      for (const r of totalByRarity) {
+        totalByRaritySerieId.set(r.serieId, r._count.id);
+      }
     }
   }
 
@@ -83,7 +99,9 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
         serieName:         serie.name,
         serieAbbreviation: serie.abbreviation ?? null,
         serieImageUrl:     serie.imageUrl ?? null,
-        totalCards:   countBySlug.get(serie.slug) ?? 0,
+        totalCards:   rarityFilter
+          ? (totalByRaritySerieId.get(serie.id) ?? 0)
+          : (countBySlug.get(serie.slug) ?? 0),
         ownedCards:   ownedBySerieId.get(serie.id) ?? 0,
         marketValue:  Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
       }))
@@ -99,11 +117,16 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
   }).filter((bloc) => bloc.series.length > 0);
 }
 
-export default async function PortfolioCartesPage() {
+export default async function PortfolioCartesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ rarity?: string }>
+}) {
   const session = await getServerSession(authOptions);
   const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
+  const { rarity } = await searchParams;
 
-  const blocs = await buildBlocProgress(userId);
+  const blocs = await buildBlocProgress(userId, rarity ?? null);
 
   // The layout (layout.tsx) renders the title, stats and TabNav.
   // This page only renders the card list itself.

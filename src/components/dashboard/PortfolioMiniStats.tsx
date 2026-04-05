@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ProButton } from "@/components/subscription/ProButton";
@@ -21,6 +22,8 @@ function fmt(n: number) {
 export function PortfolioMiniStats() {
   const { status } = useSession();
   const { isPro } = useSubscription();
+  const searchParams = useSearchParams();
+  const rarity = searchParams.get("rarity");
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,11 +32,13 @@ export function PortfolioMiniStats() {
       setLoading(false);
       return;
     }
-    fetch("/api/portfolio/stats")
+    setLoading(true);
+    const url = rarity ? `/api/portfolio/stats?rarity=${rarity}` : "/api/portfolio/stats";
+    fetch(url)
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setStats(d); })
       .finally(() => setLoading(false));
-  }, [status]);
+  }, [status, rarity]);
 
   if (status === "unauthenticated" || (!loading && !stats)) return null;
 

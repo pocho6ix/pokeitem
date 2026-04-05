@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -11,9 +11,10 @@ export async function GET() {
     }
 
     const userId = (session.user as { id: string }).id;
+    const rarity = new URL(req.url).searchParams.get("rarity") ?? null;
 
-    // ── Sealed items (portfolio) ────────────────────────────────────────────
-    const portfolioItems = await prisma.portfolioItem.findMany({
+    // ── Sealed items (portfolio) — excluded when rarity filter is active ───
+    const portfolioItems = rarity ? [] : await prisma.portfolioItem.findMany({
       where: { userId },
       include: { item: true },
     });
@@ -32,14 +33,20 @@ export async function GET() {
 
     // ── Cards (collection) ─────────────────────────────────────────────────
     const userCards = await prisma.userCard.findMany({
-      where: { userId },
-      select: { quantity: true, purchasePrice: true, card: { select: { price: true } } },
+      where: {
+        userId,
+        ...(rarity ? { card: { rarity: rarity as never } } : {}),
+      },
+      select: { quantity: true, version: true, purchasePrice: true, card: { select: { price: true, priceReverse: true } } },
     });
 
-    const cardsValue = userCards.reduce(
-      (sum, uc) => sum + (uc.card.price ?? 0) * uc.quantity,
-      0
-    );
+    const cardsValue = userCards.reduce((sum, uc) => {
+      const price =
+        (uc as { version?: string }).version === 'REVERSE'
+          ? ((uc.card as { priceReverse?: number | null }).priceReverse ?? uc.card.price ?? 0)
+          : (uc.card.price ?? 0)
+      return sum + price * uc.quantity
+    }, 0);
 
     const cardsInvested = userCards.reduce(
       (sum, uc) => sum + (uc.purchasePrice ?? 0) * uc.quantity,

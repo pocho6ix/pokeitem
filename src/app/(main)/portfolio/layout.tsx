@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
 import { PortfolioEvolutionChart } from "@/components/dashboard/PortfolioEvolutionChart";
 import { PortfolioTabNav } from "@/components/dashboard/PortfolioTabNav";
 import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
+import { BinderRarityFilter } from "@/components/dashboard/BinderRarityFilter";
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,8 +19,15 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
       {/* Beta offer for new non-subscribed users */}
       <ClasseurBetaOffer />
 
-      {/* Portfolio KPI metrics — always visible on all tabs */}
-      <PortfolioMiniStats />
+      {/* Portfolio KPI metrics — react to rarity filter via useSearchParams */}
+      <Suspense>
+        <PortfolioMiniStats />
+      </Suspense>
+
+      {/* Rarity filter chips */}
+      <Suspense>
+        <BinderRarityFilter />
+      </Suspense>
 
       {/* Evolution chart — always visible below KPIs */}
       <PortfolioEvolutionChart />
