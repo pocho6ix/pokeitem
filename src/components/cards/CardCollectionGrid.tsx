@@ -269,7 +269,7 @@ function AddToCollectionModal({
   const versionsArray = Array.from(selectedVersions);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-t-3xl bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl flex flex-col max-h-[calc(100dvh-4rem)] sm:max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
