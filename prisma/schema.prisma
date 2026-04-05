@@ -341,18 +341,37 @@ model Card {
   tcgdexId       String?
   price          Float?
   priceReverse   Float?
+  priceFr        Float?
+  priceFrUpdatedAt DateTime?
   priceUpdatedAt DateTime?
   isSpecial    Boolean   @default(false)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  serie       Serie            @relation(fields: [serieId], references: [id])
-  userCards   UserCard[]
-  userDoubles UserCardDouble[]
+  serie        Serie              @relation(fields: [serieId], references: [id])
+  userCards    UserCard[]
+  userDoubles  UserCardDouble[]
+  priceHistory CardPriceHistory[]
 
   @@unique([serieId, number])
   @@index([serieId])
   @@map("cards")
+}
+
+model CardPriceHistory {
+  id         String   @id @default(cuid())
+  cardId     String
+  price      Float
+  priceFr    Float?
+  source     String   // "ptcgio" | "tcgdex" | "cardmarket-api"
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([cardId, recordedAt])
+  @@index([cardId, recordedAt])
+  @@map("card_price_history")
 }
 
 enum CardRarity {

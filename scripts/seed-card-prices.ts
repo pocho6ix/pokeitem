@@ -16,6 +16,9 @@ dotenv.config({ path: ".env" });
 
 const prisma = new PrismaClient();
 
+const CARDMARKET_API_KEY = process.env.CARDMARKET_API_KEY ?? "";
+const CARDMARKET_API_HOST = "cardmarket-api-tcg.p.rapidapi.com";
+
 // ---------------------------------------------------------------------------
 // Mapping : slug série → PokémonTCG.io set ID
 // ---------------------------------------------------------------------------
@@ -298,6 +301,56 @@ async function fetchPTCGCards(setId: string): Promise<PTCGCard[]> {
 }
 
 // ---------------------------------------------------------------------------
+// CardMarket API (cardmarket-api.com via RapidAPI) — FR-specific prices
+// ---------------------------------------------------------------------------
+
+interface CMApiCard {
+  id: number;
+  name: string;
+  card_number: string;
+  prices?: {
+    cardmarket?: {
+      lowest_near_mint_FR?: number | null;
+      lowest_near_mint?: number | null;
+      "30d_average"?: number | null;
+      graded?: {
+        psa?: { psa10?: number | null; psa9?: number | null } | null;
+      } | null;
+    } | null;
+  } | null;
+}
+
+interface CMApiEpisode {
+  id: number;
+  name: string;
+  code?: string;
+}
+
+async function fetchCMApiEpisodes(): Promise<CMApiEpisode[]> {
+  if (!CARDMARKET_API_KEY) return [];
+  try {
+    const res = await fetch(
+      `https://${CARDMARKET_API_HOST}/pokemon/episodes?rapidapi-key=${CARDMARKET_API_KEY}`,
+      { headers: { "x-rapidapi-host": CARDMARKET_API_HOST, "x-rapidapi-key": CARDMARKET_API_KEY } }
+    );
+    if (!res.ok) { console.warn(`  ⚠ CM API episodes → ${res.status}`); return []; }
+    return (await res.json()) as CMApiEpisode[];
+  } catch (err) { console.warn(`  ⚠ CM API erreur:`, err); return []; }
+}
+
+async function fetchCMApiCardsForEpisode(episodeId: number): Promise<CMApiCard[]> {
+  if (!CARDMARKET_API_KEY) return [];
+  try {
+    const res = await fetch(
+      `https://${CARDMARKET_API_HOST}/pokemon/episodes/${episodeId}/cards?rapidapi-key=${CARDMARKET_API_KEY}`,
+      { headers: { "x-rapidapi-host": CARDMARKET_API_HOST, "x-rapidapi-key": CARDMARKET_API_KEY } }
+    );
+    if (!res.ok) { console.warn(`  ⚠ CM API episode ${episodeId} → ${res.status}`); return []; }
+    return (await res.json()) as CMApiCard[];
+  } catch (err) { console.warn(`  ⚠ CM API erreur:`, err); return []; }
+}
+
+// ---------------------------------------------------------------------------
 // Seed principal
 // ---------------------------------------------------------------------------
 async function seed(opts: { sets?: string[]; dryRun: boolean }) {
@@ -408,8 +461,13 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
       select: { id: true, number: true },
     });
 
+    // Determine primary source for this set
+    const source = ptcgId && priceMap.size > 0 ? "ptcgio" : "tcgdex";
+
     if (!dryRun && dbCards.length > 0) {
       const now = new Date();
+      // Truncate to start of day for deduplication
+      const recordedAt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const updates: Array<{ id: string; price: number }> = [];
 
       for (const dbCard of dbCards) {
@@ -434,7 +492,21 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
         );
       }
 
-      console.log(`  → ${updates.length}/${dbCards.length} cartes mises à jour`);
+      // Record price history (one entry per card per day, upsert to avoid duplicates)
+      for (let i = 0; i < updates.length; i += CHUNK) {
+        const chunk = updates.slice(i, i + CHUNK);
+        await Promise.all(
+          chunk.map((u) =>
+            prisma.cardPriceHistory.upsert({
+              where: { cardId_recordedAt: { cardId: u.id, recordedAt } },
+              create: { cardId: u.id, price: u.price, source, recordedAt },
+              update: { price: u.price, source },
+            })
+          )
+        );
+      }
+
+      console.log(`  → ${updates.length}/${dbCards.length} cartes mises à jour (+ historique)`);
       totalCardsUpdated += updates.length;
     } else if (dryRun) {
       for (const dbCard of dbCards) {
@@ -449,9 +521,95 @@ async function seed(opts: { sets?: string[]; dryRun: boolean }) {
     await new Promise((r) => setTimeout(r, 200));
   }
 
+  // ── Pass 2 : Prix FR via CardMarket API (cardmarket-api.com) ──────────────
+  let totalFrUpdated = 0;
+  if (CARDMARKET_API_KEY && !dryRun) {
+    console.log(`\n🇫🇷 Récupération des prix FR via CardMarket API…`);
+    const episodes = await fetchCMApiEpisodes();
+    if (episodes.length > 0) {
+      // Build a name→serieId lookup from DB series
+      const seriesAll = await prisma.serie.findMany({ select: { id: true, name: true, nameEn: true } });
+      const serieByName = new Map<string, string>();
+      for (const s of seriesAll) {
+        serieByName.set(s.name.toLowerCase(), s.id);
+        if (s.nameEn) serieByName.set(s.nameEn.toLowerCase(), s.id);
+      }
+
+      for (const ep of episodes) {
+        const serieId = serieByName.get(ep.name.toLowerCase());
+        if (!serieId) continue;
+        // If filtering by sets, check if this serie is in the list
+        if (slugsToProcess.length < allSlugs.size) {
+          const serieSlug = seriesInDb.find(s => s.id === serieId)?.slug;
+          if (serieSlug && !slugsToProcess.includes(serieSlug)) continue;
+        }
+
+        const cmCards = await fetchCMApiCardsForEpisode(ep.id);
+        if (cmCards.length === 0) continue;
+
+        const dbCards = await prisma.card.findMany({
+          where: { serieId },
+          select: { id: true, number: true },
+        });
+        const dbByNumber = new Map(dbCards.map(c => [normalizeNumber(c.number), c.id]));
+        // Also map raw numbers for direct match
+        for (const c of dbCards) dbByNumber.set(c.number, c.id);
+
+        const now = new Date();
+        const recordedAt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        let epUpdated = 0;
+        const CHUNK = 50;
+        const frUpdates: Array<{ id: string; priceFr: number }> = [];
+
+        for (const cm of cmCards) {
+          const priceFr = cm.prices?.cardmarket?.lowest_near_mint_FR ?? null;
+          if (priceFr === null) continue;
+          const cardNumber = cm.card_number;
+          const dbId = dbByNumber.get(cardNumber) ?? dbByNumber.get(normalizeNumber(cardNumber));
+          if (!dbId) continue;
+          frUpdates.push({ id: dbId, priceFr });
+        }
+
+        for (let i = 0; i < frUpdates.length; i += CHUNK) {
+          const chunk = frUpdates.slice(i, i + CHUNK);
+          await Promise.all(
+            chunk.map((u) =>
+              prisma.card.update({
+                where: { id: u.id },
+                data: { priceFr: u.priceFr, priceFrUpdatedAt: now },
+              })
+            )
+          );
+          // Also update history with FR price
+          await Promise.all(
+            chunk.map((u) =>
+              prisma.cardPriceHistory.upsert({
+                where: { cardId_recordedAt: { cardId: u.id, recordedAt } },
+                create: { cardId: u.id, price: u.priceFr, priceFr: u.priceFr, source: "cardmarket-api", recordedAt },
+                update: { priceFr: u.priceFr },
+              })
+            )
+          );
+        }
+
+        epUpdated = frUpdates.length;
+        if (epUpdated > 0) {
+          console.log(`  🇫🇷 ${ep.name}: ${epUpdated} prix FR`);
+          totalFrUpdated += epUpdated;
+        }
+
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    }
+    console.log(`  → ${totalFrUpdated} cartes avec prix FR mis à jour`);
+  } else if (!CARDMARKET_API_KEY) {
+    console.log(`\n⏭  Pas de CARDMARKET_API_KEY — prix FR ignorés`);
+  }
+
   console.log(
     `\nTerminé — ${totalSetsProcessed} sets traités, ${totalSetsSkipped} ignorés, ` +
-    `${totalCardsUpdated} cartes mises à jour, ${totalCardsWithPrice} cartes avec prix`
+    `${totalCardsUpdated} cartes mises à jour, ${totalCardsWithPrice} cartes avec prix` +
+    (totalFrUpdated > 0 ? `, ${totalFrUpdated} prix FR` : "")
   );
   if (dryRun) console.log("(dry-run : rien n'a été écrit en DB)");
 }

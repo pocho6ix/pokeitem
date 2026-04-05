@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useTransition } from "react";
+import { useState, useMemo, useCallback, useTransition, lazy, Suspense } from "react";
 import Image from "next/image";
 import {
   CardRarity,
@@ -17,6 +17,10 @@ import { SERIES } from "@/data/series";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
+
+const CardDetailModal = lazy(() =>
+  import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -473,6 +477,7 @@ export function CardCollectionGrid({
   const [isPending,        startTransition]     = useTransition();
 
   const [ownedMap, setOwnedMap] = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
+  const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -834,6 +839,15 @@ export function CardCollectionGrid({
                     </div>
                   )}
 
+                  {/* Detail button — top left */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDetailCardId(card.id); }}
+                    className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                    title="Voir les détails"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  </button>
+
                   {/* Badge rareté spéciale — top right */}
                   {card.isSpecial && RARITY_BADGE_LABELS[card.rarity] && (
                     <span className="absolute top-1 right-1 z-10 rounded px-1 py-px text-[8px] font-bold leading-none bg-[#E7BA76]/90 text-black shadow-sm">
@@ -904,6 +918,12 @@ export function CardCollectionGrid({
               <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">
                 {selectedIds.size} carte{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
               </span>
+              {selectedIds.size === 1 && (
+                <button onClick={() => setDetailCardId(Array.from(selectedIds)[0])} title="Voir les détails"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                </button>
+              )}
               <button onClick={handleRemoveSelected} title="Retirer de ma collection"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/30">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
@@ -957,6 +977,16 @@ export function CardCollectionGrid({
         limit={paywallState.limit}
         onClose={closePaywall}
       />
+
+      {/* Card detail modal (lazy loaded) */}
+      {detailCardId && (
+        <Suspense fallback={null}>
+          <CardDetailModal
+            cardId={detailCardId}
+            onClose={() => setDetailCardId(null)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
