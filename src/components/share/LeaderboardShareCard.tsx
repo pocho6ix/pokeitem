@@ -100,8 +100,8 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
       : null
 
     // BG_SOLID: opaque dark used behind all text/content areas
-    const BG_SOLID  = 'rgba(7, 13, 22, 0.92)'
-    const BG_INNER  = 'rgba(5, 10, 18, 0.96)'
+    const BG_SOLID  = '#070D16'
+    const BG_INNER  = '#050A12'
 
     return (
       <div
