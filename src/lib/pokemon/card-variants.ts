@@ -6,6 +6,8 @@ export const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.ILLUSTRATION_RARE,         // IR (Full Art)
   CardRarity.SPECIAL_ILLUSTRATION_RARE, // SAR
   CardRarity.HYPER_RARE,                // HR
+  CardRarity.MEGA_HYPER_RARE,           // MUR (Gold Méga-Évolution)
+  CardRarity.MEGA_ATTAQUE_RARE,         // MAR (Méga Attaque Rare)
   CardRarity.ACE_SPEC_RARE,             // As Spécial
   CardRarity.PROMO,                     // Promo (pas de reverse)
 ])
@@ -21,6 +23,8 @@ export const RARITY_BADGE_LABELS: Partial<Record<CardRarity, string>> = {
   [CardRarity.ILLUSTRATION_RARE]:         'IR',
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 'SAR',
   [CardRarity.HYPER_RARE]:               'HR',
+  [CardRarity.MEGA_HYPER_RARE]:          'MUR',
+  [CardRarity.MEGA_ATTAQUE_RARE]:        'MAR',
   [CardRarity.ACE_SPEC_RARE]:            'ACE',
   [CardRarity.PROMO]:                    'PROMO',
 }
@@ -47,6 +51,13 @@ export const TCGDEX_RARITY_MAP: Record<string, CardRarity> = {
   // ── Hyper Rare (HR) ─────────────────────────────────────────────────────
   'Hyper Rare':                    CardRarity.HYPER_RARE,
   'Hyper rare':                    CardRarity.HYPER_RARE,  // lowercase variant
+  // ── Méga-Évolution (MUR / MAR) ──────────────────────────────────────
+  'Mega Hyper Rare':               CardRarity.MEGA_HYPER_RARE,
+  'Méga Hyper Rare':               CardRarity.MEGA_HYPER_RARE,
+  'Méga hyper rare':               CardRarity.MEGA_HYPER_RARE,
+  'Mega Attaque Rare':             CardRarity.MEGA_ATTAQUE_RARE,
+  'Méga Attaque Rare':             CardRarity.MEGA_ATTAQUE_RARE,
+  'Méga attaque rare':             CardRarity.MEGA_ATTAQUE_RARE,
   // ── ACE SPEC / Promo ────────────────────────────────────────────────────
   "Rare As Spécial":               CardRarity.ACE_SPEC_RARE,
   'Promo':                         CardRarity.PROMO,

@@ -21,6 +21,10 @@ const prisma = new PrismaClient();
 // ── Mapping : slug série → PokémonTCG.io set ID (copié depuis seed-card-prices.ts) ──
 
 const SLUG_TO_PTCG: Record<string, string> = {
+  "mega-evolution":              "me1",
+  "flammes-fantasmagoriques":    "me2",
+  "heros-transcendants":         "me2pt5",
+  "equilibre-parfait":           "me3",
   "rivalites-destinees":         "sv10",
   "foudre-noire":               "sv10.5b",
   "flamme-blanche":             "sv10.5w",
@@ -123,6 +127,8 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Illustration Rare":         CardRarity.ILLUSTRATION_RARE,
   "Special Illustration Rare": CardRarity.SPECIAL_ILLUSTRATION_RARE,
   "Hyper Rare":                CardRarity.HYPER_RARE,
+  "Mega Hyper Rare":           CardRarity.MEGA_HYPER_RARE,
+  "MEGA_ATTACK_RARE":          CardRarity.MEGA_ATTAQUE_RARE,
   "ACE SPEC Rare":             CardRarity.ACE_SPEC_RARE,
   "Promo":                     CardRarity.PROMO,
   // Anciens sets
@@ -146,6 +152,8 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.ILLUSTRATION_RARE,
   CardRarity.SPECIAL_ILLUSTRATION_RARE,
   CardRarity.HYPER_RARE,
+  CardRarity.MEGA_HYPER_RARE,
+  CardRarity.MEGA_ATTAQUE_RARE,
   CardRarity.ACE_SPEC_RARE,
   CardRarity.PROMO,
 ]);

@@ -13,6 +13,8 @@ export enum CardRarity {
   ILLUSTRATION_RARE = 'ILLUSTRATION_RARE',
   SPECIAL_ILLUSTRATION_RARE = 'SPECIAL_ILLUSTRATION_RARE',
   HYPER_RARE = 'HYPER_RARE',
+  MEGA_HYPER_RARE = 'MEGA_HYPER_RARE',
+  MEGA_ATTAQUE_RARE = 'MEGA_ATTAQUE_RARE',
   ACE_SPEC_RARE = 'ACE_SPEC_RARE',
   PROMO = 'PROMO',
 }
@@ -97,6 +99,8 @@ export const CARD_RARITY_LABELS: Record<CardRarity, string> = {
   [CardRarity.ILLUSTRATION_RARE]: 'Rare Illustration',
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 'Rare Illustration Spéciale',
   [CardRarity.HYPER_RARE]: 'Hyper Rare',
+  [CardRarity.MEGA_HYPER_RARE]: 'Méga Hyper Rare',
+  [CardRarity.MEGA_ATTAQUE_RARE]: 'Méga Attaque Rare',
   [CardRarity.ACE_SPEC_RARE]: 'Rare As Spécial',
   [CardRarity.PROMO]: 'Promo',
 };
@@ -109,6 +113,8 @@ export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
   [CardRarity.ILLUSTRATION_RARE]: '✦',
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: '✦★',
   [CardRarity.HYPER_RARE]: '✦✦',
+  [CardRarity.MEGA_HYPER_RARE]: '✨',
+  [CardRarity.MEGA_ATTAQUE_RARE]: '⚔',
   [CardRarity.ACE_SPEC_RARE]: '◈',
   [CardRarity.PROMO]: 'P',
 };
@@ -121,6 +127,8 @@ export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
   [CardRarity.ILLUSTRATION_RARE]: '/rarities/illustration-rare.png',
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: '/rarities/special-illustration-rare.png',
   [CardRarity.HYPER_RARE]: '/rarities/hyper-rare.png',
+  [CardRarity.MEGA_HYPER_RARE]: '/rarities/mega-hyper-rare.png',
+  [CardRarity.MEGA_ATTAQUE_RARE]: '/rarities/mega-attaque-rare.png',
   [CardRarity.ACE_SPEC_RARE]: '/rarities/ace-spec-rare.png',
   [CardRarity.PROMO]: '/rarities/promo.png',
 };
@@ -133,8 +141,10 @@ export const CARD_RARITY_ORDER: Record<CardRarity, number> = {
   [CardRarity.ILLUSTRATION_RARE]: 4,
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 5,
   [CardRarity.HYPER_RARE]: 6,
-  [CardRarity.ACE_SPEC_RARE]: 7,
-  [CardRarity.PROMO]: 8,
+  [CardRarity.MEGA_HYPER_RARE]: 7,
+  [CardRarity.MEGA_ATTAQUE_RARE]: 8,
+  [CardRarity.ACE_SPEC_RARE]: 9,
+  [CardRarity.PROMO]: 10,
 };
 
 export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {
