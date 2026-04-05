@@ -50,6 +50,17 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
+  {
+    id: "share_leaderboard",
+    title: "Partager mon classement",
+    description: "Télécharge et partage ta carte de classement",
+    points: 1000,
+    icon: "🏆",
+    type: "action",
+    actionLabel: "Télécharger l'image",
+    verifiable: false,
+    active: true,
+  },
 ]
 
 export const ACTIVE_QUESTS = QUESTS.filter(q => q.active)

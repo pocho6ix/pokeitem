@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
 import useSWR, { mutate } from 'swr'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Download } from 'lucide-react'
+import { useShareCard } from '@/hooks/useShareCard'
+import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -90,6 +92,124 @@ interface PointsData {
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
+// ─── Share quest row (special — triggers image generation) ───────────────────
+
+interface ShareQuestRowProps {
+  quest: QuestState
+  shareData: Record<string, unknown> | null
+  shareCardRef: React.RefObject<HTMLDivElement | null>
+}
+
+function ShareQuestRow({ quest, shareData, shareCardRef }: ShareQuestRowProps) {
+  const [hasDownloaded, setHasDownloaded] = useState(false)
+  const [completing, setCompleting] = useState(false)
+  const [generating, setGenerating] = useState(false)
+
+  async function handleDownload() {
+    setGenerating(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      await document.fonts.ready
+      if (!shareCardRef.current) return
+
+      const canvas = await html2canvas(shareCardRef.current, {
+        scale: 1,
+        backgroundColor: null,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        width: 1080,
+        height: 1920,
+      })
+
+      const blob = await new Promise<Blob>((res, rej) =>
+        canvas.toBlob(b => (b ? res(b) : rej()), 'image/png', 1)
+      )
+      const file = new File([blob], 'pokeitem-classement.png', { type: 'image/png' })
+
+      // Web Share API on mobile
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file] })
+          setHasDownloaded(true)
+          return
+        } catch (e) {
+          if ((e as Error).name === 'AbortError') return
+        }
+      }
+
+      // Fallback: download
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'pokeitem-classement.png'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setHasDownloaded(true)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  async function handleComplete() {
+    setCompleting(true)
+    try {
+      await fetch(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
+      await mutate('/api/user/points')
+    } finally {
+      setCompleting(false)
+    }
+  }
+
+  return (
+    <div className={`flex items-start gap-3 rounded-xl border px-3.5 py-3 transition-all ${
+      quest.completed
+        ? 'border-green-500/30 bg-green-500/5'
+        : 'border-[var(--border-default)] bg-[var(--bg-secondary)]'
+    }`}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-sm font-semibold ${quest.completed ? 'text-green-400' : 'text-[var(--text-primary)]'}`}>
+            {quest.title}
+          </span>
+          <span className="text-xs font-bold text-[#E7BA76]">+{quest.points} pts</span>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">{quest.description}</p>
+
+        {!quest.completed && (
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={handleDownload}
+              disabled={generating || !shareData}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/50 transition-colors disabled:opacity-50"
+            >
+              {generating
+                ? <div className="w-3.5 h-3.5 border-2 border-[#E7BA76] border-t-transparent rounded-full animate-spin" />
+                : <Download className="w-3.5 h-3.5" />
+              }
+              {generating ? 'Génération…' : "Télécharger l'image"}
+            </button>
+            {hasDownloaded && (
+              <button
+                onClick={handleComplete}
+                disabled={completing}
+                className="inline-flex items-center gap-1 rounded-lg bg-[#E7BA76]/20 border border-[#E7BA76]/40 px-3 py-1.5 text-xs font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/30 transition-colors disabled:opacity-50"
+              >
+                {completing ? '…' : "✓ C'est fait"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      {quest.completed && (
+        <span className="text-xs font-semibold text-green-400 shrink-0 mt-0.5">Complétée</span>
+      )}
+    </div>
+  )
+}
+
 // ─── QuestRow ─────────────────────────────────────────────────────────────────
 
 function QuestRow({ quest }: { quest: QuestState }) {
@@ -177,8 +297,10 @@ function QuestRow({ quest }: { quest: QuestState }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function QuestsBlock() {
-  const { data, isLoading }           = useSWR<PointsData>('/api/user/points', fetcher)
-  const { data: referralData }        = useSWR('/api/referral/stats', fetcher)
+  const { data, isLoading }    = useSWR<PointsData>('/api/user/points', fetcher)
+  const { data: referralData } = useSWR('/api/referral/stats', fetcher)
+  const { data: shareData }    = useSWR('/api/user/share-data', fetcher)
+  const { cardRef }            = useShareCard()
 
   const quests         = data?.quests ?? []
   const totalPoints    = data?.totalPoints ?? 0
@@ -217,10 +339,29 @@ export function QuestsBlock() {
       ) : (
         <div className="space-y-2">
           <ReferralRow validatedCount={validatedCount} referralLink={referralLink} />
-          {quests.map(quest => (
-            <QuestRow key={quest.id} quest={quest} />
-          ))}
+          {quests.map(quest =>
+            quest.id === 'share_leaderboard' ? (
+              <ShareQuestRow key={quest.id} quest={quest} shareData={shareData ?? null} shareCardRef={cardRef} />
+            ) : (
+              <QuestRow key={quest.id} quest={quest} />
+            )
+          )}
         </div>
+      )}
+
+      {/* Off-screen share card for html2canvas */}
+      {shareData && (
+        <LeaderboardShareCard
+          ref={cardRef}
+          rank={shareData.rank}
+          username={shareData.username}
+          avatarUrl={shareData.avatar}
+          totalPoints={shareData.totalPoints}
+          cardCount={shareData.cardCount}
+          referralCount={shareData.referralCount}
+          questsCompleted={shareData.questsCompleted}
+          questsTotal={shareData.questsTotal}
+        />
       )}
     </div>
   )
