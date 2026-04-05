@@ -55,6 +55,7 @@ model User {
   pointEvents      PointEvent[]
   userQuests       UserQuest[]
   userPoints       UserPoints?
+  feedbacks        Feedback[]
 
   @@map("users")
 }
@@ -462,6 +463,20 @@ enum CardCondition {
   PLAYED
   POOR
   GRADED
+}
+
+// ─── FEEDBACK UTILISATEUR ────────────────────────────────────
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("feedbacks")
 }
 
 // ─── SCANNER FEEDBACK ─────────────────────────────────────────

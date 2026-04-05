@@ -61,6 +61,38 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
+  {
+    id: "send_feedback",
+    title: "Donner son avis",
+    description: "Envoie un message via le support pour améliorer la beta",
+    points: 500,
+    icon: "💬",
+    type: "action",
+    verifiable: true,
+    active: true,
+  },
+  {
+    id: "collection_1000",
+    title: "Collection 1 000 €",
+    description: "Atteins 1 000 € de valeur de collection",
+    points: 500,
+    icon: "💰",
+    type: "progressive",
+    target: 1000,
+    verifiable: true,
+    active: true,
+  },
+  {
+    id: "three_extensions",
+    title: "Explorateur",
+    description: "Possède au moins une carte de 3 extensions différentes",
+    points: 500,
+    icon: "🗺️",
+    type: "progressive",
+    target: 3,
+    verifiable: true,
+    active: true,
+  },
 ]
 
 export const ACTIVE_QUESTS = QUESTS.filter(q => q.active)

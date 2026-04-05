@@ -824,6 +824,9 @@ export function CardCollectionGrid({
                   src={CARD_RARITY_IMAGE[rarity]}
                   alt={CARD_RARITY_LABELS[rarity]}
                   className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
+                  style={(rarity === CardRarity.COMMON || rarity === CardRarity.UNCOMMON || rarity === CardRarity.RARE)
+                    ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+                    : undefined}
                 />
                 <span>{count}</span>
               </button>
@@ -927,7 +930,11 @@ export function CardCollectionGrid({
                   <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={CARD_RARITY_IMAGE[card.rarity]} alt="" className="h-3 w-auto object-contain opacity-90" />
+                    <img src={CARD_RARITY_IMAGE[card.rarity]} alt="" className="h-3 w-auto object-contain opacity-90"
+                      style={(card.rarity === CardRarity.COMMON || card.rarity === CardRarity.UNCOMMON || card.rarity === CardRarity.RARE)
+                        ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+                        : undefined}
+                    />
                   </div>
 
                   {/* Version pills (owned + missing) — bottom right, stacked (hidden for special cards) */}

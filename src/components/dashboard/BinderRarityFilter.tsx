@@ -93,7 +93,15 @@ export function BinderRarityFilter() {
                 <img
                   src={imgSrc}
                   alt={label}
-                  style={{ height: 14, width: 'auto', objectFit: 'contain', opacity: isActive ? 1 : 0.55 }}
+                  style={{
+                    height: 14,
+                    width: 'auto',
+                    objectFit: 'contain',
+                    opacity: isActive ? 1 : 0.55,
+                    filter: (r.rarityKey === 'COMMON' || r.rarityKey === 'UNCOMMON' || r.rarityKey === 'RARE')
+                      ? 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))'
+                      : undefined,
+                  }}
                 />
               )}
               <span>{r.cardCount}</span>

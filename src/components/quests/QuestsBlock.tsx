@@ -246,7 +246,11 @@ function QuestRow({ quest }: { quest: QuestState }) {
         {quest.type === 'progressive' && quest.target && !quest.completed && (
           <div className="mt-2">
             <div className="flex items-center justify-between text-xs text-[var(--text-tertiary)] mb-1">
-              <span>{quest.progress}/{quest.target}</span>
+              {quest.id === 'collection_1000' ? (
+                <span>{quest.progress.toLocaleString('fr-FR')} € / 1 000 €</span>
+              ) : (
+                <span>{quest.progress}/{quest.target}</span>
+              )}
               <span>{Math.round((quest.progress / quest.target) * 100)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-gray-700">

@@ -3,16 +3,29 @@ import { useState } from 'react'
 import { Mail } from 'lucide-react'
 
 export function SupportTab() {
-  const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const sub = encodeURIComponent(subject || 'Support PokeItem')
-    const body = encodeURIComponent(message)
-    window.location.href = `mailto:contact@pokeitem.fr?subject=${sub}&body=${body}`
-    setSent(true)
+    if (!message.trim()) return
+    setSending(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      })
+      if (!res.ok) throw new Error('Erreur')
+      setSent(true)
+    } catch {
+      setError('Une erreur est survenue. Réessaie ou écris-nous à contact@pokeitem.fr')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -29,30 +42,25 @@ export function SupportTab() {
 
       {sent ? (
         <p className="text-sm text-green-400 text-center py-6">
-          ✓ Votre client mail a été ouvert. Nous répondons sous 24h.
+          ✓ Message envoyé ! Merci pour ton retour, nous répondons sous 24h.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="text"
-            placeholder="Sujet"
-            value={subject}
-            onChange={e => setSubject(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76]"
-          />
           <textarea
-            placeholder="Décrivez votre problème ou votre question..."
+            placeholder="Décrivez votre problème, suggestion ou question..."
             value={message}
             onChange={e => setMessage(e.target.value)}
             rows={5}
             required
             className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76] resize-none"
           />
+          {error && <p className="text-xs text-red-400">{error}</p>}
           <button
             type="submit"
-            className="w-full rounded-xl bg-[#E7BA76] py-3 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors"
+            disabled={sending || !message.trim()}
+            className="w-full rounded-xl bg-[#E7BA76] py-3 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-50"
           >
-            Envoyer via email →
+            {sending ? 'Envoi…' : 'Envoyer →'}
           </button>
         </form>
       )}

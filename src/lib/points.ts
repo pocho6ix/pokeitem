@@ -78,20 +78,91 @@ export async function completeQuest(userId: string, questId: string): Promise<nu
   return await recalculateUserPoints(userId)
 }
 
+// ─── Idempotent quest completion (safe to call multiple times) ───────────────
+
+export async function completeQuestIfNotDone(userId: string, questId: string) {
+  const quest = QUEST_MAP[questId]
+  if (!quest || !quest.active) return
+
+  const existing = await prisma.userQuest.findUnique({
+    where: { userId_questId: { userId, questId } },
+  })
+  if (existing?.completed) return
+
+  const now = new Date()
+
+  await prisma.userQuest.upsert({
+    where: { userId_questId: { userId, questId } },
+    update: { completed: true, completedAt: now },
+    create: { userId, questId, completed: true, progress: quest.target ?? 1, completedAt: now },
+  })
+
+  await prisma.pointEvent.create({
+    data: { userId, points: quest.points, source: 'quest', questId },
+  })
+
+  await recalculateUserPoints(userId)
+}
+
 // ─── Check and update progressive quests ─────────────────────────────────────
 
 export async function checkProgressiveQuests(userId: string) {
-  // Quest: add_500_cards — count distinct UserCard entries for this user
+  // ── add_500_cards ─────────────────────────────────────────────────────────
   const cardCount = await prisma.userCard.count({ where: { userId } })
 
-  const quest = await prisma.userQuest.upsert({
+  const questCards = await prisma.userQuest.upsert({
     where: { userId_questId: { userId, questId: 'add_500_cards' } },
     update: { progress: cardCount },
     create: { userId, questId: 'add_500_cards', progress: cardCount },
   })
 
-  if (cardCount >= 500 && !quest.completed) {
+  if (cardCount >= 500 && !questCards.completed) {
     await completeQuest(userId, 'add_500_cards').catch(() => {})
+  }
+
+  // ── collection_1000 ───────────────────────────────────────────────────────
+  const userCardsWithPrices = await prisma.userCard.findMany({
+    where: { userId },
+    select: {
+      quantity: true,
+      version:  true,
+      card: { select: { price: true, priceReverse: true } },
+    },
+  })
+  const totalValue = userCardsWithPrices.reduce((sum, uc) => {
+    const price = uc.version === 'REVERSE'
+      ? (uc.card.priceReverse ?? uc.card.price ?? 0)
+      : (uc.card.price ?? 0)
+    return sum + price * uc.quantity
+  }, 0)
+  const progressValue = Math.min(Math.round(totalValue), 1000)
+
+  const quest1000 = await prisma.userQuest.upsert({
+    where: { userId_questId: { userId, questId: 'collection_1000' } },
+    update: { progress: progressValue },
+    create: { userId, questId: 'collection_1000', progress: progressValue },
+  })
+
+  if (totalValue >= 1000 && !quest1000.completed) {
+    await completeQuestIfNotDone(userId, 'collection_1000').catch(() => {})
+  }
+
+  // ── three_extensions ──────────────────────────────────────────────────────
+  const userCardsForSeries = await prisma.userCard.findMany({
+    where: { userId },
+    select: { card: { select: { serieId: true } } },
+  })
+  const setCount = new Set(userCardsForSeries.map(uc => uc.card.serieId)).size
+  const progressSets = Math.min(setCount, 3)
+
+  const questSets = await prisma.userQuest.upsert({
+    where: { userId_questId: { userId, questId: 'three_extensions' } },
+    update: { progress: progressSets },
+    create: { userId, questId: 'three_extensions', progress: progressSets },
+  })
+
+  if (setCount >= 3 && !questSets.completed) {
+    await completeQuestIfNotDone(userId, 'three_extensions').catch(() => {})
   }
 }
 
