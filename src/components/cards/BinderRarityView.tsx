@@ -1,7 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
 import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
+
+const CardDetailModal = lazy(() =>
+  import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
+)
 
 // Display order: rarest first, PROMO at end
 const DISPLAY_ORDER: CardRarity[] = [
@@ -22,11 +26,11 @@ const DARK_ICON_RARITIES = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, Card
 
 // ─── Single card cell ────────────────────────────────────────────────────────
 
-function CardCell({ card }: { card: RarityCard }) {
+function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: string) => void }) {
   return (
-    <div className="flex flex-col items-center gap-1">
+    <button className="flex flex-col items-center gap-1 text-left w-full" onClick={() => onCardClick(card.id)}>
       <div
-        className="w-full overflow-hidden rounded-lg bg-[#1A2332]"
+        className="w-full overflow-hidden rounded-lg bg-[#1A2332] transition-transform active:scale-95"
         style={{ aspectRatio: '63/88' }}
       >
         {card.imageUrl ? (
@@ -51,13 +55,13 @@ function CardCell({ card }: { card: RarityCard }) {
           {card.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
         </span>
       )}
-    </div>
+    </button>
   )
 }
 
 // ─── Rarity section ──────────────────────────────────────────────────────────
 
-function RaritySectionBlock({ section }: { section: RaritySection }) {
+function RaritySectionBlock({ section, onCardClick }: { section: RaritySection; onCardClick: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const displayCards = expanded ? section.cards : section.cards.slice(0, 16)
   const label = CARD_RARITY_LABELS[section.rarityKey]
@@ -93,7 +97,7 @@ function RaritySectionBlock({ section }: { section: RaritySection }) {
       {/* Card grid — 3 on mobile, 8 on desktop */}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 sm:gap-3">
         {displayCards.map((card) => (
-          <CardCell key={card.id} card={card} />
+          <CardCell key={card.id} card={card} onCardClick={onCardClick} />
         ))}
       </div>
 
@@ -115,6 +119,7 @@ function RaritySectionBlock({ section }: { section: RaritySection }) {
 export function BinderRarityView() {
   const [sections, setSections] = useState<RaritySection[] | null>(null)
   const [loading, setLoading] = useState(true)
+  const [detailCardId, setDetailCardId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/binder/cards-by-rarity')
@@ -157,8 +162,13 @@ export function BinderRarityView() {
   return (
     <div>
       {sorted.map((section) => (
-        <RaritySectionBlock key={section.rarityKey} section={section} />
+        <RaritySectionBlock key={section.rarityKey} section={section} onCardClick={setDetailCardId} />
       ))}
+      {detailCardId && (
+        <Suspense fallback={null}>
+          <CardDetailModal cardId={detailCardId} onClose={() => setDetailCardId(null)} />
+        </Suspense>
+      )}
     </div>
   )
 }
