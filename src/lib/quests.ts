@@ -53,7 +53,7 @@ export const QUESTS: QuestDefinition[] = [
   {
     id: "share_leaderboard",
     title: "Partager mon classement",
-    description: "Télécharge et partage ta carte de classement",
+    description: "Partage ta carte de classement",
     points: 1000,
     icon: "🏆",
     type: "action",

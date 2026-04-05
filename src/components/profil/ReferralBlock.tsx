@@ -304,7 +304,7 @@ export function ReferralBlock() {
       <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Trophy className="w-5 h-5 text-[#E7BA76]" />
-          <h4 className="font-semibold text-[var(--text-primary)]">Leaderboard</h4>
+          <h4 className="font-semibold text-[var(--text-primary)]">Classement</h4>
           {totalParticipants > 0 && (
             <span className="text-xs text-[var(--text-tertiary)]">
               {totalParticipants} participant{totalParticipants > 1 ? 's' : ''}
