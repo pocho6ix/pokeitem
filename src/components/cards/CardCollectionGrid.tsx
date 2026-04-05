@@ -208,7 +208,7 @@ const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
 const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
 
 const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "Commune",
+  [CardVersion.NORMAL]:             "Normale",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
   [CardVersion.REVERSE_MASTERBALL]: "Masterball",
@@ -977,7 +977,7 @@ export function CardCollectionGrid({
       {/* Sticky action bar */}
       {isAuthenticated && (
         <div className={cn("fixed bottom-16 left-0 right-0 z-[60] transition-all duration-200 sm:bottom-0",
-          selectedIds.size > 0 ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none")}>
+          selectedIds.size > 0 && activeModal === null ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none")}>
           <div className="mx-auto max-w-7xl px-4 pb-4 sm:pb-6">
             <div className="flex items-center gap-2 rounded-2xl bg-[var(--bg-card)] p-3 shadow-2xl border border-[var(--border-default)]">
               <button onClick={selectAll} title="Tout sélectionner"

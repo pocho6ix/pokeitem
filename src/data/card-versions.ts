@@ -26,7 +26,7 @@ export enum CardVersion {
 }
 
 export const CARD_VERSION_LABELS: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "Commune",
+  [CardVersion.NORMAL]:             "Normale",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Reverse (Pokéball)",
   [CardVersion.REVERSE_MASTERBALL]: "Reverse (Masterball)",
@@ -75,9 +75,8 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "foudre-noire":            V_MASTERBALL, // EV10.5b
   "flamme-blanche":          V_MASTERBALL, // EV10.5w
 
-  // ── Méga-Évolution — Héros Transcendants & Équilibre Parfait add Poké Ball
+  // ── Méga-Évolution — Héros Transcendants ajoute la Poké Ball (pas ME03)
   "heros-transcendants": V_POKEBALL, // ME2.5 — Reverse (type symbol) + Poké Ball
-  "equilibre-parfait":   V_POKEBALL, // ME03
 };
 
 // ── Bloc-level defaults (fallback when serie not in map above) ───────────────
