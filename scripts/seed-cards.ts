@@ -161,7 +161,8 @@ const TCGDEX_MAPPING: Record<string, string> = {
 
 // Sets uniquement disponibles via pokemontcg.io (absents de TCGdex FR)
 const PTCG_ONLY_MAPPING: Record<string, string> = {
-  "base4":  "set-de-base-2",
+  // base4 (Base Set 2) : API TCGdex FR absente MAIS images FR disponibles sur le CDN
+  // → géré via script scripts/fix-base-set-2-images.ts
   "gym1":   "gym-heroes",
   "gym2":   "gym-challenge",
   "ecard3": "skyridge",
