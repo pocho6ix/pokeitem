@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 
 interface LeaderboardShareCardProps {
   rank: number | null
@@ -58,9 +58,21 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
       cardCount, referralCount, questsCompleted, questsTotal,
     } = props
 
-    const proxiedAvatar = avatarUrl
-      ? `/api/proxy-image?url=${encodeURIComponent(avatarUrl)}`
-      : null
+    // Pre-fetch avatar as data URL so html2canvas doesn't need to fetch
+    // relative URLs (which fail silently on mobile)
+    const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null)
+    useEffect(() => {
+      if (!avatarUrl) return
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(avatarUrl)}`
+      fetch(proxyUrl)
+        .then(r => r.blob())
+        .then(blob => {
+          const reader = new FileReader()
+          reader.onload = () => setAvatarDataUrl(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+        .catch(() => {/* fallback to initials */})
+    }, [avatarUrl])
 
     const stats = [
       { value: cardCount.toLocaleString('fr-FR'), label: 'cartes' },
@@ -195,13 +207,12 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                {proxiedAvatar ? (
+                {avatarDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={proxiedAvatar}
+                    src={avatarDataUrl}
                     alt=""
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    crossOrigin="anonymous"
                   />
                 ) : (
                   <span style={{ fontSize: 40, fontWeight: 700, color: '#D4A853' }}>
