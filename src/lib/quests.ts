@@ -15,17 +15,7 @@ export interface QuestDefinition {
 }
 
 export const QUESTS: QuestDefinition[] = [
-  {
-    id: "add_500_cards",
-    title: "Collectionneur aguerri",
-    description: "Ajoute 500 cartes à ton classeur",
-    points: 1000,
-    icon: "🃏",
-    type: "progressive",
-    target: 500,
-    verifiable: true,
-    active: true,
-  },
+  // 2 — Follow Instagram
   {
     id: "follow_instagram",
     title: "Follow Instagram",
@@ -38,6 +28,7 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
+  // 3 — Follow TikTok
   {
     id: "follow_tiktok",
     title: "Follow TikTok",
@@ -50,6 +41,18 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
+  // 4 — Installer l'app
+  {
+    id: "install_pwa",
+    title: "Installer l'app",
+    description: "Ajoute PokeItem à ton écran d'accueil",
+    points: 1000,
+    icon: "📲",
+    type: "action",
+    verifiable: false,
+    active: true,
+  },
+  // 5 — Partager mon classement
   {
     id: "share_leaderboard",
     title: "Partager mon classement",
@@ -61,16 +64,31 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
+  // 6 — Collectionneur aguerri
   {
-    id: "send_feedback",
-    title: "Donner son avis",
-    description: "Envoie un message via le support pour nous aider à améliorer la beta",
-    points: 500,
-    icon: "💬",
-    type: "action",
+    id: "add_500_cards",
+    title: "Collectionneur aguerri",
+    description: "Ajoute 500 cartes à ton classeur",
+    points: 1000,
+    icon: "🃏",
+    type: "progressive",
+    target: 500,
     verifiable: true,
     active: true,
   },
+  // 7 — Explorateur
+  {
+    id: "three_extensions",
+    title: "Explorateur",
+    description: "Possède au moins une carte de 3 extensions différentes",
+    points: 500,
+    icon: "🗺️",
+    type: "progressive",
+    target: 3,
+    verifiable: true,
+    active: true,
+  },
+  // 8 — Collection 1 000 €
   {
     id: "collection_1000",
     title: "Collection 1 000 €",
@@ -82,24 +100,14 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: true,
     active: true,
   },
+  // 9 — Donner son avis
   {
-    id: "install_pwa",
-    title: "Installer l'app",
-    description: "Ajoute PokeItem à ton écran d'accueil",
-    points: 1000,
-    icon: "📲",
-    type: "action",
-    verifiable: false,
-    active: true,
-  },
-  {
-    id: "three_extensions",
-    title: "Explorateur",
-    description: "Possède au moins une carte de 3 extensions différentes",
+    id: "send_feedback",
+    title: "Donner son avis",
+    description: "Envoie un message via le support pour nous aider à améliorer la beta",
     points: 500,
-    icon: "🗺️",
-    type: "progressive",
-    target: 3,
+    icon: "💬",
+    type: "action",
     verifiable: true,
     active: true,
   },
