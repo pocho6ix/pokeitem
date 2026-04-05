@@ -5,7 +5,6 @@ import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
-import { Star } from "lucide-react";
 import Link from "next/link";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
@@ -108,10 +107,7 @@ export default async function HomePage() {
         {/* Text content — below the banner on a solid dark background */}
         <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-default)] px-3 py-1 text-xs font-medium mb-5">
-              <Star className="h-3.5 w-3.5 text-[#E7BA76]" />
-              La référence des collectionneurs Pokémon.
-            </div>
+
             <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl">
               Gérez votre collection{" "}
               <span className="text-[#E7BA76]">Pokémon TCG</span>

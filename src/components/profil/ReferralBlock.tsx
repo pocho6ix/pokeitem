@@ -177,7 +177,7 @@ export function ReferralBlock() {
           <div>
             <h3 className="font-semibold text-[var(--text-primary)]">Invite un ami</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1000 points</p>
-            <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro par ami invité</p>
+            <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro gratuite par ami invité</p>
           </div>
           {CONTEST_CONFIG.active && countdown !== null && (
             <span className="shrink-0 rounded-full border border-[var(--border-default)] px-3 py-1 text-xs text-[var(--text-tertiary)]">
