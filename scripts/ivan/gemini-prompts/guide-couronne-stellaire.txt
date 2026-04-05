@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Série Couronne Stellaire Pokémon TCG : Guide Complet"
+
+A premium flat-lay photography of Pokémon TCG sealed products from Stellar Crown arranged on a dark cosmic-themed surface with subtle star patterns. Include a booster box prominently displayed in the center, flanked by an ETB and several booster packs with stellar crown artwork visible. Soft ethereal lighting with blue and purple cosmic glow effects. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-couronne-stellaire.jpg
