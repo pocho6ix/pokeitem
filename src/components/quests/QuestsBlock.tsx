@@ -42,10 +42,10 @@ function ReferralRow({ validatedCount, referralLink }: { validatedCount: number;
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-[var(--text-primary)]">Invite un ami</span>
-          <span className="text-xs font-bold text-[#E7BA76]">+1000 pts</span>
+          <span className="text-xs font-bold text-[#E7BA76]">+1000 pts par ami</span>
         </div>
-        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-          {validatedCount} ami{validatedCount !== 1 ? 's' : ''} invité{validatedCount !== 1 ? 's' : ''}
+        <p className="text-xs text-[var(--text-primary)] mt-0.5">
+          {validatedCount} ami{validatedCount !== 1 ? 's' : ''} invité{validatedCount !== 1 ? 's' : ''}{validatedCount > 0 ? ` (${(validatedCount * 1000).toLocaleString('fr-FR')} points)` : ''}
         </p>
         <div className="mt-2">
           <button
