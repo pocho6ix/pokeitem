@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition, lazy, Suspense } from "react";
+import { useState, useMemo, useTransition, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Trash2, X, CheckSquare } from "lucide-react";
-import { CARD_RARITY_SYMBOL, CardRarity, CardCondition } from "@/types/card";
+import { Trash2, X, CheckSquare, ArrowUpDown, Search } from "lucide-react";
+import { CARD_RARITY_SYMBOL, CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS } from "@/data/card-versions";
+import { cn } from "@/lib/utils";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -49,6 +50,45 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
   const [confirming, setConfirming]   = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
+
+  // ── Sort & filter state ──────────────────────────────────────────────
+  type SortKey = "number" | "name" | "rarity" | "price";
+  const [search, setSearch]           = useState("");
+  const [sortBy, setSortBy]           = useState<SortKey>("number");
+  const [sortOrder, setSortOrder]     = useState<"asc" | "desc">("asc");
+  const [rarityFilter, setRarityFilter] = useState<CardRarity | null>(null);
+  const [showSort, setShowSort]       = useState(false);
+
+  const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+    { key: "number",  label: "Numéro" },
+    { key: "name",    label: "Nom" },
+    { key: "rarity",  label: "Rareté" },
+    { key: "price",   label: "Prix" },
+  ];
+
+  const rarityCounts = useMemo(() => {
+    const m = new Map<CardRarity, number>();
+    for (const c of cards) m.set(c.rarity, (m.get(c.rarity) ?? 0) + 1);
+    return m;
+  }, [cards]);
+
+  const sortedCards = useMemo(() => {
+    let result = cards;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter((c) => c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q));
+    }
+    if (rarityFilter) result = result.filter((c) => c.rarity === rarityFilter);
+
+    return [...result].sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === "number") cmp = a.number.localeCompare(b.number, undefined, { numeric: true });
+      if (sortBy === "name")   cmp = a.name.localeCompare(b.name, "fr");
+      if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
+      if (sortBy === "price")  cmp = (a.price ?? 0) - (b.price ?? 0);
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [cards, search, rarityFilter, sortBy, sortOrder]);
 
   function toggleEdit() {
     setEditMode((e) => !e);
@@ -191,9 +231,82 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
         </div>
       )}
 
+      {/* Search + Sort bar */}
+      {!editMode && (
+        <div className="mb-3 space-y-2">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-tertiary)]" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Nom ou numéro…"
+                className="w-full rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] py-2 pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[#E7BA76]"
+              />
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowSort(!showSort)}
+                className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] hover:border-[#E7BA76]/70 transition-colors"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                Trier
+              </button>
+              {showSort && (
+                <div className="absolute right-0 top-full z-30 mt-1 w-40 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] py-1 shadow-xl">
+                  {SORT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      onClick={() => {
+                        if (sortBy === opt.key) setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+                        else { setSortBy(opt.key); setSortOrder(opt.key === "price" ? "desc" : "asc"); }
+                        setShowSort(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between px-3 py-2 text-sm transition-colors",
+                        sortBy === opt.key ? "text-[#E7BA76]" : "text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+                      )}
+                    >
+                      {opt.label}
+                      {sortBy === opt.key && <span className="text-xs">{sortOrder === "asc" ? "↑" : "↓"}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Rarity filter chips */}
+          {rarityCounts.size > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {(Object.values(CardRarity) as CardRarity[]).filter((r) => rarityCounts.has(r)).map((rarity) => {
+                const count  = rarityCounts.get(rarity)!;
+                const active = rarityFilter === rarity;
+                return (
+                  <button key={rarity} onClick={() => setRarityFilter(active ? null : rarity)}
+                    title={CARD_RARITY_LABELS[rarity]}
+                    className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                      active ? "border-[#E7BA76] bg-[#E7BA76]/20 text-[#E7BA76]"
+                        : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={CARD_RARITY_IMAGE[rarity]}
+                      alt={CARD_RARITY_LABELS[rarity]}
+                      className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
+                    />
+                    <span>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Card grid */}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-        {cards.map((uc) => {
+        {sortedCards.map((uc) => {
           const key       = cardKey(uc);
           const isSelected = selected.has(key);
 

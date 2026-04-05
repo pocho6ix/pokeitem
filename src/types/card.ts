@@ -113,6 +113,18 @@ export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
   [CardRarity.PROMO]: 'P',
 };
 
+export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
+  [CardRarity.COMMON]: '/rarities/common.png',
+  [CardRarity.UNCOMMON]: '/rarities/uncommon.png',
+  [CardRarity.RARE]: '/rarities/rare.png',
+  [CardRarity.DOUBLE_RARE]: '/rarities/double-rare.png',
+  [CardRarity.ILLUSTRATION_RARE]: '/rarities/illustration-rare.png',
+  [CardRarity.SPECIAL_ILLUSTRATION_RARE]: '/rarities/special-illustration-rare.png',
+  [CardRarity.HYPER_RARE]: '/rarities/hyper-rare.png',
+  [CardRarity.ACE_SPEC_RARE]: '/rarities/ace-spec-rare.png',
+  [CardRarity.PROMO]: '/rarities/promo.png',
+};
+
 export const CARD_RARITY_ORDER: Record<CardRarity, number> = {
   [CardRarity.COMMON]: 0,
   [CardRarity.UNCOMMON]: 1,

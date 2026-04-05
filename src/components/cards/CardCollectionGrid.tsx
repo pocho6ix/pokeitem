@@ -7,6 +7,7 @@ import {
   CardCondition,
   CARD_RARITY_LABELS,
   CARD_RARITY_SYMBOL,
+  CARD_RARITY_IMAGE,
   CARD_RARITY_ORDER,
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
@@ -754,10 +755,15 @@ export function CardCollectionGrid({
             return (
               <button key={rarity} onClick={() => setRarityFilter(active ? null : rarity)}
                 title={CARD_RARITY_LABELS[rarity]}
-                className={cn("flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
-                  active ? "border-[#E7BA76] bg-[#E7BA76] text-black"
+                className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                  active ? "border-[#E7BA76] bg-[#E7BA76]/20 text-[#E7BA76]"
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
-                <span>{CARD_RARITY_SYMBOL[rarity]}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={CARD_RARITY_IMAGE[rarity]}
+                  alt={CARD_RARITY_LABELS[rarity]}
+                  className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
+                />
                 <span>{count}</span>
               </button>
             );
