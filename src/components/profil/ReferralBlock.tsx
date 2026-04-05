@@ -230,10 +230,47 @@ export function ReferralBlock() {
 
         {/* Concours prize line */}
         {CONTEST_CONFIG.active && (
-          <p className="text-xs text-[var(--text-tertiary)] border-t border-[var(--border-default)] pt-3 leading-relaxed">
-            <span className="font-semibold text-[#D4A853]">Concours</span>
-            {' · '}Le joueur avec le plus de points remporte {CONTEST_CONFIG.prize}
-          </p>
+          <>
+            <p className="text-xs text-[var(--text-tertiary)] border-t border-[var(--border-default)] pt-3 leading-relaxed">
+              <span className="font-semibold text-[#D4A853]">Concours</span>
+              {' · '}Le joueur avec le plus de points remporte {CONTEST_CONFIG.prizeMain} 🔥 Plein d&apos;autres lots pour les meilleurs du leaderboard :{' '}
+              <span className="font-semibold text-[var(--text-secondary)]">{CONTEST_CONFIG.prizeDetails} !</span>
+            </p>
+
+            {/* Prize image */}
+            <div
+              className="relative w-full overflow-hidden rounded-xl"
+              style={{
+                boxShadow: '0 0 0 1.5px rgba(212,168,83,0.4), 0 0 18px 2px rgba(212,168,83,0.15)',
+                animation: 'prize-pulse 3s ease-in-out infinite',
+              }}
+            >
+              <style>{`
+                @keyframes prize-pulse {
+                  0%, 100% { box-shadow: 0 0 0 1.5px rgba(212,168,83,0.4), 0 0 18px 2px rgba(212,168,83,0.15); }
+                  50%       { box-shadow: 0 0 0 1.5px rgba(212,168,83,0.7), 0 0 28px 4px rgba(212,168,83,0.28); }
+                }
+              `}</style>
+
+              {CONTEST_CONFIG.prizeImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={CONTEST_CONFIG.prizeImageUrl}
+                  alt="Lot à gagner — UPC Flammes Fantasmagoriques"
+                  className="w-full h-auto block"
+                  style={{ aspectRatio: '16/9', objectFit: 'cover' }}
+                />
+              ) : (
+                <div
+                  className="flex flex-col items-center justify-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"
+                  style={{ aspectRatio: '16/9' }}
+                >
+                  <span style={{ fontSize: 32 }}>🎁</span>
+                  <span className="text-xs font-medium">Image du lot à venir</span>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
