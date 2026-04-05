@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import useSWR, { mutate } from 'swr'
 import { Copy, Check, Download } from 'lucide-react'
 import { useShareCard } from '@/hooks/useShareCard'
@@ -210,6 +210,109 @@ function ShareQuestRow({ quest, shareData, shareCardRef }: ShareQuestRowProps) {
   )
 }
 
+// ─── Install PWA quest row ────────────────────────────────────────────────────
+
+function InstallPwaQuestRow({ quest }: { quest: QuestState }) {
+  const [deferredPrompt, setDeferredPrompt] = useState<Event & { prompt(): void; userChoice: Promise<{ outcome: string }> } | null>(null)
+  const [completing, setCompleting] = useState(false)
+  const [installed, setInstalled] = useState(false)
+  const completedRef = useRef(quest.completed)
+
+  async function completeQuest() {
+    if (completedRef.current) return
+    completedRef.current = true
+    setCompleting(true)
+    try {
+      await fetch('/api/user/quests/install_pwa/complete', { method: 'POST' })
+      await mutate('/api/user/points')
+    } finally {
+      setCompleting(false)
+    }
+  }
+
+  useEffect(() => {
+    // Already running as installed PWA → auto-complete
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as { standalone?: boolean }).standalone === true
+    if (isStandalone) { completeQuest(); return }
+
+    const onPrompt = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e as typeof deferredPrompt & Event)
+    }
+    const onInstalled = () => { setInstalled(true); completeQuest() }
+
+    window.addEventListener('beforeinstallprompt', onPrompt)
+    window.addEventListener('appinstalled', onInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt)
+      window.removeEventListener('appinstalled', onInstalled)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleInstall() {
+    if (!deferredPrompt) return
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    setDeferredPrompt(null)
+    if (outcome === 'accepted') { setInstalled(true); completeQuest() }
+  }
+
+  const isIOS = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent)
+
+  return (
+    <div className={`flex items-start gap-3 rounded-xl border px-3.5 py-3 transition-all ${
+      quest.completed ? 'border-green-500/30 bg-green-500/5' : 'border-[var(--border-default)] bg-[var(--bg-secondary)]'
+    }`}>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-sm font-semibold ${quest.completed ? 'text-green-400' : 'text-[var(--text-primary)]'}`}>
+            {quest.title}
+          </span>
+          <span className="text-xs font-bold text-[#E7BA76]">+{quest.points} pts</span>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">{quest.description}</p>
+
+        {!quest.completed && !installed && (
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            {deferredPrompt ? (
+              <button
+                onClick={handleInstall}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/50 transition-colors"
+              >
+                📲 Installer
+              </button>
+            ) : (
+              <>
+                <p className="text-xs text-[var(--text-tertiary)] w-full">
+                  {isIOS
+                    ? "Sur iOS : appuyez sur Partager ↑ puis « Sur l'écran d'accueil »"
+                    : "Installez l'app depuis le menu de votre navigateur (⋮)"}
+                </p>
+                <button
+                  onClick={() => { setInstalled(true); completeQuest() }}
+                  disabled={completing}
+                  className="inline-flex items-center gap-1 rounded-lg bg-[#E7BA76]/20 border border-[#E7BA76]/40 px-3 py-1.5 text-xs font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/30 transition-colors disabled:opacity-50"
+                >
+                  {completing ? '…' : "✓ C'est fait"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        {!quest.completed && installed && (
+          <p className="mt-1.5 text-xs text-green-400">✓ Application installée !</p>
+        )}
+      </div>
+      {quest.completed && (
+        <span className="text-xs font-semibold text-green-400 shrink-0 mt-0.5">Complétée</span>
+      )}
+    </div>
+  )
+}
+
 // ─── QuestRow ─────────────────────────────────────────────────────────────────
 
 function QuestRow({ quest }: { quest: QuestState }) {
@@ -346,6 +449,8 @@ export function QuestsBlock() {
           {quests.map(quest =>
             quest.id === 'share_leaderboard' ? (
               <ShareQuestRow key={quest.id} quest={quest} shareData={shareData ?? null} shareCardRef={cardRef} />
+            ) : quest.id === 'install_pwa' ? (
+              <InstallPwaQuestRow key={quest.id} quest={quest} />
             ) : (
               <QuestRow key={quest.id} quest={quest} />
             )

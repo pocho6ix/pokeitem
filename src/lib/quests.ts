@@ -83,6 +83,16 @@ export const QUESTS: QuestDefinition[] = [
     active: true,
   },
   {
+    id: "install_pwa",
+    title: "Installer l'app",
+    description: "Ajoute PokeItem à ton écran d'accueil",
+    points: 1000,
+    icon: "📲",
+    type: "action",
+    verifiable: false,
+    active: true,
+  },
+  {
     id: "three_extensions",
     title: "Explorateur",
     description: "Possède au moins une carte de 3 extensions différentes",
