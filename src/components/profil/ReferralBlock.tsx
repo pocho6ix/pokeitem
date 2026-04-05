@@ -4,6 +4,8 @@ import useSWR from 'swr'
 import { Copy, Check, Share2, Trophy, Gift, Users } from 'lucide-react'
 import { CONTEST_CONFIG } from '@/config/contest'
 import type { PointsLeaderboardEntry } from '@/lib/points'
+import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
+import { useShareCard } from '@/hooks/useShareCard'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,9 +144,21 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function ReferralBlock() {
   const { data: stats, isLoading: statsLoading } = useSWR('/api/referral/stats', fetcher)
-  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/leaderboard',         fetcher)
+  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/leaderboard',    fetcher)
+  const { data: shareData }                      = useSWR('/api/user/share-data', fetcher)
 
+  const { cardRef, isGenerating, share } = useShareCard()
   const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
+
+  async function handleShareCard() {
+    await share(
+      'pokeitem-leaderboard.png',
+      `Je suis #${shareData?.rank} sur PokeItem avec ${(shareData?.totalPoints ?? 0).toLocaleString('fr-FR')} pts ! 🏆 app.pokeitem.fr`
+    )
+    setShareCopied(true)
+    setTimeout(() => setShareCopied(false), 2500)
+  }
 
   const contestEndDate = CONTEST_CONFIG.active ? new Date(CONTEST_CONFIG.endDate) : null
   const countdown      = useCountdown(contestEndDate)
@@ -278,9 +292,26 @@ export function ReferralBlock() {
           <Trophy className="w-5 h-5 text-[#E7BA76]" />
           <h4 className="font-semibold text-[var(--text-primary)]">Leaderboard</h4>
           {totalParticipants > 0 && (
-            <span className="ml-auto text-xs text-[var(--text-tertiary)]">
+            <span className="text-xs text-[var(--text-tertiary)]">
               {totalParticipants} participant{totalParticipants > 1 ? 's' : ''}
             </span>
+          )}
+          {/* Share button */}
+          {shareData && (
+            <button
+              onClick={handleShareCard}
+              disabled={isGenerating}
+              title="Partager ma position"
+              className="ml-auto flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[#E7BA76]/50 hover:text-[#E7BA76] transition-colors disabled:opacity-50"
+            >
+              {isGenerating ? (
+                <div className="w-3.5 h-3.5 border-2 border-[#E7BA76] border-t-transparent rounded-full animate-spin" />
+              ) : shareCopied ? (
+                <><Check className="w-3.5 h-3.5 text-green-400" /><span className="text-green-400">Copié !</span></>
+              ) : (
+                <><Share2 className="w-3.5 h-3.5" />Partager</>
+              )}
+            </button>
           )}
         </div>
 
@@ -314,6 +345,20 @@ export function ReferralBlock() {
         )}
       </div>
 
+      {/* Off-screen share card (invisible, used by html2canvas) */}
+      {shareData && (
+        <LeaderboardShareCard
+          ref={cardRef}
+          rank={shareData.rank}
+          username={shareData.username}
+          avatarUrl={shareData.avatar}
+          totalPoints={shareData.totalPoints}
+          cardCount={shareData.cardCount}
+          referralCount={shareData.referralCount}
+          questsCompleted={shareData.questsCompleted}
+          questsTotal={shareData.questsTotal}
+        />
+      )}
     </div>
   )
 }
