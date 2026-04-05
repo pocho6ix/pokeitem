@@ -6,13 +6,13 @@ import { completeQuest } from '@/lib/points'
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { questId: string } }
+  { params }: { params: Promise<{ questId: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as { id: string }).id
 
-  const { questId } = params
+  const { questId } = await params
   const quest = QUEST_MAP[questId]
 
   if (!quest || !quest.active) {
