@@ -102,8 +102,8 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center',
-            opacity: 0.07,
-            filter: 'saturate(0.4) brightness(0.7)',
+            opacity: 0.22,
+            filter: 'saturate(0.6) brightness(0.75)',
             pointerEvents: 'none',
           }}
         />
@@ -111,7 +111,7 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(10,14,20,0.92) 0%, rgba(10,14,20,0.45) 30%, rgba(10,14,20,0.3) 50%, rgba(10,14,20,0.45) 70%, rgba(10,14,20,0.92) 100%)',
+          background: 'linear-gradient(180deg, rgba(10,14,20,0.65) 0%, rgba(10,14,20,0.2) 25%, rgba(10,14,20,0.1) 50%, rgba(10,14,20,0.2) 75%, rgba(10,14,20,0.65) 100%)',
           pointerEvents: 'none',
         }} />
 
