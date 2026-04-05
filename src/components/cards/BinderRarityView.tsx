@@ -59,7 +59,7 @@ function CardCell({ card }: { card: RarityCard }) {
 
 function RaritySectionBlock({ section }: { section: RaritySection }) {
   const [expanded, setExpanded] = useState(false)
-  const displayCards = expanded ? section.cards : section.cards.slice(0, 6)
+  const displayCards = expanded ? section.cards : section.cards.slice(0, 16)
   const label = CARD_RARITY_LABELS[section.rarityKey]
   const imageSrc = CARD_RARITY_IMAGE[section.rarityKey]
   const isDark = DARK_ICON_RARITIES.has(section.rarityKey)
@@ -90,15 +90,15 @@ function RaritySectionBlock({ section }: { section: RaritySection }) {
         </span>
       </div>
 
-      {/* Card grid — 3 columns */}
-      <div className="grid grid-cols-3 gap-2.5">
+      {/* Card grid — 3 on mobile, 8 on desktop */}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 sm:gap-3">
         {displayCards.map((card) => (
           <CardCell key={card.id} card={card} />
         ))}
       </div>
 
       {/* Expand button */}
-      {section.cards.length > 6 && !expanded && (
+      {section.cards.length > 16 && !expanded && (
         <button
           onClick={() => setExpanded(true)}
           className="mt-3 w-full rounded-xl border border-[#1E2D3D] py-2.5 text-sm text-[var(--text-secondary)] transition-colors hover:border-[#2A3F55] hover:text-[var(--text-primary)]"
@@ -129,8 +129,8 @@ export function BinderRarityView() {
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
             <div className="mb-4 h-6 w-48 rounded bg-white/5" />
-            <div className="grid grid-cols-3 gap-2.5">
-              {[...Array(6)].map((_, j) => (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 sm:gap-3">
+              {[...Array(8)].map((_, j) => (
                 <div key={j} className="rounded-lg bg-white/5" style={{ aspectRatio: '63/88' }} />
               ))}
             </div>
