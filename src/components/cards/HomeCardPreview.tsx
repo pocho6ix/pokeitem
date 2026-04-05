@@ -37,7 +37,7 @@ export function HomeCardPreview({ cards }: Props) {
                 className="w-full h-auto block group-hover:scale-105 transition-transform duration-200"
               />
               {/* Price badge */}
-              <div className="absolute bottom-1.5 right-1.5">
+              <div suppressHydrationWarning className="absolute bottom-1.5 right-1.5">
                 <span suppressHydrationWarning className="inline-flex items-center gap-0.5 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-bold text-white shadow backdrop-blur-sm">
                   🇫🇷
                   {card.price.toLocaleString("fr-FR", {
