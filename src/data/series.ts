@@ -52,7 +52,6 @@ const EPEE_BOUCLIER_SERIES: SerieStatic[] = [
   { name: 'Origine Perdue', nameEn: 'Lost Origin', slug: 'origine-perdue', abbreviation: 'EB11', blocSlug: 'epee-bouclier', imageUrl: '/images/series/origine-perdue.png', releaseDate: '2022-09-09', order: 2 },
   { name: 'Pokémon GO', nameEn: 'Pokémon GO', slug: 'pokemon-go', abbreviation: 'EB10.5', blocSlug: 'epee-bouclier', imageUrl: '/images/series/pokemon-go.png', releaseDate: '2022-07-01', order: 3 },
   { name: 'Astres Radieux', nameEn: 'Astral Radiance', slug: 'astres-radieux', abbreviation: 'EB10', blocSlug: 'epee-bouclier', imageUrl: '/images/series/astres-radieux.png', releaseDate: '2022-05-27', order: 4 },
-  { name: 'Brillantes Étoiles', nameEn: 'Brilliant Stars', slug: 'brillantes-etoiles', abbreviation: 'EB09.5', blocSlug: 'epee-bouclier', imageUrl: '/images/series/brillantes-etoiles.png', releaseDate: '2022-02-25', order: 5 },
   { name: 'Stars Étincelantes', nameEn: 'Shining Fates', slug: 'stars-etincelantes', abbreviation: 'EB09', blocSlug: 'epee-bouclier', imageUrl: '/images/series/stars-etincelantes.png', releaseDate: '2021-11-19', order: 6 },
   { name: 'Poing de Fusion', nameEn: 'Fusion Strike', slug: 'poing-de-fusion', abbreviation: 'EB08', blocSlug: 'epee-bouclier', imageUrl: '/images/series/poing-de-fusion.png', releaseDate: '2021-11-12', order: 7 },
   { name: 'Évolution Céleste', nameEn: 'Evolving Skies', slug: 'evolution-celeste', abbreviation: 'EB07', blocSlug: 'epee-bouclier', imageUrl: '/images/series/evolution-celeste.png', releaseDate: '2021-08-27', order: 8 },

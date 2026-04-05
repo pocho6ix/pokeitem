@@ -9,6 +9,7 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
+import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 
 
 async function getTopCards(userId: string) {
@@ -158,35 +159,14 @@ export default async function HomePage() {
                 Voir tout
               </Link>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              {topCards.map((card) => (
-                <Link
-                  key={`${card.cardId}-${card.version}`}
-                  href={`/carte/${card.cardId}`}
-                  className="group"
-                >
-                  <div className="relative rounded-xl overflow-hidden border border-[var(--border-default)] bg-[var(--bg-card)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={card.imageUrl!}
-                      alt={card.name}
-                      className="w-full h-auto block group-hover:scale-105 transition-transform duration-200"
-                    />
-                    {/* Price badge */}
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center rounded-full bg-green-400 px-2 py-0.5 text-[10px] font-bold text-black shadow">
-                        {card.price.toLocaleString("fr-FR", {
-                          style: "currency",
-                          currency: "EUR",
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <HomeCardPreview
+              cards={topCards.map((c) => ({
+                cardId: c.cardId,
+                name: c.name,
+                imageUrl: c.imageUrl!,
+                price: c.price,
+              }))}
+            />
           </div>
         </section>
       )}

@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import Link from "next/link";
+import { useState, useTransition, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Trash2, X, CheckSquare } from "lucide-react";
 import { CARD_RARITY_SYMBOL, CardRarity, CardCondition } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS } from "@/data/card-versions";
+
+const CardDetailModal = lazy(() =>
+  import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
+);
 
 export interface ClasseurCard {
   id: string;        // UserCard.id (not used for API, kept for React key)
@@ -44,6 +48,7 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
   const [selected, setSelected]       = useState<Set<string>>(new Set());
   const [confirming, setConfirming]   = useState(false);
   const [error, setError]             = useState<string | null>(null);
+  const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
   function toggleEdit() {
     setEditMode((e) => !e);
@@ -187,7 +192,7 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
       )}
 
       {/* Card grid */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
         {cards.map((uc) => {
           const key       = cardKey(uc);
           const isSelected = selected.has(key);
@@ -287,12 +292,25 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
           }
 
           return (
-            <Link key={key} href={`/carte/${uc.cardId}`} className="group">
+            <button
+              key={key}
+              onClick={() => setDetailCardId(uc.cardId)}
+              className="group text-left"
+            >
               {cardContent}
-            </Link>
+            </button>
           );
         })}
       </div>
+
+      {detailCardId && (
+        <Suspense fallback={null}>
+          <CardDetailModal
+            cardId={detailCardId}
+            onClose={() => setDetailCardId(null)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
