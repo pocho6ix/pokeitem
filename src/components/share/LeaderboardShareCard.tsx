@@ -90,6 +90,31 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
           boxSizing: 'border-box',
         }}
       >
+        {/* ─── Fond Pokémon (très subtil, sous le contenu) ─── */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/share-bg-pokemon.png"
+          alt=""
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: 0.07,
+            filter: 'saturate(0.4) brightness(0.7)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Overlay dégradé pour assombrir haut/bas et préserver la lisibilité */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(10,14,20,0.92) 0%, rgba(10,14,20,0.45) 30%, rgba(10,14,20,0.3) 50%, rgba(10,14,20,0.45) 70%, rgba(10,14,20,0.92) 100%)',
+          pointerEvents: 'none',
+        }} />
+
         {/* ─── Decorative particles ─── */}
         {[
           { top: 90,  left: 130,  size: 5, opacity: 0.4 },
@@ -250,12 +275,28 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
+                textShadow: '0 2px 8px rgba(0,0,0,0.6)',
               }}>
                 {username}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Points — bloc dédié avec fond ambré subtil */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 12,
+                background: 'rgba(231,186,118,0.12)',
+                border: '1px solid rgba(231,186,118,0.25)',
+                borderRadius: 16,
+                padding: '10px 20px',
+              }}>
                 <TrophySvg />
-                <span style={{ fontSize: 32, fontWeight: 700, color: '#E7BA76' }}>
+                <span style={{
+                  fontSize: 38,
+                  fontWeight: 800,
+                  color: '#F5C542',
+                  textShadow: '0 0 20px rgba(245,197,66,0.45), 0 2px 6px rgba(0,0,0,0.6)',
+                  letterSpacing: 0.5,
+                }}>
                   {totalPoints.toLocaleString('fr-FR')} pts
                 </span>
               </div>
