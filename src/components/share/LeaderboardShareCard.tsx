@@ -1,6 +1,7 @@
 'use client'
 
 import { forwardRef, useEffect, useState } from 'react'
+import { CONTEST_CONFIG } from '@/config/contest'
 
 interface LeaderboardShareCardProps {
   rank: number | null
@@ -73,6 +74,20 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
         })
         .catch(() => {/* fallback to initials */})
     }, [avatarUrl])
+
+    // Pre-fetch contest prize image as data URL
+    const [contestImageDataUrl, setContestImageDataUrl] = useState<string | null>(null)
+    useEffect(() => {
+      if (!CONTEST_CONFIG.active || !CONTEST_CONFIG.prizeImageUrl) return
+      fetch(CONTEST_CONFIG.prizeImageUrl)
+        .then(r => r.blob())
+        .then(blob => {
+          const reader = new FileReader()
+          reader.onload = () => setContestImageDataUrl(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+        .catch(() => {/* fallback: don't show image, keep layout */})
+    }, [])
 
     const stats = [
       { value: cardCount.toLocaleString('fr-FR'), label: 'cartes' },
@@ -270,6 +285,24 @@ export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareC
               ))}
             </div>
           </div>
+
+          {/* Contest prize image */}
+          {CONTEST_CONFIG.active && contestImageDataUrl && (
+            <div style={{
+              width: '100%',
+              marginBottom: 32,
+              borderRadius: 16,
+              overflow: 'hidden',
+              boxShadow: '0 0 0 2px rgba(212,168,83,0.5), 0 8px 32px rgba(212,168,83,0.2)',
+            }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={contestImageDataUrl}
+                alt="À gagner"
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
+            </div>
+          )}
 
           {/* Footer */}
           <div style={{
