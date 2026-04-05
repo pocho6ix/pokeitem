@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import useSWR, { mutate } from 'swr'
-import { Sparkles } from 'lucide-react'
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -81,7 +80,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
           <span className={`text-sm font-semibold ${quest.completed ? 'text-green-400' : 'text-[var(--text-primary)]'}`}>
             {quest.title}
           </span>
-          <span className="text-xs font-bold text-amber-400">+{quest.points} pts</span>
+          <span className="text-xs font-bold text-[#E7BA76]">+{quest.points} pts</span>
         </div>
         <p className="text-xs text-[var(--text-secondary)] mt-0.5">{quest.description}</p>
 
@@ -94,7 +93,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
             </div>
             <div className="h-1.5 rounded-full bg-gray-700">
               <div
-                className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                className="h-full rounded-full bg-[#E7BA76] transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.round((quest.progress / quest.target) * 100))}%` }}
               />
             </div>
@@ -110,7 +109,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setHasClickedFollow(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:border-amber-400/50 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/50 transition-colors"
               >
                 {PLATFORM_ICON[quest.id] ?? null}
                 {quest.actionLabel ?? "S'abonner"}
@@ -120,7 +119,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
               <button
                 onClick={handleComplete}
                 disabled={completing}
-                className="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 border border-amber-500/40 px-3 py-1.5 text-xs font-semibold text-amber-400 hover:bg-amber-500/30 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-lg bg-[#E7BA76]/20 border border-[#E7BA76]/40 px-3 py-1.5 text-xs font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/30 transition-colors disabled:opacity-50"
               >
                 {completing ? '…' : '✓ C\'est fait'}
               </button>
@@ -152,20 +151,15 @@ export function QuestsBlock() {
     <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-amber-400/10">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-[var(--text-primary)]">Quêtes</h3>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {completedCount}/{quests.length} complétées
-            </p>
-          </div>
+        <div>
+          <h3 className="font-semibold text-[var(--text-primary)]">Quêtes</h3>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {completedCount}/{quests.length} complétées
+          </p>
         </div>
         {/* Points + rank */}
         <div className="flex flex-col items-end gap-0.5">
-          <span className="text-base font-bold text-amber-400">{totalPoints.toLocaleString('fr-FR')} pts</span>
+          <span className="text-base font-bold text-[#E7BA76]">{totalPoints.toLocaleString('fr-FR')} pts</span>
           {rank && (
             <span className="text-xs text-[var(--text-tertiary)]">Rang #{rank}</span>
           )}
