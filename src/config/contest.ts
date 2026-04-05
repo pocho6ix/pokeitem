@@ -4,5 +4,5 @@ export const CONTEST_CONFIG = {
   title:        "Concours",
   prizeMain:    "une UPC Flammes Fantasmagoriques",
   prizeDetails: "cartes et/ou item scellé",
-  prizeImageUrl: null as string | null, // set to "/contest/prize.jpg" when ready
+  prizeImageUrl: "/contest/prize.jpg" as string | null,
 } as const
