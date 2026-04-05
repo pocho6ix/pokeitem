@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
+import { BinderCartesWrapper } from "@/components/cards/BinderCartesWrapper";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
@@ -132,7 +132,7 @@ export default async function PortfolioCartesPage({
   // This page only renders the card list itself.
   // baseUrl points to /portfolio/cartes so navigation stays in classeur context.
   return (
-    <BlocSerieCardList
+    <BinderCartesWrapper
       blocs={blocs}
       baseUrl="/portfolio/cartes"
     />
