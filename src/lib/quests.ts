@@ -64,7 +64,7 @@ export const QUESTS: QuestDefinition[] = [
   {
     id: "send_feedback",
     title: "Donner son avis",
-    description: "Envoie un message via le support pour améliorer la beta",
+    description: "Envoie un message via le support pour nous aider à améliorer la beta",
     points: 500,
     icon: "💬",
     type: "action",
