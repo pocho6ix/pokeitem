@@ -60,7 +60,7 @@ export function ConnexionForm() {
       }
 
       // Full page reload so the session cookie is picked up by middleware / server components
-      window.location.href = "/portfolio";
+      window.location.href = "/";
     } catch {
       setError("Une erreur est survenue");
     } finally {
@@ -69,7 +69,7 @@ export function ConnexionForm() {
   }
 
   async function handleOAuth(provider: "google") {
-    await signIn(provider, { callbackUrl: "/portfolio" });
+    await signIn(provider, { callbackUrl: "/" });
   }
 
   return (

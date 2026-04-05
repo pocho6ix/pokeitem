@@ -59,7 +59,7 @@ export function InscriptionForm() {
   });
 
   async function handleOAuth(provider: "google") {
-    await signIn(provider, { callbackUrl: "/portfolio" });
+    await signIn(provider, { callbackUrl: "/" });
   }
 
   async function onSubmit(data: RegisterFormData) {
