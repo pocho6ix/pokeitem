@@ -79,6 +79,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     price:        c.price ?? null,
     priceReverse: c.priceReverse ?? null,
     isSpecial:    c.isSpecial,
+    types:        c.types,
   }));
 
   return (

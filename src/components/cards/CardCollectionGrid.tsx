@@ -6,15 +6,14 @@ import {
   CardRarity,
   CardCondition,
   CARD_RARITY_LABELS,
-  CARD_RARITY_SYMBOL,
   CARD_RARITY_IMAGE,
   CARD_RARITY_ORDER,
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
 import { CardVersion, CARD_VERSION_LABELS, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
-import { RARITY_BADGE_LABELS } from "@/lib/pokemon/card-variants";
 import { SERIES } from "@/data/series";
+import { POKEMON_TYPES, POKEMON_TYPE_MAP } from "@/lib/pokemon-types";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
@@ -34,6 +33,7 @@ export interface CardRow {
   price?: number | null;
   priceReverse?: number | null;
   isSpecial?: boolean;
+  types?: string[];
 }
 
 export interface OwnedEntry {
@@ -476,6 +476,7 @@ export function CardCollectionGrid({
   const [showTransparency, setShowTransparency] = useState(true);
   const [activeModal,      setActiveModal]      = useState<ActiveModal>(null);
   const [isPending,        startTransition]     = useTransition();
+  const [typeFilter,       setTypeFilter]       = useState<Set<string>>(new Set());
 
   const [ownedMap, setOwnedMap] = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
@@ -488,6 +489,22 @@ export function CardCollectionGrid({
     return m;
   }, [cards]);
 
+  const typeCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of cards) {
+      if (c.types) for (const t of c.types) m.set(t, (m.get(t) ?? 0) + 1);
+    }
+    return m;
+  }, [cards]);
+
+  function toggleType(key: string) {
+    setTypeFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
   const filteredCards = useMemo(() => {
     let result = cards;
     if (search.trim()) {
@@ -495,6 +512,7 @@ export function CardCollectionGrid({
       result = result.filter((c) => c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q));
     }
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
+    if (typeFilter.size > 0) result = result.filter((c) => c.types?.some((t) => typeFilter.has(t)));
     // versionFilter changes display context only — does not hide cards
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
     // "missing" = at least one applicable version is not owned
@@ -507,7 +525,7 @@ export function CardCollectionGrid({
       if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
       return sortOrder === "asc" ? cmp : -cmp;
     });
-  }, [cards, search, rarityFilter, versionFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
+  }, [cards, search, rarityFilter, typeFilter, versionFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
 
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
   // Cards where at least one applicable version is missing
@@ -789,6 +807,25 @@ export function CardCollectionGrid({
         </div>
       )}
 
+      {/* Type filter chips */}
+      {typeCounts.size > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {POKEMON_TYPES.filter((t) => typeCounts.has(t.key)).map((t) => {
+            const active = typeFilter.has(t.key);
+            return (
+              <button key={t.key} onClick={() => toggleType(t.key)}
+                title={t.label}
+                className={cn("flex h-8 w-8 items-center justify-center rounded-full border transition-all",
+                  active ? "border-white bg-white/15 ring-1 ring-white/40"
+                    : "border-[var(--border-default)] bg-transparent opacity-50 hover:opacity-80")}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={t.image} alt={t.label} className="h-5 w-5 object-contain" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Selection banner */}
       {selectedIds.size > 0 && (
         <div className="mb-4 flex items-center justify-between rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2.5">
@@ -854,17 +891,11 @@ export function CardCollectionGrid({
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
                   </button>
 
-                  {/* Badge rareté spéciale — top right */}
-                  {card.isSpecial && RARITY_BADGE_LABELS[card.rarity] && (
-                    <span className="absolute top-1 right-1 z-10 rounded px-1 py-px text-[8px] font-bold leading-none bg-[#E7BA76]/90 text-black shadow-sm">
-                      {RARITY_BADGE_LABELS[card.rarity]}
-                    </span>
-                  )}
-
                   {/* Number + rarity badge — bottom left */}
-                  <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+                  <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
-                    <span className="opacity-80">{CARD_RARITY_SYMBOL[card.rarity]}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={CARD_RARITY_IMAGE[card.rarity]} alt="" className="h-3 w-auto object-contain opacity-90" />
                   </div>
 
                   {/* Version pills (owned + missing) — bottom right, stacked */}
