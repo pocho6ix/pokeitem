@@ -17,7 +17,7 @@ import type { CardCandidate, IdentifyResponse } from "@/app/api/scanner/identify
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ScannerState = "idle" | "onboarding" | "scanning" | "captured" | "result" | "search" | "confirm";
+type ScannerState = "idle" | "scanning" | "captured" | "result" | "search" | "confirm";
 type ConfirmSource = "auto" | "suggestion" | "search";
 
 interface SearchCard {
@@ -35,169 +35,12 @@ interface SearchCard {
   };
 }
 
-// ─── Onboarding slides ────────────────────────────────────────────────────────
-
-const SLIDES = [
-  {
-    title: "Prêt à scanner tes cartes ?",
-    description: "Nous allons vous montrer, étape par étape, comment scanner dans les meilleures conditions.",
-  },
-  {
-    title: "Un bon éclairage, c'est l'idéal !",
-    description: "Placez votre carte dans un environnement bien éclairé afin d'optimiser la reconnaissance et d'assurer un scan rapide et précis.",
-  },
-  {
-    title: "Une carte bien posée, c'est la clé !",
-    description: "Déposez votre carte à plat, sans bouger, pour que le scan fonctionne parfaitement.",
-  },
-];
-
-const ONBOARDING_KEY = "pokeitem_scanner_onboarding_done";
-
-// ─── Onboarding illustrations ─────────────────────────────────────────────────
-
-function SlideVisual({ index }: { index: number }) {
-  if (index === 0) {
-    return (
-      <svg viewBox="0 0 220 200" className="w-full max-w-[240px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="65" y="15" width="90" height="155" rx="14" fill="#142238" stroke="#1e3a5f" strokeWidth="2"/>
-        <rect x="73" y="28" width="74" height="120" rx="4" fill="#0a1525"/>
-        <rect x="82" y="42" width="56" height="78" rx="5" fill="#1b3660"/>
-        <rect x="82" y="42" width="56" height="78" rx="5" fill="url(#cardGrad)" opacity="0.5"/>
-        <circle cx="110" cy="76" r="16" fill="none" stroke="#3b82f6" strokeWidth="1.2" opacity="0.5"/>
-        <path d="M94 76 A16 16 0 0 1 126 76 Z" fill="#cc3333" opacity="0.35"/>
-        <line x1="94" y1="76" x2="126" y2="76" stroke="#3b82f6" strokeWidth="1" opacity="0.4"/>
-        <circle cx="110" cy="76" r="5" fill="#0a1525" stroke="#3b82f6" strokeWidth="1" opacity="0.6"/>
-        <path d="M85 45 L85 52 M85 45 L92 45" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M135 45 L135 52 M135 45 L128 45" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M85 117 L85 110 M85 117 L92 117" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M135 117 L135 110 M135 117 L128 117" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="82" y1="81" x2="138" y2="81" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.7"/>
-        <rect x="98" y="151" width="24" height="3" rx="1.5" fill="#1e3a5f"/>
-        <circle cx="110" cy="23" r="2.5" fill="#0a1525"/>
-        <ellipse cx="110" cy="180" rx="55" ry="10" fill="#3b82f6" opacity="0.08"/>
-        <path d="M65 120 Q50 130 52 150 Q55 165 75 165 L145 165 Q165 165 168 150 Q170 130 155 120" fill="#1a2d45" stroke="#1e3a5f" strokeWidth="1.5"/>
-        <defs>
-          <linearGradient id="cardGrad" x1="82" y1="42" x2="138" y2="120" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="white" stopOpacity="0.15"/>
-            <stop offset="100%" stopColor="white" stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    );
-  }
-
-  if (index === 1) {
-    return (
-      <div className="flex w-full max-w-xs items-end justify-center gap-5 pb-2">
-        <div className="relative flex-1">
-          <div className="w-full rounded-xl overflow-hidden border border-white/10" style={{ aspectRatio: "63/88" }}>
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-[#05090e] to-[#0d1520]">
-              <div className="flex-1 flex items-center justify-center opacity-20">
-                <svg viewBox="0 0 56 78" className="w-10 h-14" fill="none">
-                  <circle cx="28" cy="34" r="14" stroke="white" strokeWidth="1.5"/>
-                  <path d="M14 34 A14 14 0 0 1 42 34 Z" fill="white" opacity="0.4"/>
-                  <line x1="14" y1="34" x2="42" y2="34" stroke="white" strokeWidth="1.5"/>
-                  <circle cx="28" cy="34" r="5" fill="white" opacity="0.5"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg">
-            <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
-            </svg>
-          </div>
-        </div>
-        <div className="relative flex-1">
-          <div className="w-full rounded-xl overflow-hidden border border-blue-400/30" style={{ aspectRatio: "63/88" }}>
-            <div className="w-full h-full flex flex-col bg-gradient-to-br from-[#1a3a6e] to-[#2a5a9e]">
-              <div className="flex-1 flex items-center justify-center">
-                <svg viewBox="0 0 56 78" className="w-10 h-14" fill="none">
-                  <circle cx="28" cy="34" r="14" stroke="white" strokeWidth="1.5" opacity="0.9"/>
-                  <path d="M14 34 A14 14 0 0 1 42 34 Z" fill="white" opacity="0.6"/>
-                  <line x1="14" y1="34" x2="42" y2="34" stroke="white" strokeWidth="1.5" opacity="0.8"/>
-                  <circle cx="28" cy="34" r="5" fill="white" opacity="0.8"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white shadow-lg">
-            <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="2 7 5.5 11 12 3"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative flex items-center justify-center w-full max-w-xs">
-      <div className="relative w-44 h-36 rounded-xl overflow-hidden border border-blue-400/30 bg-gradient-to-br from-[#1a3a6e] to-[#2a5a9e]">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <svg viewBox="0 0 56 56" className="w-12 h-12 opacity-60" fill="none">
-            <circle cx="28" cy="28" r="24" stroke="white" strokeWidth="2"/>
-            <path d="M4 28 A24 24 0 0 1 52 28 Z" fill="white" opacity="0.3"/>
-            <line x1="4" y1="28" x2="52" y2="28" stroke="white" strokeWidth="2"/>
-            <circle cx="28" cy="28" r="7" fill="white" opacity="0.5"/>
-          </svg>
-        </div>
-        <div className="absolute top-2 left-2 h-5 w-5 border-t-[2.5px] border-l-[2.5px] border-white rounded-tl-sm" />
-        <div className="absolute top-2 right-2 h-5 w-5 border-t-[2.5px] border-r-[2.5px] border-white rounded-tr-sm" />
-        <div className="absolute bottom-2 left-2 h-5 w-5 border-b-[2.5px] border-l-[2.5px] border-white rounded-bl-sm" />
-        <div className="absolute bottom-2 right-2 h-5 w-5 border-b-[2.5px] border-r-[2.5px] border-white rounded-br-sm" />
-        <div className="absolute left-3 right-3 top-1/2 h-[1.5px] bg-blue-400 opacity-80 rounded-full" />
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-44 h-36 rounded-xl bg-blue-400 blur-2xl opacity-10" />
-      </div>
-    </div>
-  );
-}
-
 // ─── Shared fullscreen wrapper ─────────────────────────────────────────────────
 
 function Screen({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`fixed inset-0 z-[60] flex flex-col bg-black ${className}`}>
       {children}
-    </div>
-  );
-}
-
-// ─── Corner viewfinder ─────────────────────────────────────────────────────────
-
-function Viewfinder() {
-  const color = "white";
-  const size = 260;
-  const height = 370;
-  return (
-    <div className="relative" style={{ width: size, height }}>
-      {(["tl", "tr", "bl", "br"] as const).map((c) => (
-        <div
-          key={c}
-          className="absolute h-10 w-10"
-          style={{
-            top:    c.startsWith("t") ? 0 : "auto",
-            bottom: c.startsWith("b") ? 0 : "auto",
-            left:   c.endsWith("l")   ? 0 : "auto",
-            right:  c.endsWith("r")   ? 0 : "auto",
-            borderColor: color,
-            borderStyle: "solid",
-            borderTopWidth:    c.startsWith("t") ? 2.5 : 0,
-            borderBottomWidth: c.startsWith("b") ? 2.5 : 0,
-            borderLeftWidth:   c.endsWith("l")   ? 2.5 : 0,
-            borderRightWidth:  c.endsWith("r")   ? 2.5 : 0,
-            borderRadius:
-              c === "tl" ? "6px 0 0 0" :
-              c === "tr" ? "0 6px 0 0" :
-              c === "bl" ? "0 0 0 6px" :
-                           "0 0 6px 0",
-          }}
-        />
-      ))}
     </div>
   );
 }
@@ -223,6 +66,164 @@ function CardThumb({ imageUrl, name, size = 56 }: { imageUrl: string | null; nam
   );
 }
 
+// ─── Tips bottom sheet ────────────────────────────────────────────────────────
+
+function TipsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-[80] bg-black/60 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={onClose}
+      />
+      {/* Sheet */}
+      <div
+        className={`fixed left-0 right-0 bottom-0 z-[81] rounded-t-3xl bg-[#0d1f38] border-t border-white/10 transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto ${
+          open ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-5 pt-5 pb-2">
+          <h3 className="text-base font-bold text-white">Astuces du scanner</h3>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="h-4 w-4">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <p className="px-5 text-xs text-white/40 mb-5">Pour de meilleurs résultats, suivez ces conseils</p>
+
+        <div className="px-5 pb-8 space-y-6">
+          {/* Tip 1 */}
+          <div>
+            <p className="text-sm font-semibold text-white mb-3">Alignez bien la carte</p>
+            <div className="flex gap-3">
+              <div className="relative flex-1 overflow-hidden rounded-xl border border-green-400/30" style={{ aspectRatio: "3/4" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/scan-correct.jpg" alt="Correct" className="h-full w-full object-contain" />
+                <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow">
+                  <svg viewBox="0 0 14 14" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2 7 5.5 11 12 3"/></svg>
+                </div>
+              </div>
+              <div className="relative flex-1 overflow-hidden rounded-xl border border-red-400/30" style={{ aspectRatio: "3/4" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/scan-incorrect.jpg" alt="Incorrect" className="h-full w-full object-cover" />
+                <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow">
+                  <svg viewBox="0 0 14 14" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tip 2 */}
+          <div>
+            <p className="text-sm font-semibold text-white mb-2">Évitez reflets et ombres</p>
+            <p className="text-xs text-white/40 leading-relaxed">Placez votre carte dans un endroit bien éclairé, sans lumière directe qui crée des reflets sur les cartes holographiques.</p>
+          </div>
+
+          {/* Tip 3 */}
+          <div>
+            <p className="text-sm font-semibold text-white mb-2">Posez la carte à plat</p>
+            <p className="text-xs text-white/40 leading-relaxed">Ne tenez pas la carte en main. Posez-la sur une surface plane et stable pour un scan optimal.</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Viewfinder with animated corners ─────────────────────────────────────────
+
+function Viewfinder({ feedback }: { feedback: "idle" | "success" | "error" }) {
+  const w = 260;
+  const h = Math.round(w * (88 / 63)); // card ratio ≈ 364
+
+  const color =
+    feedback === "success" ? "#22c55e" :
+    feedback === "error"   ? "#ef4444" : "white";
+
+  return (
+    <div
+      className={`relative transition-all duration-200 ${feedback === "error" ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+      style={{ width: w, height: h }}
+    >
+      {(["tl", "tr", "bl", "br"] as const).map((c) => (
+        <div
+          key={c}
+          className="absolute h-12 w-12 transition-colors duration-300"
+          style={{
+            top:    c.startsWith("t") ? 0 : "auto",
+            bottom: c.startsWith("b") ? 0 : "auto",
+            left:   c.endsWith("l")   ? 0 : "auto",
+            right:  c.endsWith("r")   ? 0 : "auto",
+            borderColor: color,
+            borderStyle: "solid",
+            borderTopWidth:    c.startsWith("t") ? 3 : 0,
+            borderBottomWidth: c.startsWith("b") ? 3 : 0,
+            borderLeftWidth:   c.endsWith("l")   ? 3 : 0,
+            borderRightWidth:  c.endsWith("r")   ? 3 : 0,
+            borderRadius:
+              c === "tl" ? "12px 0 0 0" :
+              c === "tr" ? "0 12px 0 0" :
+              c === "bl" ? "0 0 0 12px" :
+                           "0 0 12px 0",
+          }}
+        />
+      ))}
+
+      {/* Scan line animation */}
+      {feedback === "idle" && (
+        <div
+          className="absolute left-4 right-4 h-[1.5px] bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-60 animate-[scanline_2.5s_ease-in-out_infinite]"
+          style={{ top: "30%" }}
+        />
+      )}
+
+      <style jsx>{`
+        @keyframes scanline {
+          0%, 100% { top: 20%; opacity: 0.3; }
+          50% { top: 75%; opacity: 0.7; }
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-6px); }
+          40% { transform: translateX(6px); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Pre-scan illustration ────────────────────────────────────────────────────
+
+function ScanIllustration() {
+  return (
+    <svg viewBox="0 0 200 180" className="w-full max-w-[200px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Card shape */}
+      <rect x="55" y="25" width="90" height="126" rx="8" fill="#142238" stroke="#1e3a5f" strokeWidth="1.5"/>
+      <rect x="62" y="35" width="76" height="106" rx="4" fill="#1b3660" opacity="0.5"/>
+      {/* Pokéball */}
+      <circle cx="100" cy="80" r="20" stroke="#3b82f6" strokeWidth="1.5" opacity="0.6"/>
+      <path d="M80 80 A20 20 0 0 1 120 80 Z" fill="#cc3333" opacity="0.25"/>
+      <line x1="80" y1="80" x2="120" y2="80" stroke="#3b82f6" strokeWidth="1" opacity="0.5"/>
+      <circle cx="100" cy="80" r="6" fill="#0a1525" stroke="#3b82f6" strokeWidth="1" opacity="0.6"/>
+      {/* Viewfinder corners */}
+      <path d="M58 32 V42 M58 32 H68" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M142 32 V42 M142 32 H132" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M58 144 V134 M58 144 H68" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M142 144 V134 M142 144 H132" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      {/* Scan line */}
+      <line x1="62" y1="88" x2="138" y2="88" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7">
+        <animate attributeName="y1" values="65;110;65" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="65;110;65" dur="3s" repeatCount="indefinite"/>
+      </line>
+      {/* Glow */}
+      <ellipse cx="100" cy="160" rx="50" ry="8" fill="#3b82f6" opacity="0.08"/>
+    </svg>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CardScanner() {
@@ -237,7 +238,6 @@ export function CardScanner() {
   const { paywallState, showPaywall, closePaywall } = usePaywall();
 
   const [state, setState]               = useState<ScannerState>("idle");
-  const [onboardingSlide, setOnboardingSlide] = useState(0);
   const [result, setResult]             = useState<IdentifyResponse | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCard, setSelectedCard] = useState<CardCandidate | null>(null);
@@ -249,19 +249,27 @@ export function CardScanner() {
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
   const [isAdding, setIsAdding]         = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<CardVersion>(CardVersion.NORMAL);
+  const [tipsOpen, setTipsOpen]         = useState(false);
+  const [vfFeedback, setVfFeedback]     = useState<"idle" | "success" | "error">("idle");
+  const [showHint, setShowHint]         = useState(true);
 
   // Search state
   const [searchQuery, setSearchQuery]   = useState("");
   const [searchResults, setSearchResults] = useState<SearchCard[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  useEffect(() => {
-    if (!localStorage.getItem(ONBOARDING_KEY)) setState("onboarding");
-  }, []);
-
   useEffect(() => () => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
   }, []);
+
+  // Fade out "Centrez la carte" after 3s
+  useEffect(() => {
+    if (state === "scanning") {
+      setShowHint(true);
+      const t = setTimeout(() => setShowHint(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [state]);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -289,6 +297,7 @@ export function CardScanner() {
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
+      setVfFeedback("idle");
       setState("scanning");
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") setPermissionDenied(true);
@@ -332,10 +341,14 @@ export function CardScanner() {
     canvas.width = w; canvas.height = h;
     canvas.getContext("2d")!.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    stopStream();
-    setPhoto(dataUrl);
-    setState("captured");
-    void identify(dataUrl);
+    // Flash feedback
+    setVfFeedback("success");
+    setTimeout(() => {
+      stopStream();
+      setPhoto(dataUrl);
+      setState("captured");
+      void identify(dataUrl);
+    }, 300);
   }, [identify, stopStream]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -439,100 +452,82 @@ export function CardScanner() {
   }, [stopStream]);
 
   const goBack = useCallback(() => { stopStream(); router.back(); }, [stopStream, router]);
-  const finishOnboarding = useCallback(() => { localStorage.setItem(ONBOARDING_KEY, "1"); setState("idle"); }, []);
 
   const formatPrice = (p: number | null | undefined) =>
     p == null ? null : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p);
 
-  // ── ONBOARDING ──────────────────────────────────────────────────────────────
-  if (state === "onboarding") {
-    const slide = SLIDES[onboardingSlide];
-    const isLast = onboardingSlide === SLIDES.length - 1;
-    return (
-      <Screen className="bg-[#07111f]">
-        <div className="flex items-center justify-between px-5 pt-14 pb-3 shrink-0">
-          <button onClick={finishOnboarding} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="h-4 w-4">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-          <span className="text-sm font-medium text-white/70 tracking-wide">Scan d&apos;une carte</span>
-          <div className="h-9 w-9" />
-        </div>
-        <div className="mx-4 flex-1 flex flex-col rounded-3xl bg-[#0d1f38] border border-white/5 overflow-hidden">
-          <div className="flex flex-1 items-center justify-center px-6 pt-6 pb-2">
-            <SlideVisual index={onboardingSlide} />
-          </div>
-          <div className="px-6 pt-4 text-center">
-            <h2 className="text-xl font-bold text-white leading-snug">{slide.title}</h2>
-            <p className="mt-2 text-sm text-white/45 leading-relaxed">{slide.description}</p>
-          </div>
-          <div className="flex justify-center gap-2 py-5">
-            {SLIDES.map((_, i) => (
-              <button key={i} onClick={() => setOnboardingSlide(i)}>
-                <div className={`h-2 rounded-full transition-all duration-300 ${i === onboardingSlide ? "w-6 bg-blue-500" : "w-2 bg-white/20"}`} />
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-col items-center gap-3 px-5 pb-7">
-            <button
-              onClick={() => isLast ? finishOnboarding() : setOnboardingSlide((s) => s + 1)}
-              className="w-full rounded-2xl bg-gradient-to-b from-blue-500 to-blue-600 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-900/40 transition-opacity active:opacity-80"
-            >
-              {isLast ? "Commencer" : "Continuer"}
-            </button>
-            <button onClick={finishOnboarding} className="text-xs text-white/35 hover:text-white/60 transition-colors">
-              Passer l&apos;onboarding
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-1.5 py-4 text-xs text-white/25">
-          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 1.5 L14 4 V8 C14 11.5 11 13.5 8 14.5 C5 13.5 2 11.5 2 8 V4 Z"/>
-          </svg>
-          Vous n&apos;arrivez pas à scanner ?
-        </div>
-      </Screen>
-    );
-  }
-
   // ── SCANNING ────────────────────────────────────────────────────────────────
   if (state === "scanning") {
+    const vfW = 260;
+    const vfH = Math.round(vfW * (88 / 63));
     return (
       <Screen>
         <video ref={videoRef} className="absolute inset-0 h-full w-full object-cover" playsInline muted />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-          <Viewfinder />
-          <p className="text-[11px] tracking-widest text-white/50 uppercase">Centrez la carte</p>
+
+        {/* Dark overlay with transparent cutout */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          background: `radial-gradient(ellipse ${vfW + 30}px ${vfH + 30}px at center 45%, transparent 60%, rgba(0,0,0,0.55) 100%)`,
+        }} />
+
+        {/* Viewfinder centered */}
+        <div className="absolute inset-0 flex flex-col items-center" style={{ paddingTop: "calc(45% - 182px)" }}>
+          <Viewfinder feedback={vfFeedback} />
+          <p className={`mt-3 text-[11px] tracking-widest text-white/50 uppercase transition-opacity duration-700 ${showHint ? "opacity-100" : "opacity-0"}`}>
+            Centrez la carte
+          </p>
         </div>
+
+        {/* Top bar — close ✕ + help ❓ */}
         <div className="absolute left-0 right-0 top-0 flex items-center justify-between px-5 pt-14 pb-4">
-          <button onClick={() => { stopStream(); setState("idle"); }} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+          <button onClick={() => { stopStream(); setState("idle"); }} className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="h-5 w-5">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
-          <span className="text-sm font-medium text-white/80 tracking-wide">Scan d&apos;une carte</span>
-          <button onClick={() => fileInputRef.current?.click()} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          <button onClick={() => setTipsOpen(true)} className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/>
             </svg>
           </button>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-16 gap-5">
+
+        {/* Bottom bar — scans badge + capture + gallery */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between px-6 pb-14">
+          {/* Scans remaining badge */}
+          <div className="flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5">
+            <span className="text-[11px] text-white/60">🔍</span>
+            {!isPro && remainingScans !== null ? (
+              <span className={`text-[11px] font-medium ${remainingScans <= 3 ? "text-orange-400" : "text-white/60"}`}>
+                {remainingScans}/{usage.scans.limit ?? 10}
+              </span>
+            ) : (
+              <span className="text-[11px] text-white/60">∞</span>
+            )}
+          </div>
+
+          {/* Capture button — iOS style */}
           <button
             onClick={capturePhoto}
-            className="flex h-20 w-20 items-center justify-center rounded-full border-[3px] border-white/80 bg-transparent active:scale-95 transition-transform"
+            className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-[3px] border-white/80 active:scale-95 transition-transform"
             aria-label="Prendre la photo"
           >
-            <div className="h-[62px] w-[62px] rounded-full bg-white/90" />
+            <div className="h-[58px] w-[58px] rounded-full bg-white" />
           </button>
-          <button onClick={() => fileInputRef.current?.click()} className="text-[11px] tracking-wide text-white/40 hover:text-white/70 transition-colors">
-            Importer depuis la galerie
+
+          {/* Gallery button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 backdrop-blur-sm text-white"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
+            </svg>
           </button>
         </div>
+
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         <canvas ref={canvasRef} className="hidden" />
+        <TipsSheet open={tipsOpen} onClose={() => setTipsOpen(false)} />
       </Screen>
     );
   }
@@ -768,7 +763,7 @@ export function CardScanner() {
           <div className="h-9 w-9" />
         </div>
 
-        {/* ── LEVEL HIGH (auto result) ───────────────────────────────────────── */}
+        {/* ── LEVEL HIGH ──────────────────────────────────────────────────────── */}
         {result.level === "high" && top && !showSuggestionsView ? (
           <div className="flex flex-1 flex-col overflow-y-auto">
             <div className="flex justify-center py-6">
@@ -796,7 +791,7 @@ export function CardScanner() {
               </div>
             </div>
 
-            {/* Version picker for inline high-confidence add */}
+            {/* Version picker */}
             {(() => {
               const versions = getSerieVersions(top.serie.slug, top.serie.blocSlug);
               if (versions.length <= 1) return null;
@@ -835,7 +830,7 @@ export function CardScanner() {
             </div>
           </div>
 
-        /* ── LEVEL HIGH+SUGGESTIONS or MEDIUM (suggestions list) ─────────────── */
+        /* ── SUGGESTIONS ──────────────────────────────────────────────────────── */
         ) : showSuggestionsView && result.candidates.length > 0 ? (
           <div className="flex flex-1 flex-col overflow-y-auto">
             <div className="px-4 py-4">
@@ -882,7 +877,7 @@ export function CardScanner() {
             </div>
           </div>
 
-        /* ── LEVEL LOW or no candidates ──────────────────────────────────────── */
+        /* ── LOW / NO CANDIDATES ──────────────────────────────────────────────── */
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center gap-5">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/8">
@@ -917,7 +912,7 @@ export function CardScanner() {
 
   // ── IDLE ─────────────────────────────────────────────────────────────────────
   return (
-    <Screen>
+    <Screen className="bg-[#07111f]">
       <canvas ref={canvasRef} className="hidden" />
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
@@ -935,44 +930,26 @@ export function CardScanner() {
       {/* Scrollable content */}
       <div className="flex flex-1 flex-col px-5 pt-2 pb-2 overflow-y-auto">
 
-        {/* Good vs bad examples */}
-        <p className="mb-4 text-center text-sm font-semibold text-white/80">Comment bien scanner ?</p>
-        <div className="flex gap-3 mb-5">
-          <div className="relative flex-1">
-            <div className="w-full overflow-hidden rounded-2xl border border-green-400/30" style={{ aspectRatio: "3/4" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/scan-correct.jpg" alt="Correct" className="h-full w-full object-contain" />
-            </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 shadow-lg">
-              <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2 7 5.5 11 12 3"/></svg>
-            </div>
-          </div>
-          <div className="relative flex-1">
-            <div className="w-full overflow-hidden rounded-2xl border border-red-400/30" style={{ aspectRatio: "3/4" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/scan-incorrect.jpg" alt="Incorrect" className="h-full w-full object-cover" />
-            </div>
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 shadow-lg">
-              <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
-            </div>
-          </div>
+        {/* Illustration */}
+        <div className="flex justify-center py-4 mb-2">
+          <ScanIllustration />
         </div>
 
-        {/* Tips */}
-        <div className="mt-6 space-y-2.5 mb-8">
+        {/* Tips — compact chips */}
+        <div className="space-y-2 mb-8">
           {[
-            "Placez la carte dans un endroit bien éclairé",
-            "Posez la carte à plat, sans la tenir en main",
-            "Cadrez toute la carte dans le viseur",
-          ].map((text) => (
-            <div key={text} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-2.5">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
-              <p className="text-xs text-white/60">{text}</p>
+            { icon: "💡", text: "Éclairage uniforme, pas de reflets" },
+            { icon: "✋", text: "Carte posée à plat, pas tenue en main" },
+            { icon: "🎯", text: "Cadrez toute la carte dans le viseur" },
+          ].map((tip) => (
+            <div key={tip.text} className="flex items-center gap-3 rounded-xl bg-white/[0.05] px-4 py-2.5">
+              <span className="text-sm shrink-0">{tip.icon}</span>
+              <p className="text-xs text-white/60">{tip.text}</p>
             </div>
           ))}
         </div>
 
-        {/* Search bar — permanent */}
+        {/* Search bar */}
         <div className="border-t border-white/8 pt-6 mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-white/30 mb-3">Ou rechercher une carte</p>
           <div className="relative">
@@ -1049,19 +1026,19 @@ export function CardScanner() {
       {/* Bottom actions */}
       <div className="flex flex-col items-center gap-4 pb-16 px-6 shrink-0">
         {!isPro && remainingScans !== null && (
-          <p className={`text-sm text-center ${
+          <p className={`text-xs text-center ${
             remainingScans === 0 ? "text-red-400" :
             remainingScans <= 3 ? "text-orange-400" :
-            "text-white/50"
+            "text-white/40"
           }`}>
             {remainingScans === 0
               ? "⚠️ Limite mensuelle atteinte"
-              : `${remainingScans} scan${remainingScans > 1 ? "s" : ""} restant${remainingScans > 1 ? "s" : ""} ce mois`}
+              : `🔍 ${remainingScans} scan${remainingScans > 1 ? "s" : ""} restant${remainingScans > 1 ? "s" : ""}`}
           </p>
         )}
         <button
           onClick={() => void startCamera()}
-          className="w-full rounded-2xl bg-white py-4 text-sm font-semibold text-black transition-opacity active:opacity-80"
+          className="w-full rounded-2xl bg-gradient-to-b from-blue-500 to-blue-600 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-900/40 transition-opacity active:opacity-80"
         >
           Ouvrir la caméra
         </button>
@@ -1069,7 +1046,7 @@ export function CardScanner() {
           onClick={() => fileInputRef.current?.click()}
           className="text-xs text-white/35 hover:text-white/60 transition-colors"
         >
-          Choisir depuis la galerie
+          Importer depuis la galerie
         </button>
       </div>
 
