@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Fable Nébuleuse EV6.5 : Guide du Collectionneur"
+
+A premium flat-lay photography of Pokémon TCG Shrouded Fable sealed products arranged on a luxurious dark velvet surface. Include a Japanese-style booster box, an Elite Trainer Box, and several booster packs with the distinctive purple and silver color scheme. Dramatic studio lighting with purple and blue accent lights creating mystical atmosphere. No text overlay. Aspect ratio 1200x630, photorealistic editorial style.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-fable-nebuleuse.jpg
