@@ -199,7 +199,7 @@ function Viewfinder({ feedback }: { feedback: "idle" | "success" | "error" }) {
 
 function ScanIllustration() {
   return (
-    <svg viewBox="0 0 200 180" className="w-full max-w-[200px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 200 180" className="w-full max-w-[160px] h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Card shape */}
       <rect x="55" y="25" width="90" height="126" rx="8" fill="#142238" stroke="#1e3a5f" strokeWidth="1.5"/>
       <rect x="62" y="35" width="76" height="106" rx="4" fill="#1b3660" opacity="0.5"/>
@@ -917,7 +917,7 @@ export function CardScanner() {
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-14 pb-4">
+      <div className="flex items-center justify-between px-5 pt-14 pb-2">
         <button onClick={goBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
             <polyline points="15 18 9 12 15 6"/>
@@ -928,21 +928,21 @@ export function CardScanner() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex flex-1 flex-col px-5 pt-2 pb-2 overflow-y-auto">
+      <div className="flex flex-1 flex-col px-5 pt-0 pb-2 overflow-y-auto">
 
         {/* Illustration */}
-        <div className="flex justify-center py-4 mb-2">
+        <div className="flex justify-center py-2 mb-1">
           <ScanIllustration />
         </div>
 
         {/* Tips — compact chips */}
-        <div className="space-y-2 mb-8">
+        <div className="space-y-1.5 mb-5">
           {[
             { icon: "💡", text: "Éclairage uniforme, pas de reflets" },
             { icon: "✋", text: "Carte posée à plat, pas tenue en main" },
             { icon: "🎯", text: "Cadrez toute la carte dans le viseur" },
           ].map((tip) => (
-            <div key={tip.text} className="flex items-center gap-3 rounded-xl bg-white/[0.05] px-4 py-2.5">
+            <div key={tip.text} className="flex items-center gap-3 rounded-xl bg-white/[0.05] px-4 py-2">
               <span className="text-sm shrink-0">{tip.icon}</span>
               <p className="text-xs text-white/60">{tip.text}</p>
             </div>
@@ -950,7 +950,7 @@ export function CardScanner() {
         </div>
 
         {/* Search bar */}
-        <div className="border-t border-white/8 pt-6 mb-6">
+        <div className="border-t border-white/8 pt-4 mb-4">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-white/30 mb-3">Ou rechercher une carte</p>
           <div className="relative">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none">
@@ -1024,7 +1024,7 @@ export function CardScanner() {
       )}
 
       {/* Bottom actions */}
-      <div className="flex flex-col items-center gap-4 pb-16 px-6 shrink-0">
+      <div className="flex flex-col items-center gap-3 pb-10 px-6 shrink-0">
         {!isPro && remainingScans !== null && (
           <p className={`text-xs text-center ${
             remainingScans === 0 ? "text-red-400" :
