@@ -120,15 +120,21 @@ export function BetaBanner() {
               <button
                 onClick={handleSubscribe}
                 disabled={checkoutState === "loading"}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
-                  isExpired
-                    ? "bg-orange-400 text-black hover:bg-orange-300"
-                    : "bg-[#E7BA76] text-black hover:bg-[#d4a660]"
-                }`}
+                className="beta-sub-gold rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all active:scale-95 disabled:opacity-60"
               >
-                {checkoutState === "loading"
-                  ? "Chargement…"
-                  : "S'abonner à 29,99€/an"}
+                <span className="relative z-10" style={{ color: '#1A1A1A' }}>
+                  {checkoutState === "loading"
+                    ? "Chargement…"
+                    : "S'abonner à 29,99€/an"}
+                </span>
+                <style jsx>{`
+                  .beta-sub-gold {
+                    background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+                    box-shadow: 0 2px 8px rgba(191, 149, 63, 0.25);
+                    position: relative;
+                    overflow: hidden;
+                  }
+                `}</style>
               </button>
             )}
             <span className="text-[10px] text-[var(--text-tertiary)]">

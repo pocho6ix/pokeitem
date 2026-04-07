@@ -170,18 +170,33 @@ export function ProfilForm() {
         <button
           type="button"
           onClick={() => router.push('/pricing')}
-          className="w-full rounded-xl p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]"
-          style={{
-            background: "linear-gradient(135deg, #ffd6e0 0%, #c8b6e2 25%, #b8d8f8 50%, #b8f0d0 75%, #f8f0b8 100%)",
-          }}
+          className="profil-pro-banner w-full rounded-full px-6 py-3.5 text-center transition-all hover:brightness-110 active:scale-[0.97]"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-base font-bold text-black/80">S&apos;abonner</span>
-            <span className="flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-xs font-bold text-black/70 backdrop-blur-sm">
-              ★ Pro
-            </span>
-          </div>
-          <p className="mt-0.5 text-xs text-black/50">Débloquer toutes les fonctionnalités</p>
+          <span className="relative z-10 text-sm font-bold uppercase tracking-wide" style={{ color: '#1A1A1A' }}>
+            ★ DEVENIR PRO
+          </span>
+          <style jsx>{`
+            .profil-pro-banner {
+              background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+              box-shadow: 0 2px 12px rgba(191, 149, 63, 0.3);
+              position: relative;
+              overflow: hidden;
+            }
+            .profil-pro-banner::after {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 60%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+              animation: profil-shimmer 4s ease-in-out infinite;
+            }
+            @keyframes profil-shimmer {
+              0%, 75% { left: -100%; }
+              100% { left: 200%; }
+            }
+          `}</style>
         </button>
       )}
 

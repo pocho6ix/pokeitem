@@ -11,7 +11,7 @@ const CONTENT: Record<PaywallReason, {
   CARD_LIMIT_REACHED: {
     icon: '🃏',
     title: 'Limite de cartes atteinte',
-    description: 'Tu as atteint la limite de 100 cartes en version gratuite.',
+    description: 'Tu as atteint la limite de 500 cartes en version gratuite.',
     cta: 'Débloquer la collection illimitée',
   },
   SEALED_LIMIT_REACHED: {
@@ -104,9 +104,31 @@ export function PaywallModal({ isOpen, reason, current, limit, onClose }: Paywal
         <div className="flex flex-col gap-2">
           <button
             onClick={() => { onClose(); router.push('/pricing') }}
-            className="w-full rounded-2xl bg-[#E7BA76] py-3.5 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors"
+            className="pro-cta-gold w-full rounded-full py-3.5 text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.97]"
           >
-            {content.cta} →
+            <span className="relative z-10" style={{ color: '#1A1A1A' }}>{content.cta} →</span>
+            <style jsx>{`
+              .pro-cta-gold {
+                background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+                box-shadow: 0 2px 12px rgba(191, 149, 63, 0.3);
+                position: relative;
+                overflow: hidden;
+              }
+              .pro-cta-gold::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 60%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                animation: paywall-shimmer 4s ease-in-out infinite;
+              }
+              @keyframes paywall-shimmer {
+                0%, 75% { left: -100%; }
+                100% { left: 200%; }
+              }
+            `}</style>
           </button>
           <button
             onClick={onClose}

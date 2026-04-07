@@ -3,7 +3,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const FREE_FEATURES = [
-  '100 cartes dans ta collection',
+  '500 cartes dans ta collection',
   '5 items scellés dans le classeur',
   '10 scans par mois',
   'Accès au catalogue complet',
@@ -160,9 +160,33 @@ function PricingContent() {
               <button
                 onClick={handleSubscribe}
                 disabled={loading}
-                className="w-full rounded-2xl bg-[#E7BA76] py-3.5 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-60"
+                className="pricing-cta-gold w-full rounded-full py-4 text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.97] disabled:opacity-60"
               >
-                {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '39,99€/an' : '3,99€/mois'} →`}
+                <span className="relative z-10" style={{ color: '#1A1A1A' }}>
+                  {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '39,99€/an' : '3,99€/mois'} →`}
+                </span>
+                <style jsx>{`
+                  .pricing-cta-gold {
+                    background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+                    box-shadow: 0 2px 12px rgba(191, 149, 63, 0.3);
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  .pricing-cta-gold::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 60%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+                    animation: pricing-shimmer 4s ease-in-out infinite;
+                  }
+                  @keyframes pricing-shimmer {
+                    0%, 75% { left: -100%; }
+                    100% { left: 200%; }
+                  }
+                `}</style>
               </button>
             </div>
           </div>
