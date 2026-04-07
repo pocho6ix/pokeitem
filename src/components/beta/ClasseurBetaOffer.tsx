@@ -11,18 +11,16 @@ export function ClasseurBetaOffer() {
   return (
     <Link
       href="/beta"
-      className="mb-6 flex items-center gap-3 rounded-2xl border border-[#E7BA76]/40 bg-[#E7BA76]/8 px-4 py-3 hover:border-[#E7BA76]/60 hover:bg-[#E7BA76]/12 transition-colors"
-      style={{ backgroundColor: "rgba(231,186,118,0.06)" }}
+      className="mb-6 flex items-center justify-between rounded-full px-5 py-3 transition-all hover:brightness-110 active:scale-[0.98]"
+      style={{
+        background: 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+        boxShadow: '0 2px 12px rgba(191, 149, 63, 0.3)',
+      }}
     >
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[#E7BA76]">
-          🎁 Rejoins la bêta — 1 mois offert
-        </p>
-        <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
-          Accès Pro complet
-        </p>
-      </div>
-      <span className="shrink-0 text-xs text-[#E7BA76]/60">→</span>
+      <p className="text-sm font-bold tracking-wide" style={{ color: '#1A1A1A' }}>
+        🎁 Rejoins la bêta — 1 mois offert
+      </p>
+      <span className="shrink-0 text-sm font-bold" style={{ color: '#1A1A1A' }}>→</span>
     </Link>
   );
 }

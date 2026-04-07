@@ -103,9 +103,14 @@ export function HeroCTAButtons() {
         {showBeta ? (
           <Link
             href="/beta"
-            className="inline-flex flex-col items-center justify-center rounded-xl border border-[#E7BA76]/50 bg-[#E7BA76]/10 px-6 py-2.5 text-sm font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/20 transition-colors"
+            className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-[0.97]"
+            style={{
+              background: 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+              boxShadow: '0 2px 12px rgba(191, 149, 63, 0.3)',
+              color: '#1A1A1A',
+            }}
           >
-            <span>🎁 Rejoins la bêta — 1 mois offert</span>
+            🎁 Rejoins la bêta — 1 mois offert
           </Link>
         ) : (
           <Link
