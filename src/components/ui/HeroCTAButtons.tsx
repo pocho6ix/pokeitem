@@ -70,7 +70,12 @@ export function HeroCTAButtons() {
           <button
             onClick={activateTrial}
             disabled={activating}
-            className="inline-flex items-center justify-center rounded-xl bg-[#E7BA76] px-6 py-3.5 text-sm font-semibold text-black shadow-lg hover:bg-[#d4a660] transition-colors disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-60"
+            style={{
+              background: 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+              boxShadow: '0 2px 12px rgba(191, 149, 63, 0.3)',
+              color: '#1A1A1A',
+            }}
           >
             {activating
               ? "Activation…"
