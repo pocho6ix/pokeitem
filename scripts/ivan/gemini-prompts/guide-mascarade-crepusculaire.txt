@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Mascarade Crépusculaire : Guide complet EV06"
+
+A premium flat-lay photography of Pokémon TCG sealed products from the 'Twilight Masquerade' set arranged elegantly on a dark velvet surface. Include a booster box, ETB, tin collection, and scattered booster packs with mysterious twilight-themed packaging. Dramatic studio lighting with purple and golden accents casting soft shadows. Luxurious composition with venetian mask motifs subtly reflected in the lighting. No text overlay. Aspect ratio 1200x630, photorealistic style with premium editorial quality.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-mascarade-crepusculaire.jpg
