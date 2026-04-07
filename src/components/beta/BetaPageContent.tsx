@@ -36,7 +36,6 @@ const FEATURES = [
   "Toutes les features Pro",
   "Valeur collection en temps réel",
   "P&L et graphique évolution",
-  "Résiliable à tout moment",
   "Aucun paiement requis",
 ];
 
@@ -276,7 +275,7 @@ export function BetaPageContent() {
         <div className="mb-6 flex items-center gap-3">
           <Gift className="h-8 w-8 text-[#E7BA76] shrink-0" />
           <h1 className="text-2xl font-extrabold text-[var(--text-primary)]">
-            Profite d&apos;1 semaine offerte
+            Profite d&apos;1 mois offert
           </h1>
         </div>
 
@@ -304,9 +303,12 @@ export function BetaPageContent() {
             En attendant, tu peux l&rsquo;installer directement sur ton écran
             d&rsquo;accueil et profiter de toutes les fonctionnalités Pro{" "}
             <span className="font-semibold text-[var(--text-primary)]">
-              gratuitement pendant 1 semaine
+              gratuitement pendant 1 mois
             </span>
-            .
+            &nbsp;: 1&nbsp;semaine offerte en ajoutant l&rsquo;app sur ton écran
+            d&rsquo;accueil + 1&nbsp;semaine par ami invité (jusqu&rsquo;à
+            3&nbsp;semaines), soit 1&nbsp;mois au total.
+            Aucune carte de crédit ni paiement requis.
           </p>
           <p>
             En échange, aide-nous à améliorer l&rsquo;app en nous faisant tes
@@ -336,7 +338,7 @@ export function BetaPageContent() {
             {betaTrialUsed || isPro ? (
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-center text-sm text-emerald-400">
                 {betaTrialUsed
-                  ? "Tu as déjà activé ta semaine offerte."
+                  ? "Tu as déjà activé ton offre."
                   : "Tu es déjà abonné Pro."}
               </div>
             ) : alreadyInstalled ? (
@@ -347,7 +349,7 @@ export function BetaPageContent() {
               >
                 {activating
                   ? "Activation…"
-                  : "🎁 Activer mon abonnement Pro 1 semaine offerte"}
+                  : "🎁 Activer mon abonnement Pro — 1 semaine offerte"}
               </button>
             ) : (
               <button
@@ -369,8 +371,6 @@ export function BetaPageContent() {
         <p className="mt-4 text-center text-xs text-[var(--text-tertiary)] leading-relaxed">
           En appuyant, tu acceptes de participer à la bêta et de nous aider
           avec tes retours.
-          <br />
-          Résiliable à tout moment.
         </p>
       </div>
     </>

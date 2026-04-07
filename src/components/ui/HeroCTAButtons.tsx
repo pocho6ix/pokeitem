@@ -105,7 +105,7 @@ export function HeroCTAButtons() {
             href="/beta"
             className="inline-flex flex-col items-center justify-center rounded-xl border border-[#E7BA76]/50 bg-[#E7BA76]/10 px-6 py-2.5 text-sm font-semibold text-[#E7BA76] hover:bg-[#E7BA76]/20 transition-colors"
           >
-            <span>🎁 1 semaine offerte — Rejoins la bêta</span>
+            <span>🎁 Rejoins la bêta — 1 mois offert</span>
           </Link>
         ) : (
           <Link

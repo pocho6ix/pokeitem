@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Plan } from '@prisma/client'
 
 export const FREE_LIMITS = {
-  CARDS: 100,
+  CARDS: 500,
   SEALED_ITEMS: 5,
   SCANS_PER_MONTH: 10,
 } as const
