@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import useSWR from 'swr'
-import { Copy, Check, Share2, Trophy, Users } from 'lucide-react'
+import { Copy, Check, Share2, Trophy, Users, Search } from 'lucide-react'
 import { CONTEST_CONFIG } from '@/config/contest'
 import type { PointsLeaderboardEntry } from '@/lib/points'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
@@ -162,10 +162,58 @@ export function ReferralBlock() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const lbEntries: PointsLeaderboardEntry[] = lb?.rankings ?? []
-  const currentUser: PointsLeaderboardEntry | null = lb?.currentUser ?? null
-  const currentUserInTop = lbEntries.some(e => e.isCurrentUser)
-  const totalParticipants: number = lb?.totalParticipants ?? 0
+  // ── Leaderboard state ──────────────────────────────────────────────────────
+  const [lbEntries, setLbEntries] = useState<PointsLeaderboardEntry[]>([])
+  const [currentUser, setCurrentUser] = useState<PointsLeaderboardEntry | null>(null)
+  const [totalParticipants, setTotalParticipants] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searching, setSearching] = useState(false)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync initial SWR data
+  useEffect(() => {
+    if (lb) {
+      setLbEntries(lb.rankings ?? [])
+      setCurrentUser(lb.currentUser ?? null)
+      setTotalParticipants(lb.totalParticipants ?? 0)
+      setHasMore(lb.hasMore ?? false)
+    }
+  }, [lb])
+
+  const fetchLeaderboard = useCallback(async (skip: number, query: string, append: boolean) => {
+    const params = new URLSearchParams({ skip: String(skip), take: '20' })
+    if (query) params.set('q', query)
+    const res = await fetch(`/api/leaderboard?${params}`)
+    const data = await res.json()
+    if (append) {
+      setLbEntries(prev => [...prev, ...(data.rankings ?? [])])
+    } else {
+      setLbEntries(data.rankings ?? [])
+    }
+    setCurrentUser(data.currentUser ?? null)
+    setTotalParticipants(data.totalParticipants ?? 0)
+    setHasMore(data.hasMore ?? false)
+  }, [])
+
+  function handleSearchChange(value: string) {
+    setSearchQuery(value)
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(async () => {
+      setSearching(true)
+      await fetchLeaderboard(0, value, false)
+      setSearching(false)
+    }, 300)
+  }
+
+  async function loadMore() {
+    setLoadingMore(true)
+    await fetchLeaderboard(lbEntries.length, searchQuery, true)
+    setLoadingMore(false)
+  }
+
+  const currentUserInList = lbEntries.some(e => e.isCurrentUser)
 
   return (
     <div className="space-y-4">
@@ -329,6 +377,23 @@ export function ReferralBlock() {
           )}
         </div>
 
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)] pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Rechercher un joueur…"
+            className="w-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-default)] pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none focus:border-[#E7BA76]/50 transition-colors"
+          />
+          {searching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="w-4 h-4 border-2 border-[#E7BA76] border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+
         {lbLoading ? (
           <div className="animate-pulse space-y-2">
             {[...Array(5)].map((_, i) => (
@@ -339,7 +404,7 @@ export function ReferralBlock() {
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Users className="mb-2 h-8 w-8 text-[var(--text-tertiary)]" />
             <p className="text-sm text-[var(--text-secondary)]">
-              Sois le premier à parrainer !
+              {searchQuery ? 'Aucun joueur trouvé' : 'Sois le premier à parrainer !'}
             </p>
           </div>
         ) : (
@@ -348,12 +413,27 @@ export function ReferralBlock() {
               <LeaderboardRow key={entry.userId} entry={entry} />
             ))}
 
-            {/* Current user row if outside top 10 */}
-            {currentUser && !currentUserInTop && (
+            {/* Current user row if not in the visible list */}
+            {currentUser && !currentUserInList && !searchQuery && (
               <>
                 <p className="text-center text-xs text-[var(--text-tertiary)] py-1">· · ·</p>
                 <LeaderboardRow entry={currentUser} />
               </>
+            )}
+
+            {/* Load more */}
+            {hasMore && (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] py-2.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[#E7BA76]/40 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <div className="w-3.5 h-3.5 border-2 border-[var(--text-tertiary)] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  'Voir plus'
+                )}
+              </button>
             )}
           </div>
         )}

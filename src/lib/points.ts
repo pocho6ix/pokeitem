@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { QUEST_MAP, REFERRAL_POINTS } from '@/lib/quests'
 
 // ─── Recalculate and cache a user's total points ──────────────────────────────
@@ -177,33 +178,77 @@ export interface PointsLeaderboardEntry {
   isCurrentUser: boolean
 }
 
-export async function getPointsLeaderboard(currentUserId: string) {
-  const top = await prisma.userPoints.findMany({
-    where: { total: { gt: 0 } },
-    orderBy: [{ total: 'desc' }, { updatedAt: 'asc' }],
-    take: 10,
-    select: {
-      userId: true,
-      total: true,
-      user: { select: { id: true, name: true, username: true, image: true } },
-    },
-  })
+export async function getPointsLeaderboard(
+  currentUserId: string,
+  opts: { skip?: number; take?: number; search?: string } = {},
+) {
+  const skip = opts.skip ?? 0
+  const take = opts.take ?? 20
+  const search = opts.search?.trim() ?? ''
 
-  const rankings: PointsLeaderboardEntry[] = top.map((row, i) => ({
-    rank: i + 1,
-    userId: row.userId,
-    username: row.user.name ?? row.user.username ?? 'Utilisateur',
-    image: row.user.image ?? null,
-    totalPoints: row.total,
-    isCurrentUser: row.userId === currentUserId,
-  }))
+  const where: Prisma.UserPointsWhereInput = { total: { gt: 0 } }
 
-  // Current user rank (even if outside top 10)
+  if (search) {
+    where.user = {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+      ],
+    }
+  }
+
+  const [rows, totalParticipants, filteredCount] = await Promise.all([
+    prisma.userPoints.findMany({
+      where,
+      orderBy: [{ total: 'desc' }, { updatedAt: 'asc' }],
+      skip,
+      take,
+      select: {
+        userId: true,
+        total: true,
+        user: { select: { id: true, name: true, username: true, image: true } },
+      },
+    }),
+    prisma.userPoints.count({ where: { total: { gt: 0 } } }),
+    search ? prisma.userPoints.count({ where }) : Promise.resolve(0),
+  ])
+
+  // For ranking: if searching, we need the true rank of each user
+  let rankings: PointsLeaderboardEntry[]
+
+  if (search) {
+    // Compute true rank for each filtered user
+    rankings = await Promise.all(
+      rows.map(async (row) => {
+        const rank = (await prisma.userPoints.count({
+          where: { total: { gt: row.total } },
+        })) + 1
+        return {
+          rank,
+          userId: row.userId,
+          username: row.user.name ?? row.user.username ?? 'Utilisateur',
+          image: row.user.image ?? null,
+          totalPoints: row.total,
+          isCurrentUser: row.userId === currentUserId,
+        }
+      }),
+    )
+  } else {
+    rankings = rows.map((row, i) => ({
+      rank: skip + i + 1,
+      userId: row.userId,
+      username: row.user.name ?? row.user.username ?? 'Utilisateur',
+      image: row.user.image ?? null,
+      totalPoints: row.total,
+      isCurrentUser: row.userId === currentUserId,
+    }))
+  }
+
+  // Current user rank (always computed from full leaderboard)
   const currentUserEntry = rankings.find(r => r.isCurrentUser)
-  let currentUserRank: PointsLeaderboardEntry | null = currentUserEntry ?? null
+  let currentUser: PointsLeaderboardEntry | null = currentUserEntry ?? null
 
-  if (!currentUserRank) {
-    // Fetch their rank
+  if (!currentUser) {
     const myPoints = await prisma.userPoints.findUnique({
       where: { userId: currentUserId },
       select: { total: true },
@@ -219,7 +264,7 @@ export async function getPointsLeaderboard(currentUserId: string) {
         select: { name: true, username: true, image: true },
       })
       if (me) {
-        currentUserRank = {
+        currentUser = {
           rank,
           userId: currentUserId,
           username: me.name ?? me.username ?? 'Utilisateur',
@@ -231,7 +276,9 @@ export async function getPointsLeaderboard(currentUserId: string) {
     }
   }
 
-  const totalParticipants = await prisma.userPoints.count({ where: { total: { gt: 0 } } })
+  const hasMore = search
+    ? skip + take < filteredCount
+    : skip + take < totalParticipants
 
-  return { rankings, currentUser: currentUserRank, totalParticipants }
+  return { rankings, currentUser, totalParticipants, hasMore }
 }
