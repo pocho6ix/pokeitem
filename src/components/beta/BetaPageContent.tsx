@@ -345,17 +345,25 @@ export function BetaPageContent() {
               <button
                 onClick={activateTrial}
                 disabled={activating}
-                className="w-full rounded-xl bg-[#E7BA76] py-3.5 text-sm font-semibold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-60"
+                className="w-full rounded-full py-3.5 text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-60"
+                style={{
+                  background: 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+                  boxShadow: '0 2px 12px rgba(191, 149, 63, 0.3)',
+                  color: '#1A1A1A',
+                }}
               >
-                {activating
-                  ? "Activation…"
-                  : "🎁 Activer mon abonnement Pro — 1 semaine offerte"}
+                {activating ? "Activation…" : "🎁 Activer ma 1ère semaine offerte"}
               </button>
             ) : (
               <button
                 onClick={handleInstallClick}
                 disabled={activating}
-                className="w-full rounded-xl bg-[#E7BA76] py-3.5 text-sm font-semibold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-60"
+                className="w-full rounded-full py-3.5 text-sm font-bold tracking-wide transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-60"
+                style={{
+                  background: 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+                  boxShadow: '0 2px 12px rgba(191, 149, 63, 0.3)',
+                  color: '#1A1A1A',
+                }}
               >
                 {activating ? "Activation…" : "📲 Installer et commencer"}
               </button>
