@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Zap, AlertTriangle, ExternalLink } from "lucide-react";
+import { X, AlertTriangle, ExternalLink } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
 const SESSION_KEY = "betaBannerDismissed";
@@ -72,10 +72,8 @@ export function BetaBanner() {
       <div className="mx-auto flex max-w-2xl items-start gap-3">
         {/* Icon */}
         <div className="mt-0.5 shrink-0">
-          {isExpired ? (
+          {isExpired && (
             <AlertTriangle className="h-4 w-4 text-orange-400" />
-          ) : (
-            <Zap className="h-4 w-4 text-[#E7BA76]" />
           )}
         </div>
 
