@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Forces Temporelles EV05 : Guide Complet Investissement"
+
+A premium flat-lay photography of Pokémon TCG Temporal Forces sealed products elegantly arranged on a dark marble surface with golden veins. Include a booster box, ETB, premium collection boxes, and scattered booster packs featuring Dialga and Palkia artwork. Soft studio lighting with dramatic shadows and purple accent lighting reflecting the temporal theme. No text overlay. Aspect ratio 1200x630, ultra high-quality photorealistic style with luxury aesthetic.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-forces-temporelles.jpg
