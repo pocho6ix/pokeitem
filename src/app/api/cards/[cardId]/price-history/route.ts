@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fetchCardHistory } from "@/lib/cardmarket-fr";
 
 type Period = "1w" | "1m" | "3m" | "6m" | "1y" | "max";
 
@@ -74,25 +73,6 @@ export async function GET(
   for (const h of dbHistory) {
     const date = h.recordedAt.toISOString().slice(0, 10);
     merged.set(date, { price: h.price, priceFr: h.priceFr ?? null });
-  }
-
-  // ── CM API history (if we have the CM card ID) ──────────────────────────────
-  if (card.cardmarketId) {
-    try {
-      const cmHistory = await fetchCardHistory(Number(card.cardmarketId));
-      const startStr = startDate.toISOString().slice(0, 10);
-      for (const h of cmHistory) {
-        if (h.date < startStr) continue;
-        const existing = merged.get(h.date);
-        if (!existing) {
-          merged.set(h.date, { price: h.cmLow, priceFr: h.cmLow });
-        } else if (existing.priceFr == null && h.cmLow != null) {
-          merged.set(h.date, { ...existing, priceFr: h.cmLow });
-        }
-      }
-    } catch (err) {
-      console.warn("[price-history] CM API fetch failed, using DB only:", err);
-    }
   }
 
   // Sort by date ascending

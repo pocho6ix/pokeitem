@@ -4,6 +4,7 @@ import { mapTcgdexRarity, isSpecialCard } from "@/lib/pokemon/card-variants";
 import {
   fetchCMEpisodes,
   fetchCMCardsForEpisode,
+  fetchCardHistory,
   isFrenchPriceFetcherEnabled,
   extractLowestFr,
   normalizeCardNumber,
@@ -339,6 +340,66 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
 }
 
 // ---------------------------------------------------------------------------
+// CM history backfill — persists historical CM price data into CardPriceHistory
+// so the price chart has rich data without making live API calls per user.
+// Only runs for cards whose history hasn't been seeded yet (cardmarketId set
+// but no CardPriceHistory rows older than 7 days).
+// ---------------------------------------------------------------------------
+
+async function backfillCMHistory(): Promise<{ cardsEnriched: number }> {
+  if (!isFrenchPriceFetcherEnabled()) return { cardsEnriched: 0 };
+
+  // Find cards with cardmarketId that have few history records
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const candidates = await prisma.card.findMany({
+    where: {
+      cardmarketId: { not: null },
+      priceHistory: { none: { recordedAt: { lte: sevenDaysAgo } } },
+    },
+    select: { id: true, cardmarketId: true },
+    take: 20, // Process up to 20 cards per cron run to stay within timeout
+  });
+
+  if (candidates.length === 0) return { cardsEnriched: 0 };
+
+  let cardsEnriched = 0;
+  for (const card of candidates) {
+    try {
+      const history = await fetchCardHistory(Number(card.cardmarketId));
+      if (history.length === 0) continue;
+
+      const upserts = history.map((h) => {
+        const recordedAt = new Date(h.date);
+        return prisma.cardPriceHistory.upsert({
+          where: { cardId_recordedAt: { cardId: card.id, recordedAt } },
+          create: {
+            cardId: card.id,
+            price: h.cmLow ?? 0,
+            priceFr: h.cmLow,
+            source: "cardmarket-api",
+            recordedAt,
+          },
+          update: { priceFr: h.cmLow },
+        });
+      });
+
+      // Write in chunks
+      const CHUNK = 50;
+      for (let i = 0; i < upserts.length; i += CHUNK) {
+        await Promise.all(upserts.slice(i, i + CHUNK));
+      }
+      cardsEnriched++;
+      await new Promise((r) => setTimeout(r, 200));
+    } catch (err) {
+      console.warn(`[scraper] CM history backfill failed for card ${card.id}:`, err);
+    }
+  }
+
+  console.log(`[scraper] 📈 CM history backfill: ${cardsEnriched} cartes enrichies`);
+  return { cardsEnriched };
+}
+
+// ---------------------------------------------------------------------------
 // Route handlers
 // ---------------------------------------------------------------------------
 
@@ -353,10 +414,12 @@ export async function GET(request: NextRequest) {
   try {
     const result = await updatePrices();
     const frResult = await updateFrenchPrices();
+    const histResult = await backfillCMHistory();
     return NextResponse.json({
       message: "Price update complete",
       ...result,
       ...frResult,
+      ...histResult,
     });
   } catch (error) {
     console.error("Cron price update failed:", error);
@@ -374,10 +437,12 @@ export async function POST(request: NextRequest) {
   try {
     const result = await updatePrices();
     const frResult = await updateFrenchPrices();
+    const histResult = await backfillCMHistory();
     return NextResponse.json({
       message: "Price update complete",
       ...result,
       ...frResult,
+      ...histResult,
     });
   } catch (error) {
     console.error("Manual price update failed:", error);
