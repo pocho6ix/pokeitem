@@ -10,6 +10,7 @@ import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidge
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
+import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
 
 
 async function getTopCards(userId: string) {
@@ -138,6 +139,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-xl space-y-4">
             <ReferralBlock />
             <QuestsBlock />
+            <TelegramBannerButton />
           </div>
         </section>
       )}

@@ -15,6 +15,19 @@ export interface QuestDefinition {
 }
 
 export const QUESTS: QuestDefinition[] = [
+  // 1 — Rejoindre la communauté Telegram
+  {
+    id: "join_telegram",
+    title: "Rejoindre la communauté",
+    description: "Rejoins notre groupe Telegram officiel",
+    points: 2000,
+    icon: "✈️",
+    type: "action",
+    actionUrl: "https://t.me/pokeitem",
+    actionLabel: "Rejoindre",
+    verifiable: false,
+    active: true,
+  },
   // 2 — Follow Instagram
   {
     id: "follow_instagram",

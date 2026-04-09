@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProfilForm } from "@/components/profil/ProfilForm";
+import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
 
 export const metadata: Metadata = {
   title: "Mon profil | PokeItem",
@@ -19,6 +20,7 @@ export default function ProfilPage() {
       </div>
 
       <ProfilForm />
+      <TelegramBannerButton />
     </div>
   );
 }
