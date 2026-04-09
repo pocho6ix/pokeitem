@@ -221,7 +221,7 @@ async function main() {
   }
 
   // Collect all updates grouped by serieId
-  const updatesBySerie = new Map<string, Array<{ id: string; priceFr: number }>>()
+  const updatesBySerie = new Map<string, Array<{ id: string; priceFr: number; cmApiCardId: number }>>()
 
   for (const ep of episodes) {
     const cmCards = await fetchAllPages<{
@@ -255,7 +255,7 @@ async function main() {
       if (!cardId) continue
 
       if (!updatesBySerie.has(serieId)) updatesBySerie.set(serieId, [])
-      updatesBySerie.get(serieId)!.push({ id: cardId, priceFr })
+      updatesBySerie.get(serieId)!.push({ id: cardId, priceFr, cmApiCardId: cm.id })
       epMatched++
     }
 
@@ -276,7 +276,7 @@ async function main() {
         chunk.map((u) =>
           prisma.card.update({
             where: { id: u.id },
-            data: { priceFr: u.priceFr, priceFrUpdatedAt: now },
+            data: { priceFr: u.priceFr, priceFrUpdatedAt: now, cardmarketId: String(u.cmApiCardId) },
           })
         )
       )

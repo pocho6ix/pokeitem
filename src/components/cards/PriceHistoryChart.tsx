@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -14,7 +14,7 @@ import {
 
 interface PricePoint {
   date: string;
-  price: number;
+  price: number | null;
   priceFr?: number | null;
 }
 
@@ -42,7 +42,8 @@ const PERIODS: { value: Period; label: string }[] = [
 
 // ─── Formatters ──────────────────────────────────────────────────────────────
 
-function formatEur(value: number): string {
+function formatEur(value: number | null | undefined): string {
+  if (value == null) return "—";
   return value.toLocaleString("fr-FR", {
     style: "currency",
     currency: "EUR",
@@ -94,51 +95,67 @@ export function PriceHistoryChart({
 }: Props) {
   const displayPrice = currentPriceFr ?? currentPrice;
 
-  // Compute price change
-  const priceChange = useMemo(() => {
-    if (data.length < 2) return null;
-    const first = data[0].priceFr ?? data[0].price;
-    const last = data[data.length - 1].priceFr ?? data[data.length - 1].price;
-    const diff = last - first;
-    const pct = first !== 0 ? (diff / first) * 100 : 0;
-    return { diff, pct, positive: diff >= 0 };
-  }, [data]);
-
   // Use priceFr if available, otherwise price
   const chartData = useMemo(
-    () => data.map((d) => ({ ...d, displayPrice: d.priceFr ?? d.price })),
+    () =>
+      data
+        .map((d) => ({ ...d, displayPrice: d.priceFr ?? d.price }))
+        .filter((d) => d.displayPrice != null),
     [data]
   );
+
+  // Compute price change and stats
+  const stats = useMemo(() => {
+    const prices = chartData.map((d) => d.displayPrice as number);
+    if (prices.length === 0) return null;
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+    const first = prices[0];
+    const last = prices[prices.length - 1];
+    const diff = last - first;
+    const pct = first !== 0 ? (diff / first) * 100 : 0;
+
+    return { min, max, avg, diff, pct, positive: diff >= 0 };
+  }, [chartData]);
 
   return (
     <div className="space-y-3">
       {/* Current price + change */}
-      <div>
-        <p className="text-2xl font-bold text-[var(--text-primary)]">
-          {displayPrice != null ? formatEur(displayPrice) : "—"}
-        </p>
-        {currentPriceFr != null && (
-          <span className="text-xs text-[var(--text-tertiary)]">Prix FR</span>
-        )}
-        {priceChange && (
-          <p className={`text-sm font-medium ${priceChange.positive ? "text-[#10B981]" : "text-red-400"}`}>
-            {priceChange.positive ? "+" : ""}
-            {formatEur(priceChange.diff)} ({priceChange.positive ? "+" : ""}
-            {priceChange.pct.toFixed(1)}%)
+      <div className="flex items-end gap-3">
+        <div>
+          <p className="text-2xl font-bold text-[var(--text-primary)]">
+            {displayPrice != null ? formatEur(displayPrice) : "—"}
+          </p>
+          {currentPriceFr != null && (
+            <span className="text-xs text-[var(--text-tertiary)]">🇫🇷 Prix FR</span>
+          )}
+        </div>
+        {stats && (
+          <p
+            className={`mb-0.5 text-sm font-medium ${
+              stats.positive ? "text-[#10B981]" : "text-red-400"
+            }`}
+          >
+            {stats.positive ? "+" : ""}
+            {formatEur(stats.diff)} ({stats.positive ? "+" : ""}
+            {stats.pct.toFixed(1)}%)
           </p>
         )}
       </div>
 
       {/* Chart */}
-      <div className="h-[200px] sm:h-[280px]">
+      <div className="h-[180px] sm:h-[240px]">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#10B981] border-t-transparent" />
           </div>
-        ) : data.length === 0 ? (
+        ) : chartData.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <p className="text-sm text-[var(--text-secondary)]">
-              Pas encore de données d'historique
+              Pas encore de données d&apos;historique
             </p>
             <p className="text-xs text-[var(--text-tertiary)] mt-1">
               Les prix sont enregistrés quotidiennement
@@ -200,6 +217,26 @@ export function PriceHistoryChart({
           </button>
         ))}
       </div>
+
+      {/* Min / Moy / Max stats */}
+      {stats && chartData.length > 1 && (
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          <StatPill label="Min" value={stats.min} color="text-[#10B981]" />
+          <StatPill label="Moy" value={stats.avg} color="text-[var(--text-primary)]" />
+          <StatPill label="Max" value={stats.max} color="text-red-400" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="flex flex-col items-center rounded-lg bg-[var(--bg-secondary)] py-2">
+      <span className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-wide">{label}</span>
+      <span className={`text-sm font-bold ${color}`}>{formatEur(value)}</span>
     </div>
   );
 }

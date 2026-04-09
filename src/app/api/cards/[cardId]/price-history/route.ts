@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fetchCardHistory } from "@/lib/cardmarket-fr";
 
 type Period = "1w" | "1m" | "3m" | "6m" | "1y" | "max";
 
@@ -36,6 +37,7 @@ export async function GET(
       priceReverse: true,
       isSpecial: true,
       priceUpdatedAt: true,
+      cardmarketId: true,
       serie: {
         select: {
           name: true,
@@ -53,7 +55,8 @@ export async function GET(
 
   const startDate = getStartDate(period, card.serie.releaseDate);
 
-  const history = await prisma.cardPriceHistory.findMany({
+  // ── DB history ──────────────────────────────────────────────────────────────
+  const dbHistory = await prisma.cardPriceHistory.findMany({
     where: {
       cardId,
       recordedAt: { gte: startDate },
@@ -66,11 +69,37 @@ export async function GET(
     },
   });
 
-  const points = history.map((h) => ({
-    date: h.recordedAt.toISOString().slice(0, 10),
-    price: h.price,
-    priceFr: h.priceFr,
-  }));
+  // Build a date → point map from DB
+  const merged = new Map<string, { price: number | null; priceFr: number | null }>();
+  for (const h of dbHistory) {
+    const date = h.recordedAt.toISOString().slice(0, 10);
+    merged.set(date, { price: h.price, priceFr: h.priceFr ?? null });
+  }
+
+  // ── CM API history (if we have the CM card ID) ──────────────────────────────
+  if (card.cardmarketId) {
+    const cmHistory = await fetchCardHistory(Number(card.cardmarketId));
+    for (const h of cmHistory) {
+      if (h.date < startDate.toISOString().slice(0, 10)) continue;
+      const existing = merged.get(h.date);
+      if (!existing) {
+        // CM API point not in DB: use cm_low as price proxy
+        merged.set(h.date, { price: h.cmLow, priceFr: h.cmLow });
+      } else if (existing.priceFr == null && h.cmLow != null) {
+        // DB has this date but no FR price: fill from CM API
+        merged.set(h.date, { ...existing, priceFr: h.cmLow });
+      }
+    }
+  }
+
+  // Sort by date ascending
+  const points = Array.from(merged.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, v]) => ({
+      date,
+      price: v.price,
+      priceFr: v.priceFr,
+    }));
 
   return NextResponse.json({
     card: {
@@ -84,6 +113,7 @@ export async function GET(
       priceReverse: card.priceReverse,
       isSpecial: card.isSpecial,
       priceUpdatedAt: card.priceUpdatedAt,
+      cardmarketId: card.cardmarketId,
     },
     serie: card.serie,
     history: points,

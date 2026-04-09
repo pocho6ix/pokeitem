@@ -346,6 +346,7 @@ model Card {
   rarity     CardRarity @default(COMMON)
   imageUrl   String?
   tcgdexId       String?
+  cardmarketId   String?
   price          Float?
   priceReverse   Float?
   priceFr        Float?

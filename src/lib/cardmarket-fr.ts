@@ -24,6 +24,7 @@ export interface CMApiCard {
   id: number
   name: string
   card_number: number | string  // API returns a number (e.g. 9), not a string
+  cardmarket_id?: number | null
   prices?: {
     cardmarket?: {
       lowest_near_mint_FR?: number | null
@@ -31,6 +32,18 @@ export interface CMApiCard {
       "30d_average"?: number | null
     } | null
   } | null
+}
+
+/** One day of CM API price history */
+export interface CMHistoryDay {
+  date: string        // "YYYY-MM-DD"
+  cmLow: number | null
+}
+
+/** Raw CM API response: date → { cm_low, tcg_player_market } */
+interface CMHistoryRawDay {
+  cm_low?: number | null
+  tcg_player_market?: number | null
 }
 
 export interface CMApiEpisode {
@@ -127,4 +140,55 @@ export function isFrenchPriceFetcherEnabled(): boolean {
 export function extractLowestFr(card: CMApiCard): number | null {
   const v = card.prices?.cardmarket?.lowest_near_mint_FR
   return typeof v === "number" && v > 0 ? v : null
+}
+
+/**
+ * Fetches historical price data for a card by its CM API internal ID.
+ * Returns an array sorted oldest → newest.
+ */
+export async function fetchCardHistory(cmApiCardId: number): Promise<CMHistoryDay[]> {
+  const key = getApiKey()
+  if (!key) return []
+
+  const days: CMHistoryDay[] = []
+  let page = 1
+
+  while (true) {
+    try {
+      const res = await fetch(
+        `https://${CARDMARKET_API_HOST}/pokemon/cards/${cmApiCardId}/history-prices?per_page=100&page=${page}`,
+        {
+          headers: {
+            "x-rapidapi-host": CARDMARKET_API_HOST,
+            "x-rapidapi-key": key,
+          },
+        }
+      )
+      if (!res.ok) break
+
+      const body = (await res.json()) as {
+        data?: Record<string, CMHistoryRawDay>
+        paging?: { current: number; total: number }
+        results?: number
+      }
+
+      const raw = body.data ?? {}
+      for (const [date, val] of Object.entries(raw)) {
+        const cmLow = typeof val.cm_low === "number" ? val.cm_low : null
+        days.push({ date, cmLow })
+      }
+
+      const paging = body.paging
+      if (!paging || paging.current >= paging.total) break
+      page++
+      await new Promise((r) => setTimeout(r, 150))
+    } catch (err) {
+      console.warn(`[cardmarket-fr] history ${cmApiCardId} error:`, err)
+      break
+    }
+  }
+
+  // Sort oldest first
+  days.sort((a, b) => a.date.localeCompare(b.date))
+  return days
 }

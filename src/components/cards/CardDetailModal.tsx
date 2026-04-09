@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X } from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { PriceHistoryChart } from "./PriceHistoryChart";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
@@ -27,6 +27,7 @@ interface CardDetail {
   priceReverse: number | null;
   isSpecial: boolean;
   priceUpdatedAt: string | null;
+  cardmarketId: string | null;
 }
 
 interface SerieDetail {
@@ -51,6 +52,11 @@ function formatEur(value: number | null | undefined): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+function buildCardmarketUrl(cardName: string, serieName: string): string {
+  const q = encodeURIComponent(`${cardName} ${serieName}`);
+  return `https://www.cardmarket.com/fr/Pokemon/Products/Singles?searchString=${q}&language=5`;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -200,14 +206,25 @@ export function CardDetailModal({ cardId, onClose }: Props) {
 
           {/* ── Market prices table ───────────────────────────────────── */}
           <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-              Prix du marché
-            </h3>
-            <div className="space-y-2">
-              <PriceRow label="Prix tendance" value={card?.price} />
-              {card?.priceFr != null && (
-                <PriceRow label="Prix FR (Near Mint)" value={card.priceFr} highlight />
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                Prix du marché
+              </h3>
+              {card && serie && (
+                <a
+                  href={buildCardmarketUrl(card.name, serie.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#005B96]/10 hover:bg-[#005B96]/20 border border-[#005B96]/30 px-2.5 py-1 text-xs font-semibold text-[#3B9EFF] transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  Cardmarket FR
+                </a>
               )}
+            </div>
+            <div className="space-y-2">
+              <PriceRow label="🇫🇷 Prix FR (Near Mint)" value={card?.priceFr} highlight />
+              <PriceRow label="Prix tendance" value={card?.price} />
               {card?.priceReverse != null && (
                 <PriceRow label="Prix Reverse" value={card.priceReverse} />
               )}

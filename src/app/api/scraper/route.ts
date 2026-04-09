@@ -254,7 +254,7 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
 
   // Collect all updates: serieId → array of { id, priceFr }
   // We accumulate across all episodes then flush per-serie.
-  const updatesBySerie = new Map<string, Array<{ id: string; priceFr: number }>>();
+  const updatesBySerie = new Map<string, Array<{ id: string; priceFr: number; cmApiCardId?: number }>>();
 
   for (const ep of episodes) {
     const cmCards = await fetchCMCardsForEpisode(ep.id);
@@ -295,7 +295,7 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
         const numStr = String(cm.card_number);
         const id = dbByNumber.get(numStr) ?? dbByNumber.get(normalizeCardNumber(numStr));
         if (!id) continue;
-        updatesBySerie.get(serieId)!.push({ id, priceFr });
+        updatesBySerie.get(serieId)!.push({ id, priceFr, cmApiCardId: cm.id });
       }
     }
 
@@ -312,7 +312,11 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
         chunk.map((u) =>
           prisma.card.update({
             where: { id: u.id },
-            data: { priceFr: u.priceFr, priceFrUpdatedAt: now },
+            data: {
+              priceFr: u.priceFr,
+              priceFrUpdatedAt: now,
+              ...(u.cmApiCardId != null ? { cardmarketId: String(u.cmApiCardId) } : {}),
+            },
           })
         )
       );
