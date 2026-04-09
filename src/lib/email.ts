@@ -1,10 +1,14 @@
-import { getBrevoClient, getListId } from "@/lib/brevo"
+import {
+  getBrevoClient,
+  getUsersListId,
+  getNewsletterListId,
+  BREVO_SENDER,
+  TEMPLATE_IDS,
+} from "@/lib/brevo"
 
-const FROM_EMAIL = process.env.EMAIL_FROM_ADDRESS ?? "noreply@pokeitem.fr"
-const FROM_NAME = process.env.EMAIL_FROM_NAME ?? "PokeItem"
 const BASE_URL = process.env.NEXTAUTH_URL ?? "https://app.pokeitem.fr"
 
-// ─── Shared email layout ──────────────────────────────────────────────────────
+// ─── Shared email layout (fallback for non-template sends) ───────────────────
 
 function emailLayout(body: string): string {
   return `
@@ -42,33 +46,10 @@ export async function sendVerificationEmail(email: string, token: string) {
   const client = getBrevoClient()
 
   await client.transactionalEmails.sendTransacEmail({
-    subject: "Vérifiez votre adresse email — PokeItem",
-    sender: { name: FROM_NAME, email: FROM_EMAIL },
+    templateId: TEMPLATE_IDS.verifyEmail,
+    sender: BREVO_SENDER,
     to: [{ email }],
-    htmlContent: emailLayout(`
-      <tr>
-        <td style="padding:32px;">
-          <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;">Confirmez votre adresse email</h2>
-          <p style="margin:0 0 24px;color:#52525b;font-size:15px;line-height:1.6;">
-            Bienvenue sur PokeItem ! Cliquez sur le bouton ci-dessous pour vérifier votre adresse email et activer votre compte.
-          </p>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td align="center">
-                <a href="${verifyUrl}" style="display:inline-block;background:linear-gradient(135deg,#BF953F,#FCF6BA,#B38728,#FBF5B7,#AA771C);color:#1A1A1A;padding:12px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;">
-                  Vérifier mon email
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:24px 0 0;color:#a1a1aa;font-size:13px;line-height:1.5;">
-            Ce lien expire dans 24 heures. Si vous n'avez pas créé de compte sur PokeItem, ignorez cet email.
-          </p>
-          <p style="margin:16px 0 0;color:#a1a1aa;font-size:12px;word-break:break-all;">
-            ${verifyUrl}
-          </p>
-        </td>
-      </tr>`),
+    params: { VERIFY_URL: verifyUrl },
   })
 }
 
@@ -77,33 +58,10 @@ export async function sendWelcomeEmail(email: string, name?: string | null) {
   const firstName = name?.split(" ")[0] ?? "Dresseur"
 
   await client.transactionalEmails.sendTransacEmail({
-    subject: "Bienvenue sur PokeItem 🎉",
-    sender: { name: FROM_NAME, email: FROM_EMAIL },
+    templateId: TEMPLATE_IDS.welcome,
+    sender: BREVO_SENDER,
     to: [{ email }],
-    htmlContent: emailLayout(`
-      <tr>
-        <td style="padding:32px;">
-          <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;">Bienvenue, ${firstName} !</h2>
-          <p style="margin:0 0 16px;color:#52525b;font-size:15px;line-height:1.6;">
-            Ton compte PokeItem est maintenant actif. Tu peux dès maintenant gérer ta collection Pokémon TCG, suivre la valeur de tes cartes et items scellés.
-          </p>
-          <p style="margin:0 0 24px;color:#52525b;font-size:15px;line-height:1.6;">
-            En tant que membre bêta, tu bénéficies d'<strong>1 mois offert</strong> — installe l'app et parraine jusqu'à 3 amis pour en profiter pleinement.
-          </p>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td align="center">
-                <a href="${BASE_URL}" style="display:inline-block;background:linear-gradient(135deg,#BF953F,#FCF6BA,#B38728,#FBF5B7,#AA771C);color:#1A1A1A;padding:12px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;">
-                  Ouvrir PokeItem
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:24px 0 0;color:#a1a1aa;font-size:13px;line-height:1.5;">
-            Des questions ? Rejoins notre <a href="https://t.me/pokeitem" style="color:#E7BA76;">groupe Telegram</a>.
-          </p>
-        </td>
-      </tr>`),
+    params: { FIRSTNAME: firstName, APP_URL: BASE_URL },
   })
 }
 
@@ -111,9 +69,10 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${BASE_URL}/reinitialiser-mot-de-passe?token=${token}`
   const client = getBrevoClient()
 
+  // No dedicated template yet — use inline HTML
   await client.transactionalEmails.sendTransacEmail({
     subject: "Réinitialisation de votre mot de passe — PokeItem",
-    sender: { name: FROM_NAME, email: FROM_EMAIL },
+    sender: BREVO_SENDER,
     to: [{ email }],
     htmlContent: emailLayout(`
       <tr>
@@ -148,28 +107,33 @@ export async function upsertBrevoContact(
   email: string,
   opts: {
     name?: string | null
+    /** Whether the contact should be on the newsletter list (default: true) */
     subscribed?: boolean
-    listIds?: number[]
   } = {}
 ) {
   const client = getBrevoClient()
-  const listId = getListId()
-  const listIds = opts.listIds ?? [listId]
+  const usersListId = getUsersListId()
+  const newsletterListId = getNewsletterListId()
   const subscribed = opts.subscribed ?? true
 
+  // Always add to users list; newsletter list depends on consent
+  const listIds = subscribed
+    ? [usersListId, newsletterListId]
+    : [usersListId]
+  const unlinkListIds = subscribed ? [] : [newsletterListId]
+
   try {
-    // Try to create with updateEnabled=true (upsert)
     await client.contacts.createContact({
       email,
       attributes: {
         FIRSTNAME: opts.name ?? undefined,
         POKEITEM_USER: true,
       } as Record<string, string | number | boolean | string[]>,
-      listIds: subscribed ? listIds : [],
-      updateEnabled: true,
+      listIds,
+      updateEnabled: true, // upsert
     })
   } catch (err) {
-    // If create/upsert fails, try a targeted update
+    // Fallback to explicit update if create/upsert fails
     try {
       await client.contacts.updateContact({
         identifier: email,
@@ -177,8 +141,8 @@ export async function upsertBrevoContact(
           FIRSTNAME: opts.name ?? undefined,
           POKEITEM_USER: true,
         } as Record<string, string | number | boolean | string[]>,
-        listIds: subscribed ? listIds : [],
-        unlinkListIds: subscribed ? [] : listIds,
+        listIds,
+        unlinkListIds,
       })
     } catch (updateErr) {
       console.error("[Brevo] Failed to upsert contact:", updateErr)

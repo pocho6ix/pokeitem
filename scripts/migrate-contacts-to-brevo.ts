@@ -26,7 +26,8 @@ function sleep(ms: number) {
 }
 
 async function main() {
-  const listId = parseInt(process.env.BREVO_LIST_ID ?? "2", 10)
+  const usersListId = parseInt(process.env.BREVO_LIST_ID_USERS ?? "2", 10)
+  const newsletterListId = parseInt(process.env.BREVO_LIST_ID_NEWSLETTER ?? "3", 10)
   const client = getBrevoClient()
 
   const users = await prisma.user.findMany({
@@ -51,13 +52,16 @@ async function main() {
     await Promise.all(
       batch.map(async (user) => {
         try {
+          const listIds = user.subscribedNewsletter
+            ? [usersListId, newsletterListId]
+            : [usersListId]
           await client.contacts.createContact({
             email: user.email,
             attributes: {
               FIRSTNAME: user.name ?? undefined,
               POKEITEM_USER: true,
             } as Record<string, string | number | boolean | string[]>,
-            listIds: user.subscribedNewsletter ? [listId] : [],
+            listIds,
             updateEnabled: true, // upsert
           })
           created++
