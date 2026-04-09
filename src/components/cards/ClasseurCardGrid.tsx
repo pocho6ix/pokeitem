@@ -381,8 +381,14 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                   {uc.name}
                 </p>
                 <div className="mt-0.5 flex items-center justify-between gap-1">
-                  <span className="text-[10px] text-[var(--text-tertiary)]">
-                    {CARD_RARITY_SYMBOL[uc.rarity]} {uc.number}
+                  <span className="flex items-center gap-0.5 text-[10px] text-[var(--text-tertiary)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={CARD_RARITY_IMAGE[uc.rarity]}
+                      alt={uc.rarity}
+                      className="h-3 w-auto object-contain"
+                    />
+                    {uc.number}
                   </span>
                   {uc.price !== null && uc.price !== undefined && uc.price > 0 && (
                     <span className="text-[10px] font-bold text-emerald-400">
