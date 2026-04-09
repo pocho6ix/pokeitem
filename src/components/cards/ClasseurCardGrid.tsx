@@ -361,6 +361,22 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                   </span>
                 ) : null}
 
+                {/* Number + rarity badge — bottom left */}
+                <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+                  <span>{uc.number}</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={CARD_RARITY_IMAGE[uc.rarity]}
+                    alt=""
+                    className="h-3 w-auto object-contain opacity-90"
+                    style={
+                      uc.rarity === CardRarity.COMMON || uc.rarity === CardRarity.UNCOMMON || uc.rarity === CardRarity.RARE
+                        ? { filter: "drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))" }
+                        : undefined
+                    }
+                  />
+                </div>
+
                 {/* Selection overlay */}
                 {editMode && (
                   <div
@@ -376,26 +392,15 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
               </div>
 
               {/* Card info */}
-              <div className="px-2.5 py-2">
-                <p className="truncate text-xs font-medium text-[var(--text-primary)]">
+              <div className="px-1.5 pb-2 pt-1">
+                <p className="truncate text-center text-[10px] text-[var(--text-secondary)]">
                   {uc.name}
                 </p>
-                <div className="mt-0.5 flex items-center justify-between gap-1">
-                  <span className="flex items-center gap-0.5 text-[10px] text-[var(--text-tertiary)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={CARD_RARITY_IMAGE[uc.rarity]}
-                      alt={uc.rarity}
-                      className="h-3 w-auto object-contain"
-                    />
-                    {uc.number}
-                  </span>
-                  {uc.price !== null && uc.price !== undefined && uc.price > 0 && (
-                    <span className="text-[10px] font-bold text-emerald-400">
-                      {uc.isFrenchPrice ? "🇫🇷 " : ""}{formatEur(uc.price)}
-                    </span>
-                  )}
-                </div>
+                <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+                  {uc.price != null && uc.price > 0
+                    ? `${uc.isFrenchPrice ? "🇫🇷 " : ""}${formatEur(uc.price)}`
+                    : "—"}
+                </p>
               </div>
             </div>
           );
