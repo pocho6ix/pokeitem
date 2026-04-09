@@ -357,7 +357,7 @@ async function backfillCMHistory(): Promise<{ cardsEnriched: number }> {
       priceHistory: { none: { recordedAt: { lte: sevenDaysAgo } } },
     },
     select: { id: true, cardmarketId: true },
-    take: 20, // Process up to 20 cards per cron run to stay within timeout
+    take: 50, // Process up to 50 cards per cron run
   });
 
   if (candidates.length === 0) return { cardsEnriched: 0 };
