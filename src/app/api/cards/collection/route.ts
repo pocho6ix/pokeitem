@@ -119,14 +119,15 @@ export async function DELETE(req: NextRequest) {
   const parsed = DeleteBodySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Données invalides" }, { status: 400 });
 
-  let deleted = 0;
-  for (const { cardId, version } of parsed.data.entries) {
-    const where = version
-      ? { userId, cardId, version: version as never }
-      : { userId, cardId };
-    const { count } = await prisma.userCard.deleteMany({ where });
-    deleted += count;
-  }
+  // Single batched DELETE instead of N sequential queries
+  const { count: deleted } = await prisma.userCard.deleteMany({
+    where: {
+      userId,
+      OR: parsed.data.entries.map(({ cardId, version }) =>
+        version ? { cardId, version: version as never } : { cardId }
+      ),
+    },
+  });
 
   return NextResponse.json({ deleted });
 }

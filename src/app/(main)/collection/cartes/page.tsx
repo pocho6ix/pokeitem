@@ -26,26 +26,29 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
   const valueBySerieId = new Map<string, number>();
 
   if (userId) {
-    // Count unique cards per serie (one card = one slot, regardless of versions owned)
-    const owned = await prisma.userCard.findMany({
-      where: { userId },
-      select: { card: { select: { serieId: true } }, cardId: true },
-      distinct: ["cardId"],
-    });
+    // Both queries are independent — run in parallel
+    const [owned, ownedWithPrices] = await Promise.all([
+      // Count unique cards per serie (one card = one slot, regardless of versions owned)
+      prisma.userCard.findMany({
+        where: { userId },
+        select: { card: { select: { serieId: true } }, cardId: true },
+        distinct: ["cardId"],
+      }),
+      // Market value = price × quantity; prefer FR price when available
+      prisma.userCard.findMany({
+        where: { userId },
+        select: {
+          quantity: true,
+          version:  true,
+          card: { select: { serieId: true, price: true, priceFr: true, priceReverse: true } },
+        },
+      }),
+    ]);
+
     for (const uc of owned) {
       const sid = uc.card.serieId;
       ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
     }
-
-    // Market value = price × quantity; prefer FR price when available
-    const ownedWithPrices = await prisma.userCard.findMany({
-      where: { userId },
-      select: {
-        quantity: true,
-        version:  true,
-        card: { select: { serieId: true, price: true, priceFr: true, priceReverse: true } },
-      },
-    });
     for (const uc of ownedWithPrices) {
       const sid = uc.card.serieId;
       const price = getPriceForVersion(uc.card, uc.version);

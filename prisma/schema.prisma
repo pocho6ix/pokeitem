@@ -547,6 +547,7 @@ model PointEvent {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([userId, source])
   @@map("point_events")
 }
 
@@ -573,5 +574,6 @@ model UserPoints {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([total])
   @@map("user_points")
 }

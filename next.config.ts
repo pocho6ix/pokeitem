@@ -75,6 +75,33 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "private, max-age=3600, stale-while-revalidate=300" },
         ],
       },
+      // Catalogue items publics — cache 5 min (mis à jour par le scraper toutes les 6h)
+      {
+        source: "/api/items",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      // Collection & doubles — données user-specific, cache browser 5 min
+      {
+        source: "/api/cards/collection",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
+        source: "/api/cards/doubles",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      // Points utilisateur — cache browser 2 min
+      {
+        source: "/api/user/points",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=120, stale-while-revalidate=30" },
+        ],
+      },
     ];
   },
 };

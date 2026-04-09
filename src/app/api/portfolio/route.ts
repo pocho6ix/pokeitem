@@ -17,10 +17,36 @@ export async function GET() {
 
     const portfolioItems = await prisma.portfolioItem.findMany({
       where: { userId },
-      include: {
+      select: {
+        id:            true,
+        quantity:      true,
+        purchasePrice: true,
+        purchaseDate:  true,
+        condition:     true,
+        notes:         true,
+        createdAt:     true,
         item: {
-          include: {
-            serie: { include: { bloc: true } },
+          select: {
+            id:             true,
+            name:           true,
+            slug:           true,
+            type:           true,
+            imageUrl:       true,
+            currentPrice:   true,
+            priceTrend:     true,
+            retailPrice:    true,
+            language:       true,
+            cardmarketUrl:  true,
+            serie: {
+              select: {
+                id:           true,
+                name:         true,
+                slug:         true,
+                abbreviation: true,
+                imageUrl:     true,
+                bloc: { select: { id: true, name: true, slug: true } },
+              },
+            },
           },
         },
       },
@@ -240,8 +266,38 @@ export async function POST(request: NextRequest) {
         purchaseDate: purchaseDate ? new Date(purchaseDate) : new Date(),
         notes: notes ?? null,
       },
-      include: {
-        item: { include: { serie: { include: { bloc: true } } } },
+      select: {
+        id:            true,
+        quantity:      true,
+        purchasePrice: true,
+        purchaseDate:  true,
+        condition:     true,
+        notes:         true,
+        createdAt:     true,
+        item: {
+          select: {
+            id:             true,
+            name:           true,
+            slug:           true,
+            type:           true,
+            imageUrl:       true,
+            currentPrice:   true,
+            priceTrend:     true,
+            retailPrice:    true,
+            language:       true,
+            cardmarketUrl:  true,
+            serie: {
+              select: {
+                id:           true,
+                name:         true,
+                slug:         true,
+                abbreviation: true,
+                imageUrl:     true,
+                bloc: { select: { id: true, name: true, slug: true } },
+              },
+            },
+          },
+        },
       },
     });
 

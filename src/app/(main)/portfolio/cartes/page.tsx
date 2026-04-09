@@ -29,42 +29,44 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
   if (userId) {
     const rarityWhere = rarityFilter ? { card: { rarity: rarityFilter as never } } : {};
 
-    // Unique-card count (distinct cardId for completion %)
-    const ownedDistinct = await prisma.userCard.findMany({
-      where: { userId, ...rarityWhere },
-      select: { card: { select: { serieId: true } }, cardId: true },
-      distinct: ["cardId"],
-    });
+    // All independent queries run in parallel
+    const [ownedDistinct, ownedWithPrices, totalByRarity] = await Promise.all([
+      // Unique-card count (distinct cardId for completion %)
+      prisma.userCard.findMany({
+        where: { userId, ...rarityWhere },
+        select: { card: { select: { serieId: true } }, cardId: true },
+        distinct: ["cardId"],
+      }),
+      // Market value = price × quantity; prefer FR price when available
+      prisma.userCard.findMany({
+        where: { userId, ...rarityWhere },
+        select: {
+          quantity: true,
+          version:  true,
+          card: { select: { serieId: true, price: true, priceFr: true, priceReverse: true } },
+        },
+      }),
+      // Total cards of that rarity per serie (only when filter is active)
+      rarityFilter
+        ? prisma.card.groupBy({
+            by: ["serieId"],
+            where: { rarity: rarityFilter as never },
+            _count: { id: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
     for (const uc of ownedDistinct) {
       const sid = uc.card.serieId;
       ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
     }
-
-    // Market value = price × quantity; prefer FR price when available
-    const ownedWithPrices = await prisma.userCard.findMany({
-      where: { userId, ...rarityWhere },
-      select: {
-        quantity: true,
-        version:  true,
-        card: { select: { serieId: true, price: true, priceFr: true, priceReverse: true } },
-      },
-    });
     for (const uc of ownedWithPrices) {
       const sid   = uc.card.serieId;
       const price = getPriceForVersion(uc.card, uc.version);
       valueBySerieId.set(sid, (valueBySerieId.get(sid) ?? 0) + price * uc.quantity);
     }
-
-    // When rarity filter is active: compute total cards of that rarity per serie
-    if (rarityFilter) {
-      const totalByRarity = await prisma.card.groupBy({
-        by: ["serieId"],
-        where: { rarity: rarityFilter as never },
-        _count: { id: true },
-      });
-      for (const r of totalByRarity) {
-        totalByRaritySerieId.set(r.serieId, r._count.id);
-      }
+    for (const r of totalByRarity) {
+      totalByRaritySerieId.set(r.serieId, r._count.id);
     }
   }
 

@@ -215,22 +215,27 @@ export async function getPointsLeaderboard(
   let rankings: PointsLeaderboardEntry[]
 
   if (search) {
-    // Compute true rank for each filtered user
-    rankings = await Promise.all(
-      rows.map(async (row) => {
-        const rank = (await prisma.userPoints.count({
-          where: { total: { gt: row.total } },
-        })) + 1
-        return {
-          rank,
-          userId: row.userId,
-          username: row.user.name ?? row.user.username ?? 'Utilisateur',
-          image: row.user.image ?? null,
-          totalPoints: row.total,
-          isCurrentUser: row.userId === currentUserId,
-        }
-      }),
-    )
+    // Single query to build rank map — avoids N COUNT queries (one per result row)
+    const allPoints = await prisma.userPoints.findMany({
+      where: { total: { gt: 0 } },
+      orderBy: { total: 'desc' },
+      select: { userId: true, total: true },
+    })
+    const rankMap = new Map<string, number>()
+    let rank = 1
+    for (let i = 0; i < allPoints.length; i++) {
+      if (i > 0 && allPoints[i].total < allPoints[i - 1].total) rank = i + 1
+      rankMap.set(allPoints[i].userId, rank)
+    }
+
+    rankings = rows.map((row) => ({
+      rank: rankMap.get(row.userId) ?? 0,
+      userId: row.userId,
+      username: row.user.name ?? row.user.username ?? 'Utilisateur',
+      image: row.user.image ?? null,
+      totalPoints: row.total,
+      isCurrentUser: row.userId === currentUserId,
+    }))
   } else {
     rankings = rows.map((row, i) => ({
       rank: skip + i + 1,
