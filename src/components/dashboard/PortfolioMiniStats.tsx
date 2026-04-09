@@ -33,11 +33,15 @@ export function PortfolioMiniStats() {
       return;
     }
     setLoading(true);
-    const url = rarity ? `/api/portfolio/stats?rarity=${rarity}` : "/api/portfolio/stats";
-    fetch(url)
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => { if (d) setStats(d); })
-      .finally(() => setLoading(false));
+    // 300ms debounce — évite les requêtes en rafale si le filtre change rapidement
+    const timer = setTimeout(() => {
+      const url = rarity ? `/api/portfolio/stats?rarity=${rarity}` : "/api/portfolio/stats";
+      fetch(url)
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => { if (d) setStats(d); })
+        .finally(() => setLoading(false));
+    }, 300);
+    return () => clearTimeout(timer);
   }, [status, rarity]);
 
   if (status === "unauthenticated" || (!loading && !stats)) return null;

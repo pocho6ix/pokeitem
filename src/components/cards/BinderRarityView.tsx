@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense, memo } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
 import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
 
@@ -26,8 +26,10 @@ const DISPLAY_ORDER: CardRarity[] = [
 
 
 // ─── Single card cell ────────────────────────────────────────────────────────
+// memo: card data never changes during a session — avoids re-renders when parent
+// state changes (e.g. modal open/close, section expand)
 
-function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: string) => void }) {
+const CardCell = memo(function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: string) => void }) {
   const isDark = DARK_ICON_OVERLAY.has(card.rarity)
   const displayPrice = card.priceFr ?? card.price
   const isFr = card.priceFr != null && card.priceFr > 0
@@ -81,11 +83,13 @@ function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: s
       </span>
     </button>
   )
-}
+})
 
 // ─── Rarity section ──────────────────────────────────────────────────────────
+// memo: section object is stable — avoids re-rendering all sections when the
+// modal opens/closes or another section expands
 
-function RaritySectionBlock({ section, onCardClick }: { section: RaritySection; onCardClick: (id: string) => void }) {
+const RaritySectionBlock = memo(function RaritySectionBlock({ section, onCardClick }: { section: RaritySection; onCardClick: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const displayCards = expanded ? section.cards : section.cards.slice(0, 16)
   const label = CARD_RARITY_LABELS[section.rarityKey]
@@ -136,7 +140,7 @@ function RaritySectionBlock({ section, onCardClick }: { section: RaritySection; 
       )}
     </div>
   )
-}
+})
 
 // ─── Main view ───────────────────────────────────────────────────────────────
 
