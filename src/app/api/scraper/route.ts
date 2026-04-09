@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mapTcgdexRarity, isSpecialCard } from "@/lib/pokemon/card-variants";
-
-// ---------------------------------------------------------------------------
-// Config
-// ---------------------------------------------------------------------------
-const CARDMARKET_API_KEY = process.env.CARDMARKET_API_KEY ?? "";
-const CARDMARKET_API_HOST = "cardmarket-api-tcg.p.rapidapi.com";
+import {
+  fetchCMEpisodes,
+  fetchCMCardsForEpisode,
+  isFrenchPriceFetcherEnabled,
+  extractLowestFr,
+  normalizeCardNumber,
+} from "@/lib/cardmarket-fr";
 
 // ---------------------------------------------------------------------------
 // Mapping slug → TCGdex set ID (FR sets)
@@ -212,6 +213,103 @@ async function updatePrices(): Promise<{ setsProcessed: number; cardsUpdated: nu
 }
 
 // ---------------------------------------------------------------------------
+// FR price pass — uses cardmarket-api-tcg (RapidAPI) to pull the cheapest
+// Near-Mint French listing for every card on Cardmarket. Falls through silently
+// if CARDMARKET_API_KEY is not configured.
+// ---------------------------------------------------------------------------
+async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsFrUpdated: number }> {
+  if (!isFrenchPriceFetcherEnabled()) {
+    console.warn("[scraper] CARDMARKET_API_KEY not set — FR pass skipped");
+    return { episodesProcessed: 0, cardsFrUpdated: 0 };
+  }
+
+  const episodes = await fetchCMEpisodes();
+  if (episodes.length === 0) return { episodesProcessed: 0, cardsFrUpdated: 0 };
+
+  // Match Cardmarket episode names to DB Serie via name or nameEn (case-insensitive)
+  const seriesAll = await prisma.serie.findMany({ select: { id: true, name: true, nameEn: true } });
+  const serieByName = new Map<string, string>();
+  for (const s of seriesAll) {
+    serieByName.set(s.name.toLowerCase(), s.id);
+    if (s.nameEn) serieByName.set(s.nameEn.toLowerCase(), s.id);
+  }
+
+  const now = new Date();
+  const recordedAt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let episodesProcessed = 0;
+  let cardsFrUpdated = 0;
+  const CHUNK = 50;
+
+  for (const ep of episodes) {
+    const serieId = serieByName.get(ep.name.toLowerCase());
+    if (!serieId) continue;
+
+    const cmCards = await fetchCMCardsForEpisode(ep.id);
+    if (cmCards.length === 0) continue;
+
+    const dbCards = await prisma.card.findMany({
+      where: { serieId },
+      select: { id: true, number: true },
+    });
+    const dbByNumber = new Map<string, string>();
+    for (const c of dbCards) {
+      dbByNumber.set(c.number, c.id);
+      dbByNumber.set(normalizeCardNumber(c.number), c.id);
+    }
+
+    const updates: Array<{ id: string; priceFr: number }> = [];
+    for (const cm of cmCards) {
+      const priceFr = extractLowestFr(cm);
+      if (priceFr === null) continue;
+      const id =
+        dbByNumber.get(cm.card_number) ??
+        dbByNumber.get(normalizeCardNumber(cm.card_number));
+      if (!id) continue;
+      updates.push({ id, priceFr });
+    }
+
+    for (let i = 0; i < updates.length; i += CHUNK) {
+      const chunk = updates.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map((u) =>
+          prisma.card.update({
+            where: { id: u.id },
+            data: { priceFr: u.priceFr, priceFrUpdatedAt: now },
+          })
+        )
+      );
+      // Merge FR price into daily history (keeps international price if already set)
+      await Promise.all(
+        chunk.map((u) =>
+          prisma.cardPriceHistory.upsert({
+            where: { cardId_recordedAt: { cardId: u.id, recordedAt } },
+            create: {
+              cardId: u.id,
+              price: u.priceFr,
+              priceFr: u.priceFr,
+              source: "cardmarket-api",
+              recordedAt,
+            },
+            update: { priceFr: u.priceFr },
+          })
+        )
+      );
+    }
+
+    if (updates.length > 0) {
+      console.log(`[scraper] 🇫🇷 ${ep.name}: ${updates.length} prix FR`);
+      episodesProcessed++;
+      cardsFrUpdated += updates.length;
+    }
+
+    // Gentle throttle — RapidAPI has per-minute quotas
+    await new Promise((r) => setTimeout(r, 300));
+  }
+
+  return { episodesProcessed, cardsFrUpdated };
+}
+
+// ---------------------------------------------------------------------------
 // Route handlers
 // ---------------------------------------------------------------------------
 
@@ -225,7 +323,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await updatePrices();
-    return NextResponse.json({ message: "Price update complete", ...result });
+    const frResult = await updateFrenchPrices();
+    return NextResponse.json({
+      message: "Price update complete",
+      ...result,
+      ...frResult,
+    });
   } catch (error) {
     console.error("Cron price update failed:", error);
     return NextResponse.json({ error: "Price update failed" }, { status: 500 });
@@ -241,7 +344,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await updatePrices();
-    return NextResponse.json({ message: "Price update complete", ...result });
+    const frResult = await updateFrenchPrices();
+    return NextResponse.json({
+      message: "Price update complete",
+      ...result,
+      ...frResult,
+    });
   } catch (error) {
     console.error("Manual price update failed:", error);
     return NextResponse.json({ error: "Price update failed" }, { status: 500 });

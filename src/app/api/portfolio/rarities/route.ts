@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getPriceForVersion } from '@/lib/display-price'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -14,7 +15,7 @@ export async function GET() {
     select: {
       quantity: true,
       version: true,
-      card: { select: { rarity: true, price: true, priceReverse: true } },
+      card: { select: { rarity: true, price: true, priceFr: true, priceReverse: true } },
     },
   })
 
@@ -23,10 +24,7 @@ export async function GET() {
   for (const uc of rows) {
     const key = uc.card.rarity
     if (!key) continue
-    const price =
-      uc.version === 'REVERSE'
-        ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-        : (uc.card.price ?? 0)
+    const price = getPriceForVersion(uc.card, uc.version)
     const existing = map.get(key) ?? { cardCount: 0, totalValue: 0 }
     existing.cardCount += uc.quantity
     existing.totalValue += price * uc.quantity

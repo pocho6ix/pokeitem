@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getPriceForVersion } from "@/lib/display-price";
 import { CardRarity, CardCondition } from "@/types/card";
 import { CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
@@ -55,6 +56,7 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
           rarity:       true,
           imageUrl:     true,
           price:        true,
+          priceFr:      true,
           priceReverse: true,
           isSpecial:    true,
         },
@@ -65,10 +67,10 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
 
   const cards: ClasseurCard[] = userCards.map((uc) => {
     const version = uc.version as CardVersion;
-    const price =
-      version === CardVersion.REVERSE
-        ? (uc.card.priceReverse ?? uc.card.price)
-        : uc.card.price;
+    const price = getPriceForVersion(uc.card, version);
+    // FR flag: the NORMAL variant shows priceFr whenever available
+    const isFrenchPrice =
+      version === CardVersion.NORMAL && uc.card.priceFr != null;
 
     return {
       id:         uc.id,
@@ -81,6 +83,7 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       rarity:     uc.card.rarity as CardRarity,
       imageUrl:   uc.card.imageUrl,
       price:      price ?? null,
+      isFrenchPrice,
       isSpecial:  uc.card.isSpecial,
     };
   });

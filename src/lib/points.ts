@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { QUEST_MAP, REFERRAL_POINTS } from '@/lib/quests'
+import { getPriceForVersion } from '@/lib/display-price'
 
 // ─── Recalculate and cache a user's total points ──────────────────────────────
 
@@ -127,14 +128,11 @@ export async function checkProgressiveQuests(userId: string) {
     select: {
       quantity: true,
       version:  true,
-      card: { select: { price: true, priceReverse: true } },
+      card: { select: { price: true, priceFr: true, priceReverse: true } },
     },
   })
   const totalValue = userCardsWithPrices.reduce((sum, uc) => {
-    const price = uc.version === 'REVERSE'
-      ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-      : (uc.card.price ?? 0)
-    return sum + price * uc.quantity
+    return sum + getPriceForVersion(uc.card, uc.version) * uc.quantity
   }, 0)
   const progressValue = Math.min(Math.round(totalValue), 1000)
 

@@ -31,6 +31,7 @@ export interface CardRow {
   rarity: CardRarity;
   imageUrl: string | null;
   price?: number | null;
+  priceFr?: number | null;
   priceReverse?: number | null;
   isSpecial?: boolean;
   types?: string[];
@@ -612,7 +613,9 @@ export function CardCollectionGrid({
       const getPurchasePrice = (card: CardRow, version: CardVersion): number | null => {
         if (priceMode === "packed") return 0.70;
         if (priceMode === "manual") return manualPrice ?? null;
-        return version === CardVersion.NORMAL ? (card.price ?? null) : (card.priceReverse ?? card.price ?? null);
+        return version === CardVersion.NORMAL
+          ? (card.priceFr ?? card.price ?? null)
+          : (card.priceReverse ?? card.priceFr ?? card.price ?? null);
       };
 
       // Build (card, version) pairs — special cards are NORMAL only
@@ -970,10 +973,14 @@ export function CardCollectionGrid({
                   )}
                 </div>
 
-                {/* Card name + price */}
+                {/* Card name + price (FR preferred, flag indicator) */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
                 <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
-                  {card.price != null ? `${card.price.toFixed(2)}\u00a0€` : "–\u00a0€"}
+                  {card.priceFr != null
+                    ? `🇫🇷 ${card.priceFr.toFixed(2)}\u00a0€`
+                    : card.price != null
+                      ? `${card.price.toFixed(2)}\u00a0€`
+                      : "–\u00a0€"}
                 </p>
               </div>
             );

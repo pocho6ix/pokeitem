@@ -23,6 +23,7 @@ export interface ClasseurCard {
   rarity: CardRarity;
   imageUrl: string | null;
   price: number | null;
+  isFrenchPrice?: boolean; // true when `price` is the cheapest FR NM listing
   isSpecial?: boolean;
 }
 
@@ -385,7 +386,7 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                   </span>
                   {uc.price !== null && uc.price !== undefined && uc.price > 0 && (
                     <span className="text-[10px] font-bold text-emerald-400">
-                      {formatEur(uc.price)}
+                      {uc.isFrenchPrice ? "🇫🇷 " : ""}{formatEur(uc.price)}
                     </span>
                   )}
                 </div>

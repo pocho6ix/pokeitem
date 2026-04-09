@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPriceForVersion } from "@/lib/display-price";
 
 export async function GET(req: Request) {
   try {
@@ -37,15 +38,11 @@ export async function GET(req: Request) {
         userId,
         ...(rarity ? { card: { rarity: rarity as never } } : {}),
       },
-      select: { quantity: true, version: true, purchasePrice: true, card: { select: { price: true, priceReverse: true } } },
+      select: { quantity: true, version: true, purchasePrice: true, card: { select: { price: true, priceFr: true, priceReverse: true } } },
     });
 
     const cardsValue = userCards.reduce((sum, uc) => {
-      const price =
-        (uc as { version?: string }).version === 'REVERSE'
-          ? ((uc.card as { priceReverse?: number | null }).priceReverse ?? uc.card.price ?? 0)
-          : (uc.card.price ?? 0)
-      return sum + price * uc.quantity
+      return sum + getPriceForVersion(uc.card, uc.version) * uc.quantity
     }, 0);
 
     const cardsInvested = userCards.reduce(

@@ -5,6 +5,7 @@ import { BinderCartesWrapper } from "@/components/cards/BinderCartesWrapper";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getPriceForVersion } from "@/lib/display-price";
 import type { BlocCardProgress } from "@/types/card";
 
 export const metadata: Metadata = {
@@ -47,21 +48,18 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
       ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
     }
 
-    // Market value = price × quantity; REVERSE version uses priceReverse
+    // Market value = price × quantity; prefer FR price when available
     const ownedWithPrices = await prisma.userCard.findMany({
       where: { userId, ...rarityWhere },
       select: {
         quantity: true,
         version:  true,
-        card: { select: { serieId: true, price: true, priceReverse: true } },
+        card: { select: { serieId: true, price: true, priceFr: true, priceReverse: true } },
       },
     });
     for (const uc of ownedWithPrices) {
       const sid   = uc.card.serieId;
-      const price =
-        uc.version === "REVERSE"
-          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-          : (uc.card.price ?? 0);
+      const price = getPriceForVersion(uc.card, uc.version);
       valueBySerieId.set(sid, (valueBySerieId.get(sid) ?? 0) + price * uc.quantity);
     }
 

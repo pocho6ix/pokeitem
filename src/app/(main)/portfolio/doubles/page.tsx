@@ -33,6 +33,7 @@ export default async function PortfolioDoublesPage() {
           number:    true,
           imageUrl:  true,
           price:     true,
+          priceFr:   true,
           isSpecial: true,
           serie: {
             select: {
@@ -57,7 +58,7 @@ export default async function PortfolioDoublesPage() {
     cardName:     uc.card.name,
     cardNumber:   uc.card.number,
     cardImageUrl:  uc.card.imageUrl,
-    cardPrice:     uc.card.price ?? null,
+    cardPrice:     uc.card.priceFr ?? uc.card.price ?? null,
     cardIsSpecial: uc.card.isSpecial,
     serieSlug:    uc.card.serie.slug,
     serieName:    uc.card.serie.name,

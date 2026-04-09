@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPriceForVersion } from "@/lib/display-price";
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,17 +62,14 @@ export async function GET(request: NextRequest) {
         version:       true,
         createdAt:     true,
         purchasePrice: true,
-        card: { select: { price: true, priceReverse: true } },
+        card: { select: { price: true, priceFr: true, priceReverse: true } },
       },
     });
 
     // Build card contributions: { addedAt, value, invested }
     const cardContribs = userCards.map((uc) => ({
       addedAt:  uc.createdAt,
-      value:
-        (uc.version === "REVERSE"
-          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-          : (uc.card.price ?? 0)) * uc.quantity,
+      value:    getPriceForVersion(uc.card, uc.version) * uc.quantity,
       invested: (uc.purchasePrice ?? 0) * uc.quantity,
     }));
 

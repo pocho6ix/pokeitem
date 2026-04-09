@@ -98,8 +98,10 @@ export default async function CardDetailPage({ params }: PageProps) {
   // Try to fetch TCGdex data for types + pricing URLs
   const tcgdex = card.tcgdexId ? await fetchTcgdexCard(card.tcgdexId) : null;
 
-  // Resolve prices — prefer TCGdex cardmarket, fall back to DB prices
+  // Resolve prices — prefer the stored French NM price (priceFr), then
+  // TCGdex cardmarket trend, then the international trend from DB.
   const cmPrices = tcgdex?.pricing?.cardmarket?.prices;
+  const frPrice    = card.priceFr ?? null;
   const trendPrice = cmPrices?.trendPrice ?? card.price ?? null;
   const lowPrice   = cmPrices?.lowPrice    ?? null;
   const avg7       = cmPrices?.avg7        ?? null;
@@ -197,7 +199,7 @@ export default async function CardDetailPage({ params }: PageProps) {
       </div>
 
       {/* Pricing */}
-      {(trendPrice !== null || card.priceReverse !== null) && (
+      {(frPrice !== null || trendPrice !== null || card.priceReverse !== null) && (
         <div className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] divide-y divide-[var(--border-default)]">
           <div className="px-5 py-4">
             <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
@@ -205,12 +207,22 @@ export default async function CardDetailPage({ params }: PageProps) {
             </h2>
 
             <div className="grid grid-cols-2 gap-3 text-sm">
+              {frPrice !== null && (
+                <div>
+                  <p className="text-[var(--text-tertiary)] text-xs uppercase tracking-wide mb-0.5">
+                    🇫🇷 Carte française (NM)
+                  </p>
+                  <p className="text-lg font-bold text-emerald-400">{formatEur(frPrice)}</p>
+                </div>
+              )}
               {trendPrice !== null && (
                 <div>
                   <p className="text-[var(--text-tertiary)] text-xs uppercase tracking-wide mb-0.5">
-                    Tendance
+                    {frPrice !== null ? "Tendance globale" : "Tendance"}
                   </p>
-                  <p className="text-lg font-bold text-emerald-400">{formatEur(trendPrice)}</p>
+                  <p className={`text-lg font-bold ${frPrice !== null ? "text-[var(--text-primary)]" : "text-emerald-400"}`}>
+                    {formatEur(trendPrice)}
+                  </p>
                 </div>
               )}
               {lowPrice !== null && (

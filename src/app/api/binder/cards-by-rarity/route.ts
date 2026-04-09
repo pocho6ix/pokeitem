@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getPriceForVersion } from '@/lib/display-price'
 import { CardRarity } from '@/types/card'
 
 export interface RarityCard {
@@ -36,6 +37,7 @@ export async function GET() {
           rarity: true,
           imageUrl: true,
           price: true,
+          priceFr: true,
           priceReverse: true,
           serie: { select: { name: true } },
         },
@@ -48,10 +50,7 @@ export async function GET() {
 
   for (const uc of userCards) {
     const rarity = uc.card.rarity as CardRarity
-    const effectivePrice =
-      uc.version === 'REVERSE'
-        ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-        : (uc.card.price ?? 0)
+    const effectivePrice = getPriceForVersion(uc.card, uc.version)
 
     if (!byRarity.has(rarity)) byRarity.set(rarity, { cards: new Map(), totalValue: 0 })
     const group = byRarity.get(rarity)!

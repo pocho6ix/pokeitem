@@ -11,6 +11,7 @@ import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
 import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
+import { getPriceForVersion } from "@/lib/display-price";
 
 
 async function getTopCards(userId: string) {
@@ -25,6 +26,7 @@ async function getTopCards(userId: string) {
           number: true,
           imageUrl: true,
           price: true,
+          priceFr: true,
           priceReverse: true,
           serie: { select: { slug: true } },
         },
@@ -40,10 +42,7 @@ async function getTopCards(userId: string) {
       imageUrl: uc.card.imageUrl,
       version:  uc.version,
       serieSlug: uc.card.serie.slug,
-      price:
-        uc.version === "REVERSE"
-          ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-          : (uc.card.price ?? 0),
+      price:    getPriceForVersion(uc.card, uc.version),
     }))
     .filter((c) => c.price > 0 && c.imageUrl)
     .sort((a, b) => b.price - a.price)
@@ -54,14 +53,10 @@ async function getCollectionValue(userId: string) {
   // Cards market value
   const userCards = await prisma.userCard.findMany({
     where: { userId },
-    select: { quantity: true, version: true, card: { select: { price: true, priceReverse: true } } },
+    select: { quantity: true, version: true, card: { select: { price: true, priceFr: true, priceReverse: true } } },
   });
   const cardsValue = userCards.reduce((sum, uc) => {
-    const price =
-      uc.version === "REVERSE"
-        ? (uc.card.priceReverse ?? uc.card.price ?? 0)
-        : (uc.card.price ?? 0);
-    return sum + price * uc.quantity;
+    return sum + getPriceForVersion(uc.card, uc.version) * uc.quantity;
   }, 0);
 
   // Sealed items market value

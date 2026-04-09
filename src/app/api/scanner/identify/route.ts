@@ -320,7 +320,8 @@ Respond with JSON only, no other text.`,
             name: found.card.name,
             number: found.card.number,
             imageUrl: found.card.imageUrl,
-            price: found.card.price,
+            // Prefer the cheapest FR NM listing when available (PokeItem is 100 % FR)
+            price: found.card.priceFr ?? found.card.price,
             rarity: found.card.rarity,
           },
           serie: {
