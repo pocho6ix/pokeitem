@@ -57,7 +57,7 @@ export const QUESTS: QuestDefinition[] = [
   // 4 — Follow YouTube
   {
     id: "follow_youtube",
-    title: "Abonnez-vous sur YouTube",
+    title: "S'abonner sur Youtube",
     description: "Abonne-toi à notre chaîne YouTube",
     points: 500,
     icon: "▶️",
