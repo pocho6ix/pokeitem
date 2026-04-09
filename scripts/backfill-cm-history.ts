@@ -73,17 +73,22 @@ async function fetchHistory(cmApiCardId: string): Promise<HistoryDay[]> {
 async function main() {
   console.log(DRY_RUN ? "DRY RUN — aucune écriture\n" : "")
 
+  // Skip cards already backfilled (have history older than 2 days)
+  const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
   const cards = await prisma.card.findMany({
-    where: { cardmarketId: { not: null } },
+    where: {
+      cardmarketId: { not: null },
+      priceHistory: { none: { recordedAt: { lte: twoDaysAgo } } },
+    },
     select: { id: true, cardmarketId: true },
     ...(LIMIT ? { take: LIMIT } : {}),
   })
 
   console.log(`${cards.length} cartes avec cardmarketId à traiter\n`)
 
-  const BATCH = 4         // parallel requests
-  const DELAY = 400       // ms between batches
-  const CHUNK_DB = 100    // upserts per Promise.all
+  const BATCH = 2         // parallel API requests
+  const DELAY = 500       // ms between batches
+  const CHUNK_DB = 10     // upserts per Promise.all (évite saturation pool)
 
   let total = 0
   let totalPoints = 0
