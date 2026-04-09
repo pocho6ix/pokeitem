@@ -54,7 +54,20 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: false,
     active: true,
   },
-  // 4 — Installer l'app
+  // 4 — Follow YouTube
+  {
+    id: "follow_youtube",
+    title: "Abonnez-vous sur YouTube",
+    description: "Abonne-toi à notre chaîne YouTube",
+    points: 500,
+    icon: "▶️",
+    type: "action",
+    actionUrl: "https://youtube.com/@pokeitem",
+    actionLabel: "S'abonner",
+    verifiable: false,
+    active: true,
+  },
+  // 5 — Installer l'app
   {
     id: "install_pwa",
     title: "Installer l'app",
