@@ -126,17 +126,6 @@ export const QUESTS: QuestDefinition[] = [
     verifiable: true,
     active: true,
   },
-  // 9 — Donner son avis
-  {
-    id: "send_feedback",
-    title: "Donner son avis",
-    description: "Envoie un message via le support pour nous aider à améliorer la beta",
-    points: 500,
-    icon: "💬",
-    type: "action",
-    verifiable: true,
-    active: true,
-  },
 ]
 
 export const ACTIVE_QUESTS = QUESTS.filter(q => q.active)
