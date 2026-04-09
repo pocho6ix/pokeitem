@@ -23,7 +23,7 @@ function getApiKey(): string | null {
 export interface CMApiCard {
   id: number
   name: string
-  card_number: string
+  card_number: number | string  // API returns a number (e.g. 9), not a string
   prices?: {
     cardmarket?: {
       lowest_near_mint_FR?: number | null
@@ -37,60 +37,73 @@ export interface CMApiEpisode {
   id: number
   name: string
   code?: string
+  series?: { name: string; slug: string } | null
 }
 
-// ─── Fetchers ────────────────────────────────────────────────────────────────
+// ─── Paginated response wrapper (API returns { data: [...] }) ─────────────────
+interface CMApiResponse<T> {
+  data: T[]
+}
 
-export async function fetchCMEpisodes(): Promise<CMApiEpisode[]> {
+// ─── Fetchers (with auto-pagination) ─────────────────────────────────────────
+
+interface CMPaging { current: number; total: number; per_page: number }
+interface CMPagedResponse<T> { data: T[]; paging?: CMPaging; results?: number }
+
+async function fetchAllPages<T>(
+  buildUrl: (page: number) => string,
+  label: string
+): Promise<T[]> {
   const key = getApiKey()
   if (!key) return []
-  try {
-    const res = await fetch(
-      `https://${CARDMARKET_API_HOST}/pokemon/episodes`,
-      {
+  const all: T[] = []
+  let page = 1
+
+  while (true) {
+    try {
+      const res = await fetch(buildUrl(page), {
         headers: {
           "x-rapidapi-host": CARDMARKET_API_HOST,
           "x-rapidapi-key": key,
         },
+      })
+      if (!res.ok) {
+        console.warn(`[cardmarket-fr] ${label} p${page} → HTTP ${res.status}`)
+        break
       }
-    )
-    if (!res.ok) {
-      console.warn(`[cardmarket-fr] episodes → HTTP ${res.status}`)
-      return []
+      const body = (await res.json()) as CMPagedResponse<T> | T[]
+      const items: T[] = Array.isArray(body) ? body : (body.data ?? [])
+      all.push(...items)
+
+      const paging = Array.isArray(body) ? null : body.paging
+      if (!paging || paging.current >= paging.total) break
+      page++
+      await new Promise((r) => setTimeout(r, 150))
+    } catch (err) {
+      console.warn(`[cardmarket-fr] ${label} error:`, err)
+      break
     }
-    return (await res.json()) as CMApiEpisode[]
-  } catch (err) {
-    console.warn("[cardmarket-fr] episodes error:", err)
-    return []
   }
+
+  return all
+}
+
+export async function fetchCMEpisodes(): Promise<CMApiEpisode[]> {
+  return fetchAllPages<CMApiEpisode>(
+    (page) =>
+      `https://${CARDMARKET_API_HOST}/pokemon/episodes?per_page=100&page=${page}`,
+    "episodes"
+  )
 }
 
 export async function fetchCMCardsForEpisode(
   episodeId: number
 ): Promise<CMApiCard[]> {
-  const key = getApiKey()
-  if (!key) return []
-  try {
-    const res = await fetch(
-      `https://${CARDMARKET_API_HOST}/pokemon/episodes/${episodeId}/cards`,
-      {
-        headers: {
-          "x-rapidapi-host": CARDMARKET_API_HOST,
-          "x-rapidapi-key": key,
-        },
-      }
-    )
-    if (!res.ok) {
-      console.warn(
-        `[cardmarket-fr] episode ${episodeId} cards → HTTP ${res.status}`
-      )
-      return []
-    }
-    return (await res.json()) as CMApiCard[]
-  } catch (err) {
-    console.warn(`[cardmarket-fr] episode ${episodeId} error:`, err)
-    return []
-  }
+  return fetchAllPages<CMApiCard>(
+    (page) =>
+      `https://${CARDMARKET_API_HOST}/pokemon/episodes/${episodeId}/cards?per_page=100&page=${page}`,
+    `episode-${episodeId}`
+  )
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

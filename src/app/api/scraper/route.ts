@@ -213,10 +213,27 @@ async function updatePrices(): Promise<{ setsProcessed: number; cardsUpdated: nu
 }
 
 // ---------------------------------------------------------------------------
-// FR price pass — uses cardmarket-api-tcg (RapidAPI) to pull the cheapest
-// Near-Mint French listing for every card on Cardmarket. Falls through silently
-// if CARDMARKET_API_KEY is not configured.
+// FR price pass — uses cardmarket-api-tcg (RapidAPI).
+//
+// Matching strategy: CM cards carry a `tcgid` field (e.g. "sv3pt5-9").
+// We extract the set part ("sv3pt5") and use the existing SLUG_TO_PTCG map
+// (reversed) to find the DB serieId. This avoids unreliable name matching.
+// Card numbers are integers from the API (e.g. 9); we normalise to strings
+// and match against the DB's zero-padded numbers (e.g. "009").
 // ---------------------------------------------------------------------------
+
+// Reverse of SLUG_TO_PTCG: ptcgSetId → DB serieId (built at runtime)
+async function buildPtcgToSerieIdMap(): Promise<Map<string, string>> {
+  const series = await prisma.serie.findMany({ select: { id: true, slug: true } });
+  const slugToId = new Map(series.map((s) => [s.slug, s.id]));
+  const map = new Map<string, string>();
+  for (const [slug, ptcgId] of Object.entries(SLUG_TO_PTCG)) {
+    const id = slugToId.get(slug);
+    if (id) map.set(ptcgId.toLowerCase(), id);
+  }
+  return map;
+}
+
 async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsFrUpdated: number }> {
   if (!isFrenchPriceFetcherEnabled()) {
     console.warn("[scraper] CARDMARKET_API_KEY not set — FR pass skipped");
@@ -226,13 +243,8 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
   const episodes = await fetchCMEpisodes();
   if (episodes.length === 0) return { episodesProcessed: 0, cardsFrUpdated: 0 };
 
-  // Match Cardmarket episode names to DB Serie via name or nameEn (case-insensitive)
-  const seriesAll = await prisma.serie.findMany({ select: { id: true, name: true, nameEn: true } });
-  const serieByName = new Map<string, string>();
-  for (const s of seriesAll) {
-    serieByName.set(s.name.toLowerCase(), s.id);
-    if (s.nameEn) serieByName.set(s.nameEn.toLowerCase(), s.id);
-  }
+  // Build ptcgId → serieId lookup (e.g. "sv3pt5" → "cmnd8zjnl…")
+  const ptcgToSerieId = await buildPtcgToSerieIdMap();
 
   const now = new Date();
   const recordedAt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -240,34 +252,60 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
   let cardsFrUpdated = 0;
   const CHUNK = 50;
 
-  for (const ep of episodes) {
-    const serieId = serieByName.get(ep.name.toLowerCase());
-    if (!serieId) continue;
+  // Collect all updates: serieId → array of { id, priceFr }
+  // We accumulate across all episodes then flush per-serie.
+  const updatesBySerie = new Map<string, Array<{ id: string; priceFr: number }>>();
 
+  for (const ep of episodes) {
     const cmCards = await fetchCMCardsForEpisode(ep.id);
     if (cmCards.length === 0) continue;
 
-    const dbCards = await prisma.card.findMany({
-      where: { serieId },
-      select: { id: true, number: true },
-    });
-    const dbByNumber = new Map<string, string>();
-    for (const c of dbCards) {
-      dbByNumber.set(c.number, c.id);
-      dbByNumber.set(normalizeCardNumber(c.number), c.id);
-    }
-
-    const updates: Array<{ id: string; priceFr: number }> = [];
+    // Group CM cards by their PTCG set ID (extracted from tcgid, e.g. "sv3pt5-9" → "sv3pt5")
+    // Some cards may have no tcgid — skip those.
+    const cardsByPtcgSet = new Map<string, typeof cmCards>();
     for (const cm of cmCards) {
-      const priceFr = extractLowestFr(cm);
-      if (priceFr === null) continue;
-      const id =
-        dbByNumber.get(cm.card_number) ??
-        dbByNumber.get(normalizeCardNumber(cm.card_number));
-      if (!id) continue;
-      updates.push({ id, priceFr });
+      const tcgid = (cm as { tcgid?: string | null }).tcgid;
+      if (!tcgid) continue;
+      const setId = tcgid.split("-").slice(0, -1).join("-").toLowerCase();
+      if (!setId) continue;
+      if (!cardsByPtcgSet.has(setId)) cardsByPtcgSet.set(setId, []);
+      cardsByPtcgSet.get(setId)!.push(cm);
     }
 
+    for (const [ptcgSetId, setCards] of cardsByPtcgSet) {
+      const serieId = ptcgToSerieId.get(ptcgSetId);
+      if (!serieId) continue;
+
+      // Lazy-load DB cards for this serie (only once — cache in map)
+      if (!updatesBySerie.has(serieId)) updatesBySerie.set(serieId, []);
+
+      const dbCards = await prisma.card.findMany({
+        where: { serieId },
+        select: { id: true, number: true },
+      });
+      const dbByNumber = new Map<string, string>();
+      for (const c of dbCards) {
+        dbByNumber.set(c.number, c.id);
+        dbByNumber.set(normalizeCardNumber(c.number), c.id);
+      }
+
+      for (const cm of setCards) {
+        const priceFr = extractLowestFr(cm);
+        if (priceFr === null) continue;
+        const numStr = String(cm.card_number);
+        const id = dbByNumber.get(numStr) ?? dbByNumber.get(normalizeCardNumber(numStr));
+        if (!id) continue;
+        updatesBySerie.get(serieId)!.push({ id, priceFr });
+      }
+    }
+
+    // Throttle per episode
+    await new Promise((r) => setTimeout(r, 200));
+  }
+
+  // Flush all updates to DB
+  for (const [, updates] of updatesBySerie) {
+    if (updates.length === 0) continue;
     for (let i = 0; i < updates.length; i += CHUNK) {
       const chunk = updates.slice(i, i + CHUNK);
       await Promise.all(
@@ -278,34 +316,21 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
           })
         )
       );
-      // Merge FR price into daily history (keeps international price if already set)
       await Promise.all(
         chunk.map((u) =>
           prisma.cardPriceHistory.upsert({
             where: { cardId_recordedAt: { cardId: u.id, recordedAt } },
-            create: {
-              cardId: u.id,
-              price: u.priceFr,
-              priceFr: u.priceFr,
-              source: "cardmarket-api",
-              recordedAt,
-            },
+            create: { cardId: u.id, price: u.priceFr, priceFr: u.priceFr, source: "cardmarket-api", recordedAt },
             update: { priceFr: u.priceFr },
           })
         )
       );
     }
-
-    if (updates.length > 0) {
-      console.log(`[scraper] 🇫🇷 ${ep.name}: ${updates.length} prix FR`);
-      episodesProcessed++;
-      cardsFrUpdated += updates.length;
-    }
-
-    // Gentle throttle — RapidAPI has per-minute quotas
-    await new Promise((r) => setTimeout(r, 300));
+    episodesProcessed++;
+    cardsFrUpdated += updates.length;
   }
 
+  console.log(`[scraper] 🇫🇷 ${episodesProcessed} séries · ${cardsFrUpdated} prix FR`);
   return { episodesProcessed, cardsFrUpdated };
 }
 
