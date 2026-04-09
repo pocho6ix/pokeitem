@@ -56,7 +56,7 @@ export async function sendWelcomeEmail(email: string, name?: string | null) {
     templateId: welcome,
     sender: getBrevoSender(),
     to: [{ email }],
-    params: { FIRSTNAME: firstName, APP_URL: BASE_URL },
+    params: { PSEUDO: firstName, APP_URL: "https://app.pokeitem.fr/portfolio" },
   })
 }
 
