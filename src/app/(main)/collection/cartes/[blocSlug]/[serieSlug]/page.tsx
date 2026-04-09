@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getCachedSerieCards } from "@/lib/cached-queries";
 import { CardCollectionGrid } from "@/components/cards/CardCollectionGrid";
 import { BackButton } from "@/components/ui/BackButton";
 import type { CardRow, OwnedEntry } from "@/components/cards/CardCollectionGrid";
@@ -46,15 +47,8 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
   const session  = await getServerSession(authOptions);
   const userId   = (session?.user as { id?: string } | undefined)?.id ?? null;
 
-  // ── Fetch cards from DB ─────────────────────────────────────────────────
-  const serieDb = await prisma.serie.findUnique({
-    where: { slug: serieSlug },
-    include: {
-      cards: {
-        orderBy: { number: "asc" },
-      },
-    },
-  });
+  // ── Fetch cards from DB (CDN-cached 1h per serie) ──────────────────────
+  const serieDb = await getCachedSerieCards(serieSlug);
 
   const dbCards = serieDb?.cards ?? [];
 

@@ -5,6 +5,7 @@ import { BinderCartesWrapper } from "@/components/cards/BinderCartesWrapper";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getCachedSeriesList } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
 import type { BlocCardProgress } from "@/types/card";
 
@@ -16,17 +17,8 @@ export const metadata: Metadata = {
 export const revalidate = 0; // dynamic — owned data is per-user
 
 async function buildBlocProgress(userId: string | null, rarityFilter?: string | null): Promise<BlocCardProgress[]> {
-  const seriesInDb = await prisma.serie.findMany({
-    select: {
-      id:           true,
-      slug:         true,
-      name:         true,
-      abbreviation: true,
-      imageUrl:     true,
-      cardCount:    true,
-      bloc: { select: { slug: true } },
-    },
-  });
+  // CDN-cached 1h — user-independent dataset
+  const seriesInDb = await getCachedSeriesList();
 
   // Owned card counts + market values per serie
   const ownedBySerieId = new Map<string, number>();

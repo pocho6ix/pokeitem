@@ -6,6 +6,7 @@ import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getCachedSeriesList } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
 import type { BlocCardProgress } from "@/types/card";
 
@@ -17,18 +18,8 @@ export const metadata: Metadata = {
 export const revalidate = 0; // dynamic — owned data is per-user
 
 async function buildBlocProgress(userId: string | null): Promise<BlocCardProgress[]> {
-  // ── Fetch all series with their card counts ───────────────────────────
-  const seriesInDb = await prisma.serie.findMany({
-    select: {
-      id:          true,
-      slug:        true,
-      name:        true,
-      abbreviation: true,
-      imageUrl:    true,
-      cardCount:   true,
-      bloc: { select: { slug: true } },
-    },
-  });
+  // ── Fetch all series with their card counts (CDN-cached 1h) ─────────────
+  const seriesInDb = await getCachedSeriesList();
 
   // ── Fetch owned card counts per serie for this user ───────────────────
   const ownedBySerieId = new Map<string, number>();
