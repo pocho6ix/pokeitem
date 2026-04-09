@@ -8,6 +8,10 @@ import {
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? "https://app.pokeitem.fr"
 
+function unsubscribeUrl(email: string) {
+  return `${BASE_URL}/api/unsubscribe?email=${encodeURIComponent(email)}`
+}
+
 // ─── Env var check (logs missing vars on first use) ──────────────────────────
 
 function checkEnvVars() {
@@ -41,7 +45,7 @@ export async function sendVerificationEmail(email: string, token: string) {
     templateId: verifyEmail,
     sender: getBrevoSender(),
     to: [{ email }],
-    params: { VERIFY_URL: verifyUrl },
+    params: { VERIFY_URL: verifyUrl, unsubscribeUrl: unsubscribeUrl(email) },
   })
 }
 
@@ -56,7 +60,7 @@ export async function sendWelcomeEmail(email: string, name?: string | null) {
     templateId: welcome,
     sender: getBrevoSender(),
     to: [{ email }],
-    params: { PSEUDO: firstName, APP_URL: "https://app.pokeitem.fr/portfolio" },
+    params: { PSEUDO: firstName, APP_URL: "https://app.pokeitem.fr/portfolio", unsubscribeUrl: unsubscribeUrl(email) },
   })
 }
 
@@ -71,7 +75,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     templateId: resetPassword,
     sender: getBrevoSender(),
     to: [{ email }],
-    params: { RESET_URL: resetUrl },
+    params: { RESET_URL: resetUrl, unsubscribeUrl: unsubscribeUrl(email) },
   })
 }
 
