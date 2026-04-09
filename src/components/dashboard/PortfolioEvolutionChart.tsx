@@ -63,7 +63,7 @@ export function PortfolioEvolutionChart() {
   const { isPro, isLoading: subLoading } = useSubscription();
   const [chartData,     setChartData]     = useState<ChartDataPoint[]>([]);
   const [series,        setSeries]        = useState<SerieMeta[]>([]);
-  const [period,        setPeriod]        = useState<Period>("1M");
+  const [period,        setPeriod]        = useState<Period>("7J");
   const [selectedSerie, setSelectedSerie] = useState<string | null>(null);
   const [loading,       setLoading]       = useState(true);
 
