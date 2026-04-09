@@ -8,8 +8,11 @@ import { CardRarity } from '@/types/card'
 export interface RarityCard {
   id: string
   name: string
+  number: string
+  rarity: CardRarity
   imageUrl: string | null
   price: number
+  priceFr: number | null
   serieName: string
 }
 
@@ -34,6 +37,7 @@ export async function GET() {
         select: {
           id: true,
           name: true,
+          number: true,
           rarity: true,
           imageUrl: true,
           price: true,
@@ -45,7 +49,7 @@ export async function GET() {
     },
   })
 
-  type CardEntry = { id: string; name: string; imageUrl: string | null; price: number; serieName: string }
+  type CardEntry = RarityCard
   const byRarity = new Map<CardRarity, { cards: Map<string, CardEntry>; totalValue: number }>()
 
   for (const uc of userCards) {
@@ -64,8 +68,11 @@ export async function GET() {
       group.cards.set(uc.card.id, {
         id: uc.card.id,
         name: uc.card.name,
+        number: uc.card.number,
+        rarity,
         imageUrl: uc.card.imageUrl,
         price: effectivePrice,
+        priceFr: uc.card.priceFr ?? null,
         serieName: uc.card.serie.name,
       })
     }

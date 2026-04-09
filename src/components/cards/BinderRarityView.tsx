@@ -3,6 +3,8 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
 import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
 
+const DARK_ICON_OVERLAY = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE])
+
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
 )
@@ -22,15 +24,19 @@ const DISPLAY_ORDER: CardRarity[] = [
   CardRarity.PROMO,
 ]
 
-const DARK_ICON_RARITIES = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE])
 
 // ─── Single card cell ────────────────────────────────────────────────────────
 
 function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: string) => void }) {
+  const isDark = DARK_ICON_OVERLAY.has(card.rarity)
+  const displayPrice = card.priceFr ?? card.price
+  const isFr = card.priceFr != null && card.priceFr > 0
+
   return (
-    <button className="flex flex-col items-center gap-1 text-left w-full" onClick={() => onCardClick(card.id)}>
+    <button className="flex flex-col items-center gap-0.5 text-left w-full" onClick={() => onCardClick(card.id)}>
+      {/* Card image with overlays */}
       <div
-        className="w-full overflow-hidden rounded-lg bg-[#1A2332] transition-transform active:scale-95"
+        className="relative w-full overflow-hidden rounded-lg bg-[#1A2332] transition-transform active:scale-95"
         style={{ aspectRatio: '63/88' }}
       >
         {card.imageUrl ? (
@@ -46,15 +52,33 @@ function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: s
             {card.name}
           </div>
         )}
+
+        {/* Number + rarity badge — bottom left */}
+        <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+          <span>{card.number}</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={CARD_RARITY_IMAGE[card.rarity]}
+            alt=""
+            className="h-3 w-auto object-contain opacity-90"
+            style={isDark
+              ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+              : undefined}
+          />
+        </div>
       </div>
-      <span className="w-full truncate text-center text-[11px] leading-tight text-[var(--text-secondary)]">
+
+      {/* Name */}
+      <span className="w-full truncate text-center text-[10px] text-[var(--text-secondary)]">
         {card.name}
       </span>
-      {card.price > 0 && (
-        <span className="text-xs font-semibold text-emerald-400">
-          {card.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
-        </span>
-      )}
+
+      {/* Price */}
+      <span className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+        {displayPrice > 0
+          ? `${isFr ? '🇫🇷 ' : ''}${displayPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+          : '—'}
+      </span>
     </button>
   )
 }
@@ -66,7 +90,7 @@ function RaritySectionBlock({ section, onCardClick }: { section: RaritySection; 
   const displayCards = expanded ? section.cards : section.cards.slice(0, 16)
   const label = CARD_RARITY_LABELS[section.rarityKey]
   const imageSrc = CARD_RARITY_IMAGE[section.rarityKey]
-  const isDark = DARK_ICON_RARITIES.has(section.rarityKey)
+  const isDark = DARK_ICON_OVERLAY.has(section.rarityKey)
 
   return (
     <div className="mb-8">
