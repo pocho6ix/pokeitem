@@ -78,17 +78,20 @@ export async function GET(
 
   // ── CM API history (if we have the CM card ID) ──────────────────────────────
   if (card.cardmarketId) {
-    const cmHistory = await fetchCardHistory(Number(card.cardmarketId));
-    for (const h of cmHistory) {
-      if (h.date < startDate.toISOString().slice(0, 10)) continue;
-      const existing = merged.get(h.date);
-      if (!existing) {
-        // CM API point not in DB: use cm_low as price proxy
-        merged.set(h.date, { price: h.cmLow, priceFr: h.cmLow });
-      } else if (existing.priceFr == null && h.cmLow != null) {
-        // DB has this date but no FR price: fill from CM API
-        merged.set(h.date, { ...existing, priceFr: h.cmLow });
+    try {
+      const cmHistory = await fetchCardHistory(Number(card.cardmarketId));
+      const startStr = startDate.toISOString().slice(0, 10);
+      for (const h of cmHistory) {
+        if (h.date < startStr) continue;
+        const existing = merged.get(h.date);
+        if (!existing) {
+          merged.set(h.date, { price: h.cmLow, priceFr: h.cmLow });
+        } else if (existing.priceFr == null && h.cmLow != null) {
+          merged.set(h.date, { ...existing, priceFr: h.cmLow });
+        }
       }
+    } catch (err) {
+      console.warn("[price-history] CM API fetch failed, using DB only:", err);
     }
   }
 

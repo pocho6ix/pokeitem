@@ -155,6 +155,8 @@ export async function fetchCardHistory(cmApiCardId: number): Promise<CMHistoryDa
 
   while (true) {
     try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 8000)
       const res = await fetch(
         `https://${CARDMARKET_API_HOST}/pokemon/cards/${cmApiCardId}/history-prices?per_page=100&page=${page}`,
         {
@@ -162,8 +164,10 @@ export async function fetchCardHistory(cmApiCardId: number): Promise<CMHistoryDa
             "x-rapidapi-host": CARDMARKET_API_HOST,
             "x-rapidapi-key": key,
           },
+          signal: controller.signal,
         }
       )
+      clearTimeout(timer)
       if (!res.ok) break
 
       const body = (await res.json()) as {
