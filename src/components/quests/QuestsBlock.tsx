@@ -52,7 +52,7 @@ function ReferralRow({ validatedCount, referralLink }: { validatedCount: number;
     <div className="flex items-start gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3.5 py-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-[var(--text-primary)]">Invite un ami</span>
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Inviter un ami</span>
           <span className="text-xs font-bold text-[#E7BA76]">+1000 pts par ami</span>
         </div>
         <p className="text-xs text-[var(--text-primary)] mt-0.5">
