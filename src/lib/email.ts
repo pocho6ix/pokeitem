@@ -2,76 +2,74 @@ import {
   getBrevoClient,
   getUsersListId,
   getNewsletterListId,
-  BREVO_SENDER,
-  TEMPLATE_IDS,
+  getBrevoSender,
+  getTemplateIds,
 } from "@/lib/brevo"
 
 const BASE_URL = process.env.NEXTAUTH_URL ?? "https://app.pokeitem.fr"
 
-// ─── Shared email layout (fallback for non-template sends) ───────────────────
+// ─── Env var check (logs missing vars on first use) ──────────────────────────
 
-function emailLayout(body: string): string {
-  return `
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="utf-8" /></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="background:linear-gradient(135deg,#BF953F,#FCF6BA,#B38728,#FBF5B7,#AA771C);padding:32px;text-align:center;">
-              <h1 style="margin:0;color:#1A1A1A;font-size:24px;font-weight:700;">PokeItem</h1>
-            </td>
-          </tr>
-          ${body}
-          <tr>
-            <td style="padding:16px 32px;border-top:1px solid #e4e4e7;text-align:center;">
-              <p style="margin:0;color:#a1a1aa;font-size:12px;">&copy; ${new Date().getFullYear()} PokeItem. Tous droits réservés.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`.trim()
+function checkEnvVars() {
+  const required = [
+    "BREVO_API_KEY",
+    "BREVO_SENDER_EMAIL",
+    "BREVO_SENDER_NAME",
+    "BREVO_TEMPLATE_VERIFY_EMAIL",
+    "BREVO_TEMPLATE_WELCOME",
+    "BREVO_TEMPLATE_RESET_PASSWORD",
+    "BREVO_LIST_ID_USERS",
+    "BREVO_LIST_ID_NEWSLETTER",
+  ]
+  for (const key of required) {
+    if (!process.env[key]) {
+      console.error(`[Brevo] ❌ Variable manquante : ${key}`)
+    }
+  }
 }
 
 // ─── Transactional emails ─────────────────────────────────────────────────────
 
 export async function sendVerificationEmail(email: string, token: string) {
+  checkEnvVars()
   const verifyUrl = `${BASE_URL}/verification?token=${token}`
   const client = getBrevoClient()
+  const { verifyEmail } = getTemplateIds()
 
+  console.log("[Brevo] sendVerificationEmail → templateId:", verifyEmail, "to:", email)
   await client.transactionalEmails.sendTransacEmail({
-    templateId: TEMPLATE_IDS.verifyEmail,
-    sender: BREVO_SENDER,
+    templateId: verifyEmail,
+    sender: getBrevoSender(),
     to: [{ email }],
     params: { VERIFY_URL: verifyUrl },
   })
 }
 
 export async function sendWelcomeEmail(email: string, name?: string | null) {
+  checkEnvVars()
   const client = getBrevoClient()
   const firstName = name?.split(" ")[0] ?? "Dresseur"
+  const { welcome } = getTemplateIds()
 
+  console.log("[Brevo] sendWelcomeEmail → templateId:", welcome, "to:", email, "FIRSTNAME:", firstName)
   await client.transactionalEmails.sendTransacEmail({
-    templateId: TEMPLATE_IDS.welcome,
-    sender: BREVO_SENDER,
+    templateId: welcome,
+    sender: getBrevoSender(),
     to: [{ email }],
     params: { FIRSTNAME: firstName, APP_URL: BASE_URL },
   })
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
+  checkEnvVars()
   const resetUrl = `${BASE_URL}/reinitialiser-mot-de-passe?token=${token}`
   const client = getBrevoClient()
+  const { resetPassword } = getTemplateIds()
 
+  console.log("[Brevo] sendPasswordResetEmail → templateId:", resetPassword, "to:", email)
   await client.transactionalEmails.sendTransacEmail({
-    templateId: TEMPLATE_IDS.resetPassword,
-    sender: BREVO_SENDER,
+    templateId: resetPassword,
+    sender: getBrevoSender(),
     to: [{ email }],
     params: { RESET_URL: resetUrl },
   })
@@ -83,7 +81,6 @@ export async function upsertBrevoContact(
   email: string,
   opts: {
     name?: string | null
-    /** Whether the contact should be on the newsletter list (default: true) */
     subscribed?: boolean
   } = {}
 ) {
@@ -92,7 +89,6 @@ export async function upsertBrevoContact(
   const newsletterListId = getNewsletterListId()
   const subscribed = opts.subscribed ?? true
 
-  // Always add to users list; newsletter list depends on consent
   const listIds = subscribed
     ? [usersListId, newsletterListId]
     : [usersListId]
@@ -106,10 +102,9 @@ export async function upsertBrevoContact(
         POKEITEM_USER: true,
       } as Record<string, string | number | boolean | string[]>,
       listIds,
-      updateEnabled: true, // upsert
+      updateEnabled: true,
     })
   } catch (err) {
-    // Fallback to explicit update if create/upsert fails
     try {
       await client.contacts.updateContact({
         identifier: email,

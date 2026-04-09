@@ -6,7 +6,7 @@ export function getBrevoClient(): BrevoClient {
   return new BrevoClient({ apiKey: key })
 }
 
-// List IDs configured in Brevo dashboard
+// List IDs — evaluated lazily so env vars are always fresh
 export function getUsersListId(): number {
   const id = parseInt(process.env.BREVO_LIST_ID_USERS ?? "2", 10)
   return isNaN(id) ? 2 : id
@@ -17,15 +17,19 @@ export function getNewsletterListId(): number {
   return isNaN(id) ? 3 : id
 }
 
-// Sender
-export const BREVO_SENDER = {
-  email: process.env.BREVO_SENDER_EMAIL ?? "contact@pokeitem.fr",
-  name: process.env.BREVO_SENDER_NAME ?? "PokeItem",
+// Sender — evaluated lazily
+export function getBrevoSender() {
+  return {
+    email: process.env.BREVO_SENDER_EMAIL ?? "contact@pokeitem.fr",
+    name: process.env.BREVO_SENDER_NAME ?? "PokeItem",
+  }
 }
 
-// Template IDs
-export const TEMPLATE_IDS = {
-  verifyEmail: parseInt(process.env.BREVO_TEMPLATE_VERIFY_EMAIL ?? "1", 10),
-  welcome: parseInt(process.env.BREVO_TEMPLATE_WELCOME ?? "2", 10),
-  resetPassword: parseInt(process.env.BREVO_TEMPLATE_RESET_PASSWORD ?? "3", 10),
+// Template IDs — evaluated lazily
+export function getTemplateIds() {
+  return {
+    verifyEmail: parseInt(process.env.BREVO_TEMPLATE_VERIFY_EMAIL ?? "1", 10),
+    welcome: parseInt(process.env.BREVO_TEMPLATE_WELCOME ?? "2", 10),
+    resetPassword: parseInt(process.env.BREVO_TEMPLATE_RESET_PASSWORD ?? "3", 10),
+  }
 }

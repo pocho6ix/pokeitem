@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { sendWelcomeEmail, upsertBrevoContact } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
+  console.log("[verify] Handler appelé")
+
   const token = request.nextUrl.searchParams.get("token");
 
   if (!token) {
@@ -29,19 +31,28 @@ export async function GET(request: NextRequest) {
     data: { emailVerified: new Date() },
     select: { id: true, name: true, email: true, subscribedNewsletter: true },
   });
+  console.log("[verify] emailVerified mis à jour en DB pour:", user.email)
 
   // Delete used token
   await prisma.verificationToken.delete({ where: { token } });
 
-  // Send welcome email + sync Brevo (fire-and-forget)
-  Promise.all([
-    sendWelcomeEmail(user.email, user.name).catch((err) =>
-      console.error("[email] welcome email failed:", err)
-    ),
+  // ── Send welcome email + sync Brevo ──────────────────────────────────────
+  // IMPORTANT: must be awaited — Vercel kills un-awaited promises on return
+  console.log("[verify] Envoi email de bienvenue à:", user.email)
+  await Promise.all([
+    sendWelcomeEmail(user.email, user.name).then(() => {
+      console.log("[verify] ✅ Email de bienvenue envoyé à:", user.email)
+    }).catch((err) => {
+      console.error("[verify] ❌ Échec email de bienvenue:", err)
+    }),
     upsertBrevoContact(user.email, {
       name: user.name,
       subscribed: user.subscribedNewsletter,
-    }).catch((err) => console.error("[Brevo] verify upsert failed:", err)),
+    }).then(() => {
+      console.log("[verify] ✅ Contact Brevo mis à jour pour:", user.email)
+    }).catch((err) => {
+      console.error("[verify] ❌ Échec upsert Brevo:", err)
+    }),
   ]);
 
   // Generate a short-lived auto-login token (5 min, single-use by design)
@@ -52,5 +63,6 @@ export async function GET(request: NextRequest) {
     .setIssuedAt()
     .sign(secret);
 
+  console.log("[verify] ✅ Flow complet pour:", user.email)
   return NextResponse.json({ message: "Email vérifié avec succès", autoLoginToken });
 }
