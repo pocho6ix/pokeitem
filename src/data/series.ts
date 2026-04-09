@@ -4,8 +4,9 @@
 
 import type { Serie } from '@/types/item';
 
-type SerieStatic = Omit<Serie, 'id' | 'blocId' | 'cardCount' | 'bannerUrl' | 'bloc' | 'items'> & {
+type SerieStatic = Omit<Serie, 'id' | 'blocId' | 'cardCount' | 'bannerUrl' | 'bloc' | 'items' | 'releaseDate'> & {
   blocSlug: string;
+  releaseDate: string | null;
 };
 
 // ==========================================================================
