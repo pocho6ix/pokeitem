@@ -420,6 +420,7 @@ model UserCard {
   @@unique([userId, cardId, version])
   @@index([userId])
   @@index([cardId])
+  @@index([userId, cardId])
   @@map("user_cards")
 }
 
@@ -442,6 +443,7 @@ model UserCardDouble {
   @@unique([userId, cardId, version])
   @@index([userId])
   @@index([cardId])
+  @@index([userId, cardId])
   @@map("user_card_doubles")
 }
 

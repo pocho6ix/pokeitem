@@ -16,38 +16,64 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['sharp'],
   images: {
     formats: ["image/avif", "image/webp"],
+    // Cache images optimisées 7 jours côté CDN (elles ne changent jamais)
+    minimumCacheTTL: 604800,
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "product-images.s3.cardmarket.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.cardmarket.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.pokecardex.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "assets.tcgdex.net",
-      },
-      {
-        protocol: "https",
-        hostname: "images.pokemontcg.io",
-      },
+      { protocol: "https", hostname: "product-images.s3.cardmarket.com" },
+      { protocol: "https", hostname: "*.cardmarket.com" },
+      { protocol: "https", hostname: "www.pokecardex.com" },
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      { protocol: "https", hostname: "assets.tcgdex.net" },
+      { protocol: "https", hostname: "images.pokemontcg.io" },
+      { protocol: "https", hostname: "images.tcggo.com" },
     ],
   },
   async headers() {
     return [
+      // Security headers sur toutes les pages
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // Assets statiques Next.js (JS/CSS avec hash) — cache 1 an immuable
+      {
+        source: "/_next/static/(.*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Routes API lourdes en lecture — cache privé 5 min
+      // "private" = pas de cache CDN (données user-specific), mais le browser garde 5 min
+      {
+        source: "/api/binder/cards-by-rarity",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
+        source: "/api/portfolio/stats",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
+        source: "/api/portfolio/rarities",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      {
+        source: "/api/portfolio/chart",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
+        ],
+      },
+      // Historique de prix — cache 1h (mis à jour toutes les 6h par le cron)
+      {
+        source: "/api/cards/:cardId/price-history",
+        headers: [
+          { key: "Cache-Control", value: "private, max-age=3600, stale-while-revalidate=300" },
+        ],
       },
     ];
   },
