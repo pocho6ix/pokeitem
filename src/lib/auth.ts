@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
+import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
@@ -18,8 +19,26 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Mot de passe", type: "password" },
+        autoLoginToken: { label: "Auto-login token", type: "text" },
       },
       async authorize(credentials) {
+        // ── Auto-login after email verification ──────────────────────────
+        if (credentials?.autoLoginToken) {
+          try {
+            const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET ?? "");
+            const { payload } = await jwtVerify(credentials.autoLoginToken, secret);
+            if (payload.type !== "autologin" || typeof payload.userId !== "string") return null;
+
+            const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+            if (!user || user.deletedAt) return null;
+
+            return { id: user.id, name: user.name, email: user.email, image: null };
+          } catch {
+            return null;
+          }
+        }
+
+        // ── Standard email + password login ──────────────────────────────
         if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
