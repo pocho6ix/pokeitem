@@ -223,7 +223,7 @@ export function ReferralBlock() {
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-semibold text-[var(--text-primary)]">Inviter un ami</h3>
+            <h3 className="font-semibold text-[var(--text-primary)]" suppressHydrationWarning>Inviter un ami</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1000 points</p>
             <p className="text-xs text-[var(--text-secondary)]">+1 semaine Pro gratuite par ami invité</p>
           </div>
