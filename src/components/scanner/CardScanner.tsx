@@ -466,11 +466,11 @@ export function CardScanner() {
 
         {/* Dark overlay with transparent cutout */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: `radial-gradient(ellipse ${vfW + 30}px ${vfH + 30}px at center 45%, transparent 60%, rgba(0,0,0,0.55) 100%)`,
+          background: `radial-gradient(ellipse ${vfW + 30}px ${vfH + 30}px at center 38%, transparent 60%, rgba(0,0,0,0.55) 100%)`,
         }} />
 
         {/* Viewfinder centered */}
-        <div className="absolute inset-0 flex flex-col items-center" style={{ paddingTop: "calc(45% - 182px)" }}>
+        <div className="absolute inset-0 flex flex-col items-center" style={{ paddingTop: "calc(38% - 182px)" }}>
           <Viewfinder feedback={vfFeedback} />
           <p className={`mt-3 text-[11px] tracking-widest text-white/50 uppercase transition-opacity duration-700 ${showHint ? "opacity-100" : "opacity-0"}`}>
             Centrez la carte
