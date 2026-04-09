@@ -89,10 +89,16 @@ export async function onReferralEmailVerified(refereeId: string) {
 
   if (!referrer) return
 
+  // ── Award 1000 pts for every verified referral (idempotent) ──────────────
+  await awardReferralPoints(referee.referredById, refereeId).catch((err) => {
+    console.error('[referral] awardReferralPoints failed:', err)
+  })
+
+  // ── Award Pro weeks (capped at 3) ─────────────────────────────────────────
   const validatedCount = referrer._count.referrals
   const weeksToGive    = Math.min(validatedCount, 3) - referrer.referralWeeksGiven
 
-  if (weeksToGive <= 0) return // Already awarded all applicable weeks
+  if (weeksToGive <= 0) return // All applicable weeks already given
 
   const now      = new Date()
   const baseDate = (referrer.plan === 'PRO' && referrer.planExpiresAt && referrer.planExpiresAt > now)
@@ -108,9 +114,6 @@ export async function onReferralEmailVerified(refereeId: string) {
       referralWeeksGiven: referrer.referralWeeksGiven + weeksToGive,
     },
   })
-
-  // Award points for this referral (idempotent)
-  await awardReferralPoints(referee.referredById, refereeId).catch(() => {})
 }
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
