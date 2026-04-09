@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, upsertBrevoContact } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const { name, email, password, subscribeNewsletter } = await request.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const subscribed = subscribeNewsletter !== false; // default true
     const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.create({
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
         name,
         email,
         passwordHash,
+        subscribedNewsletter: subscribed,
       },
     });
 
@@ -58,8 +60,13 @@ export async function POST(request: Request) {
       await sendVerificationEmail(email, token);
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError);
-      // Account is created, but email failed — user can request a resend
+      // Account created but email failed — user can request a resend
     }
+
+    // Upsert contact in Brevo CRM (fire-and-forget)
+    upsertBrevoContact(email, { name, subscribed }).catch((err) =>
+      console.error("[Brevo] register upsert failed:", err)
+    );
 
     return NextResponse.json(
       { message: "Compte créé. Vérifiez votre email pour activer votre compte." },

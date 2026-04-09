@@ -37,6 +37,9 @@ model User {
   betaTrialActivatedAt   DateTime?
   deletedAt              DateTime?
 
+  subscribedNewsletter Boolean   @default(true)
+  unsubscribedAt       DateTime?
+
   referralCode        String    @unique @default(cuid())
   referredById        String?
   referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])

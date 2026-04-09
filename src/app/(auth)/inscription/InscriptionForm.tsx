@@ -30,6 +30,7 @@ const registerSchema = z
     confirmPassword: z
       .string()
       .min(1, "Veuillez confirmer votre mot de passe"),
+    subscribeNewsletter: z.boolean().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
@@ -73,6 +74,7 @@ export function InscriptionForm() {
           name: data.name,
           email: data.email,
           password: data.password,
+          subscribeNewsletter: data.subscribeNewsletter !== false,
         }),
       });
 
@@ -181,6 +183,20 @@ export function InscriptionForm() {
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
           />
+
+          {/* Newsletter consent */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              defaultChecked
+              className="mt-0.5 h-4 w-4 rounded border-[var(--border-default)] accent-[#E7BA76]"
+              {...register("subscribeNewsletter")}
+            />
+            <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              J&apos;accepte de recevoir les nouveaut&eacute;s et offres PokeItem par email.
+              D&eacute;sinscription possible &agrave; tout moment.
+            </span>
+          </label>
 
           <Button type="submit" className="w-full" loading={isLoading}>
             Cr&eacute;er mon compte
