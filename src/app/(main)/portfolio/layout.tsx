@@ -1,9 +1,18 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
-import { PortfolioEvolutionChart } from "@/components/dashboard/PortfolioEvolutionChart";
 import { PortfolioTabNav } from "@/components/dashboard/PortfolioTabNav";
 import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { BinderRarityFilter } from "@/components/dashboard/BinderRarityFilter";
+
+// Recharts (~150 KB) chargé en lazy — ne bloque pas le rendu initial
+const PortfolioEvolutionChart = dynamic(
+  () => import("@/components/dashboard/PortfolioEvolutionChart").then((m) => m.PortfolioEvolutionChart),
+  {
+    ssr: false,
+    loading: () => <div className="mb-6 h-44 animate-pulse rounded-xl bg-[var(--bg-secondary)]" />,
+  }
+);
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
   return (

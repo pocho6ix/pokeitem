@@ -17,7 +17,19 @@ export async function GET(req: Request) {
     // ── Sealed items (portfolio) — excluded when rarity filter is active ───
     const portfolioItems = rarity ? [] : await prisma.portfolioItem.findMany({
       where: { userId },
-      include: { item: true },
+      select: {
+        id: true,
+        quantity: true,
+        purchasePrice: true,
+        item: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            currentPrice: true,
+          },
+        },
+      },
     });
 
     const totalItems = portfolioItems.reduce((sum, pi) => sum + pi.quantity, 0);

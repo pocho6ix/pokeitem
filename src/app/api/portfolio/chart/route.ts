@@ -35,12 +35,19 @@ export async function GET(request: NextRequest) {
           ? { item: { serie: { slug: serieSlug } } }
           : {}),
       },
-      include: {
+      select: {
+        purchaseDate: true,
+        createdAt: true,
+        purchasePrice: true,
+        quantity: true,
         item: {
-          include: {
+          select: {
+            currentPrice: true,
+            priceTrend: true,
             prices: {
               where: { date: { gte: startDate } },
               orderBy: { date: "asc" },
+              select: { date: true, price: true },
             },
           },
         },
