@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Serie pages — use releaseDate as lastmod
   const seriePages: MetadataRoute.Sitemap = SERIES.map((serie) => ({
     url: `${BASE_URL}/collection/${serie.blocSlug}/${serie.slug}`,
-    lastModified: new Date(serie.releaseDate),
+    lastModified: serie.releaseDate ? new Date(serie.releaseDate) : new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.6,
   }));

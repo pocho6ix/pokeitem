@@ -150,12 +150,11 @@ export default async function BlocPage({ params }: BlocPageProps) {
                     <Badge variant="default">{serie.abbreviation}</Badge>
                   </div>
                   <p className="text-sm text-[var(--text-secondary)]">
-                    Sortie le{" "}
-                    {new Date(serie.releaseDate).toLocaleDateString("fr-FR", {
+                    {serie.releaseDate ? <>Sortie le{" "}{new Date(serie.releaseDate).toLocaleDateString("fr-FR", {
                       day: "numeric",
                       month: "long",
                       year: "numeric",
-                    })}
+                    })}</> : "Série promotionnelle"}
                   </p>
                 </div>
               </Card>

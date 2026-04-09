@@ -182,12 +182,11 @@ export default async function SeriePage({ params }: SeriePageProps) {
           <Badge variant="default">{serie.abbreviation}</Badge>
         </div>
         <p className="mt-2 text-[var(--text-secondary)]">
-          Sortie le{" "}
-          {new Date(serie.releaseDate).toLocaleDateString("fr-FR", {
+          {serie.releaseDate ? <>Sortie le{" "}{new Date(serie.releaseDate).toLocaleDateString("fr-FR", {
             day: "numeric",
             month: "long",
             year: "numeric",
-          })}
+          })}</> : "Série promotionnelle"}
           {" "}&mdash; Série {bloc.name}
         </p>
       </div>
