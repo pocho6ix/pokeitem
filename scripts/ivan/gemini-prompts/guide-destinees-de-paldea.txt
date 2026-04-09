@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Destinées de Paldea : Guide complet série EV4.5"
+
+A premium collection display of Pokémon TCG sealed products from Paldean Fates arranged on a luxurious dark marble surface with golden veining. Include a booster box, ETB, and several booster packs featuring shiny Pokémon artwork. Soft studio lighting with dramatic shadows creating depth. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-destinees-de-paldea.jpg
