@@ -67,19 +67,22 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const [history, setHistory] = useState<PricePoint[]>([]);
   const [period, setPeriod] = useState<Period>("3m");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchData = useCallback(
     async (p: Period) => {
       setLoading(true);
+      setError(false);
       try {
         const res = await fetch(`/api/cards/${cardId}/price-history?period=${p}`);
-        if (!res.ok) throw new Error("fetch failed");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setCard(data.card);
         setSerie(data.serie);
         setHistory(data.history);
       } catch (err) {
-        console.error("Failed to fetch card details:", err);
+        console.error("[CardDetailModal] fetch failed:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -115,6 +118,28 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const rarity = card?.rarity as keyof typeof CARD_RARITY_LABELS | undefined;
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
   const rarityImage = rarity ? CARD_RARITY_IMAGE[rarity] : null;
+
+  // Error state — show a clean message instead of broken UI
+  if (error) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+        <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+        <div className="relative z-10 w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-default)] shadow-2xl p-8 text-center">
+          <button onClick={onClose} className="absolute top-3 right-3 rounded-full p-1.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
+            <X className="w-5 h-5" />
+          </button>
+          <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">Impossible de charger la fiche</p>
+          <p className="text-xs text-[var(--text-tertiary)] mb-4">Vérifiez votre connexion et réessayez.</p>
+          <button
+            onClick={() => fetchData(period)}
+            className="rounded-lg bg-[#10B981]/15 px-4 py-2 text-sm font-semibold text-[#10B981] hover:bg-[#10B981]/25 transition-colors"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">

