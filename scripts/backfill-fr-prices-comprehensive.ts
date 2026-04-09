@@ -52,6 +52,19 @@ const SLUG_TO_EPISODES: Record<string, number[]> = {
   "etincelles-survolees": [172],         // Surging Sparks
   "evolutions-prismatiques": [212],      // Prismatic Evolutions
 
+  // ── Promos & spéciaux ────────────────────────────────────────────────────
+  "promos-ecarlate-et-violet":    [23],  // SV Black Star Promos
+  "energies-ecarlate-et-violet":  [20],  // Scarlet & Violet Energies
+  "promos-epee-et-bouclier":      [49],  // SWSH Black Star Promos
+  "promos-soleil-et-lune":        [70],  // SM Black Star Promos
+  "promos-xy":                    [90],  // XY Black Star Promos
+  "bienvenue-a-kalos":            [88],  // Kalos Starter Set
+  "promos-noir-et-blanc":         [104], // BW Black Star Promos
+  "coffre-des-dragons":           [95],  // Dragon Vault
+  "promos-heartgold-soulsilver":  [110], // HGSS Black Star Promos
+  "promos-diamant-et-perle":      [127], // DP Black Star Promos
+  "promos-nintendo":              [151], // Nintendo Black Star Promos
+
   // ── SM ────────────────────────────────────────────────────────────────────
   "legendes-brillantes":  [66],          // Shining Legends (sm3.5)
   "majeste-des-dragons":  [60],          // Dragon Majesty (sm7.5)
