@@ -161,6 +161,20 @@ export function PriceHistoryChart({
               Les prix sont enregistrés quotidiennement
             </p>
           </div>
+        ) : chartData.length < 2 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+            <div className="rounded-xl bg-[var(--bg-secondary)] px-5 py-3">
+              <p className="text-lg font-bold text-[var(--text-primary)]">
+                {formatEur(chartData[0].displayPrice as number)}
+              </p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+                {formatDateFull(chartData[0].date)}
+              </p>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Extension récente — l&apos;historique s&apos;enrichit chaque jour
+            </p>
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
