@@ -77,6 +77,21 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
 
   // ── Méga-Évolution — Héros Transcendants ajoute la Poké Ball (pas ME03)
   "heros-transcendants": V_POKEBALL, // ME2.5 — Reverse (type symbol) + Poké Ball
+
+  // ── Promos & séries spéciales — une seule version (pas de Reverse) ────────
+  "energies-mega-evolution":     V_NORMAL,
+  "promos-mega-evolution":       V_NORMAL,
+  "promos-ecarlate-et-violet":   V_NORMAL,
+  "energies-ecarlate-et-violet": V_NORMAL,
+  "promos-epee-et-bouclier":     V_NORMAL,
+  "promos-soleil-et-lune":       V_NORMAL,
+  "promos-xy":                   V_NORMAL,
+  "bienvenue-a-kalos":           V_NORMAL,
+  "promos-noir-et-blanc":        V_NORMAL,
+  "coffre-des-dragons":          V_NORMAL,
+  "promos-heartgold-soulsilver": V_NORMAL,
+  "promos-diamant-et-perle":     V_NORMAL,
+  "promos-nintendo":             V_NORMAL,
 };
 
 // ── Bloc-level defaults (fallback when serie not in map above) ───────────────

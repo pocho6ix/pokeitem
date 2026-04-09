@@ -6,6 +6,15 @@ import Image from "next/image";
 import { PriceHistoryChart } from "./PriceHistoryChart";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
 
+const PROMO_SERIE_SLUGS = new Set([
+  "energies-mega-evolution", "promos-mega-evolution",
+  "promos-ecarlate-et-violet", "energies-ecarlate-et-violet",
+  "promos-epee-et-bouclier", "promos-soleil-et-lune",
+  "promos-xy", "bienvenue-a-kalos", "promos-noir-et-blanc",
+  "coffre-des-dragons", "promos-heartgold-soulsilver",
+  "promos-diamant-et-perle", "promos-nintendo",
+]);
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Period = "1w" | "1m" | "3m" | "6m" | "1y" | "max";
@@ -115,6 +124,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
     setPeriod(p);
   }
 
+  const isPromoSerie = serie ? PROMO_SERIE_SLUGS.has(serie.slug) : false;
   const rarity = card?.rarity as keyof typeof CARD_RARITY_LABELS | undefined;
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
   const rarityImage = rarity ? CARD_RARITY_IMAGE[rarity] : null;
@@ -191,7 +201,12 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                   {serie.name} · {card?.number}
                 </p>
               )}
-              {rarityLabel && (
+              {isPromoSerie ? (
+                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
+                  <Image src="/rarities/promo.png" alt="Promo" width={16} height={16} className="w-4 h-4 object-contain" />
+                  Promo
+                </span>
+              ) : rarityLabel && (
                 <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
                   {rarityImage && (
                     <Image src={rarityImage} alt="" width={16} height={16} className="w-4 h-4 object-contain" />
