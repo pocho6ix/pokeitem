@@ -260,11 +260,13 @@ function AddToCollectionModal({
     });
   }
 
-  // Current price preview (single card + single version only)
+  // Current price preview (single card + single version only) — prefer FR price
   const singleCard    = selectedCards.length === 1 ? selectedCards[0] : null;
   const singleVersion = selectedVersions.size === 1 ? Array.from(selectedVersions)[0] : null;
   const currentPrice  = singleCard && singleVersion
-    ? (singleVersion === CardVersion.NORMAL ? (singleCard.price ?? null) : (singleCard.priceReverse ?? singleCard.price ?? null))
+    ? (singleVersion === CardVersion.NORMAL
+        ? (singleCard.priceFr ?? singleCard.price ?? null)
+        : (singleCard.priceReverse ?? singleCard.priceFr ?? singleCard.price ?? null))
     : null;
 
   const versionsArray = Array.from(selectedVersions);
@@ -406,7 +408,9 @@ function AddToCollectionModal({
                 )}>
                 Cote actuelle
                 <span className={cn("block text-[10px] font-normal mt-0.5", priceMode === "current" ? "text-black/60" : "text-[var(--text-tertiary)]")}>
-                  {currentPrice != null ? `${currentPrice.toFixed(2)}\u00a0€` : "—"}
+                  {currentPrice != null
+                    ? `${singleCard?.priceFr != null && singleVersion === CardVersion.NORMAL ? "🇫🇷 " : ""}${currentPrice.toFixed(2)}\u00a0€`
+                    : "—"}
                 </span>
               </button>
               <button onClick={() => setPriceMode("manual")}
