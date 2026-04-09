@@ -22,7 +22,7 @@ export const getCachedSeriesList = unstable_cache(
       },
     }),
   ["db-series-list"],
-  { revalidate: 3600 }
+  { revalidate: 300 }
 )
 
 /** Cards for a single serie — heavy query, cached 1h per serieSlug */
