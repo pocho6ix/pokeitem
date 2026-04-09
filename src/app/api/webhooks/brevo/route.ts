@@ -8,11 +8,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    // Optional: verify the request comes from Brevo using a shared secret
+    // Verify the request comes from Brevo using the shared secret
     const secret = process.env.BREVO_WEBHOOK_SECRET;
     if (secret) {
-      const signature = req.headers.get("x-brevo-signature") ?? req.headers.get("x-sib-signature");
-      if (signature !== secret) {
+      const incoming = req.headers.get("x-brevo-webhook-secret");
+      if (incoming !== secret) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
     }
