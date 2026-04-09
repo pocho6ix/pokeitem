@@ -27,4 +27,5 @@ export const BREVO_SENDER = {
 export const TEMPLATE_IDS = {
   verifyEmail: parseInt(process.env.BREVO_TEMPLATE_VERIFY_EMAIL ?? "1", 10),
   welcome: parseInt(process.env.BREVO_TEMPLATE_WELCOME ?? "2", 10),
+  resetPassword: parseInt(process.env.BREVO_TEMPLATE_RESET_PASSWORD ?? "3", 10),
 }

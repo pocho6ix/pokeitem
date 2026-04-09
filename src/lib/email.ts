@@ -69,35 +69,11 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${BASE_URL}/reinitialiser-mot-de-passe?token=${token}`
   const client = getBrevoClient()
 
-  // No dedicated template yet — use inline HTML
   await client.transactionalEmails.sendTransacEmail({
-    subject: "Réinitialisation de votre mot de passe — PokeItem",
+    templateId: TEMPLATE_IDS.resetPassword,
     sender: BREVO_SENDER,
     to: [{ email }],
-    htmlContent: emailLayout(`
-      <tr>
-        <td style="padding:32px;">
-          <h2 style="margin:0 0 16px;color:#18181b;font-size:20px;">Réinitialiser votre mot de passe</h2>
-          <p style="margin:0 0 24px;color:#52525b;font-size:15px;line-height:1.6;">
-            Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
-          </p>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td align="center">
-                <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#BF953F,#FCF6BA,#B38728,#FBF5B7,#AA771C);color:#1A1A1A;padding:12px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;">
-                  Réinitialiser mon mot de passe
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:24px 0 0;color:#a1a1aa;font-size:13px;line-height:1.5;">
-            Ce lien expire dans 1 heure. Si vous n'avez pas fait cette demande, ignorez cet email.
-          </p>
-          <p style="margin:16px 0 0;color:#a1a1aa;font-size:12px;word-break:break-all;">
-            ${resetUrl}
-          </p>
-        </td>
-      </tr>`),
+    params: { RESET_URL: resetUrl },
   })
 }
 
