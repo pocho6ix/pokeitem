@@ -210,7 +210,11 @@ export function CardDetailModal({ cardId, onClose }: Props) {
               ) : rarityLabel && (
                 <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
                   {rarityImage && (
-                    <Image src={rarityImage} alt="" width={16} height={16} className="w-4 h-4 object-contain" />
+                    <Image src={rarityImage} alt="" width={16} height={16} className="w-4 h-4 object-contain"
+                      style={(rarity === "COMMON" || rarity === "UNCOMMON" || rarity === "RARE" || rarity === "NO_RARITY")
+                        ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+                        : undefined}
+                    />
                   )}
                   {rarityLabel}
                 </span>
