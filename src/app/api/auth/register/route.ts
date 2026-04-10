@@ -6,7 +6,7 @@ import { sendVerificationEmail, upsertBrevoContact } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, subscribeNewsletter } = await request.json();
+    const { name, email, password, subscribeNewsletter, referralCode } = await request.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -36,12 +36,28 @@ export async function POST(request: Request) {
     const subscribed = subscribeNewsletter !== false; // default true
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Resolve referrer from the code passed at registration time (more reliable than cookie-only)
+    let referredById: string | undefined;
+    if (referralCode) {
+      const referrer = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { referralCode: referralCode },
+            { username: { equals: referralCode, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (referrer) referredById = referrer.id;
+    }
+
     await prisma.user.create({
       data: {
         name,
         email,
         passwordHash,
         subscribedNewsletter: subscribed,
+        ...(referredById ? { referredById } : {}),
       },
     });
 

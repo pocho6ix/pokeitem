@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
 import { sendWelcomeEmail, upsertBrevoContact } from "@/lib/email";
+import { onReferralEmailVerified } from "@/lib/referral";
 
 export async function GET(request: NextRequest) {
   console.log("[verify] Handler appelé")
@@ -35,6 +36,12 @@ export async function GET(request: NextRequest) {
 
   // Delete used token
   await prisma.verificationToken.delete({ where: { token } });
+
+  // ── Award referral points if this user was referred ───────────────────────
+  // Handles the case where referredById was set at registration time
+  onReferralEmailVerified(user.id).catch((err) => {
+    console.error("[verify] onReferralEmailVerified failed:", err)
+  })
 
   // ── Send welcome email + sync Brevo ──────────────────────────────────────
   // IMPORTANT: must be awaited — Vercel kills un-awaited promises on return

@@ -67,6 +67,7 @@ export function InscriptionForm() {
     setIsLoading(true);
     setError(null);
     try {
+      const referralCode = searchParams.get('ref') ?? Cookies.get('referral_code') ?? undefined;
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,6 +76,7 @@ export function InscriptionForm() {
           email: data.email,
           password: data.password,
           subscribeNewsletter: data.subscribeNewsletter !== false,
+          referralCode,
         }),
       });
 
