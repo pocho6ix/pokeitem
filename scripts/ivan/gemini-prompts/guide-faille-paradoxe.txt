@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Série Faille Paradoxe Pokémon TCG : Analyse Complète"
+
+A premium flat-lay photography of Pokémon TCG Paradox Rift sealed products arranged on a sleek black marble surface. Include a booster box, Elite Trainer Box, and several booster packs with holographic paradox Pokémon artwork visible. Dramatic studio lighting with purple and gold accent lights creating mystical shadows. Futuristic and ancient visual elements subtly integrated. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-faille-paradoxe.jpg
