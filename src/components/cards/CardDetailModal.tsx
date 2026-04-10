@@ -201,7 +201,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                   {serie.name} · {card?.number}
                 </p>
               )}
-              {isPromoSerie ? (
+              {(isPromoSerie && !rarityLabel) ? (
                 <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
                   <Image src="/rarities/promo.png" alt="Promo" width={16} height={16} className="w-4 h-4 object-contain" />
                   Promo
