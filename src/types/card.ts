@@ -6,6 +6,7 @@
 export { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
 
 export enum CardRarity {
+  NO_RARITY = 'NO_RARITY',
   COMMON = 'COMMON',
   UNCOMMON = 'UNCOMMON',
   RARE = 'RARE',
@@ -92,6 +93,7 @@ export interface BlocCardProgress {
 }
 
 export const CARD_RARITY_LABELS: Record<CardRarity, string> = {
+  [CardRarity.NO_RARITY]: 'Sans rareté',
   [CardRarity.COMMON]: 'Commune',
   [CardRarity.UNCOMMON]: 'Peu Commune',
   [CardRarity.RARE]: 'Rare',
@@ -106,6 +108,7 @@ export const CARD_RARITY_LABELS: Record<CardRarity, string> = {
 };
 
 export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
+  [CardRarity.NO_RARITY]: '○',
   [CardRarity.COMMON]: '●',
   [CardRarity.UNCOMMON]: '◆',
   [CardRarity.RARE]: '☆',
@@ -120,6 +123,7 @@ export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
 };
 
 export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
+  [CardRarity.NO_RARITY]: '/rarities/no-rarity.png',
   [CardRarity.COMMON]: '/rarities/common.png',
   [CardRarity.UNCOMMON]: '/rarities/uncommon.png',
   [CardRarity.RARE]: '/rarities/rare.png',
@@ -134,17 +138,18 @@ export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
 };
 
 export const CARD_RARITY_ORDER: Record<CardRarity, number> = {
-  [CardRarity.COMMON]: 0,
-  [CardRarity.UNCOMMON]: 1,
-  [CardRarity.RARE]: 2,
-  [CardRarity.DOUBLE_RARE]: 3,
-  [CardRarity.ILLUSTRATION_RARE]: 4,
-  [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 5,
-  [CardRarity.HYPER_RARE]: 6,
-  [CardRarity.MEGA_HYPER_RARE]: 7,
-  [CardRarity.MEGA_ATTAQUE_RARE]: 8,
-  [CardRarity.ACE_SPEC_RARE]: 9,
-  [CardRarity.PROMO]: 10,
+  [CardRarity.NO_RARITY]: 0,
+  [CardRarity.COMMON]: 1,
+  [CardRarity.UNCOMMON]: 2,
+  [CardRarity.RARE]: 3,
+  [CardRarity.DOUBLE_RARE]: 4,
+  [CardRarity.ILLUSTRATION_RARE]: 5,
+  [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 6,
+  [CardRarity.HYPER_RARE]: 7,
+  [CardRarity.MEGA_HYPER_RARE]: 8,
+  [CardRarity.MEGA_ATTAQUE_RARE]: 9,
+  [CardRarity.ACE_SPEC_RARE]: 10,
+  [CardRarity.PROMO]: 11,
 };
 
 export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {

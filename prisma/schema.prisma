@@ -387,6 +387,7 @@ model CardPriceHistory {
 }
 
 enum CardRarity {
+  NO_RARITY
   COMMON
   UNCOMMON
   RARE

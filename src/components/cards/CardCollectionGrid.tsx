@@ -817,7 +817,7 @@ export function CardCollectionGrid({
       {/* Rarity filter chips */}
       {rarityCounts.size > 0 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
-          {(Object.values(CardRarity) as CardRarity[]).filter((r) => rarityCounts.has(r)).map((rarity) => {
+          {([...rarityCounts.keys()]).sort((a, b) => (CARD_RARITY_ORDER[a] ?? 99) - (CARD_RARITY_ORDER[b] ?? 99)).map((rarity) => {
             const count  = rarityCounts.get(rarity)!;
             const active = rarityFilter === rarity;
             return (
