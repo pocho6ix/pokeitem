@@ -261,6 +261,14 @@ export function CardScanner() {
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
       });
       streamRef.current = stream;
+      // Wire to video element immediately (state is already "scanning" at mount,
+      // so the state-change effect won't re-fire after the async stream resolves)
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {
+          setCameraError("Impossible de démarrer la vidéo.");
+        });
+      }
       // Detect torch support
       const track = stream.getVideoTracks()[0];
       if (track) {
