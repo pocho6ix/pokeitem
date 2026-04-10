@@ -38,9 +38,9 @@ interface SearchCard {
 
 // ─── Shared fullscreen wrapper ─────────────────────────────────────────────────
 
-function Screen({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Screen({ children, className = "", style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={`fixed inset-0 z-[60] flex flex-col bg-black ${className}`}>
+    <div className={`fixed inset-0 z-[60] flex flex-col bg-black ${className}`} style={style}>
       {children}
     </div>
   );
