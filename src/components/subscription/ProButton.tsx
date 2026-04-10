@@ -27,7 +27,7 @@ export function ProButton({ size = 'sm', className = '' }: ProButtonProps) {
       }}
       className={`inline-flex items-center gap-1 rounded-full font-bold tracking-wide transition-all hover:brightness-110 active:scale-95 ${sizeClasses} ${className}`}
     >
-      ★ PRO
+      ★ PREMIUM
     </button>
   )
 }
