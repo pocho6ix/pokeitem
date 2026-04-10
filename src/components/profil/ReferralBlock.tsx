@@ -186,7 +186,10 @@ export function ReferralBlock() {
     const params = new URLSearchParams({ skip: String(skip), take: '20' })
     if (query) params.set('q', query)
     const res = await fetch(`/api/leaderboard?${params}`)
-    const data = await res.json()
+    if (!res.ok) return
+    const text = await res.text()
+    if (!text) return
+    const data = JSON.parse(text)
     if (append) {
       setLbEntries(prev => [...prev, ...(data.rankings ?? [])])
     } else {

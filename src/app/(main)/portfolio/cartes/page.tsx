@@ -32,10 +32,18 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
     // All independent queries run in parallel
     const [ownedDistinct, ownedWithPrices, totalByRarity] = await Promise.all([
       // Unique-card count (distinct cardId for completion %)
-      prisma.userCard.findMany({
+      // Note: distinct + relation select can produce invalid SQL in some Prisma versions;
+      // groupBy on cardId is more reliable and equally expressive.
+      prisma.userCard.groupBy({
+        by: ["cardId"],
         where: { userId, ...rarityWhere },
-        select: { card: { select: { serieId: true } }, cardId: true },
-        distinct: ["cardId"],
+      }).then(async (rows) => {
+        const cardIds = rows.map((r) => r.cardId);
+        const cards = await prisma.card.findMany({
+          where: { id: { in: cardIds } },
+          select: { id: true, serieId: true },
+        });
+        return cards.map((c) => ({ cardId: c.id, card: { serieId: c.serieId } }));
       }),
       // Market value = price × quantity; prefer FR price when available
       prisma.userCard.findMany({
