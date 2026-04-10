@@ -101,9 +101,9 @@ async function main() {
 
   console.log(`${cards.length} cartes avec cardmarketId à traiter\n`)
 
-  const BATCH = 2         // parallel API requests
-  const DELAY = 500       // ms between batches
-  const CHUNK_DB = 10     // upserts per Promise.all (évite saturation pool)
+  const BATCH = 1         // sequential — évite saturation pool Prisma
+  const DELAY = 300       // ms between cards
+  const CHUNK_DB = 5      // upserts per Promise.all
 
   let total = 0
   let totalPoints = 0
