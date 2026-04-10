@@ -830,8 +830,9 @@ export function CardCollectionGrid({
                 <img
                   src={CARD_RARITY_IMAGE[rarity]}
                   alt={CARD_RARITY_LABELS[rarity]}
+                  suppressHydrationWarning
                   className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
-                  style={(rarity === CardRarity.NO_RARITY || rarity === CardRarity.COMMON || rarity === CardRarity.UNCOMMON || rarity === CardRarity.RARE)
+                  style={(rarity === CardRarity.COMMON || rarity === CardRarity.UNCOMMON || rarity === CardRarity.RARE)
                     ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
                     : undefined}
                 />

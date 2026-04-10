@@ -123,7 +123,7 @@ export const CARD_RARITY_SYMBOL: Record<CardRarity, string> = {
 };
 
 export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
-  [CardRarity.NO_RARITY]: '/rarities/no-rarity.webp',
+  [CardRarity.NO_RARITY]: '/rarities/no-rarity.png',
   [CardRarity.COMMON]: '/rarities/common.png',
   [CardRarity.UNCOMMON]: '/rarities/uncommon.png',
   [CardRarity.RARE]: '/rarities/rare.png',
