@@ -43,8 +43,8 @@ const ECARLATE_VIOLET_SERIES: SerieStatic[] = [
   { name: 'Flammes Obsidiennes', nameEn: 'Obsidian Flames', slug: 'flammes-obsidiennes', abbreviation: 'EV03', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/flammes-obsidiennes.png', releaseDate: '2023-08-11', order: 12 },
   { name: 'Évolutions à Paldea', nameEn: 'Paldea Evolved', slug: 'evolutions-a-paldea', abbreviation: 'EV02', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/evolutions-a-paldea.png', releaseDate: '2023-06-09', order: 13 },
   { name: 'Écarlate et Violet', nameEn: 'Scarlet & Violet', slug: 'ecarlate-et-violet', abbreviation: 'EV01', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/ecarlate-et-violet.png', releaseDate: '2023-03-31', order: 14 },
-  { name: 'Promos Écarlate et Violet', nameEn: 'Scarlet & Violet Promos', slug: 'promos-ecarlate-et-violet', abbreviation: 'SVP', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/promos-ecarlate-et-violet.png', releaseDate: null, order: 20 },
-  { name: 'Énergies Écarlate et Violet', nameEn: 'Scarlet & Violet Energies', slug: 'energies-ecarlate-et-violet', abbreviation: 'SVE', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/energies-ecarlate-et-violet.png', releaseDate: null, order: 21 },
+  { name: 'Énergies Écarlate et Violet', nameEn: 'Scarlet & Violet Energies', slug: 'energies-ecarlate-et-violet', abbreviation: 'SVE', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/energies-ecarlate-et-violet.png', releaseDate: null, order: 20 },
+  { name: 'Promos Écarlate et Violet', nameEn: 'Scarlet & Violet Promos', slug: 'promos-ecarlate-et-violet', abbreviation: 'SVP', blocSlug: 'ecarlate-violet', imageUrl: '/images/series/promos-ecarlate-et-violet.png', releaseDate: null, order: 21 },
 ];
 
 // ==========================================================================
@@ -69,7 +69,7 @@ const EPEE_BOUCLIER_SERIES: SerieStatic[] = [
   { name: 'Clash des Rebelles', nameEn: 'Rebel Clash', slug: 'clash-des-rebelles', abbreviation: 'EB02', blocSlug: 'epee-bouclier', imageUrl: '/images/series/clash-des-rebelles.png', releaseDate: '2020-05-01', order: 15 },
   { name: 'Épée et Bouclier', nameEn: 'Sword & Shield', slug: 'epee-et-bouclier', abbreviation: 'EB01', blocSlug: 'epee-bouclier', imageUrl: '/images/series/epee-et-bouclier.png', releaseDate: '2020-02-07', order: 16 },
   { name: 'Célébrations', nameEn: 'Celebrations', slug: 'celebrations', abbreviation: 'EB-CEL', blocSlug: 'epee-bouclier', imageUrl: '/images/series/celebrations.png', releaseDate: '2021-10-08', order: 17 },
-  { name: 'Promos Épée et Bouclier', nameEn: 'Sword & Shield Promos', slug: 'promos-epee-et-bouclier', abbreviation: 'SWSHP', blocSlug: 'epee-bouclier', imageUrl: '/images/series/promos-epee-et-bouclier.png', releaseDate: null, order: 20 },
+  { name: 'Promos Épée et Bouclier', nameEn: 'Sword & Shield Promos', slug: 'promos-epee-et-bouclier', abbreviation: 'SWSHP', blocSlug: 'epee-bouclier', imageUrl: '/images/series/promos_epee_et_bouclier.webp', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
@@ -93,7 +93,7 @@ const SOLEIL_LUNE_SERIES: SerieStatic[] = [
   { name: 'Gardiens Ascendants', nameEn: 'Guardians Rising', slug: 'gardiens-ascendants', abbreviation: 'SL02', blocSlug: 'soleil-lune', imageUrl: '/images/series/gardiens-ascendants.png', releaseDate: '2017-05-05', order: 13 },
   { name: 'Soleil et Lune', nameEn: 'Sun & Moon', slug: 'soleil-et-lune', abbreviation: 'SL01', blocSlug: 'soleil-lune', imageUrl: '/images/series/soleil-et-lune.png', releaseDate: '2017-02-03', order: 14 },
   { name: 'Légendes Brillantes', nameEn: 'Shining Legends', slug: 'legendes-brillantes', abbreviation: 'SL-LB', blocSlug: 'soleil-lune', imageUrl: '/images/series/legendes-brillantes.png', releaseDate: '2017-10-06', order: 15 },
-  { name: 'Promos Soleil et Lune', nameEn: 'Sun & Moon Promos', slug: 'promos-soleil-et-lune', abbreviation: 'SMP', blocSlug: 'soleil-lune', imageUrl: '/images/series/promos-soleil-et-lune.png', releaseDate: null, order: 20 },
+  { name: 'Promos Soleil et Lune', nameEn: 'Sun & Moon Promos', slug: 'promos-soleil-et-lune', abbreviation: 'SMP', blocSlug: 'soleil-lune', imageUrl: '/images/series/promos_soleil_et_lune.webp', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
@@ -115,7 +115,7 @@ const XY_SERIES: SerieStatic[] = [
   { name: 'XY', nameEn: 'XY', slug: 'xy-base', abbreviation: 'XY01', blocSlug: 'xy', imageUrl: '/images/series/xy-base.png', releaseDate: '2014-02-05', order: 11 },
   { name: 'Générations', nameEn: 'Generations', slug: 'generations', abbreviation: 'XY-GEN', blocSlug: 'xy', imageUrl: '/images/series/generations.png', releaseDate: '2016-02-22', order: 12 },
   { name: 'Double Danger', nameEn: 'Double Crisis', slug: 'double-danger', abbreviation: 'XY-DD', blocSlug: 'xy', imageUrl: '/images/series/double-danger.png', releaseDate: '2015-03-11', order: 13 },
-  { name: 'Promos X&Y', nameEn: 'XY Promos', slug: 'promos-xy', abbreviation: 'XYP', blocSlug: 'xy', imageUrl: '/images/series/promos-xy.png', releaseDate: null, order: 20 },
+  { name: 'Promos X&Y', nameEn: 'XY Promos', slug: 'promos-xy', abbreviation: 'XYP', blocSlug: 'xy', imageUrl: '/images/series/promos_xy.webp', releaseDate: null, order: 20 },
   { name: 'Bienvenue à Kalos', nameEn: 'Welcome to Kalos', slug: 'bienvenue-a-kalos', abbreviation: 'XY0', blocSlug: 'xy', imageUrl: '/images/series/bienvenue-a-kalos.png', releaseDate: null, order: 21 },
 ];
 
@@ -135,7 +135,7 @@ const NOIR_BLANC_SERIES: SerieStatic[] = [
   { name: 'Nobles Victoires', nameEn: 'Noble Victories', slug: 'nobles-victoires', abbreviation: 'NB03', blocSlug: 'noir-blanc', imageUrl: '/images/series/nobles-victoires.png', releaseDate: '2011-11-16', order: 8 },
   { name: 'Pouvoirs Émergents', nameEn: 'Emerging Powers', slug: 'pouvoirs-emergents', abbreviation: 'NB02', blocSlug: 'noir-blanc', imageUrl: '/images/series/pouvoirs-emergents.png', releaseDate: '2011-08-31', order: 9 },
   { name: 'Noir & Blanc', nameEn: 'Black & White', slug: 'noir-et-blanc', abbreviation: 'NB01', blocSlug: 'noir-blanc', imageUrl: '/images/series/noir-et-blanc.png', releaseDate: '2011-03-25', order: 10 },
-  { name: 'Promos Noir et Blanc', nameEn: 'Black & White Promos', slug: 'promos-noir-et-blanc', abbreviation: 'BWP', blocSlug: 'noir-blanc', imageUrl: '/images/series/promos-noir-et-blanc.png', releaseDate: null, order: 20 },
+  { name: 'Promos Noir et Blanc', nameEn: 'Black & White Promos', slug: 'promos-noir-et-blanc', abbreviation: 'BWP', blocSlug: 'noir-blanc', imageUrl: '/images/series/promos_noir_et_blanc.webp', releaseDate: null, order: 20 },
   { name: 'Coffre des Dragons', nameEn: 'Dragon Vault', slug: 'coffre-des-dragons', abbreviation: 'DV1', blocSlug: 'noir-blanc', imageUrl: '/images/series/coffre-des-dragons.png', releaseDate: null, order: 21 },
 ];
 
@@ -148,7 +148,7 @@ const HGSS_SERIES: SerieStatic[] = [
   { name: 'Indomptable', nameEn: 'Undaunted', slug: 'indomptable', abbreviation: 'HGSS03', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/indomptable.png', releaseDate: '2010-08-18', order: 1 },
   { name: 'Déchaînement', nameEn: 'Unleashed', slug: 'dechainement', abbreviation: 'HGSS02', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/dechainement.png', releaseDate: '2010-05-26', order: 2 },
   { name: 'HeartGold SoulSilver', nameEn: 'HeartGold SoulSilver', slug: 'heartgold-soulsilver-base', abbreviation: 'HGSS01', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/heartgold-soulsilver-base.png', releaseDate: '2010-02-10', order: 3 },
-  { name: 'Promos HeartGold SoulSilver', nameEn: 'HeartGold SoulSilver Promos', slug: 'promos-heartgold-soulsilver', abbreviation: 'HGSSP', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/promos-heartgold-soulsilver.png', releaseDate: null, order: 20 },
+  { name: 'Promos HeartGold SoulSilver', nameEn: 'HeartGold SoulSilver Promos', slug: 'promos-heartgold-soulsilver', abbreviation: 'HGSSP', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/promos_heartgold_soulsilver.webp', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
@@ -174,7 +174,7 @@ const DIAMANT_PERLE_SERIES: SerieStatic[] = [
   { name: 'Merveilles Secrètes', nameEn: 'Secret Wonders', slug: 'merveilles-secretes', abbreviation: 'DP03', blocSlug: 'diamant-perle', imageUrl: '/images/series/merveilles-secretes.png', releaseDate: '2007-11-07', order: 4 },
   { name: 'Trésors Mystérieux', nameEn: 'Mysterious Treasures', slug: 'tresors-mysterieux', abbreviation: 'DP02', blocSlug: 'diamant-perle', imageUrl: '/images/series/tresors-mysterieux.png', releaseDate: '2007-08-22', order: 5 },
   { name: 'Diamant & Perle', nameEn: 'Diamond & Pearl', slug: 'diamant-et-perle', abbreviation: 'DP01', blocSlug: 'diamant-perle', imageUrl: '/images/series/diamant-et-perle.png', releaseDate: '2007-05-23', order: 6 },
-  { name: 'Promos Diamant et Perle', nameEn: 'Diamond & Pearl Promos', slug: 'promos-diamant-et-perle', abbreviation: 'DPP', blocSlug: 'diamant-perle', imageUrl: '/images/series/promos-diamant-et-perle.png', releaseDate: null, order: 20 },
+  { name: 'Promos Diamant et Perle', nameEn: 'Diamond & Pearl Promos', slug: 'promos-diamant-et-perle', abbreviation: 'DPP', blocSlug: 'diamant-perle', imageUrl: '/images/series/promos_diamant_et_perle.webp', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
@@ -214,7 +214,7 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Fossile', nameEn: 'Fossil', slug: 'fossile', abbreviation: 'WOTC-FO', blocSlug: 'wotc', imageUrl: '/images/series/fossile.png', releaseDate: '1999-10-08', order: 7 },
   { name: 'Jungle', nameEn: 'Jungle', slug: 'jungle', abbreviation: 'WOTC-JU', blocSlug: 'wotc', imageUrl: '/images/series/jungle.png', releaseDate: '1999-06-16', order: 8 },
   { name: 'Set de base', nameEn: 'Base Set', slug: 'set-de-base', abbreviation: 'WOTC-BS', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base.png', releaseDate: '1999-01-09', order: 9 },
-  { name: 'Promos Nintendo', nameEn: 'Nintendo Promos', slug: 'promos-nintendo', abbreviation: 'NP', blocSlug: 'wotc', imageUrl: '/images/series/promos-nintendo.png', releaseDate: null, order: 20 },
+  { name: 'Promos Nintendo', nameEn: 'Nintendo Promos', slug: 'promos-nintendo', abbreviation: 'NP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
 
 // ---------------------------------------------------------------------------
