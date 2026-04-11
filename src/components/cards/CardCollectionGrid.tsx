@@ -59,7 +59,7 @@ interface Props {
   isAuthenticated: boolean;
 }
 
-type SortKey    = "number" | "name" | "rarity";
+type SortKey    = "number" | "name" | "rarity" | "price";
 type SortOrder  = "asc" | "desc";
 type ViewFilter = "all" | "owned" | "missing";
 type ActiveModal = null | "add-collection" | "sort" | "options";
@@ -105,6 +105,7 @@ function SortModal({
     { value: "number", label: "Numéro de carte" },
     { value: "name",   label: "Nom" },
     { value: "rarity", label: "Rareté" },
+    { value: "price",  label: "Prix" },
   ];
 
   return (
@@ -544,6 +545,7 @@ export function CardCollectionGrid({
   const [sortBy,           setSortBy]           = useState<SortKey>("number");
   const [sortOrder,        setSortOrder]        = useState<SortOrder>("asc");
   const [showTransparency, setShowTransparency] = useState(true);
+  const [showReverse,      setShowReverse]      = useState(false);
   const [activeModal,      setActiveModal]      = useState<ActiveModal>(null);
   const [isPending,        startTransition]     = useTransition();
   const [typeFilter,       setTypeFilter]       = useState<Set<string>>(new Set());
@@ -611,9 +613,14 @@ export function CardCollectionGrid({
       if (sortBy === "number") cmp = a.number.localeCompare(b.number, undefined, { numeric: true });
       if (sortBy === "name")   cmp = a.name.localeCompare(b.name, "fr");
       if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
+      if (sortBy === "price") {
+        const pa = showReverse ? (a.priceReverse ?? 0) : (a.priceFr ?? a.price ?? 0);
+        const pb = showReverse ? (b.priceReverse ?? 0) : (b.priceFr ?? b.price ?? 0);
+        cmp = pa - pb;
+      }
       return sortOrder === "asc" ? cmp : -cmp;
     });
-  }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, ownedMap, availableVersions]);
+  }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, showReverse, ownedMap, availableVersions]);
 
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
   // Cards where at least one applicable version is missing
@@ -845,6 +852,19 @@ export function CardCollectionGrid({
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
           Trier
         </button>
+        {availableVersions.includes(CardVersion.REVERSE) && (
+          <button
+            onClick={() => setShowReverse((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-colors",
+              showReverse
+                ? "border-[#E7BA76]/60 bg-[#E7BA76]/10 text-[#E7BA76]"
+                : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]"
+            )}
+          >
+            🌍 Reverse
+          </button>
+        )}
         {isAuthenticated && (
           <button onClick={() => setActiveModal("options")}
             className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]">
@@ -1018,14 +1038,18 @@ export function CardCollectionGrid({
                   )}
                 </div>
 
-                {/* Card name + price (FR preferred, flag indicator) */}
+                {/* Card name + price */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
                 <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
-                  {card.priceFr != null
-                    ? `🇫🇷 ${card.priceFr.toFixed(2)}\u00a0€`
-                    : card.price != null
-                      ? `${card.price.toFixed(2)}\u00a0€`
-                      : "–\u00a0€"}
+                  {showReverse
+                    ? card.priceReverse != null
+                      ? `🌍 ${card.priceReverse.toFixed(2)}\u00a0€`
+                      : "–\u00a0€"
+                    : card.priceFr != null
+                      ? `🇫🇷 ${card.priceFr.toFixed(2)}\u00a0€`
+                      : card.price != null
+                        ? `${card.price.toFixed(2)}\u00a0€`
+                        : "–\u00a0€"}
                 </p>
               </div>
             );
