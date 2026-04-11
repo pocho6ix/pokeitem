@@ -47,18 +47,19 @@ model User {
   referralRewardGiven Boolean   @default(false)
   referralWeeksGiven  Int       @default(0)
 
-  accounts         Account[]
-  sessions         Session[]
-  portfolio        PortfolioItem[]
-  wishlist         WishlistItem[]
-  manualValuations ManualValuation[]
-  userCards        UserCard[]
-  userCardDoubles  UserCardDouble[]
-  subscription     Subscription?
-  pointEvents      PointEvent[]
-  userQuests       UserQuest[]
-  userPoints       UserPoints?
-  feedbacks        Feedback[]
+  accounts          Account[]
+  sessions          Session[]
+  portfolio         PortfolioItem[]
+  wishlist          WishlistItem[]
+  manualValuations  ManualValuation[]
+  userCards         UserCard[]
+  userCardDoubles   UserCardDouble[]
+  subscription      Subscription?
+  pointEvents       PointEvent[]
+  userQuests        UserQuest[]
+  userPoints        UserPoints?
+  feedbacks         Feedback[]
+  dailyQuestClaims  DailyQuestClaim[]
 
   @@map("users")
 }
@@ -577,4 +578,17 @@ model UserPoints {
 
   @@index([total])
   @@map("user_points")
+}
+
+model DailyQuestClaim {
+  id            String   @id @default(cuid())
+  userId        String
+  questId       String   @default("daily_login")
+  claimedAt     DateTime @default(now())
+  pointsAwarded Int      @default(250)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, questId])
+  @@map("daily_quest_claims")
 }

@@ -4,6 +4,7 @@ import useSWR, { mutate } from 'swr'
 import { Copy, Check, Download } from 'lucide-react'
 import { useShareCard } from '@/hooks/useShareCard'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
+import { DailyLoginQuest } from '@/components/quests/DailyLoginQuest'
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -497,8 +498,9 @@ export function QuestsBlock() {
         </div>
       ) : (
         <div className="space-y-2">
+          <DailyLoginQuest />
           <ReferralRow validatedCount={validatedCount} referralLink={referralLink} />
-          {quests.map(quest =>
+          {quests.filter(q => q.id !== 'daily_login').map(quest =>
             quest.id === 'share_leaderboard' ? (
               <ShareQuestRow key={quest.id} quest={quest} shareData={shareData ?? null} shareCardRef={cardRef} />
             ) : quest.id === 'install_pwa' ? (

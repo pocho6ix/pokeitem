@@ -15,6 +15,17 @@ export interface QuestDefinition {
 }
 
 export const QUESTS: QuestDefinition[] = [
+  // 0 — Connexion quotidienne (daily recurring — handled separately)
+  {
+    id: "daily_login",
+    title: "Connexion quotidienne",
+    description: "Reviens chaque jour pour gagner tes points !",
+    points: 250,
+    icon: "🌟",
+    type: "action",
+    verifiable: false,
+    active: true,
+  },
   // 1 — Rejoindre la communauté Telegram
   {
     id: "join_telegram",
