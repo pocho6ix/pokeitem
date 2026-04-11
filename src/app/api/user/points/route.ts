@@ -9,20 +9,28 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = (session.user as { id: string }).id
 
-  // Total points
-  const userPoints = await prisma.userPoints.findUnique({ where: { userId } })
+  // Run independent queries in parallel — 3 round-trips → 1
+  const [userPoints, userQuestRows, pointsHistory] = await Promise.all([
+    prisma.userPoints.findUnique({ where: { userId } }),
+    prisma.userQuest.findMany({
+      where: { userId },
+      select: { questId: true, completed: true, progress: true, completedAt: true },
+    }),
+    prisma.pointEvent.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: { points: true, source: true, questId: true, createdAt: true },
+    }),
+  ])
+
   const totalPoints = userPoints?.total ?? 0
 
-  // User's rank
+  // Rank needs totalPoints — runs after the parallel batch
   const rank = totalPoints > 0
     ? (await prisma.userPoints.count({ where: { total: { gt: totalPoints } } })) + 1
     : null
 
-  // Quest states
-  const userQuestRows = await prisma.userQuest.findMany({
-    where: { userId },
-    select: { questId: true, completed: true, progress: true, completedAt: true },
-  })
   const questStateMap = Object.fromEntries(userQuestRows.map(q => [q.questId, q]))
 
   const quests = ACTIVE_QUESTS.map(q => {
@@ -41,14 +49,6 @@ export async function GET() {
       completedAt: state?.completedAt ?? null,
       progress: state?.progress ?? 0,
     }
-  })
-
-  // Recent point events
-  const pointsHistory = await prisma.pointEvent.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-    select: { points: true, source: true, questId: true, createdAt: true },
   })
 
   return NextResponse.json({ totalPoints, rank, quests, pointsHistory })

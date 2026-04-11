@@ -3,8 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, ExternalLink } from "lucide-react";
 import Image from "next/image";
-import { PriceHistoryChart } from "./PriceHistoryChart";
+import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
+
+// Recharts lazy-loaded — not needed until modal opens
+const PriceHistoryChart = dynamic(
+  () => import("./PriceHistoryChart").then((m) => m.PriceHistoryChart),
+  {
+    loading: () => <div className="h-40 animate-pulse rounded-xl bg-[var(--bg-secondary)]" />,
+    ssr: false,
+  }
+);
 
 // Énergie series (MEE, SVE) are excluded — they use NO_RARITY explicitly
 const PROMO_SERIE_SLUGS = new Set([

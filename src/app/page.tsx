@@ -6,6 +6,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
 import Link from "next/link";
+import Image from "next/image";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
@@ -75,8 +76,10 @@ async function getCollectionValue(userId: string) {
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
   const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
-  const collectionValue = userId ? await getCollectionValue(userId) : null;
-  const topCards        = userId ? await getTopCards(userId)        : [];
+  // Run both user-specific queries in parallel
+  const [collectionValue, topCards] = userId
+    ? await Promise.all([getCollectionValue(userId), getTopCards(userId)])
+    : [null, [] as Awaited<ReturnType<typeof getTopCards>>];
 
 
   return (
@@ -90,10 +93,13 @@ export default async function HomePage() {
 
         {/* Image at natural ratio → all 3 Pokémon always visible */}
         <div className="relative overflow-hidden bg-[var(--bg-primary)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/hero-pokemon.png"
             alt=""
+            width={869}
+            height={287}
+            priority
+            sizes="100vw"
             className="w-full h-auto block"
           />
           {/* Bottom fade into page bg */}
