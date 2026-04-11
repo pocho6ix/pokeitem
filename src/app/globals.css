@@ -112,39 +112,27 @@ body {
   color: #FF0000 !important;
 }
 
-/* Reverse holo shimmer overlay */
-@keyframes holoShift {
-  0%   { background-position: 0% 0%; }
-  50%  { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-
-/* Applied to the card <img> itself when reverse is active */
-@keyframes holoFilter {
-  0%   { filter: brightness(1.15) saturate(1.4) hue-rotate(0deg); }
-  25%  { filter: brightness(1.30) saturate(1.8) hue-rotate(60deg); }
-  50%  { filter: brightness(1.20) saturate(1.6) hue-rotate(140deg); }
-  75%  { filter: brightness(1.30) saturate(1.8) hue-rotate(220deg); }
-  100% { filter: brightness(1.15) saturate(1.4) hue-rotate(360deg); }
+/* Reverse holo — subtle pearl shimmer */
+@keyframes holoShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .holo-img {
-  animation: holoFilter 3s linear infinite;
+  filter: brightness(1.05) saturate(1.08);
 }
 
 .holo-overlay {
   background: linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255,  80, 200, 0.28) 15%,
-    rgba(255, 200,   0, 0.24) 28%,
-    rgba(  0, 255, 180, 0.28) 44%,
-    rgba(  0, 180, 255, 0.30) 58%,
-    rgba(140,  20, 255, 0.28) 72%,
-    rgba(255,  20, 180, 0.30) 86%,
-    rgba(255, 255, 255, 0.22) 100%
+    110deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(200, 230, 255, 0.14) 35%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(220, 200, 255, 0.14) 65%,
+    rgba(255, 255, 255, 0.04) 100%
   );
-  background-size: 400% 400%;
-  animation: holoShift 3s linear infinite;
+  background-size: 300% 300%;
+  animation: holoShimmer 4s ease-in-out infinite;
   mix-blend-mode: screen;
 }
