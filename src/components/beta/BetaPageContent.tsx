@@ -176,7 +176,7 @@ function SuccessScreen() {
           Bienvenue dans la bêta&nbsp;!
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          Ton abonnement Pro est activé pour 7 jours. Merci de nous aider à
+          Ton abonnement Premium est activé pour 7 jours. Merci de nous aider à
           améliorer PokéItem&nbsp;💪
         </p>
         <button

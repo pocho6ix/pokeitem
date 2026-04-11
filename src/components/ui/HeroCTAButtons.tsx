@@ -61,7 +61,7 @@ export function HeroCTAButtons() {
         return (
           <div className="mt-8 flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-5 py-3 text-sm font-semibold text-emerald-400">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
-            Pro activé ! Redirection…
+            Premium activé ! Redirection…
           </div>
         );
       }
@@ -79,7 +79,7 @@ export function HeroCTAButtons() {
           >
             {activating
               ? "Activation…"
-              : "🎁 Activer et profiter de l'Accès Pro offert 1 semaine"}
+              : "🎁 Activer et profiter de l'Accès Premium offert 1 semaine"}
           </button>
           <Link
             href="/portfolio"

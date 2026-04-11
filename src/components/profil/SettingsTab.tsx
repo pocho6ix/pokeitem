@@ -65,7 +65,7 @@ export function SettingsTab() {
   }
 
   const handleCancel = async () => {
-    if (!confirm("Confirmer la résiliation ? Votre accès Pro sera maintenu jusqu'à la fin de la période en cours.")) return
+    if (!confirm("Confirmer la résiliation ? Votre accès Premium sera maintenu jusqu'à la fin de la période en cours.")) return
     setCanceling(true)
     const res = await fetch('/api/subscription/cancel', { method: 'POST' })
     const data = await res.json()
@@ -158,7 +158,7 @@ export function SettingsTab() {
           ) : (
             <>
               <p className="text-xs text-[var(--text-secondary)] mb-4">
-                En résiliant, votre accès Pro est maintenu jusqu&apos;à la fin de la période en cours. Aucun prélèvement supplémentaire.
+                En résiliant, votre accès Premium est maintenu jusqu&apos;à la fin de la période en cours. Aucun prélèvement supplémentaire.
               </p>
               <button
                 onClick={handleCancel}
