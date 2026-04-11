@@ -985,6 +985,11 @@ export function CardCollectionGrid({
                     </div>
                   )}
 
+                  {/* Reverse holo shimmer overlay */}
+                  {showReverse && !card.isSpecial && (
+                    <div className="holo-overlay absolute inset-0 z-[5] pointer-events-none rounded-lg" />
+                  )}
+
                   {/* Detail button — top left */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setDetailCardId(card.id); }}

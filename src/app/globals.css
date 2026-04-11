@@ -111,3 +111,27 @@ body {
   background-color: #ffffff !important;
   color: #FF0000 !important;
 }
+
+/* Reverse holo shimmer overlay */
+@keyframes holoShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.holo-overlay {
+  background: linear-gradient(
+    125deg,
+    rgba(255, 0, 128,  0.18) 0%,
+    rgba(255, 160, 0,  0.16) 18%,
+    rgba(220, 255, 0,  0.14) 32%,
+    rgba(0,   255, 140, 0.16) 46%,
+    rgba(0,   200, 255, 0.18) 60%,
+    rgba(100,  40, 255, 0.16) 75%,
+    rgba(255,   0, 200, 0.18) 88%,
+    rgba(255,   0, 128, 0.16) 100%
+  );
+  background-size: 300% 300%;
+  animation: holoShift 4s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
