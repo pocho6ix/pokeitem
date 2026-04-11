@@ -37,11 +37,14 @@ export const TCGDEX_RARITY_MAP: Record<string, CardRarity> = {
   'Peu Commune':                   CardRarity.UNCOMMON,
   'Rare':                          CardRarity.RARE,
   'Rare Holographique':            CardRarity.RARE,
+  'Holo Rare':                     CardRarity.RARE,         // SWSH holo rares (swsh10, swsh11…)
   // ── Double Rare (EX, V, VMAX, VSTAR…) ───────────────────────────────────
   'Double Rare':                   CardRarity.DOUBLE_RARE,  // EN-style key (kept for compat)
   'Double rare':                   CardRarity.DOUBLE_RARE,  // actual FR API string
-  'Ultra Rare':                    CardRarity.DOUBLE_RARE,  // Full-Art EX in some sets
+  'Ultra Rare':                    CardRarity.DOUBLE_RARE,  // V cards, GX, Full-Art EX
   'Rare Noir Blanc':               CardRarity.DOUBLE_RARE,  // Foudre Noire / Flamme Blanche tier
+  // ── Magnifique rare (VSTAR special art, Amazing Rare, Rainbow Rare) ──────
+  'Magnifique rare':               CardRarity.HYPER_RARE,   // SWSH VSTAR special art, SM Rainbow Rare
   // ── Illustration Rare (AR) ───────────────────────────────────────────────
   'Rare Illustration':             CardRarity.ILLUSTRATION_RARE,   // old-style key
   'Illustration rare':             CardRarity.ILLUSTRATION_RARE,   // actual FR API string

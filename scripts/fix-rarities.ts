@@ -1,14 +1,13 @@
 /**
- * Fix misclassified card rarities in the DB by querying TCGDex per-card.
+ * Fix misclassified card rarities in the DB by re-syncing from TCGDex API.
  *
- * Targets:
- *  1. COMMON cards with "-ex" in name (should never be COMMON in SV era)
- *  2. COMMON cards in the same number range (±15) as the -ex misclassified ones
- *     → catches Trainer Double Rares like Bria, Rubépin, Kombu, Taro
+ * Checks ALL cards currently stored as COMMON that have a tcgdexId.
+ * For each one, fetches the real TCGDex rarity and updates if different.
  *
  * Usage:
  *   npx tsx scripts/fix-rarities.ts            # dry run
  *   npx tsx scripts/fix-rarities.ts --apply    # apply
+ *   npx tsx scripts/fix-rarities.ts --prefix swsh  # only one era
  */
 
 import { PrismaClient } from "@prisma/client"
@@ -17,7 +16,8 @@ dotenv.config({ path: ".env" })
 import { mapTcgdexRarity } from "../src/lib/pokemon/card-variants"
 
 const prisma = new PrismaClient()
-const APPLY = process.argv.includes("--apply")
+const APPLY   = process.argv.includes("--apply")
+const PREFIX  = process.argv.find(a => a.startsWith("--prefix="))?.split("=")[1]
 
 async function fetchRarity(tcgdexId: string): Promise<string | null> {
   const url = `https://api.tcgdex.net/v2/fr/cards/${tcgdexId}`
@@ -34,56 +34,36 @@ async function fetchRarity(tcgdexId: string): Promise<string | null> {
 async function main() {
   console.log(APPLY ? "🔧 MODE: APPLY\n" : "🔍 MODE: DRY RUN (use --apply to write)\n")
 
-  // 1. All COMMON "-ex" cards
-  const exCards = await prisma.card.findMany({
-    where: { rarity: "COMMON", name: { contains: "-ex" }, tcgdexId: { not: null } },
-    select: { id: true, name: true, number: true, rarity: true, tcgdexId: true, serieId: true },
-  })
-  console.log(`Phase 1: ${exCards.length} cartes "-ex" en COMMON à vérifier`)
-
-  // 2. For each set that has misclassified -ex cards, also check nearby COMMON cards
-  //    (catches Trainer Double Rares in the same number range)
-  const affectedSeries = [...new Set(exCards.map(c => c.serieId))]
-  const extraCandidates = await prisma.card.findMany({
-    where: {
-      rarity: "COMMON",
-      serieId: { in: affectedSeries },
-      name: { not: { contains: "-ex" } }, // not already in phase 1
-      tcgdexId: { not: null },
-    },
-    select: { id: true, name: true, number: true, rarity: true, tcgdexId: true, serieId: true },
-  })
-
-  // Filter extras: only cards whose number is within 20 of a -ex card in the same set
-  const exNums = new Map<string, number[]>()
-  for (const c of exCards) {
-    if (!exNums.has(c.serieId)) exNums.set(c.serieId, [])
-    exNums.get(c.serieId)!.push(parseInt(c.number))
+  const whereClause: any = {
+    rarity: "COMMON",
+    tcgdexId: { not: null },
+  }
+  if (PREFIX) {
+    whereClause.tcgdexId = { startsWith: PREFIX, not: null }
+    console.log(`Filtre: ère "${PREFIX}" uniquement\n`)
   }
 
-  const nearbyCards = extraCandidates.filter(c => {
-    const nums = exNums.get(c.serieId) ?? []
-    const n = parseInt(c.number)
-    return nums.some(exN => Math.abs(n - exN) <= 20)
+  const cards = await prisma.card.findMany({
+    where: whereClause,
+    select: { id: true, name: true, number: true, rarity: true, tcgdexId: true },
+    orderBy: { tcgdexId: "asc" },
   })
-  console.log(`Phase 2: ${nearbyCards.length} cartes Dresseur/Pokémon proches des -ex à vérifier\n`)
-
-  const allToCheck = [...exCards, ...nearbyCards]
-  const total = allToCheck.length
+  console.log(`${cards.length} cartes COMMON à vérifier via TCGDex\n`)
 
   type Fix = { id: string; name: string; number: string; tcgdexId: string; tcgdexRarity: string; newRarity: string }
   const fixes: Fix[] = []
   let checked = 0
+  const total = cards.length
 
-  for (const card of allToCheck) {
+  for (const card of cards) {
     checked++
-    if (checked % 20 === 0) process.stdout.write(`  ${checked}/${total} vérifiés...\r`)
+    if (checked % 50 === 0) process.stdout.write(`  ${checked}/${total} vérifiés...\r`)
 
     const tcgdexRarity = await fetchRarity(card.tcgdexId!)
     if (!tcgdexRarity) continue
 
     const newRarity = mapTcgdexRarity(tcgdexRarity)
-    if (newRarity === "COMMON") continue
+    if (newRarity === "COMMON") continue // already correct
 
     fixes.push({
       id: card.id,
@@ -94,23 +74,34 @@ async function main() {
       newRarity,
     })
 
-    await new Promise(r => setTimeout(r, 80)) // gentle rate limit
+    await new Promise(r => setTimeout(r, 60))
   }
 
   console.log(`\n\n=== ${fixes.length} cartes à corriger ===`)
 
-  // Group by set prefix for display
-  const bySet = new Map<string, Fix[]>()
+  // Group by era for display
+  const byEra = new Map<string, Fix[]>()
   for (const fix of fixes) {
-    const setId = fix.tcgdexId.match(/^([^-]+)/)?.[1] ?? "?"
-    if (!bySet.has(setId)) bySet.set(setId, [])
-    bySet.get(setId)!.push(fix)
+    const era = fix.tcgdexId.match(/^([a-z]+)/)?.[1] ?? "?"
+    if (!byEra.has(era)) byEra.set(era, [])
+    byEra.get(era)!.push(fix)
   }
-  for (const [setId, setFixes] of [...bySet.entries()].sort()) {
-    console.log(`\n  ${setId} — ${setFixes.length} cartes`)
-    setFixes
-      .sort((a, b) => parseInt(a.number) - parseInt(b.number))
-      .forEach(f => console.log(`    #${f.number} ${f.name}  (COMMON → ${f.newRarity}  via "${f.tcgdexRarity}")`))
+  for (const [era, eraFixes] of [...byEra.entries()].sort()) {
+    // Group by target rarity within era
+    const byRarity = new Map<string, Fix[]>()
+    for (const f of eraFixes) {
+      if (!byRarity.has(f.newRarity)) byRarity.set(f.newRarity, [])
+      byRarity.get(f.newRarity)!.push(f)
+    }
+    console.log(`\n  ${era.toUpperCase()} — ${eraFixes.length} cartes`)
+    for (const [rarity, rarFixes] of byRarity) {
+      console.log(`    → ${rarity}: ${rarFixes.length} cartes`)
+      rarFixes
+        .sort((a, b) => a.tcgdexId.localeCompare(b.tcgdexId))
+        .slice(0, 8)
+        .forEach(f => console.log(`      #${f.number} ${f.name} [${f.tcgdexId}] (via "${f.tcgdexRarity}")`))
+      if (rarFixes.length > 8) console.log(`      … +${rarFixes.length - 8} autres`)
+    }
   }
 
   if (!APPLY) {
@@ -128,7 +119,7 @@ async function main() {
       data: { rarity: fix.newRarity as any, isSpecial },
     })
     done++
-    if (done % 10 === 0) process.stdout.write(`  ${done}/${fixes.length}\r`)
+    if (done % 20 === 0) process.stdout.write(`  ${done}/${fixes.length}\r`)
   }
   console.log(`\n✅ ${done} cartes corrigées`)
   await prisma.$disconnect()
