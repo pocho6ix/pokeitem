@@ -53,5 +53,5 @@ export const getCachedSerieCards = unstable_cache(
       },
     }),
   ["serie-cards"],
-  { revalidate: 3600 }
+  { revalidate: 3600, tags: ["serie-cards"] }
 )
