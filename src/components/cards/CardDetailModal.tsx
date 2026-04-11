@@ -266,7 +266,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
           <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                Historique du prix
+                {chartMode === "reverse" ? "Prix Reverse" : "Historique du prix"}
               </h3>
               {canHaveReverse && (
                 <div className="inline-flex rounded-lg bg-[var(--bg-secondary)] p-0.5">
@@ -294,21 +294,36 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                 </div>
               )}
             </div>
-            <PriceHistoryChart
-              data={history}
-              currentPrice={card?.price ?? null}
-              currentPriceFr={card?.priceFr}
-              currentPriceReverse={card?.priceReverse}
-              mode={chartMode}
-              period={period}
-              onPeriodChange={handlePeriodChange}
-              loading={loading}
-            />
-            {chartMode === "reverse" && (
-              <p className="mt-2 text-[10px] text-[var(--text-tertiary)] italic leading-snug">
-                Le prix reverse provient du marché Cardmarket global (pas de prix FR
-                spécifique disponible). À titre indicatif.
-              </p>
+
+            {chartMode === "reverse" ? (
+              /* ── Reverse: no chart yet, minimal price display ── */
+              <div className="flex flex-col items-center gap-1 py-6">
+                <p className="text-3xl font-bold text-[var(--text-primary)]">
+                  {formatEur(card?.priceReverse)}
+                </p>
+                <p className="text-xs text-[var(--text-tertiary)]">
+                  🌍 Marché global · Cardmarket
+                </p>
+                {card?.priceUpdatedAt && (
+                  <p className="mt-3 text-[10px] text-[var(--text-tertiary)]/60">
+                    Mis à jour le {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
+                  </p>
+                )}
+                <p className="mt-4 text-[10px] text-[var(--text-tertiary)]/50 italic text-center max-w-[260px] leading-relaxed">
+                  L'historique Reverse sera disponible au fil du temps.
+                </p>
+              </div>
+            ) : (
+              <PriceHistoryChart
+                data={history}
+                currentPrice={card?.price ?? null}
+                currentPriceFr={card?.priceFr}
+                currentPriceReverse={card?.priceReverse}
+                mode={chartMode}
+                period={period}
+                onPeriodChange={handlePeriodChange}
+                loading={loading}
+              />
             )}
           </div>
 
