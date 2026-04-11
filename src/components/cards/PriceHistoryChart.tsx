@@ -16,14 +16,18 @@ interface PricePoint {
   date: string;
   price: number | null;
   priceFr?: number | null;
+  priceReverse?: number | null;
 }
 
 type Period = "1w" | "1m" | "3m" | "6m" | "1y" | "max";
+type ChartMode = "normal" | "reverse";
 
 interface Props {
   data: PricePoint[];
   currentPrice: number | null;
   currentPriceFr?: number | null;
+  currentPriceReverse?: number | null;
+  mode?: ChartMode;
   period: Period;
   onPeriodChange: (p: Period) => void;
   loading?: boolean;
@@ -89,19 +93,27 @@ export function PriceHistoryChart({
   data,
   currentPrice,
   currentPriceFr,
+  currentPriceReverse,
+  mode = "normal",
   period,
   onPeriodChange,
   loading,
 }: Props) {
-  const displayPrice = currentPriceFr ?? currentPrice;
+  const isReverse = mode === "reverse";
+  const displayPrice = isReverse
+    ? currentPriceReverse
+    : (currentPriceFr ?? currentPrice);
 
-  // Use priceFr if available, otherwise price
+  // Normal mode: priceFr > price ; Reverse mode: priceReverse only
   const chartData = useMemo(
     () =>
       data
-        .map((d) => ({ ...d, displayPrice: d.priceFr ?? d.price }))
+        .map((d) => ({
+          ...d,
+          displayPrice: isReverse ? d.priceReverse ?? null : d.priceFr ?? d.price,
+        }))
         .filter((d) => d.displayPrice != null),
-    [data]
+    [data, isReverse]
   );
 
   // Compute price change and stats
@@ -129,9 +141,11 @@ export function PriceHistoryChart({
           <p className="text-2xl font-bold text-[var(--text-primary)]">
             {displayPrice != null ? formatEur(displayPrice) : "—"}
           </p>
-          {currentPriceFr != null && (
+          {isReverse ? (
+            <span className="text-xs text-[var(--text-tertiary)]">🌍 Reverse · marché global</span>
+          ) : currentPriceFr != null ? (
             <span className="text-xs text-[var(--text-tertiary)]">🇫🇷 Prix FR</span>
-          )}
+          ) : null}
         </div>
         {stats && (
           <p
@@ -223,7 +237,7 @@ export function PriceHistoryChart({
             onClick={() => onPeriodChange(p.value)}
             className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors ${
               period === p.value
-                ? "bg-[#10B981]/15 text-[#10B981]"
+                ? "bg-[#E7BA76]/15 text-[#E7BA76]"
                 : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
             }`}
           >

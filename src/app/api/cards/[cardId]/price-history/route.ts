@@ -76,14 +76,22 @@ export async function GET(
       select: {
         price: true,
         priceFr: true,
+        priceReverse: true,
         recordedAt: true,
       },
     });
 
-    const merged = new Map<string, { price: number | null; priceFr: number | null }>();
+    const merged = new Map<
+      string,
+      { price: number | null; priceFr: number | null; priceReverse: number | null }
+    >();
     for (const h of dbHistory) {
       const date = h.recordedAt.toISOString().slice(0, 10);
-      merged.set(date, { price: h.price, priceFr: h.priceFr ?? null });
+      merged.set(date, {
+        price: h.price,
+        priceFr: h.priceFr ?? null,
+        priceReverse: h.priceReverse ?? null,
+      });
     }
 
     const points = Array.from(merged.entries())
@@ -92,6 +100,7 @@ export async function GET(
         date,
         price: v.price,
         priceFr: v.priceFr,
+        priceReverse: v.priceReverse,
       }));
 
     return NextResponse.json({
@@ -113,6 +122,11 @@ export async function GET(
     });
   } catch (error) {
     console.error("[price-history] route error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    // Override the 1h cache set in next.config.ts — never cache errors,
+    // otherwise a transient 500 sticks in the browser for an hour.
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }

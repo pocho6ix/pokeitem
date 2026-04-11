@@ -31,8 +31,10 @@ const DISPLAY_ORDER: CardRarity[] = [
 
 const CardCell = memo(function CardCell({ card, onCardClick }: { card: RarityCard; onCardClick: (id: string) => void }) {
   const isDark = DARK_ICON_OVERLAY.has(card.rarity)
-  const displayPrice = card.priceFr ?? card.price
-  const isFr = card.priceFr != null && card.priceFr > 0
+  // API already computes the effective price for the owned version (normal FR,
+  // normal trend, or reverse). Trust it and flag the source for display.
+  const displayPrice = card.price
+  const isFr = card.isFrenchPrice
 
   return (
     <button className="flex flex-col items-center gap-0.5 text-left w-full" onClick={() => onCardClick(card.id)}>
@@ -78,7 +80,7 @@ const CardCell = memo(function CardCell({ card, onCardClick }: { card: RarityCar
       {/* Price */}
       <span className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
         {displayPrice > 0
-          ? `${isFr ? '🇫🇷 ' : ''}${displayPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+          ? `${isFr ? '🇫🇷 ' : card.isReverse ? '🌍 ' : ''}${displayPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
           : '—'}
       </span>
     </button>

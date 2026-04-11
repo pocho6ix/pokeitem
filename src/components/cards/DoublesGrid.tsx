@@ -18,6 +18,7 @@ export interface DoubleRow {
   cardNumber: string
   cardImageUrl: string | null
   cardPrice: number | null
+  isFrenchPrice: boolean
   cardIsSpecial: boolean
   serieSlug: string
   serieName: string
@@ -232,7 +233,15 @@ export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, t
                           </div>
                           <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.cardName}</p>
                           <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
-                            {card.cardPrice != null ? `${card.cardPrice.toFixed(2)}\u00a0€` : '–\u00a0€'}
+                            {card.cardPrice != null
+                              ? `${
+                                  card.isFrenchPrice
+                                    ? '🇫🇷 '
+                                    : card.version !== CardVersion.NORMAL
+                                    ? '🌍 '
+                                    : ''
+                                }${card.cardPrice.toFixed(2)}\u00a0€`
+                              : '–\u00a0€'}
                           </p>
                         </button>
                       )

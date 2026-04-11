@@ -65,7 +65,7 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "neo-destiny":      V_NORMAL,
 
   // ── Épée & Bouclier — special sets with Reverse ─────────────────────────
-  "celebrations":        V_REVERSE, // Célébrations
+  "celebrations":        V_NORMAL,  // Célébrations — set anniversaire, pas de Reverse holo
   "destinees-radieuses": V_REVERSE, // Destinées Radieuses
   "stars-etincelantes":  V_REVERSE, // Stars Étincelantes (EB09)
   "la-voie-du-maitre":   V_REVERSE, // La Voie du Maître
@@ -77,6 +77,9 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
 
   // ── Méga-Évolution — Héros Transcendants ajoute la Poké Ball (pas ME03)
   "heros-transcendants": V_POKEBALL, // ME2.5 — Reverse (type symbol) + Poké Ball
+
+  // ── XY — sets spéciaux sans Reverse holo ────────────────────────────────
+  "double-danger": V_NORMAL, // Double Crisis — mini-set 34 cartes, pas de Reverse
 
   // ── Promos & séries spéciales — une seule version (pas de Reverse) ────────
   "energies-mega-evolution":     V_NORMAL,

@@ -13,6 +13,10 @@ export interface RarityCard {
   imageUrl: string | null
   price: number
   priceFr: number | null
+  /** true when the displayed price is the NORMAL variant's FR price (shows 🇫🇷 flag). */
+  isFrenchPrice: boolean
+  /** true when the displayed price is the reverse variant's price (shows reverse indicator). */
+  isReverse: boolean
   serieName: string
 }
 
@@ -55,6 +59,9 @@ export async function GET() {
   for (const uc of userCards) {
     const rarity = uc.card.rarity as CardRarity
     const effectivePrice = getPriceForVersion(uc.card, uc.version)
+    const isReverse = uc.version !== "NORMAL"
+    // French flag only applies to NORMAL variants that have a FR price
+    const isFrenchPrice = !isReverse && uc.card.priceFr != null
 
     if (!byRarity.has(rarity)) byRarity.set(rarity, { cards: new Map(), totalValue: 0 })
     const group = byRarity.get(rarity)!
@@ -73,6 +80,8 @@ export async function GET() {
         imageUrl: uc.card.imageUrl,
         price: effectivePrice,
         priceFr: uc.card.priceFr ?? null,
+        isFrenchPrice,
+        isReverse,
         serieName: uc.card.serie.name,
       })
     }

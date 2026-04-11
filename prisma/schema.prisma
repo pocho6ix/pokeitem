@@ -372,13 +372,14 @@ model Card {
 }
 
 model CardPriceHistory {
-  id         String   @id @default(cuid())
-  cardId     String
-  price      Float
-  priceFr    Float?
-  source     String   // "ptcgio" | "tcgdex" | "cardmarket-api"
-  recordedAt DateTime
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  cardId       String
+  price        Float
+  priceFr      Float?
+  priceReverse Float?
+  source       String   // "ptcgio" | "tcgdex" | "cardmarket-api" | "tcgdex-reverse"
+  recordedAt   DateTime
+  createdAt    DateTime @default(now())
 
   card Card @relation(fields: [cardId], references: [id])
 

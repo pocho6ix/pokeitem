@@ -9,6 +9,7 @@ import {
   extractLowestFr,
   normalizeCardNumber,
 } from "@/lib/cardmarket-fr";
+import { fetchTCGdexReverseForSet } from "@/lib/tcgdex-reverse";
 
 // ---------------------------------------------------------------------------
 // Mapping slug → TCGdex set ID (FR sets)
@@ -214,6 +215,94 @@ async function updatePrices(): Promise<{ setsProcessed: number; cardsUpdated: nu
 }
 
 // ---------------------------------------------------------------------------
+// Reverse holo price pass — uses tcgdex.net
+//
+// tcgdex is the only source currently exposing Cardmarket "holo" (= reverse)
+// prices via `pricing.cardmarket["trend-holo"]`. Prices are GLOBAL, not
+// FR-specific — UI surfaces that caveat. Cards with special rarities
+// (EX/IR/SAR/HR/MUR/MAR/ACE/Promo) do not have a reverse variant and are
+// skipped.
+// ---------------------------------------------------------------------------
+async function updateReversePrices(): Promise<{
+  setsProcessed: number;
+  cardsReverseUpdated: number;
+}> {
+  const series = await prisma.serie.findMany({ select: { id: true, slug: true } });
+  const serieBySlug = new Map(series.map((s) => [s.slug, s.id]));
+
+  let setsProcessed = 0;
+  let cardsReverseUpdated = 0;
+
+  const now = new Date();
+  const recordedAt = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  for (const [slug, tcgdexId] of Object.entries(SLUG_TO_TCGDEX)) {
+    const serieId = serieBySlug.get(slug);
+    if (!serieId) continue;
+
+    const reverseMap = await fetchTCGdexReverseForSet(tcgdexId);
+    if (reverseMap.size === 0) continue;
+
+    const dbCards = await prisma.card.findMany({
+      where: { serieId },
+      select: { id: true, number: true, rarity: true },
+    });
+
+    const updates: Array<{ id: string; priceReverse: number }> = [];
+    for (const dbCard of dbCards) {
+      // Special rarities don't have reverse variants — skip to avoid polluting
+      // the column with global prices that don't apply to the card's actual variant.
+      // Cast: Prisma's generated CardRarity is value-compatible with the one
+      // in @/types/card (same enum strings); TS sees them as distinct nominal types.
+      if (isSpecialCard(dbCard.rarity as unknown as Parameters<typeof isSpecialCard>[0])) continue;
+      const entry =
+        reverseMap.get(dbCard.number) ?? reverseMap.get(normalizeNumber(dbCard.number));
+      if (!entry) continue;
+      const priceReverse = entry.trendHolo ?? entry.lowHolo;
+      if (priceReverse == null) continue;
+      updates.push({ id: dbCard.id, priceReverse });
+    }
+
+    const CHUNK = 50;
+    for (let i = 0; i < updates.length; i += CHUNK) {
+      const chunk = updates.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map((u) =>
+          prisma.card.update({
+            where: { id: u.id },
+            data: { priceReverse: u.priceReverse },
+          })
+        )
+      );
+      await Promise.all(
+        chunk.map((u) =>
+          prisma.cardPriceHistory.upsert({
+            where: { cardId_recordedAt: { cardId: u.id, recordedAt } },
+            create: {
+              cardId: u.id,
+              price: u.priceReverse, // seed required `price` column if row doesn't exist yet
+              priceReverse: u.priceReverse,
+              source: "tcgdex-reverse",
+              recordedAt,
+            },
+            update: { priceReverse: u.priceReverse },
+          })
+        )
+      );
+    }
+
+    setsProcessed++;
+    cardsReverseUpdated += updates.length;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+
+  console.log(
+    `[scraper] 🔄 Reverse: ${setsProcessed} séries · ${cardsReverseUpdated} prix reverse`
+  );
+  return { setsProcessed, cardsReverseUpdated };
+}
+
+// ---------------------------------------------------------------------------
 // FR price pass — uses cardmarket-api-tcg (RapidAPI).
 //
 // Matching strategy: CM cards carry a `tcgid` field (e.g. "sv3pt5-9").
@@ -413,11 +502,13 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await updatePrices();
+    const revResult = await updateReversePrices();
     const frResult = await updateFrenchPrices();
     const histResult = await backfillCMHistory();
     return NextResponse.json({
       message: "Price update complete",
       ...result,
+      ...revResult,
       ...frResult,
       ...histResult,
     });
@@ -436,11 +527,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await updatePrices();
+    const revResult = await updateReversePrices();
     const frResult = await updateFrenchPrices();
     const histResult = await backfillCMHistory();
     return NextResponse.json({
       message: "Price update complete",
       ...result,
+      ...revResult,
       ...frResult,
       ...histResult,
     });

@@ -5,6 +5,8 @@ import { X, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
+import { isSpecialCard } from "@/lib/pokemon/card-variants";
+import type { CardRarity } from "@/types/card";
 
 // Recharts lazy-loaded — not needed until modal opens
 const PriceHistoryChart = dynamic(
@@ -33,7 +35,10 @@ interface PricePoint {
   date: string;
   price: number;
   priceFr?: number | null;
+  priceReverse?: number | null;
 }
+
+type ChartMode = "normal" | "reverse";
 
 interface CardDetail {
   id: string;
@@ -85,8 +90,16 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const [serie, setSerie] = useState<SerieDetail | null>(null);
   const [history, setHistory] = useState<PricePoint[]>([]);
   const [period, setPeriod] = useState<Period>("3m");
+  const [chartMode, setChartMode] = useState<ChartMode>("normal");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Cards with special rarities (EX, IR, SAR, HR, MUR, MAR, ACE, Promo)
+  // don't have a reverse variant — hide the toggle entirely.
+  const canHaveReverse =
+    card != null &&
+    !card.isSpecial &&
+    !isSpecialCard(card.rarity as CardRarity);
 
   const fetchData = useCallback(
     async (p: Period) => {
@@ -216,46 +229,87 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                   <Image src="/rarities/promo.png" alt="Promo" width={16} height={16} className="w-4 h-4 object-contain" />
                   Promo
                 </span>
-              ) : rarityLabel && (
-                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
-                  {rarityImage && (
-                    <Image src={rarityImage} alt="" width={16} height={16} className="w-4 h-4 object-contain"
-                      style={(rarity === "COMMON" || rarity === "UNCOMMON" || rarity === "RARE" || rarity === "NO_RARITY")
-                        ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
-                        : undefined}
-                    />
-                  )}
-                  {rarityLabel}
+              ) : rarityImage && (
+                <span
+                  className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] p-1"
+                  title={rarityLabel ?? undefined}
+                >
+                  <Image src={rarityImage} alt={rarityLabel ?? ""} width={16} height={16} className="w-4 h-4 object-contain"
+                    style={(rarity === "COMMON" || rarity === "UNCOMMON" || rarity === "RARE" || rarity === "NO_RARITY")
+                      ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+                      : undefined}
+                  />
                 </span>
               )}
 
               {/* Price display */}
               <div className="mt-3">
                 <p className="text-xl font-bold text-[var(--text-primary)]">
-                  {formatEur(card?.priceFr ?? card?.price)}
+                  {chartMode === "reverse"
+                    ? formatEur(card?.priceReverse)
+                    : formatEur(card?.priceFr ?? card?.price)}
                 </p>
-                {card?.priceFr != null && card.price != null && (
+                {chartMode === "reverse" ? (
+                  <p className="text-xs text-[var(--text-tertiary)]">
+                    🌍 Reverse · marché global
+                  </p>
+                ) : card?.priceFr != null && card.price != null ? (
                   <p className="text-xs text-[var(--text-tertiary)]">
                     Prix global : {formatEur(card.price)}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
 
           {/* ── Price history chart ───────────────────────────────────── */}
           <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
-              Historique du prix
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+                Historique du prix
+              </h3>
+              {canHaveReverse && (
+                <div className="inline-flex rounded-lg bg-[var(--bg-secondary)] p-0.5">
+                  <button
+                    onClick={() => setChartMode("normal")}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
+                      chartMode === "normal"
+                        ? "bg-[#E7BA76]/15 text-[#E7BA76]"
+                        : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    Normal
+                  </button>
+                  <button
+                    onClick={() => setChartMode("reverse")}
+                    disabled={card?.priceReverse == null}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                      chartMode === "reverse"
+                        ? "bg-[#E7BA76]/15 text-[#E7BA76]"
+                        : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    Reverse
+                  </button>
+                </div>
+              )}
+            </div>
             <PriceHistoryChart
               data={history}
               currentPrice={card?.price ?? null}
               currentPriceFr={card?.priceFr}
+              currentPriceReverse={card?.priceReverse}
+              mode={chartMode}
               period={period}
               onPeriodChange={handlePeriodChange}
               loading={loading}
             />
+            {chartMode === "reverse" && (
+              <p className="mt-2 text-[10px] text-[var(--text-tertiary)] italic leading-snug">
+                Le prix reverse provient du marché Cardmarket global (pas de prix FR
+                spécifique disponible). À titre indicatif.
+              </p>
+            )}
           </div>
 
           {/* ── Market prices table ───────────────────────────────────── */}
@@ -269,7 +323,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                   href={buildCardmarketUrl(card.name, serie.name)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#005B96]/10 hover:bg-[#005B96]/20 border border-[#005B96]/30 px-2.5 py-1 text-xs font-semibold text-[#3B9EFF] transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 px-2.5 py-1 text-xs font-semibold text-white transition-colors"
                 >
                   <ExternalLink className="w-3 h-3" />
                   Cardmarket FR
