@@ -88,12 +88,16 @@ async function main() {
   console.log(DRY_RUN ? "DRY RUN — aucune écriture\n" : "")
   console.log(`Quota journalier : ${DAILY_QUOTA} appels API\n`)
 
-  // Skip cards already backfilled (have history older than 2 days)
-  const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+  // Skip cards already backfilled.
+  // A card is considered backfilled if it has at least one price record older than
+  // 1 year — meaning we fetched its full CM history (not just the daily price update).
+  // The daily price update only adds recent records, so cards with only recent records
+  // still need a full backfill.
+  const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
   const cards = await prisma.card.findMany({
     where: {
       cardmarketId: { not: null },
-      priceHistory: { none: { recordedAt: { lte: twoDaysAgo } } },
+      priceHistory: { none: { recordedAt: { lte: oneYearAgo } } },
     },
     select: { id: true, cardmarketId: true },
     ...(LIMIT ? { take: LIMIT } : {}),
