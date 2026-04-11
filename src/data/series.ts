@@ -115,8 +115,8 @@ const XY_SERIES: SerieStatic[] = [
   { name: 'XY', nameEn: 'XY', slug: 'xy-base', abbreviation: 'XY01', blocSlug: 'xy', imageUrl: '/images/series/xy-base.png', releaseDate: '2014-02-05', order: 11 },
   { name: 'Générations', nameEn: 'Generations', slug: 'generations', abbreviation: 'XY-GEN', blocSlug: 'xy', imageUrl: '/images/series/generations.png', releaseDate: '2016-02-22', order: 12 },
   { name: 'Double Danger', nameEn: 'Double Crisis', slug: 'double-danger', abbreviation: 'XY-DD', blocSlug: 'xy', imageUrl: '/images/series/double-danger.png', releaseDate: '2015-03-11', order: 13 },
-  { name: 'Promos X&Y', nameEn: 'XY Promos', slug: 'promos-xy', abbreviation: 'XYP', blocSlug: 'xy', imageUrl: '/images/series/promos_xy.webp', releaseDate: null, order: 20 },
-  { name: 'Bienvenue à Kalos', nameEn: 'Welcome to Kalos', slug: 'bienvenue-a-kalos', abbreviation: 'XY0', blocSlug: 'xy', imageUrl: '/images/series/bienvenue-a-kalos.png', releaseDate: null, order: 21 },
+  { name: 'Bienvenue à Kalos', nameEn: 'Welcome to Kalos', slug: 'bienvenue-a-kalos', abbreviation: 'XY0', blocSlug: 'xy', imageUrl: '/images/series/bienvenue-a-kalos.png', releaseDate: null, order: 20 },
+  { name: 'Promos X&Y', nameEn: 'XY Promos', slug: 'promos-xy', abbreviation: 'XYP', blocSlug: 'xy', imageUrl: '/images/series/promos_xy.webp', releaseDate: null, order: 21 },
 ];
 
 // ==========================================================================
@@ -135,8 +135,8 @@ const NOIR_BLANC_SERIES: SerieStatic[] = [
   { name: 'Nobles Victoires', nameEn: 'Noble Victories', slug: 'nobles-victoires', abbreviation: 'NB03', blocSlug: 'noir-blanc', imageUrl: '/images/series/nobles-victoires.png', releaseDate: '2011-11-16', order: 8 },
   { name: 'Pouvoirs Émergents', nameEn: 'Emerging Powers', slug: 'pouvoirs-emergents', abbreviation: 'NB02', blocSlug: 'noir-blanc', imageUrl: '/images/series/pouvoirs-emergents.png', releaseDate: '2011-08-31', order: 9 },
   { name: 'Noir & Blanc', nameEn: 'Black & White', slug: 'noir-et-blanc', abbreviation: 'NB01', blocSlug: 'noir-blanc', imageUrl: '/images/series/noir-et-blanc.png', releaseDate: '2011-03-25', order: 10 },
-  { name: 'Promos Noir et Blanc', nameEn: 'Black & White Promos', slug: 'promos-noir-et-blanc', abbreviation: 'BWP', blocSlug: 'noir-blanc', imageUrl: '/images/series/promos_noir_et_blanc.webp', releaseDate: null, order: 20 },
-  { name: 'Coffre des Dragons', nameEn: 'Dragon Vault', slug: 'coffre-des-dragons', abbreviation: 'DV1', blocSlug: 'noir-blanc', imageUrl: '/images/series/coffre-des-dragons.png', releaseDate: null, order: 21 },
+  { name: 'Promos Noir et Blanc', nameEn: 'Black & White Promos', slug: 'promos-noir-et-blanc', abbreviation: 'BWP', blocSlug: 'noir-blanc', imageUrl: '/images/series/promos_noir_et_blanc.webp', releaseDate: null, order: 21 },
+  { name: 'Coffre des Dragons', nameEn: 'Dragon Vault', slug: 'coffre-des-dragons', abbreviation: 'DV1', blocSlug: 'noir-blanc', imageUrl: '/images/series/coffre-des-dragons.png', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
