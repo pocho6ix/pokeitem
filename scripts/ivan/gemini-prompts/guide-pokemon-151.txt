@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Pokémon 151 : Guide collection et investissement EV3.5"
+
+A premium collection display of Pokémon TCG sealed products from Pokémon 151 arranged elegantly on a luxurious dark marble surface. Include an Ultra Premium Collection box, Elite Trainer Boxes, booster packs, and Pokéball tins. Soft golden studio lighting creating dramatic shadows and highlights. Nostalgic Kanto-themed color palette with red and blue accents. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-pokemon-151.jpg
