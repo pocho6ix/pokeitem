@@ -156,10 +156,10 @@ export const CARD_CONDITION_LABELS: Record<CardCondition, string> = {
   [CardCondition.MINT]: 'Mint',
   [CardCondition.NEAR_MINT]: 'Near Mint',
   [CardCondition.EXCELLENT]: 'Excellent',
-  [CardCondition.GOOD]: 'Bon État',
-  [CardCondition.LIGHT_PLAYED]: 'Légèrement Jouée',
-  [CardCondition.PLAYED]: 'Jouée',
-  [CardCondition.POOR]: 'Mauvais État',
+  [CardCondition.GOOD]: 'Good',
+  [CardCondition.LIGHT_PLAYED]: 'Light Played',
+  [CardCondition.PLAYED]: 'Played',
+  [CardCondition.POOR]: 'Poor',
   [CardCondition.GRADED]: 'Gradée',
 };
 

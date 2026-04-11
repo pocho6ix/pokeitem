@@ -198,12 +198,16 @@ function OptionsModal({
 
 // ─── Sub-component: AddToCollectionModal ─────────────────────────────────────
 
-const CONDITION_PILLS: { value: CardCondition; label: string }[] = [
-  { value: CardCondition.POOR,         label: "Mauvais état" },
-  { value: CardCondition.LIGHT_PLAYED, label: "Played" },
-  { value: CardCondition.GOOD,         label: "Bon état" },
-  { value: CardCondition.NEAR_MINT,    label: "Near Mint" },
-  { value: CardCondition.GRADED,       label: "Gradée ⭐" },
+// 7 standard conditions (Poor → Mint) displayed as image badges
+// Order: worst → best (Cardmarket convention)
+const CONDITION_BADGES: { value: CardCondition; label: string; badge: string; code: string }[] = [
+  { value: CardCondition.POOR,         label: "Poor",        code: "PO", badge: "poor.png"         },
+  { value: CardCondition.PLAYED,       label: "Played",      code: "PL", badge: "played.png"       },
+  { value: CardCondition.LIGHT_PLAYED, label: "Light Played",code: "LP", badge: "light_played.png" },
+  { value: CardCondition.GOOD,         label: "Good",        code: "GD", badge: "good.png"         },
+  { value: CardCondition.EXCELLENT,    label: "Excellent",   code: "EX", badge: "excellent.png"    },
+  { value: CardCondition.NEAR_MINT,    label: "Near Mint",   code: "NM", badge: "near_mint.png"    },
+  { value: CardCondition.MINT,         label: "Mint",        code: "MT", badge: "mint.png"         },
 ];
 
 const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
@@ -240,13 +244,14 @@ function AddToCollectionModal({
   onClose: () => void;
   isPending: boolean;
 }) {
-  const [quantity,         setQuantity]         = useState(1);
-  const [condition,        setCondition]        = useState<CardCondition>(CardCondition.NEAR_MINT);
-  const [language,         setLanguage]         = useState("FR");
-  const [selectedVersions, setSelectedVersions] = useState<Set<CardVersion>>(new Set([availableVersions[0]]));
-  const [priceMode,        setPriceMode]        = useState<PriceMode>("packed");
-  const [manualPrice,      setManualPrice]      = useState("");
-  const [gradeValue,       setGradeValue]       = useState<number | null>(null);
+  const [quantity,           setQuantity]           = useState(1);
+  const [condition,          setCondition]          = useState<CardCondition>(CardCondition.NEAR_MINT);
+  const [language,           setLanguage]           = useState("FR");
+  const [selectedVersions,   setSelectedVersions]   = useState<Set<CardVersion>>(new Set([availableVersions[0]]));
+  const [priceMode,          setPriceMode]          = useState<PriceMode>("packed");
+  const [manualPrice,        setManualPrice]        = useState("");
+  const [gradeValue,         setGradeValue]         = useState<number | null>(null);
+  const [showConditionInfo,  setShowConditionInfo]  = useState(false);
 
   function toggleVersion(v: CardVersion) {
     setSelectedVersions((prev) => {
@@ -339,22 +344,83 @@ function AddToCollectionModal({
             </div>
           </div>
 
-          {/* Condition pills */}
+          {/* Condition badge selector */}
           <div className="mb-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
-            <div className="grid grid-cols-2 gap-2">
-              {CONDITION_PILLS.map((c) => (
-                <button key={c.value} onClick={() => { setCondition(c.value); if (c.value !== CardCondition.GRADED) setGradeValue(null); }}
+            {/* Section header + info toggle */}
+            <div className="mb-2 flex items-center gap-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
+              <button
+                type="button"
+                onClick={() => setShowConditionInfo((v) => !v)}
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded-full border text-[9px] font-bold transition-colors",
+                  showConditionInfo
+                    ? "border-[#E7BA76] bg-[#E7BA76] text-black"
+                    : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#E7BA76]/60"
+                )}
+                aria-label="Guide des états de carte"
+              >i</button>
+            </div>
+
+            {/* Card_Condition_French.svg tooltip */}
+            {showConditionInfo && (
+              <div className="mb-3 overflow-hidden rounded-2xl border border-[var(--border-default)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/badges/Card_Condition_French.svg" alt="Guide des états de carte" className="w-full" />
+              </div>
+            )}
+
+            {/* Row 1: PO · PL · LP · GD (4 badges) */}
+            <div className="grid grid-cols-4 gap-1.5 mb-1.5">
+              {CONDITION_BADGES.slice(0, 4).map((c) => (
+                <button key={c.value}
+                  onClick={() => { setCondition(c.value); setGradeValue(null); }}
                   className={cn(
-                    "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                    "flex flex-col items-center rounded-xl border py-2 px-0.5 transition-all",
                     condition === c.value
-                      ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
-                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
+                      ? "border-[#E7BA76] ring-1 ring-[#E7BA76] bg-[#E7BA76]/10"
+                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] hover:border-[#E7BA76]/50"
                   )}>
-                  {c.label}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/images/badges/${c.badge}`} alt={c.label} className="h-10 w-auto object-contain" />
+                  <span className={cn("mt-1 text-[9px] font-semibold leading-none", condition === c.value ? "text-[#E7BA76]" : "text-[var(--text-secondary)]")}>
+                    {c.label}
+                  </span>
                 </button>
               ))}
             </div>
+
+            {/* Row 2: EX · NM · MT (3 badges, centred with padding) */}
+            <div className="grid grid-cols-3 gap-1.5 mb-2 px-[12.5%]">
+              {CONDITION_BADGES.slice(4).map((c) => (
+                <button key={c.value}
+                  onClick={() => { setCondition(c.value); setGradeValue(null); }}
+                  className={cn(
+                    "flex flex-col items-center rounded-xl border py-2 px-0.5 transition-all",
+                    condition === c.value
+                      ? "border-[#E7BA76] ring-1 ring-[#E7BA76] bg-[#E7BA76]/10"
+                      : "border-[var(--border-default)] bg-[var(--bg-secondary)] hover:border-[#E7BA76]/50"
+                  )}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/images/badges/${c.badge}`} alt={c.label} className="h-10 w-auto object-contain" />
+                  <span className={cn("mt-1 text-[9px] font-semibold leading-none", condition === c.value ? "text-[#E7BA76]" : "text-[var(--text-secondary)]")}>
+                    {c.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Graded — separate button */}
+            <button onClick={() => setCondition(CardCondition.GRADED)}
+              className={cn(
+                "w-full rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                condition === CardCondition.GRADED
+                  ? "border-amber-400 bg-amber-400/10 text-amber-400 shadow-sm ring-1 ring-amber-400"
+                  : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-amber-400/50"
+              )}>
+              Gradée ⭐
+            </button>
+
             {/* Grade value chips — shown only when GRADED is selected */}
             {condition === CardCondition.GRADED && (
               <div className="mt-2">
