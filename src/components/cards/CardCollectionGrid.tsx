@@ -370,16 +370,16 @@ function AddToCollectionModal({
               </div>
             )}
 
-            {/* Single horizontal row — 8 round badges, no labels */}
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-2 scrollbar-none">
+            {/* Single horizontal row — 8 round badges, no labels, space-between */}
+            <div className="flex justify-between items-center mb-2">
               {CONDITION_BADGES.map((c) => (
                 <button
                   key={c.value}
                   onClick={() => { setCondition(c.value); setGradeValue(null); }}
-                  className="flex-shrink-0 rounded-full transition-all focus:outline-none"
+                  className="rounded-full transition-all focus:outline-none"
                   style={{
                     opacity: condition === c.value ? 1 : 0.45,
-                    outline: condition === c.value ? '2.5px solid #E7BA76' : 'none',
+                    outline: condition === c.value ? '2px solid #E7BA76' : 'none',
                     outlineOffset: 2,
                   }}
                   aria-label={c.label}
@@ -389,7 +389,7 @@ function AddToCollectionModal({
                   <img
                     src={`/images/badges/${c.badge}`}
                     alt={c.label}
-                    className="h-14 w-14 rounded-full object-cover"
+                    className="h-9 w-9 rounded-full object-cover"
                   />
                 </button>
               ))}
