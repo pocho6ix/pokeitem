@@ -206,8 +206,8 @@ const CONDITION_BADGES: { value: CardCondition; label: string; badge: string }[]
   { value: CardCondition.LIGHT_PLAYED, label: "Light Played", badge: "badge_light_played.png" },
   { value: CardCondition.GOOD,         label: "Good",         badge: "badge_good.png"         },
   { value: CardCondition.EXCELLENT,    label: "Excellent",    badge: "badge_excellent.png"    },
-  { value: CardCondition.MINT,         label: "Mint",         badge: "badge_mint.png"         },
   { value: CardCondition.NEAR_MINT,    label: "Near Mint",    badge: "badge_near_mint.png"    },
+  { value: CardCondition.MINT,         label: "Mint",         badge: "badge_mint.png"         },
   { value: CardCondition.GRADED,       label: "Gradée",       badge: "badge_graded.png"       },
 ];
 
