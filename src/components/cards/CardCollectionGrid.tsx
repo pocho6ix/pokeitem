@@ -977,7 +977,8 @@ export function CardCollectionGrid({
                   {card.imageUrl ? (
                     <Image src={card.imageUrl} alt={`${card.name} — ${card.number}`} fill
                       sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 12.5vw"
-                      className="object-cover" loading="lazy" />
+                      className={cn("object-cover", showReverse && !card.isSpecial && "holo-img")}
+                      loading="lazy" />
                   ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center">
                       <span className="text-xs font-bold text-[var(--text-secondary)]">{card.number}</span>
