@@ -83,13 +83,15 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
   const releaseDateBySlug = new Map(
     SERIES.map((s) => [s.slug, s.releaseDate ? new Date(s.releaseDate).getTime() : 0])
   );
+  const orderBySlug = new Map(SERIES.map((s) => [s.slug, s.order ?? 999]));
 
   return BLOCS.map((bloc) => {
     const blocSeries = seriesInDb.filter((s) => s.bloc.slug === bloc.slug);
     const sorted = [...blocSeries].sort((a, b) => {
       const da = releaseDateBySlug.get(a.slug) ?? 0;
       const db = releaseDateBySlug.get(b.slug) ?? 0;
-      return db - da;
+      if (db !== da) return db - da;
+      return (orderBySlug.get(a.slug) ?? 999) - (orderBySlug.get(b.slug) ?? 999);
     });
 
     // Only keep series where the user owns at least one card
