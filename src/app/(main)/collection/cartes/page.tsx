@@ -58,11 +58,12 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
 
   const countBySlug = new Map(seriesInDb.map((s) => [s.slug, s.cardCount ?? 0]));
 
-  // Build releaseDate and order lookups from static data (most accurate source)
+  // Build lookups from static data (source of truth for logos, dates, order)
   const releaseDateBySlug = new Map(
     SERIES.map((s) => [s.slug, s.releaseDate ? new Date(s.releaseDate).getTime() : 0])
   );
-  const orderBySlug = new Map(SERIES.map((s) => [s.slug, s.order ?? 999]));
+  const orderBySlug    = new Map(SERIES.map((s) => [s.slug, s.order ?? 999]));
+  const imageUrlBySlug = new Map(SERIES.map((s) => [s.slug, s.imageUrl]));
 
   return BLOCS.map((bloc) => {
     const blocSeries = seriesInDb.filter((s) => s.bloc.slug === bloc.slug);
@@ -83,7 +84,7 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
         serieSlug:         serie.slug,
         serieName:         serie.name,
         serieAbbreviation: serie.abbreviation ?? null,
-        serieImageUrl:     serie.imageUrl ?? null,
+        serieImageUrl:     imageUrlBySlug.get(serie.slug) ?? serie.imageUrl ?? null,
         totalCards:  countBySlug.get(serie.slug) ?? 0,
         ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
         marketValue: Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
