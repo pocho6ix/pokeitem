@@ -42,11 +42,25 @@ export interface BlocGroup {
 
 // ─── Version badge ────────────────────────────────────────────────────────────
 
-const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
-  [CardVersion.NORMAL]:             { label: 'C', cls: 'bg-blue-600' },
-  [CardVersion.REVERSE]:            { label: 'R', cls: 'bg-violet-600' },
-  [CardVersion.REVERSE_POKEBALL]:   { label: 'P', cls: 'bg-purple-600' },
-  [CardVersion.REVERSE_MASTERBALL]: { label: 'M', cls: 'bg-amber-500' },
+const VERSION_BADGE_IMG: Record<CardVersion, string> = {
+  [CardVersion.NORMAL]:             '/badge_normale.png',
+  [CardVersion.REVERSE]:            '/badge_reverse.png',
+  [CardVersion.REVERSE_POKEBALL]:   '/badge_pokeball.png',
+  [CardVersion.REVERSE_MASTERBALL]: '/badge_masterball.png',
+}
+
+function VersionCountBadge({ version, quantity }: { version: CardVersion; quantity: number }) {
+  return (
+    <div className="flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 pr-1 py-0.5">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={VERSION_BADGE_IMG[version]}
+        alt=""
+        className="h-4 w-4 rounded-full object-cover shrink-0"
+      />
+      <span className="text-[8px] font-bold leading-none text-white">×{quantity}</span>
+    </div>
+  )
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -188,7 +202,6 @@ export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, t
                   </div>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
                     {serie.cards.map((card) => {
-                      const badge = VERSION_BADGE[card.version]
                       const isSelected = selectedIds.has(card.id)
                       return (
                         <button
@@ -225,10 +238,14 @@ export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, t
                             <div className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                               {card.cardNumber}
                             </div>
-                            <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                              <span className={`rounded px-1 py-px text-[8px] font-bold leading-none text-white shadow-sm ${card.cardIsSpecial ? 'bg-[#E7BA76] text-black' : badge.cls}`}>
-                                {card.cardIsSpecial ? '' : `${badge.label}`}×{card.quantity}
-                              </span>
+                            <div className="absolute bottom-1 right-1">
+                              {card.cardIsSpecial ? (
+                                <span className="rounded px-1 py-px text-[8px] font-bold leading-none bg-[#E7BA76] text-black shadow-sm">
+                                  ×{card.quantity}
+                                </span>
+                              ) : (
+                                <VersionCountBadge version={card.version} quantity={card.quantity} />
+                              )}
                             </div>
                           </div>
                           <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.cardName}</p>

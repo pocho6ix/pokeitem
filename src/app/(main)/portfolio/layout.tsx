@@ -41,26 +41,6 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-      {/* Navigation tiles — always on top */}
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
-        {TILES.map((tile, i) => (
-          <Link
-            key={tile.href}
-            href={tile.href}
-            className={`group relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-gradient-to-br ${tile.accent} bg-[var(--bg-card)] p-4 transition-all hover:border-[var(--border-focus)] hover:-translate-y-0.5 hover:shadow-lg${i === 2 ? " col-span-2 md:col-span-1" : ""}`}
-          >
-            <p className="text-sm font-bold text-[var(--text-primary)] leading-tight">{tile.label}</p>
-            <p className="mt-0.5 text-[10px] text-[var(--text-secondary)] leading-tight hidden sm:block">{tile.description}</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={tile.image}
-              alt=""
-              className="absolute -bottom-3 -right-2 h-16 w-16 object-contain opacity-50 transition-all duration-300 group-hover:opacity-70 group-hover:scale-105 drop-shadow-lg"
-            />
-          </Link>
-        ))}
-      </div>
-
       {/* Beta offer for new non-subscribed users */}
       <ClasseurBetaOffer />
 
@@ -69,11 +49,32 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
         <PortfolioMiniStats />
       </Suspense>
 
-      {/* Evolution chart */}
-      <PortfolioEvolutionChart />
+      {/* Navigation tiles */}
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+        {TILES.map((tile) => (
+          <Link
+            key={tile.href}
+            href={tile.href}
+            className={`group relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-gradient-to-br ${tile.accent} bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--border-focus)] hover:-translate-y-0.5 hover:shadow-lg`}
+            style={{ aspectRatio: '2 / 1' }}
+          >
+            <p className="text-sm font-bold text-[var(--text-primary)] leading-tight">{tile.label}</p>
+            <p className="mt-0.5 text-[10px] text-[var(--text-secondary)] leading-tight hidden sm:block">{tile.description}</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tile.image}
+              alt=""
+              className="absolute bottom-0 right-0 h-20 w-20 object-contain object-bottom opacity-50 transition-all duration-300 group-hover:opacity-70 group-hover:scale-105 drop-shadow-lg"
+            />
+          </Link>
+        ))}
+      </div>
 
       {/* Page content */}
       {children}
+
+      {/* Evolution chart */}
+      <PortfolioEvolutionChart />
     </div>
   );
 }
