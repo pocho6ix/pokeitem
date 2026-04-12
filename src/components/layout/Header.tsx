@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ScanLine, BookOpen, User, LogOut } from "lucide-react";
@@ -109,23 +109,13 @@ function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { data: session } = useSession();
   const userId    = (session?.user as { id?: string } | undefined)?.id ?? null;
   const hasAvatar = (session?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
   const avatarSrc = session ? getAvatarSrc(userId, hasAvatar) : null;
 
-  // Track scroll to toggle header transparency on the homepage
-  useEffect(() => {
-    if (pathname !== "/") return;
-    setScrolled(window.scrollY > 80);
-    const onScroll = () => setScrolled(window.scrollY > 80);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [pathname]);
-
-  // Transparent only on homepage before the user scrolls past the hero
-  const isTransparent = pathname === "/" && !scrolled;
+  // Header always solid on all pages
+  const isTransparent = false;
 
   return (
     <>

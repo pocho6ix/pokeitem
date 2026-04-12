@@ -87,12 +87,9 @@ export default async function HomePage() {
       <Header />
 
       {/* ── Hero — full-width banner at natural aspect ratio, all viewports ── */}
-      <div className="-mt-14 md:-mt-16">
-        {/* Spacer = header height → tiny dark-bg gap above the image */}
-        <div className="h-14 md:h-16" />
-
+      <div>
         {/* Image at natural ratio → all 3 Pokémon always visible */}
-        <div className="relative overflow-hidden bg-[var(--bg-primary)]">
+        <div className="relative overflow-hidden">
           <Image
             src="/images/hero-pokemon.png"
             alt=""
@@ -103,11 +100,11 @@ export default async function HomePage() {
             className="w-full h-auto block"
           />
           {/* Bottom fade into page bg */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-primary)]/10 via-transparent to-[var(--bg-primary)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07111f]" />
         </div>
 
-        {/* Text content — below the banner on a solid dark background */}
-        <div className="bg-[var(--bg-primary)] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+        {/* Text content — below the banner */}
+        <div className="px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
 
             <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl">
@@ -136,7 +133,7 @@ export default async function HomePage() {
 
       {/* Referral + Quests blocks — authenticated users only */}
       {userId && (
-        <section className={`bg-[var(--bg-primary)] px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? 'pb-4' : 'pb-28'}`}>
+        <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? 'pb-4' : 'pb-28'}`}>
           <div className="mx-auto max-w-xl space-y-4">
             <ReferralBlock />
             <QuestsBlock />
@@ -147,7 +144,7 @@ export default async function HomePage() {
 
       {/* Top 10 most valuable cards — authenticated users only */}
       {topCards.length > 0 && (
-        <section className="bg-[var(--bg-primary)] px-4 pt-3 pb-28 sm:px-6 lg:px-8">
+        <section className="px-4 pt-3 pb-28 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-base font-semibold text-[var(--text-primary)]">
