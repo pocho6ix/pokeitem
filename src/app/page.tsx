@@ -6,7 +6,6 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
 import Link from "next/link";
-import Image from "next/image";
 import { HomeCollectionWidget } from "@/components/dashboard/HomeCollectionWidget";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
@@ -86,24 +85,8 @@ export default async function HomePage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      {/* ── Hero — full-width banner at natural aspect ratio, all viewports ── */}
+      {/* ── Hero ── */}
       <div>
-        {/* Image at natural ratio → all 3 Pokémon always visible */}
-        <div className="relative overflow-hidden">
-          <Image
-            src="/images/hero-pokemon.png"
-            alt=""
-            width={869}
-            height={287}
-            priority
-            sizes="100vw"
-            className="w-full h-auto block"
-          />
-          {/* Bottom fade into page bg */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07111f]" />
-        </div>
-
-        {/* Text content — below the banner */}
         <div className="px-4 pb-10 pt-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-xl">
 
