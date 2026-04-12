@@ -23,10 +23,14 @@ import * as dotenv from "dotenv"
 dotenv.config({ path: ".env" })
 
 const prisma = new PrismaClient()
-const DRY_RUN = process.argv.includes("--dry-run")
-const FORCE   = process.argv.includes("--force")
+const DRY_RUN   = process.argv.includes("--dry-run")
+const FORCE     = process.argv.includes("--force")
 const LIMIT_ARG = process.argv.find((a) => a.startsWith("--limit="))
-const LIMIT  = LIMIT_ARG ? parseInt(LIMIT_ARG.split("=")[1]) : undefined
+const LIMIT     = LIMIT_ARG ? parseInt(LIMIT_ARG.split("=")[1]) : undefined
+const QUOTA_ARG = process.argv.find((a) => a.startsWith("--quota="))
+const DAILY_QUOTA = QUOTA_ARG ? parseInt(QUOTA_ARG.split("=")[1]) : 14_000
+
+let apiCallCount = 0
 
 const HOST = "cardmarket-api-tcg.p.rapidapi.com"
 const KEY  = process.env.CARDMARKET_API_KEY ?? ""
@@ -72,6 +76,7 @@ interface CardAPIData {
 }
 
 async function fetchCardDetail(cmId: string): Promise<CardAPIData | null> {
+  if (apiCallCount >= DAILY_QUOTA) return null
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 10_000)
   try {
@@ -80,6 +85,7 @@ async function fetchCardDetail(cmId: string): Promise<CardAPIData | null> {
       signal: controller.signal,
     })
     clearTimeout(timer)
+    apiCallCount++
     if (!res.ok) return null
     const body = await res.json() as { data?: CardAPIData }
     return body.data ?? null
@@ -127,7 +133,8 @@ async function main() {
     orderBy: { cardmarketId: "asc" },
   })
 
-  console.log(`📋 ${cards.length} cartes à traiter${LIMIT ? ` (limite: ${LIMIT})` : ""}\n`)
+  console.log(`📋 ${cards.length} cartes à traiter${LIMIT ? ` (limite: ${LIMIT})` : ""}`)
+  console.log(`🔢 Quota journalier : ${DAILY_QUOTA} appels\n`)
 
   if (cards.length === 0) {
     console.log("✅ Rien à faire.")
@@ -172,13 +179,20 @@ async function main() {
     done++
     if (done % CHUNK === 0) {
       const pct = ((done / cards.length) * 100).toFixed(1)
-      process.stdout.write(`  ${pct}% — ${done}/${cards.length} fetched, ${apiErrors} erreurs\n`)
+      process.stdout.write(`  ${pct}% — ${done}/${cards.length} fetched · ${apiCallCount} appels · ${apiErrors} erreurs\n`)
+    }
+
+    // Stop if quota reached
+    if (apiCallCount >= DAILY_QUOTA) {
+      process.stdout.write(`\n⚠️  Quota journalier atteint (${apiCallCount}/${DAILY_QUOTA})\n`)
+      process.stdout.write(`   Relance demain : npx tsx scripts/backfill-cm-urls.ts\n`)
+      break
     }
 
     await sleep(DELAY)
   }
 
-  process.stdout.write(`\n✅ Fetch terminé: ${collected.length} succès, ${apiErrors} erreurs\n\n`)
+  process.stdout.write(`\n✅ Fetch terminé: ${collected.length} succès, ${apiErrors} erreurs, ${apiCallCount} appels\n\n`)
 
   // Step 3: Compute V{n} ranks
   // Group by (epCode, cardSlug), sort by cardNum, assign 1-based rank
