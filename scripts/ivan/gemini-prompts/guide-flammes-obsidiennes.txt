@@ -1,0 +1,9 @@
+PROMPT GEMINI — Image de couverture pour "Flammes Obsidiennes : Guide Complet de la Série EV03"
+
+A premium flat-lay photography of Pokémon TCG sealed products from the 'Obsidian Flames' series arranged elegantly on a dark obsidian stone surface. Featured items include a booster box, an Elite Trainer Box, collector tins, and scattered booster packs. The composition uses dramatic lighting with fiery orange and red accent lights reflecting the volcanic theme. Subtle smoke effects in the background. No text overlay. Photorealistic style, aspect ratio 1200x630.
+
+Format: 1200x630
+Style: Photorealistic, editorial
+Pas de texte sur l'image
+
+Sauvegarder dans : public/images/blog/guide-flammes-obsidiennes.jpg
