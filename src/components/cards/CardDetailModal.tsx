@@ -240,17 +240,41 @@ export function CardDetailModal({ cardId, onClose }: Props) {
 
               {/* Price display */}
               <div className="mt-3">
-                <p className="text-xl font-bold text-[var(--text-primary)]">
-                  {chartMode === "reverse"
-                    ? formatEur(card?.priceReverse)
-                    : formatEur(card?.priceFr ?? card?.price)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold text-[var(--text-primary)]">
+                    {chartMode === "reverse"
+                      ? formatEur(card?.priceReverse)
+                      : formatEur(card?.priceFr ?? card?.price)}
+                  </p>
+
+                  {/* Reverse toggle badge */}
+                  {canHaveReverse && (
+                    <button
+                      onClick={() => setChartMode(m => m === "reverse" ? "normal" : "reverse")}
+                      disabled={card?.priceReverse == null}
+                      title={chartMode === "reverse" ? "Afficher prix normal" : "Afficher prix Reverse"}
+                      className={`relative shrink-0 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                        chartMode === "reverse"
+                          ? "ring-2 ring-[#E7BA76] ring-offset-1 ring-offset-[var(--bg-primary)]"
+                          : "opacity-50 hover:opacity-80"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/reverse-badge.png"
+                        alt="Reverse"
+                        className="w-7 h-7 object-contain rounded-full"
+                      />
+                    </button>
+                  )}
+                </div>
+
                 {chartMode === "reverse" ? (
-                  <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
-                    <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse · marché global
+                  <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1 mt-0.5">
+                    Reverse · marché global
                   </p>
                 ) : card?.priceFr != null && card.price != null ? (
-                  <p className="text-xs text-[var(--text-tertiary)]">
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
                     Prix global : {formatEur(card.price)}
                   </p>
                 ) : null}
