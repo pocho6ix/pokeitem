@@ -348,6 +348,7 @@ model Card {
   imageUrl   String?
   tcgdexId       String?
   cardmarketId   String?
+  cardmarketUrl  String?   // e.g. "Mega-Evolution/Bulbasaur-V2-MEG133"
   price          Float?
   priceReverse   Float?
   priceFr        Float?

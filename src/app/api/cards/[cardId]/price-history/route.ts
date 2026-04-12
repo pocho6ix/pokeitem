@@ -53,14 +53,16 @@ export async function GET(
       return NextResponse.json({ error: "Card not found" }, { status: 404 });
     }
 
-    // Fetch cardmarketId separately to avoid breaking if client is stale
+    // Fetch cardmarketId + cardmarketUrl
     let cardmarketId: string | null = null;
+    let cardmarketUrl: string | null = null;
     try {
       const extra = await (prisma.card as any).findUnique({
         where: { id: cardId },
-        select: { cardmarketId: true },
+        select: { cardmarketId: true, cardmarketUrl: true },
       });
-      cardmarketId = extra?.cardmarketId ?? null;
+      cardmarketId  = extra?.cardmarketId  ?? null;
+      cardmarketUrl = extra?.cardmarketUrl ?? null;
     } catch {
       // Field not available in this Prisma client version — ignore
     }
@@ -116,6 +118,7 @@ export async function GET(
         isSpecial: card.isSpecial,
         priceUpdatedAt: card.priceUpdatedAt,
         cardmarketId,
+        cardmarketUrl,
       },
       serie: card.serie,
       history: points,
