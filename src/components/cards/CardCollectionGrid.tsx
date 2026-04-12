@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useTransition, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, useTransition, lazy, Suspense, useEffect } from "react";
 import Image from "next/image";
 import {
   CardRarity,
@@ -553,6 +553,12 @@ export function CardCollectionGrid({
   const [ownedMap, setOwnedMap] = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
+  // ── Hydration guard — conditional buttons only render after client mount ──
+  // Prevents server/client mismatch when isAuthenticated or availableVersions
+  // differ between SSR and client hydration (e.g. static pre-render vs. runtime).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // ── Derived data ──────────────────────────────────────────────────────────
 
   const rarityCounts = useMemo(() => {
@@ -852,7 +858,7 @@ export function CardCollectionGrid({
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
           Trier
         </button>
-        {availableVersions.includes(CardVersion.REVERSE) && (
+        {mounted && availableVersions.includes(CardVersion.REVERSE) && (
           <button
             onClick={() => setShowReverse((v) => !v)}
             className={cn(
@@ -865,7 +871,7 @@ export function CardCollectionGrid({
             <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse
           </button>
         )}
-        {isAuthenticated && (
+        {mounted && isAuthenticated && (
           <button onClick={() => setActiveModal("options")}
             className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
