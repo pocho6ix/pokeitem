@@ -4,5 +4,13 @@
       "path": "/api/scraper",
       "schedule": "0 */6 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "app.pokeitem.fr" }],
+      "destination": "https://www.pokeitem.fr/$1",
+      "permanent": true
+    }
   ]
 }

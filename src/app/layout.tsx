@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     "pokeitem",
     "portfolio pokémon",
   ],
+  metadataBase: new URL("https://www.pokeitem.fr"),
+  alternates: {
+    canonical: "https://www.pokeitem.fr",
+  },
   authors: [{ name: "PokeItem" }],
   openGraph: {
     type: "website",
