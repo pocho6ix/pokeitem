@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CollectionHeroCard } from "@/components/dashboard/CollectionHeroCard";
 import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
+import { HideValuesProvider } from "@/components/ui/HideValuesContext";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
@@ -88,7 +89,7 @@ export default async function HomePage() {
 
       {userId ? (
         /* ── Authenticated: dashboard-style hero ── */
-        <>
+        <HideValuesProvider>
           <div className="px-4 pb-6 pt-6 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-xl">
               <HeroSearchBar />
@@ -131,7 +132,7 @@ export default async function HomePage() {
               <TelegramBannerButton />
             </div>
           </section>
-        </>
+        </HideValuesProvider>
       ) : (
         /* ── Guest: original hero with Pokémon image + CTA ── */
         <div>

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Plus } from "lucide-react";
-
-const LS_KEY = "pokeitem_hide_value";
+import { useHideValues } from "@/components/ui/HideValuesContext";
 
 function fmt(n: number, decimals = 2) {
   return n.toLocaleString("fr-FR", {
@@ -159,22 +158,9 @@ interface ChartPoint {
 
 export function CollectionHeroCard({ total }: Props) {
   const router = useRouter();
-  const [hidden, setHidden] = useState(false);
+  const { hidden, toggle: toggleHidden } = useHideValues();
   const [chartValues, setChartValues] = useState<number[]>([]);
   const [change24h, setChange24h] = useState<number | null>(null);
-
-  // Restore visibility preference
-  useEffect(() => {
-    if (localStorage.getItem(LS_KEY) === "true") setHidden(true);
-  }, []);
-
-  const toggleHidden = useCallback(() => {
-    setHidden((h) => {
-      const next = !h;
-      localStorage.setItem(LS_KEY, String(next));
-      return next;
-    });
-  }, []);
 
   // Fetch 7-day chart data for sparkline + 24h change
   useEffect(() => {
