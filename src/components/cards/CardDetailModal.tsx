@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, ExternalLink } from "lucide-react";
+import { X } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
@@ -76,11 +76,6 @@ function formatEur(value: number | null | undefined): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-}
-
-function buildCardmarketUrl(cardName: string, serieName: string): string {
-  const q = encodeURIComponent(`${cardName} ${serieName}`);
-  return `https://www.cardmarket.com/fr/Pokemon/Products/Singles?searchString=${q}&language=5`;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -333,15 +328,18 @@ export function CardDetailModal({ cardId, onClose }: Props) {
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                 Prix du marché
               </h3>
-              {card && serie && (
+              {card?.cardmarketId && (
                 <a
-                  href={buildCardmarketUrl(card.name, serie.name)}
+                  href={`https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 px-2.5 py-1 text-xs font-semibold text-white transition-colors"
+                  className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
+                  title="Voir sur Cardmarket"
                 >
-                  <ExternalLink className="w-3 h-3" />
-                  Cardmarket FR
+                  <span className="bg-white px-2 py-1 flex items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/cardmarket.png" alt="Cardmarket" className="h-4 w-auto object-contain" />
+                  </span>
                 </a>
               )}
             </div>
