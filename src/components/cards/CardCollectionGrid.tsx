@@ -390,7 +390,7 @@ function AddToCollectionModal({
                   <img
                     src={`/images/badges/${c.badge}`}
                     alt={c.label}
-                    className="h-9 w-9 rounded-full object-cover"
+                    className="h-7 w-7 rounded-full object-cover"
                   />
                 </button>
               ))}
