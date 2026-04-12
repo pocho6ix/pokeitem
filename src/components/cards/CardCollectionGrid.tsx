@@ -496,20 +496,69 @@ function AddToCollectionModal({
 
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
-const VERSION_BADGE: Record<CardVersion, { label: string; cls: string }> = {
-  [CardVersion.NORMAL]:             { label: "C", cls: "bg-[#E7BA76] text-black" },
-  [CardVersion.REVERSE]:            { label: "R", cls: "bg-violet-600 text-white" },
-  [CardVersion.REVERSE_POKEBALL]:   { label: "P", cls: "bg-purple-600 text-white" },
-  [CardVersion.REVERSE_MASTERBALL]: { label: "M", cls: "bg-amber-500 text-white" },
+const NORMAL_BADGE: Record<string, { label: string; cls: string }> = {
+  NORMAL: { label: "C",  cls: "bg-[#E7BA76] text-black" },
+  HOLO:   { label: "H",  cls: "bg-yellow-500 text-black" },
 };
 
-/** Rarity-aware version badge: RARE cards show H (Holo) instead of C (Commune) */
-function getVersionBadge(v: CardVersion, rarity?: CardRarity): { label: string; cls: string } {
-  if (rarity === CardRarity.RARE) {
-    if (v === CardVersion.NORMAL)  return { label: "H", cls: "bg-yellow-500 text-black" };
-    if (v === CardVersion.REVERSE) return { label: "RH", cls: "bg-violet-600 text-white" };
+// Overlay letter for pokeball / masterball variants
+const REVERSE_OVERLAY: Partial<Record<CardVersion, string>> = {
+  [CardVersion.REVERSE_POKEBALL]:   "P",
+  [CardVersion.REVERSE_MASTERBALL]: "M",
+};
+
+const BADGE_SIZE = 18; // px — round reverse badge
+
+/** Renders a single version badge (pill for NORMAL, round image for reverses) */
+function VersionBadgeIcon({
+  version, qty, missing = false, rarity,
+}: {
+  version: CardVersion; qty?: number; missing?: boolean; rarity?: CardRarity;
+}) {
+  if (version === CardVersion.NORMAL) {
+    const b = rarity === CardRarity.RARE ? NORMAL_BADGE.HOLO : NORMAL_BADGE.NORMAL;
+    return (
+      <span className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls} ${missing ? "opacity-40 ring-1 ring-inset ring-white/40" : ""}`}>
+        {b.label}{missing ? "?" : qty && qty > 1 ? `×${qty}` : ""}
+      </span>
+    );
   }
-  return VERSION_BADGE[v];
+
+  // REVERSE / POKEBALL / MASTERBALL → round badge image
+  const overlay = REVERSE_OVERLAY[version];
+  return (
+    <div
+      className={`relative shrink-0 rounded-full overflow-hidden ${missing ? "opacity-40" : ""}`}
+      style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/reverse-badge.png"
+        alt=""
+        style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
+        className="object-cover"
+      />
+      {/* Pokeball / Masterball letter overlay */}
+      {overlay && (
+        <span
+          className="absolute inset-0 flex items-center justify-center text-[6px] font-black text-white"
+          style={{ textShadow: "0 0 2px rgba(0,0,0,0.9)" }}
+        >
+          {overlay}
+        </span>
+      )}
+      {/* "?" for missing */}
+      {missing && (
+        <span className="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white/80">?</span>
+      )}
+      {/* qty bubble when > 1 */}
+      {!missing && qty && qty > 1 && (
+        <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-[#E7BA76] text-[6px] font-black text-black leading-none shadow">
+          {qty}
+        </span>
+      )}
+    </div>
+  );
 }
 
 /** Versions applicable for a card (special = NORMAL only) */
@@ -1017,26 +1066,19 @@ export function CardCollectionGrid({
                     />
                   </div>
 
-                  {/* Version pills (owned + missing) — bottom right, stacked (hidden for special cards) */}
+                  {/* Version badges — bottom right, stacked bottom→top: normale, reverse, pokeball, masterball */}
                   {!card.isSpecial && (ownedVersions.length > 0 || cardMissingVersions.length > 0) && (
                     <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                      {ownedVersions.map((v) => {
+                      {/* Render in DESC order (masterball→normale) so NORMALE lands at bottom of column */}
+                      {[...ownedVersions].reverse().map((v) => {
                         const qty = ownedMap.get(card.id)!.get(v)!.quantity;
-                        const b   = getVersionBadge(v, card.rarity);
                         return (
-                          <span key={v} className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls}`}>
-                            {b.label}{qty > 1 ? `×${qty}` : ""}
-                          </span>
+                          <VersionBadgeIcon key={v} version={v} qty={qty} rarity={card.rarity} />
                         );
                       })}
-                      {cardMissingVersions.map((v) => {
-                        const b = getVersionBadge(v, card.rarity);
-                        return (
-                          <span key={`missing-${v}`} className={`rounded px-1 py-px text-[8px] font-bold leading-none opacity-40 ring-1 ring-inset ring-white/40 ${b.cls}`}>
-                            {b.label}?
-                          </span>
-                        );
-                      })}
+                      {[...cardMissingVersions].reverse().map((v) => (
+                        <VersionBadgeIcon key={`missing-${v}`} version={v} missing rarity={card.rarity} />
+                      ))}
                     </div>
                   )}
 
