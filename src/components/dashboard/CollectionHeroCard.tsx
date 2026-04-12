@@ -15,26 +15,107 @@ function fmt(n: number, decimals = 2) {
   });
 }
 
-// ── Lightweight SVG sparkline (no Recharts) ───────────────────────────────────
+// ── Interpolation — densify sparse data points to targetCount ─────────────────
+
+function interpolateValues(values: number[], targetCount = 42): number[] {
+  if (values.length >= targetCount || values.length < 2) return values;
+  const result: number[] = [];
+  const totalSegments = targetCount - 1;
+  for (let i = 0; i < totalSegments; i++) {
+    const t = i / totalSegments;
+    const srcIdx = t * (values.length - 1);
+    const lo = Math.floor(srcIdx);
+    const hi = Math.min(lo + 1, values.length - 1);
+    const frac = srcIdx - lo;
+    result.push(values[lo] + (values[hi] - values[lo]) * frac);
+  }
+  result.push(values[values.length - 1]);
+  return result;
+}
+
+// ── Monotone cubic Bézier path (Fritsch-Carlson) ──────────────────────────────
+// Produces a smooth SVG path that passes through every point without oscillation.
+
+type Pt = [number, number];
+
+function monotoneCubicPath(pts: Pt[]): string {
+  const n = pts.length;
+  if (n < 2) return "";
+
+  // Slopes between consecutive points
+  const dx = pts.map((p, i) => (i < n - 1 ? pts[i + 1][0] - p[0] : 0));
+  const dy = pts.map((p, i) => (i < n - 1 ? pts[i + 1][1] - p[1] : 0));
+  const slopes = dx.map((d, i) => (d ? dy[i] / d : 0));
+
+  // Tangents initialised with average of neighbouring slopes
+  const m: number[] = new Array(n).fill(0);
+  m[0] = slopes[0];
+  m[n - 1] = slopes[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    if (slopes[i - 1] * slopes[i] <= 0) {
+      m[i] = 0;
+    } else {
+      m[i] = (slopes[i - 1] + slopes[i]) / 2;
+    }
+  }
+
+  // Enforce monotonicity (Fritsch-Carlson step)
+  for (let i = 0; i < n - 1; i++) {
+    if (slopes[i] === 0) {
+      m[i] = m[i + 1] = 0;
+    } else {
+      const a = m[i] / slopes[i];
+      const b = m[i + 1] / slopes[i];
+      const r = Math.sqrt(a * a + b * b);
+      if (r > 3) {
+        m[i] = (3 * a * slopes[i]) / r;
+        m[i + 1] = (3 * b * slopes[i]) / r;
+      }
+    }
+  }
+
+  // Build SVG path string
+  let d = `M ${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = pts[i];
+    const [x1, y1] = pts[i + 1];
+    const dxi = x1 - x0;
+    const cp1x = x0 + dxi / 3;
+    const cp1y = y0 + (m[i] * dxi) / 3;
+    const cp2x = x1 - dxi / 3;
+    const cp2y = y1 - (m[i + 1] * dxi) / 3;
+    d += ` C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${x1.toFixed(2)},${y1.toFixed(2)}`;
+  }
+  return d;
+}
+
+// ── Smooth SVG sparkline ──────────────────────────────────────────────────────
 
 function MiniSparkline({ values, color }: { values: number[]; color: string }) {
-  if (values.length < 2) return null;
+  const dense = interpolateValues(values, 42);
+  if (dense.length < 2) return null;
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  const min = Math.min(...dense);
+  const max = Math.max(...dense);
   const range = max - min || 1;
   const W = 100;
   const H = 100;
+  const PAD_TOP = 0.12; // 12 % top padding so line isn't clipped
+  const PAD_BTM = 0.05; // 5 % bottom padding
 
-  // Map values to SVG coordinates with 10% top padding
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * W;
-    const y = H - ((v - min) / range) * H * 0.85 - H * 0.07;
-    return `${x.toFixed(2)},${y.toFixed(2)}`;
-  });
+  const toSvg = (v: number): number =>
+    H - PAD_BTM * H - ((v - min) / range) * H * (1 - PAD_TOP - PAD_BTM);
 
-  const linePts = pts.join(" ");
-  const areaPts = `0,${H} ${linePts} ${W},${H}`;
+  const pts: Pt[] = dense.map((v, i) => [
+    (i / (dense.length - 1)) * W,
+    toSvg(v),
+  ]);
+
+  const linePath = monotoneCubicPath(pts);
+  // Close area: drop to bottom-left, then bottom-right, back to start
+  const areaPath =
+    linePath +
+    ` L ${W.toFixed(2)},${H} L 0,${H} Z`;
 
   return (
     <svg
@@ -44,14 +125,16 @@ function MiniSparkline({ values, color }: { values: number[]; color: string }) {
       aria-hidden
     >
       <defs>
-        <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.4} />
+        <linearGradient id="sparkHeroFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.35} />
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <polygon points={areaPts} fill="url(#heroFill)" />
-      <polyline
-        points={linePts}
+      {/* Area fill */}
+      <path d={areaPath} fill="url(#sparkHeroFill)" />
+      {/* Smooth line */}
+      <path
+        d={linePath}
         fill="none"
         stroke={color}
         strokeWidth="2.5"
@@ -130,7 +213,7 @@ export function CollectionHeroCard({ total }: Props) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)]">
-      {/* Background sparkline — strictly contained via overflow-hidden on parent */}
+      {/* Background sparkline — contained by overflow-hidden on parent */}
       {chartValues.length > 1 && (
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 opacity-40"
@@ -142,7 +225,7 @@ export function CollectionHeroCard({ total }: Props) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 px-5 pb-6 pt-5">
+      <div className="relative z-10 px-5 pb-10 pt-6">
         {/* Row 1: label + eye + 24h change */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">

@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
+import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import Link from "next/link";
+import Image from "next/image";
 import { CollectionHeroCard } from "@/components/dashboard/CollectionHeroCard";
 import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
-import { HomeCardPreview } from "@/components/cards/HomeCardPreview"
+import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
 import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
 import { getPriceForVersion } from "@/lib/display-price";
@@ -75,62 +77,92 @@ async function getCollectionValue(userId: string) {
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
   const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
-  // Run both user-specific queries in parallel
+
   const [collectionValue, topCards] = userId
     ? await Promise.all([getCollectionValue(userId), getTopCards(userId)])
     : [null, [] as Awaited<ReturnType<typeof getTopCards>>];
-
 
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      {/* ── Hero — dashboard-style card replacing the old banner ── */}
-      <div className="px-4 pb-6 pt-6 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-xl">
-          <HeroSearchBar />
-          {collectionValue && (
-            <CollectionHeroCard total={collectionValue.total} />
-          )}
-        </div>
-      </div>
-
-      {/* Top 6 most valuable cards — between hero and referral */}
-      {topCards.length > 0 && (
-        <section className="px-4 pt-8 pb-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-                Aperçu de mes cartes
-              </h2>
-              <Link
-                href="/portfolio/cartes"
-                className="text-xs font-medium text-[#E7BA76] hover:underline"
-              >
-                Voir tout
-              </Link>
+      {userId ? (
+        /* ── Authenticated: dashboard-style hero ── */
+        <>
+          <div className="px-4 pb-6 pt-6 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-xl">
+              <HeroSearchBar />
+              {collectionValue && (
+                <CollectionHeroCard total={collectionValue.total} />
+              )}
             </div>
-            <HomeCardPreview
-              cards={topCards.map((c) => ({
-                cardId: c.cardId,
-                name: c.name,
-                imageUrl: c.imageUrl!,
-                price: c.price,
-              }))}
-            />
           </div>
-        </section>
-      )}
 
-      {/* Referral + Quests blocks — authenticated users only */}
-      {userId && (
-        <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? 'pb-4' : 'pb-28'}`}>
-          <div className="mx-auto max-w-xl space-y-4">
-            <ReferralBlock />
-            <QuestsBlock />
-            <TelegramBannerButton />
+          {topCards.length > 0 && (
+            <section className="px-4 pt-8 pb-4 sm:px-6 lg:px-8">
+              <div className="mx-auto max-w-xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                    Aperçu de mes cartes
+                  </h2>
+                  <Link
+                    href="/portfolio/cartes"
+                    className="text-xs font-medium text-[#E7BA76] hover:underline"
+                  >
+                    Voir tout
+                  </Link>
+                </div>
+                <HomeCardPreview
+                  cards={topCards.map((c) => ({
+                    cardId: c.cardId,
+                    name: c.name,
+                    imageUrl: c.imageUrl!,
+                    price: c.price,
+                  }))}
+                />
+              </div>
+            </section>
+          )}
+
+          <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? "pb-4" : "pb-28"}`}>
+            <div className="mx-auto max-w-xl space-y-4">
+              <ReferralBlock />
+              <QuestsBlock />
+              <TelegramBannerButton />
+            </div>
+          </section>
+        </>
+      ) : (
+        /* ── Guest: original hero with Pokémon image + CTA ── */
+        <div>
+          <div className="relative overflow-hidden">
+            <Image
+              src="/images/hero-pokemon.png"
+              alt=""
+              width={869}
+              height={287}
+              priority
+              sizes="100vw"
+              className="w-full h-auto block"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#07111f]" />
           </div>
-        </section>
+
+          <div className="px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-xl">
+              <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-[var(--text-primary)] sm:text-4xl lg:text-5xl">
+                Gérez votre collection{" "}
+                <span className="text-[#E7BA76]">Pokémon TCG</span>
+              </h1>
+              <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm sm:text-base">
+                Cataloguez vos cartes et items scellés, suivez leur valeur et regardez votre collection prendre de la hauteur.
+              </p>
+              <div className="mt-6">
+                <HeroCTAButtons />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <HomepageCTASection />
