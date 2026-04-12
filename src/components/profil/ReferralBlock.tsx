@@ -117,7 +117,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function ReferralBlock() {
   const { data: stats, isLoading: statsLoading } = useSWR('/api/referral/stats', fetcher)
-  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/leaderboard',    fetcher)
+  const { data: lb,    isLoading: lbLoading }    = useSWR('/api/leaderboard?take=15', fetcher)
   const { data: shareData }                      = useSWR('/api/user/share-data', fetcher)
 
   const { cardRef, isGenerating, share } = useShareCard()
@@ -163,57 +163,58 @@ export function ReferralBlock() {
   }
 
   // ── Leaderboard state ──────────────────────────────────────────────────────
+  const PAGE_SIZE = 15
   const [lbEntries, setLbEntries] = useState<PointsLeaderboardEntry[]>([])
   const [currentUser, setCurrentUser] = useState<PointsLeaderboardEntry | null>(null)
   const [totalParticipants, setTotalParticipants] = useState(0)
-  const [hasMore, setHasMore] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageLoading, setPageLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Sync initial SWR data
+  const totalPages = Math.max(1, Math.ceil(totalParticipants / PAGE_SIZE))
+
+  // Sync initial SWR data (page 1)
   useEffect(() => {
     if (lb) {
       setLbEntries(lb.rankings ?? [])
       setCurrentUser(lb.currentUser ?? null)
       setTotalParticipants(lb.totalParticipants ?? 0)
-      setHasMore(lb.hasMore ?? false)
     }
   }, [lb])
 
-  const fetchLeaderboard = useCallback(async (skip: number, query: string, append: boolean) => {
-    const params = new URLSearchParams({ skip: String(skip), take: '20' })
+  const fetchLeaderboard = useCallback(async (pageNum: number, query: string) => {
+    const skip = (pageNum - 1) * PAGE_SIZE
+    const params = new URLSearchParams({ skip: String(skip), take: String(PAGE_SIZE) })
     if (query) params.set('q', query)
     const res = await fetch(`/api/leaderboard?${params}`)
     if (!res.ok) return
     const text = await res.text()
     if (!text) return
     const data = JSON.parse(text)
-    if (append) {
-      setLbEntries(prev => [...prev, ...(data.rankings ?? [])])
-    } else {
-      setLbEntries(data.rankings ?? [])
-    }
+    setLbEntries(data.rankings ?? [])
     setCurrentUser(data.currentUser ?? null)
     setTotalParticipants(data.totalParticipants ?? 0)
-    setHasMore(data.hasMore ?? false)
   }, [])
 
   function handleSearchChange(value: string) {
     setSearchQuery(value)
+    setPage(1)
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
     searchTimerRef.current = setTimeout(async () => {
       setSearching(true)
-      await fetchLeaderboard(0, value, false)
+      await fetchLeaderboard(1, value)
       setSearching(false)
     }, 300)
   }
 
-  async function loadMore() {
-    setLoadingMore(true)
-    await fetchLeaderboard(lbEntries.length, searchQuery, true)
-    setLoadingMore(false)
+  async function goToPage(newPage: number) {
+    if (newPage < 1 || newPage > totalPages || pageLoading) return
+    setPageLoading(true)
+    setPage(newPage)
+    await fetchLeaderboard(newPage, searchQuery)
+    setPageLoading(false)
   }
 
   const currentUserInList = lbEntries.some(e => e.isCurrentUser)
@@ -424,19 +425,33 @@ export function ReferralBlock() {
               </>
             )}
 
-            {/* Load more */}
-            {hasMore && (
-              <button
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] py-2.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[#E7BA76]/40 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-              >
-                {loadingMore ? (
-                  <div className="w-3.5 h-3.5 border-2 border-[var(--text-tertiary)] border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  'Voir plus'
-                )}
-              </button>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1 || pageLoading}
+                  className="flex items-center gap-1 rounded-lg border border-[var(--border-default)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] hover:border-[#E7BA76]/40 hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  ← Précédent
+                </button>
+
+                <span className="text-xs text-[var(--text-tertiary)]">
+                  {pageLoading ? (
+                    <div className="w-4 h-4 border-2 border-[#E7BA76] border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    `${page} / ${totalPages}`
+                  )}
+                </span>
+
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages || pageLoading}
+                  className="flex items-center gap-1 rounded-lg border border-[var(--border-default)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] hover:border-[#E7BA76]/40 hover:text-[var(--text-primary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Suivant →
+                </button>
+              </div>
             )}
           </div>
         )}
