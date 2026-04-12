@@ -47,10 +47,10 @@ export const metadata: Metadata = {
       "La plateforme de référence pour gérer et valoriser votre portfolio d'items scellés Pokémon TCG.",
     images: [
       {
-        url: "https://www.pokeitem.fr/og-image.png",
+        url: "https://www.pokeitem.fr/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
+        alt: "PokeItem — Valorisez votre collection Pokémon TCG",
       },
     ],
   },
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PokeItem",
     description: "Gérez votre portfolio d'items scellés Pokémon TCG.",
-    images: ["https://www.pokeitem.fr/og-image.png"],
+    images: ["https://www.pokeitem.fr/og-image.jpg"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
