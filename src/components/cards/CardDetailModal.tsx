@@ -330,7 +330,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
               </h3>
               {card?.cardmarketId && (
                 <a
-                  href={`https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketId}`}
+                  href={`https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
