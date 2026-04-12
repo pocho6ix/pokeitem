@@ -507,19 +507,20 @@ const REVERSE_OVERLAY: Partial<Record<CardVersion, string>> = {
   [CardVersion.REVERSE_MASTERBALL]: "M",
 };
 
-const BADGE_SIZE = 18; // px — round reverse badge
+const BADGE_SIZE = 15; // px — round reverse badge
 
-/** Renders a single version badge (pill for NORMAL, round image for reverses) */
+/** Renders a single version badge (pill for NORMAL, round image for reverses).
+ *  dimmed = version not owned (but card owned in another version) → 40% opacity, no "?" */
 function VersionBadgeIcon({
-  version, qty, missing = false, rarity,
+  version, qty, dimmed = false, rarity,
 }: {
-  version: CardVersion; qty?: number; missing?: boolean; rarity?: CardRarity;
+  version: CardVersion; qty?: number; dimmed?: boolean; rarity?: CardRarity;
 }) {
   if (version === CardVersion.NORMAL) {
     const b = rarity === CardRarity.RARE ? NORMAL_BADGE.HOLO : NORMAL_BADGE.NORMAL;
     return (
-      <span className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls} ${missing ? "opacity-40 ring-1 ring-inset ring-white/40" : ""}`}>
-        {b.label}{missing ? "?" : qty && qty > 1 ? `×${qty}` : ""}
+      <span className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls} ${dimmed ? "opacity-40" : ""}`}>
+        {b.label}{qty && qty > 1 ? `×${qty}` : ""}
       </span>
     );
   }
@@ -528,7 +529,7 @@ function VersionBadgeIcon({
   const overlay = REVERSE_OVERLAY[version];
   return (
     <div
-      className={`relative shrink-0 rounded-full overflow-hidden ${missing ? "opacity-40" : ""}`}
+      className={`relative shrink-0 rounded-full overflow-hidden ${dimmed ? "opacity-40" : ""}`}
       style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -547,12 +548,8 @@ function VersionBadgeIcon({
           {overlay}
         </span>
       )}
-      {/* "?" for missing */}
-      {missing && (
-        <span className="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white/80">?</span>
-      )}
       {/* qty bubble when > 1 */}
-      {!missing && qty && qty > 1 && (
+      {qty && qty > 1 && (
         <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-[#E7BA76] text-[6px] font-black text-black leading-none shadow">
           {qty}
         </span>
@@ -1010,14 +1007,9 @@ export function CardCollectionGrid({
             const ownedTotal    = totalOwned(ownedMap, card.id);
             const isOwned       = ownedTotal > 0;
             const dim           = showTransparency && isAuthenticated && !isOwned;
-            // Collect owned version badges for display — sorted C→R→P→M
-            const ownedVersions = ownedMap.get(card.id)
-              ? Array.from(ownedMap.get(card.id)!.keys()).sort((a, b) => VERSION_SORT_ORDER[a] - VERSION_SORT_ORDER[b])
-              : [];
-            // Missing versions — shown as dimmed badges when card is partially owned
-            const cardMissingVersions = isOwned
-              ? getMissingVersions(card, ownedMap, availableVersions)
-              : [];
+            const ownedCardMap  = ownedMap.get(card.id);
+            // All applicable versions for this card — always shown on every card
+            const allVersions   = getCardVersions(card, availableVersions);
 
             return (
               <div key={card.id} onClick={() => isAuthenticated && toggleSelect(card.id)}
@@ -1066,19 +1058,22 @@ export function CardCollectionGrid({
                     />
                   </div>
 
-                  {/* Version badges — bottom right, stacked bottom→top: normale, reverse, pokeball, masterball */}
-                  {!card.isSpecial && (ownedVersions.length > 0 || cardMissingVersions.length > 0) && (
+                  {/* Version badges — always shown on all cards, bottom right
+                      Stacked bottom→top: normale, reverse, pokeball, masterball
+                      Owned version = full opacity / not owned = dimmed (40%)
+                      If whole card is dim (not owned at all), parent opacity handles it */}
+                  {allVersions.length > 0 && (
                     <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                      {/* Render in DESC order (masterball→normale) so NORMALE lands at bottom of column */}
-                      {[...ownedVersions].reverse().map((v) => {
-                        const qty = ownedMap.get(card.id)!.get(v)!.quantity;
+                      {/* DESC order so NORMALE renders last = visually at bottom */}
+                      {[...allVersions].reverse().map((v) => {
+                        const isVersionOwned = ownedCardMap?.has(v) ?? false;
+                        const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : undefined;
+                        // Dim individually only when card IS owned but this specific version isn't
+                        const dimmed = isOwned && !isVersionOwned;
                         return (
-                          <VersionBadgeIcon key={v} version={v} qty={qty} rarity={card.rarity} />
+                          <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} rarity={card.rarity} />
                         );
                       })}
-                      {[...cardMissingVersions].reverse().map((v) => (
-                        <VersionBadgeIcon key={`missing-${v}`} version={v} missing rarity={card.rarity} />
-                      ))}
                     </div>
                   )}
 
