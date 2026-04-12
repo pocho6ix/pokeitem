@@ -862,7 +862,7 @@ export function CardCollectionGrid({
                 : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]"
             )}
           >
-            🌍 Reverse
+            <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse
           </button>
         )}
         {isAuthenticated && (
@@ -1046,13 +1046,13 @@ export function CardCollectionGrid({
 
                 {/* Card name + price */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
-                <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+                <p className="truncate text-center text-[9px] text-[var(--text-tertiary)] flex items-center justify-center gap-0.5">
                   {showReverse
                     ? card.priceReverse != null
-                      ? `🌍 ${card.priceReverse.toFixed(2)}\u00a0€`
+                      ? <><img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain shrink-0" />{card.priceReverse.toFixed(2)}&nbsp;€</>
                       : "–\u00a0€"
                     : card.priceFr != null
-                      ? `🇫🇷 ${card.priceFr.toFixed(2)}\u00a0€`
+                      ? <><span>🇫🇷</span>{card.priceFr.toFixed(2)}&nbsp;€</>
                       : card.price != null
                         ? `${card.price.toFixed(2)}\u00a0€`
                         : "–\u00a0€"}

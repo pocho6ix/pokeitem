@@ -234,13 +234,12 @@ export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, t
                           <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.cardName}</p>
                           <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
                             {card.cardPrice != null
-                              ? `${
-                                  card.isFrenchPrice
-                                    ? '🇫🇷 '
-                                    : card.version !== CardVersion.NORMAL
-                                    ? '🌍 '
-                                    : ''
-                                }${card.cardPrice.toFixed(2)}\u00a0€`
+                              ? <span className="inline-flex items-center gap-0.5">
+                                  {card.isFrenchPrice ? '🇫🇷 ' : card.version !== CardVersion.NORMAL
+                                    ? <img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain" />
+                                    : null}
+                                  {card.cardPrice.toFixed(2)}&nbsp;€
+                                </span>
                               : '–\u00a0€'}
                           </p>
                         </button>

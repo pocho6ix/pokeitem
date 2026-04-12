@@ -398,13 +398,12 @@ export function ClasseurCardGrid({ cards, blocSlug, serieSlug }: Props) {
                 </p>
                 <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
                   {uc.price != null && uc.price > 0
-                    ? `${
-                        uc.isFrenchPrice
-                          ? "🇫🇷 "
-                          : uc.version !== CardVersion.NORMAL
-                          ? "🌍 "
-                          : ""
-                      }${formatEur(uc.price)}`
+                    ? <span className="inline-flex items-center gap-0.5">
+                        {uc.isFrenchPrice ? "🇫🇷 " : uc.version !== CardVersion.NORMAL
+                          ? <img src="/reverse-badge.png" alt="R" className="w-3.5 h-3.5 object-contain" />
+                          : null}
+                        {formatEur(uc.price)}
+                      </span>
                     : "—"}
                 </p>
               </div>

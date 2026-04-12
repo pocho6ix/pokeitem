@@ -78,9 +78,9 @@ const CardCell = memo(function CardCell({ card, onCardClick }: { card: RarityCar
       </span>
 
       {/* Price */}
-      <span className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+      <span className="truncate text-center text-[9px] text-[var(--text-tertiary)] flex items-center justify-center gap-0.5">
         {displayPrice > 0
-          ? `${isFr ? '🇫🇷 ' : card.isReverse ? '🌍 ' : ''}${displayPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`
+          ? <>{isFr ? '🇫🇷 ' : card.isReverse ? <img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain" /> : null}{displayPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</>
           : '—'}
       </span>
     </button>

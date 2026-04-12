@@ -142,7 +142,7 @@ export function PriceHistoryChart({
             {displayPrice != null ? formatEur(displayPrice) : "—"}
           </p>
           {isReverse ? (
-            <span className="text-xs text-[var(--text-tertiary)]">🌍 Reverse · marché global</span>
+            <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1"><img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse · marché global</span>
           ) : currentPriceFr != null ? (
             <span className="text-xs text-[var(--text-tertiary)]">🇫🇷 Prix FR</span>
           ) : null}

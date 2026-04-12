@@ -250,8 +250,8 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                     : formatEur(card?.priceFr ?? card?.price)}
                 </p>
                 {chartMode === "reverse" ? (
-                  <p className="text-xs text-[var(--text-tertiary)]">
-                    🌍 Reverse · marché global
+                  <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
+                    <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse · marché global
                   </p>
                 ) : card?.priceFr != null && card.price != null ? (
                   <p className="text-xs text-[var(--text-tertiary)]">
@@ -301,8 +301,8 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                 <p className="text-3xl font-bold text-[var(--text-primary)]">
                   {formatEur(card?.priceReverse)}
                 </p>
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  🌍 Marché global · Cardmarket
+                <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
+                  <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Marché global · Cardmarket
                 </p>
                 {card?.priceUpdatedAt && (
                   <p className="mt-3 text-[10px] text-[var(--text-tertiary)]/60">
