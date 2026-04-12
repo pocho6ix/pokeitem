@@ -18,6 +18,8 @@ const prisma = new PrismaClient()
 const DRY_RUN = process.argv.includes("--dry-run")
 const LIMIT_ARG = process.argv.find((a) => a.startsWith("--limit="))
 const LIMIT = LIMIT_ARG ? parseInt(LIMIT_ARG.split("=")[1]) : undefined
+const SERIE_ARG = process.argv.find((a) => a.startsWith("--serie="))
+const SERIE_SLUG = SERIE_ARG ? SERIE_ARG.split("=")[1] : undefined
 
 // Daily API quota guard — stop before hitting RapidAPI hard limit (15 000/day)
 // Override with --quota=N  (e.g. --quota=12000)
@@ -94,10 +96,13 @@ async function main() {
   // The daily price update only adds recent records, so cards with only recent records
   // still need a full backfill.
   const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+  if (SERIE_SLUG) console.log(`Filtre série : ${SERIE_SLUG}\n`)
+
   const cards = await prisma.card.findMany({
     where: {
       cardmarketId: { not: null },
       priceHistory: { none: { recordedAt: { lte: oneYearAgo } } },
+      ...(SERIE_SLUG ? { serie: { slug: SERIE_SLUG } } : {}),
     },
     select: { id: true, cardmarketId: true },
     ...(LIMIT ? { take: LIMIT } : {}),
