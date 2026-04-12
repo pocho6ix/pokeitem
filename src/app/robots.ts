@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "Bingbot", allow: "/" },
       { userAgent: "cohere-ai", allow: "/" },
     ],
-    sitemap: "https://www.pokeitem.fr/sitemap.xml",
+    sitemap: "https://app.pokeitem.fr/sitemap.xml",
   };
 }

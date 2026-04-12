@@ -36,22 +36,22 @@ export const metadata: Metadata = {
     "pokeitem",
     "portfolio pokémon",
   ],
-  metadataBase: new URL("https://www.pokeitem.fr"),
+  metadataBase: new URL("https://app.pokeitem.fr"),
   alternates: {
-    canonical: "https://www.pokeitem.fr",
+    canonical: "https://app.pokeitem.fr",
   },
   authors: [{ name: "PokeItem" }],
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: "https://www.pokeitem.fr",
+    url: "https://app.pokeitem.fr",
     siteName: "PokeItem",
     title: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
     description:
       "La plateforme de référence pour gérer et valoriser votre portfolio d'items scellés Pokémon TCG.",
     images: [
       {
-        url: "https://www.pokeitem.fr/og-image.jpg",
+        url: "https://app.pokeitem.fr/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "PokeItem — Valorisez votre collection Pokémon TCG",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PokeItem",
     description: "Gérez votre portfolio d'items scellés Pokémon TCG.",
-    images: ["https://www.pokeitem.fr/og-image.jpg"],
+    images: ["https://app.pokeitem.fr/og-image.jpg"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",

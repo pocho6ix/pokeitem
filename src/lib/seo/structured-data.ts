@@ -1,6 +1,6 @@
 import type { Item, BlogPost } from "@/types";
 
-const BASE_URL = "https://www.pokeitem.fr";
+const BASE_URL = "https://app.pokeitem.fr";
 
 // ---------------------------------------------------------------------------
 // Organization JSON-LD (global — injected in root layout)

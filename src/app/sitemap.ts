@@ -3,7 +3,7 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { BLOG_POSTS } from "@/data/blog-posts";
 
-const BASE_URL = "https://www.pokeitem.fr";
+const BASE_URL = "https://app.pokeitem.fr";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages

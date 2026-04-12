@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { Item, Serie, Bloc, BlogPost } from "@/types";
 
-const BASE_URL = "https://www.pokeitem.fr";
+const BASE_URL = "https://app.pokeitem.fr";
 
 // ---------------------------------------------------------------------------
 // Item page metadata

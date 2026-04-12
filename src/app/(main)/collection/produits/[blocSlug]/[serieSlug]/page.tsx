@@ -71,12 +71,12 @@ export async function generateMetadata({ params }: SeriePageProps): Promise<Meta
       title,
       description,
       type: "website",
-      url: `https://www.pokeitem.fr/collection/produits/${blocSlug}/${serieSlug}`,
+      url: `https://app.pokeitem.fr/collection/produits/${blocSlug}/${serieSlug}`,
       images: serie.imageUrl ? [{ url: serie.imageUrl, alt: serie.name }] : [],
     },
     twitter: { card: "summary_large_image", title, description },
     alternates: {
-      canonical: `https://www.pokeitem.fr/collection/produits/${blocSlug}/${serieSlug}`,
+      canonical: `https://app.pokeitem.fr/collection/produits/${blocSlug}/${serieSlug}`,
     },
   };
 }
