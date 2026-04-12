@@ -1053,7 +1053,7 @@ export function CardCollectionGrid({
                 {/* Card name + price */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
                 <p className="truncate text-center text-[9px] text-[var(--text-tertiary)] flex items-center justify-center gap-0.5">
-                  {showReverse
+                  {showReverse && !card.isSpecial
                     ? card.priceReverse != null
                       ? <><img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain shrink-0" />{card.priceReverse.toFixed(2)}&nbsp;€</>
                       : "–\u00a0€"
