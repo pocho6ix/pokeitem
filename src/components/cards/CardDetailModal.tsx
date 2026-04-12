@@ -253,7 +253,8 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                       onClick={() => setChartMode(m => m === "reverse" ? "normal" : "reverse")}
                       disabled={card?.priceReverse == null}
                       title={chartMode === "reverse" ? "Afficher prix normal" : "Afficher prix Reverse"}
-                      className={`relative shrink-0 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                      style={{ width: 28, height: 28 }}
+                      className={`relative shrink-0 rounded-full overflow-hidden transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                         chartMode === "reverse"
                           ? "ring-2 ring-[#E7BA76] ring-offset-1 ring-offset-[var(--bg-primary)]"
                           : "opacity-50 hover:opacity-80"
@@ -263,7 +264,8 @@ export function CardDetailModal({ cardId, onClose }: Props) {
                       <img
                         src="/reverse-badge.png"
                         alt="Reverse"
-                        className="w-7 h-7 object-contain rounded-full"
+                        style={{ width: 28, height: 28 }}
+                        className="object-cover"
                       />
                     </button>
                   )}
