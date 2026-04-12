@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -94,10 +95,12 @@ export default async function PortfolioDoublesPage() {
   const totalSeries = blocs.reduce((s, b) => s + b.series.length, 0);
 
   return (
-    <DoublesGrid
-      blocs={blocs}
-      totalDoubles={rows.length}
-      totalSeries={totalSeries}
-    />
+    <>
+      <Link href="/portfolio" className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Classeur
+      </Link>
+      <DoublesGrid blocs={blocs} totalDoubles={rows.length} totalSeries={totalSeries} />
+    </>
   );
 }

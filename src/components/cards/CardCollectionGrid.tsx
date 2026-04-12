@@ -582,6 +582,23 @@ export function CardCollectionGrid({
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  // ── Grid size ───────────────────────────────────────────────────────────────
+  type GridSize = "small" | "medium" | "large";
+  const [gridSize, setGridSize] = useState<GridSize>("medium");
+  useEffect(() => {
+    const saved = localStorage.getItem("collection-grid-size") as GridSize | null;
+    if (saved) setGridSize(saved);
+  }, []);
+  function changeGridSize(s: GridSize) {
+    setGridSize(s);
+    localStorage.setItem("collection-grid-size", s);
+  }
+  const GRID_CLASS: Record<GridSize, string> = {
+    small:  "grid grid-cols-4 gap-1.5 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8",
+    medium: "grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8",
+    large:  "grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5",
+  };
+
   // ── Derived data ──────────────────────────────────────────────────────────
 
   const rarityCounts = useMemo(() => {
@@ -634,8 +651,8 @@ export function CardCollectionGrid({
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
     if (typeFilter.size > 0) result = result.filter((c) => cardMatchesTypeFilter(c, typeFilter));
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
-    // "missing" = at least one applicable version is not owned
-    if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
+    // "missing" = no version owned at all (owning any version means the card is not "missing")
+    if (viewFilter === "missing") result = result.filter((c) => !ownedMap.has(c.id));
 
     return [...result].sort((a, b) => {
       let cmp = 0;
@@ -652,10 +669,10 @@ export function CardCollectionGrid({
   }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, showReverse, ownedMap, availableVersions]);
 
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
-  // Cards where at least one applicable version is missing
+  // Cards where no version is owned at all
   const missingCount = useMemo(
-    () => cards.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0).length,
-    [cards, ownedMap, availableVersions]
+    () => cards.filter((c) => !ownedMap.has(c.id)).length,
+    [cards, ownedMap]
   );
   const progressPct  = cards.length > 0 ? Math.round((ownedCount / cards.length) * 100) : 0;
 
@@ -864,6 +881,24 @@ export function CardCollectionGrid({
         ))}
       </div>
 
+      {/* Grid size toggle — segmented control */}
+      <div className="mb-3 flex items-center rounded-xl bg-[var(--bg-secondary)] p-1">
+        {(["small", "medium", "large"] as GridSize[]).map((s) => (
+          <button
+            key={s}
+            onClick={() => changeGridSize(s)}
+            className={cn(
+              "flex-1 rounded-lg py-1.5 text-xs font-medium transition-all",
+              gridSize === s
+                ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            )}
+          >
+            {s === "small" ? "Petit" : s === "medium" ? "Moyen" : "Grand"}
+          </button>
+        ))}
+      </div>
+
       {/* Filters row */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[180px]">
@@ -978,7 +1013,7 @@ export function CardCollectionGrid({
           <p className="mt-1 text-sm text-[var(--text-secondary)]">Essayez de modifier vos filtres.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+        <div className={GRID_CLASS[gridSize]}>
           {filteredCards.map((card) => {
             const isSelected    = selectedIds.has(card.id);
             const ownedTotal    = totalOwned(ownedMap, card.id);
@@ -1039,7 +1074,7 @@ export function CardCollectionGrid({
                       Stacked bottom→top: normale, reverse, pokeball, masterball
                       Owned version = full opacity / not owned = dimmed (40%)
                       If whole card is dim (not owned at all), parent opacity handles it */}
-                  {allVersions.length > 0 && (
+                  {allVersions.length > 1 && (
                     <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
                       {/* DESC order so NORMALE renders last = visually at bottom */}
                       {[...allVersions].reverse().map((v) => {

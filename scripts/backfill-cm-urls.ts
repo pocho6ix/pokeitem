@@ -142,9 +142,8 @@ async function main() {
     return
   }
 
-  // Step 2: Fetch card details from API
-  // We collect ALL API data first, then compute V{n} ranks in memory.
-  // This avoids multiple passes and minimises API calls.
+  // Step 2: Fetch card details from API and write to DB incrementally.
+  // Each successful fetch is immediately written — no data lost if interrupted.
 
   interface Collected {
     dbId:    string
@@ -157,7 +156,8 @@ async function main() {
 
   const collected: Collected[] = []
   let apiErrors = 0
-  let done = 0
+  let written   = 0
+  let done      = 0
 
   for (const card of cards) {
     const data = await fetchCardDetail(card.cardmarketId!)
@@ -179,7 +179,7 @@ async function main() {
     done++
     if (done % CHUNK === 0) {
       const pct = ((done / cards.length) * 100).toFixed(1)
-      process.stdout.write(`  ${pct}% — ${done}/${cards.length} fetched · ${apiCallCount} appels · ${apiErrors} erreurs\n`)
+      process.stdout.write(`  ${pct}% — ${done}/${cards.length} fetched · ${apiCallCount} appels · ${apiErrors} erreurs · ${written} écrits\n`)
     }
 
     // Stop if quota reached
@@ -192,7 +192,8 @@ async function main() {
     await sleep(DELAY)
   }
 
-  process.stdout.write(`\n✅ Fetch terminé: ${collected.length} succès, ${apiErrors} erreurs, ${apiCallCount} appels\n\n`)
+  process.stdout.write(`\n✅ Fetch terminé: ${collected.length} succès, ${apiErrors} erreurs, ${apiCallCount} appels\n`)
+  process.stdout.write(`   Calcul des rangs V{n} et écriture en base...\n\n`)
 
   // Step 3: Compute V{n} ranks
   // Group by (epCode, cardSlug), sort by cardNum, assign 1-based rank
@@ -209,8 +210,7 @@ async function main() {
     group.forEach((c, i) => ranks.set(c.dbId, i + 1))
   }
 
-  // Step 4: Construct URLs and upsert into DB
-  let written = 0
+  // Step 4: Write to DB incrementally (skip dry-run)
   let skipped = 0
 
   for (const c of collected) {
@@ -228,6 +228,10 @@ async function main() {
       data: { cardmarketUrl: urlPath },
     })
     written++
+
+    if (written % 500 === 0) {
+      process.stdout.write(`  💾 ${written} URLs écrites...\n`)
+    }
   }
 
   console.log(`\n🎉 Terminé!`)

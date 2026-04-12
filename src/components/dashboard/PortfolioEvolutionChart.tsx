@@ -139,34 +139,6 @@ export function PortfolioEvolutionChart() {
         </div>
       </div>
 
-      {/* Serie filter chips — only rendered when there are multiple series */}
-      {series.length > 1 && (
-        <div className="mb-4 -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 scrollbar-none">
-          <button
-            onClick={() => setSelectedSerie(null)}
-            className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              selectedSerie === null
-                ? "bg-[#E7BA76] text-black"
-                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
-            }`}
-          >
-            Tout
-          </button>
-          {series.map((s) => (
-            <button
-              key={s.slug}
-              onClick={() => setSelectedSerie(s.slug === selectedSerie ? null : s.slug)}
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                selectedSerie === s.slug
-                  ? "bg-[#E7BA76] text-black"
-                  : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
-              }`}
-            >
-              {s.abbreviation ?? s.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Chart */}
       {loading ? (

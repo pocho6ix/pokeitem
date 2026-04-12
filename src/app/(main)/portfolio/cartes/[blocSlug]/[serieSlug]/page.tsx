@@ -7,15 +7,18 @@ import { authOptions } from "@/lib/auth";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
+import { getCachedSerieCards } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
 import { CardRarity, CardCondition } from "@/types/card";
 import { CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
-import { ClasseurCardGrid, type ClasseurCard } from "@/components/cards/ClasseurCardGrid";
+import { ClasseurCardGrid, type ClasseurCard, type MissingCard } from "@/components/cards/ClasseurCardGrid";
 
 interface PageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
 }
+
+export const revalidate = 0; // dynamic — owned data is per-user
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serieSlug } = await params;
@@ -38,40 +41,38 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
   const serieStatic = SERIES.find((s) => s.slug === serieSlug && s.blocSlug === blocSlug);
   if (!bloc || !serieStatic) notFound();
 
-  const serieDb = await prisma.serie.findUnique({
-    where: { slug: serieSlug },
-    select: { id: true, cardCount: true },
-  });
+  // ── Fetch full serie catalog (cached 1h) + user's owned cards ─────────
+  const [serieDb, userCards] = await Promise.all([
+    getCachedSerieCards(serieSlug),
+    prisma.userCard.findMany({
+      where: { userId, card: { serie: { slug: serieSlug } } },
+      include: {
+        card: {
+          select: {
+            id:           true,
+            number:       true,
+            name:         true,
+            rarity:       true,
+            imageUrl:     true,
+            price:        true,
+            priceFr:      true,
+            priceReverse: true,
+            isSpecial:    true,
+          },
+        },
+      },
+      orderBy: { card: { number: "asc" } },
+    }),
+  ]);
 
   if (!serieDb) notFound();
 
-  const userCards = await prisma.userCard.findMany({
-    where: { userId, card: { serieId: serieDb.id } },
-    include: {
-      card: {
-        select: {
-          id:           true,
-          number:       true,
-          name:         true,
-          rarity:       true,
-          imageUrl:     true,
-          price:        true,
-          priceFr:      true,
-          priceReverse: true,
-          isSpecial:    true,
-        },
-      },
-    },
-    orderBy: { card: { number: "asc" } },
-  });
-
+  // ── Owned cards (ClasseurCard[]) ────────────────────────────────────────
   const cards: ClasseurCard[] = userCards.map((uc) => {
     const version = uc.version as CardVersion;
     const price = getPriceForVersion(uc.card, version);
-    // FR flag: the NORMAL variant shows priceFr whenever available
     const isFrenchPrice =
       version === CardVersion.NORMAL && uc.card.priceFr != null;
-
     return {
       id:         uc.id,
       cardId:     uc.card.id,
@@ -87,6 +88,24 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       isSpecial:  uc.card.isSpecial,
     };
   });
+
+  // ── Full catalog (MissingCard[]) — for the "Manquantes" tab ────────────
+  const allCards: MissingCard[] = (serieDb.cards ?? []).map((c) => {
+    const price    = c.priceFr ?? c.price ?? null;
+    const isFrenchPrice = c.priceFr != null;
+    return {
+      cardId:       c.id,
+      number:       c.number,
+      name:         c.name,
+      rarity:       c.rarity as CardRarity,
+      imageUrl:     c.imageUrl ?? null,
+      isSpecial:    c.isSpecial,
+      price:        price ?? null,
+      isFrenchPrice,
+    };
+  });
+
+  const ownedCount = new Set(cards.map((c) => c.cardId)).size;
 
   return (
     <div>
@@ -126,16 +145,21 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">{serieStatic.name}</h2>
           <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
             {bloc.name} · {serieStatic.abbreviation}
-            {cards.length > 0 && (
+            {allCards.length > 0 && (
               <span className="ml-2 font-medium text-[var(--text-primary)]">
-                · {cards.length} carte{cards.length > 1 ? "s" : ""} possédée{cards.length > 1 ? "s" : ""}
+                · {ownedCount} / {allCards.length} carte{allCards.length > 1 ? "s" : ""}
               </span>
             )}
           </p>
         </div>
       </div>
 
-      <ClasseurCardGrid cards={cards} blocSlug={blocSlug} serieSlug={serieSlug} />
+      <ClasseurCardGrid
+        cards={cards}
+        allCards={allCards.length > 0 ? allCards : undefined}
+        blocSlug={blocSlug}
+        serieSlug={serieSlug}
+      />
     </div>
   );
 }

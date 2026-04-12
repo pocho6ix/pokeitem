@@ -44,7 +44,7 @@ function getAvatarSrc(
 
 // ─── Mobile top bar ───────────────────────────────────────────────────────────
 
-function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
+function MobileTopBar() {
   const { data: session } = useSession();
   const pseudo     = session?.user?.name ?? null;
   const userId     = (session?.user as { id?: string } | undefined)?.id ?? null;
@@ -59,11 +59,11 @@ function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
         <div className="leading-tight">
           {pseudo ? (
             <>
-              <p className={cn("text-[11px]", isTransparent ? "text-white/60" : "text-[var(--text-tertiary)]")}>{getGreeting()},</p>
-              <p className={cn("text-sm font-bold", isTransparent ? "text-white" : "text-[var(--text-primary)]")}>{pseudo}</p>
+              <p className="text-[11px] text-[var(--text-tertiary)]" suppressHydrationWarning>{getGreeting()},</p>
+              <p className="text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
             </>
           ) : (
-            <p className={cn("text-sm font-bold", isTransparent ? "text-white" : "text-[var(--text-primary)]")}>PokeItem</p>
+            <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
           )}
         </div>
       </div>
@@ -88,12 +88,7 @@ function MobileTopBar({ isTransparent }: { isTransparent: boolean }) {
         ) : (
           <Link
             href="/connexion"
-            className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
-              isTransparent
-                ? "border-white/30 bg-white/10 text-white"
-                : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
-            )}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] transition-colors"
             title="Connexion"
           >
             <User className="h-4 w-4" />
@@ -130,7 +125,7 @@ export function Header() {
       >
 
         {/* Mobile top bar */}
-        <MobileTopBar isTransparent={isTransparent} />
+        <MobileTopBar />
 
         {/* Desktop nav bar */}
         <div className="mx-auto hidden h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 md:flex">
