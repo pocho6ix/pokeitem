@@ -496,37 +496,23 @@ function AddToCollectionModal({
 
 // ─── Version badge helper ─────────────────────────────────────────────────────
 
-const NORMAL_BADGE: Record<string, { label: string; cls: string }> = {
-  NORMAL: { label: "C",  cls: "bg-[#E7BA76] text-black" },
-  HOLO:   { label: "H",  cls: "bg-yellow-500 text-black" },
+// Badge image per version
+const VERSION_BADGE_IMG: Record<CardVersion, string> = {
+  [CardVersion.NORMAL]:             "/badge_normale.png",
+  [CardVersion.REVERSE]:            "/badge_reverse.png",
+  [CardVersion.REVERSE_POKEBALL]:   "/badge_pokeball.png",
+  [CardVersion.REVERSE_MASTERBALL]: "/badge_masterball.png",
 };
 
-// Overlay letter for pokeball / masterball variants
-const REVERSE_OVERLAY: Partial<Record<CardVersion, string>> = {
-  [CardVersion.REVERSE_POKEBALL]:   "P",
-  [CardVersion.REVERSE_MASTERBALL]: "M",
-};
+const BADGE_SIZE = 15; // px — round badge
 
-const BADGE_SIZE = 15; // px — round reverse badge
-
-/** Renders a single version badge (pill for NORMAL, round image for reverses).
- *  dimmed = version not owned (but card owned in another version) → 40% opacity, no "?" */
+/** Renders a single version badge as a round image.
+ *  dimmed = version not owned (but card owned in another version) → 40% opacity */
 function VersionBadgeIcon({
-  version, qty, dimmed = false, rarity,
+  version, qty, dimmed = false,
 }: {
-  version: CardVersion; qty?: number; dimmed?: boolean; rarity?: CardRarity;
+  version: CardVersion; qty?: number; dimmed?: boolean;
 }) {
-  if (version === CardVersion.NORMAL) {
-    const b = rarity === CardRarity.RARE ? NORMAL_BADGE.HOLO : NORMAL_BADGE.NORMAL;
-    return (
-      <span className={`rounded px-1 py-px text-[8px] font-bold leading-none shadow-sm ${b.cls} ${dimmed ? "opacity-40" : ""}`}>
-        {b.label}{qty && qty > 1 ? `×${qty}` : ""}
-      </span>
-    );
-  }
-
-  // REVERSE / POKEBALL / MASTERBALL → round badge image
-  const overlay = REVERSE_OVERLAY[version];
   return (
     <div
       className={`relative shrink-0 rounded-full overflow-hidden ${dimmed ? "opacity-40" : ""}`}
@@ -534,20 +520,11 @@ function VersionBadgeIcon({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/reverse-badge.png"
+        src={VERSION_BADGE_IMG[version]}
         alt=""
         style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
         className="object-cover"
       />
-      {/* Pokeball / Masterball letter overlay */}
-      {overlay && (
-        <span
-          className="absolute inset-0 flex items-center justify-center text-[6px] font-black text-white"
-          style={{ textShadow: "0 0 2px rgba(0,0,0,0.9)" }}
-        >
-          {overlay}
-        </span>
-      )}
       {/* qty bubble when > 1 */}
       {qty && qty > 1 && (
         <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-[#E7BA76] text-[6px] font-black text-black leading-none shadow">
@@ -1071,7 +1048,7 @@ export function CardCollectionGrid({
                         // Dim individually only when card IS owned but this specific version isn't
                         const dimmed = isOwned && !isVersionOwned;
                         return (
-                          <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} rarity={card.rarity} />
+                          <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} />
                         );
                       })}
                     </div>
