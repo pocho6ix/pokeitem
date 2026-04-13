@@ -65,10 +65,10 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                   {/* Name + progress */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="truncate text-sm font-medium text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span className="truncate text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
                         {serie.serieName}
                       </span>
-                      <div className="flex shrink-0 items-baseline gap-2">
+                      <div className="flex shrink-0 items-center gap-2">
                         <span className="font-data text-xs text-[var(--text-secondary)]">
                           {serie.ownedCards}/{serie.totalCards || "?"}&nbsp;·&nbsp;{pct}%
                         </span>
@@ -78,14 +78,24 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                             className="font-data text-xs font-semibold text-emerald-400"
                           />
                         )}
+                        {/* Complete badge */}
+                        {pct === 100 && (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                            <circle cx="12" cy="12" r="11" stroke="#D4A853" strokeWidth="2" />
+                            <path d="m7 12.5 3.5 3.5 6.5-7" stroke="#D4A853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
                       </div>
                     </div>
 
                     {/* Progress bar */}
                     <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
                       <div
-                        className="h-full rounded-full bg-blue-500 transition-all"
-                        style={{ width: `${pct}%` }}
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${pct}%`,
+                          background: "linear-gradient(90deg, #AA771C, #D4A853, #E7BA76)",
+                        }}
                       />
                     </div>
                   </div>
@@ -101,7 +111,7 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="shrink-0 text-[var(--text-secondary)] group-hover:text-blue-500 transition-colors"
+                    className="shrink-0 text-[var(--text-secondary)] group-hover:text-[var(--color-primary)] transition-colors"
                   >
                     <path d="m9 18 6-6-6-6" />
                   </svg>
