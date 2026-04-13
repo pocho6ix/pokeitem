@@ -134,16 +134,16 @@ export function HeroCTAButtons() {
     <div className="mt-8 flex flex-col sm:flex-row gap-4">
       <Link
         href="/inscription"
-        className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-700 shadow-lg hover:bg-blue-50 transition-colors"
+        className="btn-gold inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold text-black shadow-lg transition-all hover:brightness-105 active:scale-[0.97]"
       >
         Commencer gratuitement
         <ArrowRight className="ml-2 h-4 w-4" />
       </Link>
       <Link
-        href="/collection/cartes"
+        href="/connexion"
         className="inline-flex items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
       >
-        Explorer le catalogue
+        Se connecter
       </Link>
     </div>
   );
