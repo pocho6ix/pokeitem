@@ -257,7 +257,7 @@ export default async function CardDetailPage({ params }: PageProps) {
               href={cardmarketUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-lg bg-[#E7BA76] px-4 py-2.5 text-sm font-semibold text-black hover:bg-[#d4a960] transition-colors"
+              className="btn-gold flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-black"
             >
               Acheter sur Cardmarket
               <ExternalLink className="h-3.5 w-3.5" />

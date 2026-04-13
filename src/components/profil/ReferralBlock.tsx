@@ -346,7 +346,7 @@ export function ReferralBlock() {
         </div>
         <button
           onClick={shareLink}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E7BA76] py-3 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors active:scale-[0.98]"
+          className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-black active:scale-[0.98]"
         >
           <Share2 className="w-4 h-4" />
           Partager le lien

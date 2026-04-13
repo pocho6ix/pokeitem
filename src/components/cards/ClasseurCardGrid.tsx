@@ -382,7 +382,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
               className={cn(
                 "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                 viewFilter === tab.value
-                  ? "bg-[#E7BA76] text-black"
+                  ? "btn-gold text-black"
                   : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               )}
             >

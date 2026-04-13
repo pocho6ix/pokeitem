@@ -129,7 +129,7 @@ export function PortfolioEvolutionChart() {
               onClick={() => setPeriod(p)}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
                 period === p
-                  ? "bg-[#E7BA76] text-black"
+                  ? "btn-gold text-black"
                   : "text-[var(--text-tertiary)] hover:bg-[var(--bg-secondary)]"
               }`}
             >

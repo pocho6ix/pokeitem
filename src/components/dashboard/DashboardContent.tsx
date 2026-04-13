@@ -198,7 +198,7 @@ function EmptyPortfolio() {
       </p>
       <Link
         href="/collection"
-        className="inline-flex items-center gap-2 rounded-xl bg-[#E7BA76] px-6 py-3 font-medium text-black hover:bg-[#d4a660] transition-colors"
+        className="btn-gold inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-black"
       >
         <Search className="h-4 w-4" />
         Explorer le catalogue
@@ -310,7 +310,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
           </h2>
           <Link
             href="/connexion?callbackUrl=/portfolio"
-            className="mt-4 rounded-xl bg-[#E7BA76] px-6 py-3 font-medium text-black hover:bg-[#d4a660]"
+            className="btn-gold mt-4 rounded-xl px-6 py-3 font-medium text-black"
           >
             Se connecter
           </Link>

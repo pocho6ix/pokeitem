@@ -245,7 +245,7 @@ export function ProfilForm() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="rounded-lg bg-[#E7BA76] px-3 py-1.5 text-sm font-medium text-black hover:bg-[#d4a660] disabled:opacity-50 transition-colors"
+                className="btn-gold rounded-lg px-3 py-1.5 text-sm font-medium text-black disabled:opacity-50"
               >
                 Changer la photo
               </button>
@@ -312,7 +312,7 @@ export function ProfilForm() {
                 type="button"
                 onClick={handleSaveName}
                 disabled={saving || !hasChanged}
-                className="rounded-lg bg-[#E7BA76] px-4 py-2 text-sm font-medium text-black hover:bg-[#d4a660] disabled:opacity-50 transition-colors"
+                className="btn-gold rounded-lg px-4 py-2 text-sm font-medium text-black disabled:opacity-50"
               >
                 {saving ? "..." : "Enregistrer"}
               </button>

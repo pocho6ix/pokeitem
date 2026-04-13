@@ -143,7 +143,7 @@ function SortModal({
             Réinitialiser
           </button>
           <button onClick={() => { onApply(localBy, localOrder); onClose(); }}
-            className="flex-1 rounded-xl bg-[#E7BA76] py-2.5 text-sm font-medium text-black hover:bg-[#d4a660]">
+            className="btn-gold flex-1 rounded-xl py-2.5 text-sm font-medium text-black">
             Appliquer
           </button>
         </div>
@@ -313,7 +313,7 @@ function AddToCollectionModal({
                       className={cn(
                         "relative flex flex-col items-center rounded-xl border px-1 py-2 text-xs font-medium transition-all",
                         isChecked
-                          ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                          ? "btn-gold border-transparent text-black shadow-sm"
                           : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}>
                       {label}
@@ -356,7 +356,7 @@ function AddToCollectionModal({
                 className={cn(
                   "flex h-4 w-4 items-center justify-center rounded-full border text-[9px] font-bold transition-colors",
                   showConditionInfo
-                    ? "border-[#E7BA76] bg-[#E7BA76] text-black"
+                    ? "btn-gold border-transparent text-black"
                     : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[#E7BA76]/60"
                 )}
                 aria-label="Guide des états de carte"
@@ -406,8 +406,8 @@ function AddToCollectionModal({
                       className={cn(
                         "rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
                         gradeValue === g
-                          ? "border-amber-400 bg-amber-400 text-black shadow-sm"
-                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-amber-400/70"
+                          ? "btn-gold border-transparent text-black shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}>
                       {g}
                     </button>
@@ -434,7 +434,7 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "packed"
-                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    ? "btn-gold border-transparent text-black shadow-sm"
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Packée
@@ -444,7 +444,7 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "current"
-                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    ? "btn-gold border-transparent text-black shadow-sm"
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Cote actuelle
@@ -458,7 +458,7 @@ function AddToCollectionModal({
                 className={cn(
                   "rounded-2xl border py-2.5 text-sm font-medium transition-all",
                   priceMode === "manual"
-                    ? "border-[#E7BA76] bg-[#E7BA76] text-black shadow-sm"
+                    ? "btn-gold border-transparent text-black shadow-sm"
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                 )}>
                 Manuel
@@ -485,7 +485,7 @@ function AddToCollectionModal({
           <button
             onClick={() => onSubmit({ quantity, condition, language, versions: versionsArray, foil: false, priceMode, manualPrice: manualPrice ? parseFloat(manualPrice) : undefined, gradeValue })}
             disabled={isPending}
-            className="w-full rounded-2xl bg-[#E7BA76] py-4 text-base font-bold text-black hover:bg-[#d4a660] active:scale-[0.98] disabled:opacity-60 transition-all shadow-lg shadow-[#E7BA76]/30">
+            className="btn-gold w-full rounded-2xl py-4 text-base font-bold text-black disabled:opacity-60 active:scale-[0.98]">
             {isPending ? "Enregistrement…" : "Ajouter à ma collection"}
           </button>
         </div>
@@ -875,7 +875,7 @@ export function CardCollectionGrid({
         ] as { value: ViewFilter; label: string }[]).map((tab) => (
           <button key={tab.value} onClick={() => setViewFilter(tab.value)}
             className={cn("rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-              viewFilter === tab.value ? "bg-[#E7BA76] text-black" : "bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]")}>
+              viewFilter === tab.value ? "btn-gold text-black" : "bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]")}>
             {tab.label}
           </button>
         ))}
@@ -1145,7 +1145,7 @@ export function CardCollectionGrid({
                 }
                 setActiveModal("add-collection");
               }}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E7BA76] text-black hover:bg-[#d4a660]">
+                className="btn-gold flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-black">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
               </button>
               <button onClick={handleRemoveSelected} title="Retirer de ma collection"

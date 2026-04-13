@@ -70,6 +70,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Gold gradient button — shared across all CTA/action buttons */
+.btn-gold {
+  background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+  box-shadow: 0 2px 8px rgba(183, 135, 40, 0.35);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-gold:hover {
+  filter: brightness(1.08);
+}
+.btn-gold:active {
+  transform: scale(0.98);
+}
+
 /* Dark mode — deep navy radial gradient (fixed so it stays while scrolling) */
 .dark body {
   background:

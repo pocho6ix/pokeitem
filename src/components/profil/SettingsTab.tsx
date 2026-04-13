@@ -125,7 +125,7 @@ export function SettingsTab() {
           <button
             onClick={handleSaveUsername}
             disabled={saving || !canSave}
-            className="shrink-0 rounded-xl bg-[#E7BA76] px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40 hover:bg-[#d4a660] transition-colors"
+            className="btn-gold shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-40"
           >
             {saving ? '...' : 'Enregistrer'}
           </button>

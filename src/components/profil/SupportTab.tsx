@@ -58,7 +58,7 @@ export function SupportTab() {
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="w-full rounded-xl bg-[#E7BA76] py-3 text-sm font-bold text-black hover:bg-[#d4a660] transition-colors disabled:opacity-50"
+            className="btn-gold w-full rounded-xl py-3 text-sm font-bold text-black disabled:opacity-50"
           >
             {sending ? 'Envoi…' : 'Envoyer →'}
           </button>

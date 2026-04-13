@@ -109,7 +109,7 @@ export function BetaBanner() {
                 href={`mailto:contact@pokeitem.fr?subject=${encodeURIComponent(
                   "Offre bêta — je souhaite m'abonner"
                 )}`}
-                className="inline-flex items-center gap-1 rounded-lg bg-[#E7BA76] px-3 py-1.5 text-xs font-semibold text-black hover:bg-[#d4a660] transition-colors"
+                className="btn-gold inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-black"
               >
                 Me prévenir quand c&rsquo;est disponible
                 <ExternalLink className="h-3 w-3" />

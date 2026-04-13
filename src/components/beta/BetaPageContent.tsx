@@ -153,7 +153,7 @@ function InstallModal({
 
         <button
           onClick={onDone}
-          className="mt-6 w-full rounded-xl bg-[#E7BA76] py-3 text-sm font-semibold text-black hover:bg-[#d4a660] transition-colors"
+          className="btn-gold mt-6 w-full rounded-xl py-3 text-sm font-semibold text-black"
         >
           OK, j&rsquo;ai compris
         </button>
@@ -181,7 +181,7 @@ function SuccessScreen() {
         </p>
         <button
           onClick={() => router.push("/portfolio")}
-          className="mt-6 w-full rounded-xl bg-[#E7BA76] py-3 text-sm font-semibold text-black hover:bg-[#d4a660] transition-colors"
+          className="btn-gold mt-6 w-full rounded-xl py-3 text-sm font-semibold text-black"
         >
           Accéder à mon classeur
         </button>
