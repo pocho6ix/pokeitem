@@ -9,5 +9,5 @@ export function CollectionValue({ value, className }: CollectionValueProps) {
     currency: 'EUR',
   }).format(value)
 
-  return <span className={className}>{formatted}</span>
+  return <span className={className} suppressHydrationWarning>{formatted}</span>
 }
