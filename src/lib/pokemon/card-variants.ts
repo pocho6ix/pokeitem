@@ -7,6 +7,7 @@ export const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.ULTRA_RARE,                // Full Art EX, Full Art Supporter
   CardRarity.ILLUSTRATION_RARE,         // IR (Full Art)
   CardRarity.SPECIAL_ILLUSTRATION_RARE, // SAR
+  CardRarity.SECRET_RARE,               // Secrète (ex: Raikou ex 108/107)
   CardRarity.HYPER_RARE,                // HR
   CardRarity.MEGA_HYPER_RARE,           // MUR (Gold Méga-Évolution)
   CardRarity.MEGA_ATTAQUE_RARE,         // MAR (Méga Attaque Rare)
@@ -21,6 +22,7 @@ export function isSpecialCard(rarity: CardRarity | null | undefined): boolean {
 
 // Labels courts pour les badges dans la grille
 export const RARITY_BADGE_LABELS: Partial<Record<CardRarity, string>> = {
+  [CardRarity.HOLO_RARE]:                 'HOLO',
   [CardRarity.DOUBLE_RARE]:               'EX',
   [CardRarity.NOIR_BLANC_RARE]:          'NBR',
   [CardRarity.ULTRA_RARE]:               'UR',
@@ -29,6 +31,7 @@ export const RARITY_BADGE_LABELS: Partial<Record<CardRarity, string>> = {
   [CardRarity.HYPER_RARE]:               'HR',
   [CardRarity.MEGA_HYPER_RARE]:          'MUR',
   [CardRarity.MEGA_ATTAQUE_RARE]:        'MAR',
+  [CardRarity.SECRET_RARE]:              'SEC',
   [CardRarity.ACE_SPEC_RARE]:            'ACE',
   [CardRarity.PROMO]:                    'PROMO',
 }
@@ -40,8 +43,8 @@ export const TCGDEX_RARITY_MAP: Record<string, CardRarity> = {
   'Commune':                       CardRarity.COMMON,
   'Peu Commune':                   CardRarity.UNCOMMON,
   'Rare':                          CardRarity.RARE,
-  'Rare Holographique':            CardRarity.RARE,
-  'Holo Rare':                     CardRarity.RARE,         // SWSH holo rares (swsh10, swsh11…)
+  'Rare Holographique':            CardRarity.HOLO_RARE,
+  'Holo Rare':                     CardRarity.HOLO_RARE,    // SWSH holo rares (swsh10, swsh11…)
   // ── Double Rare (EX, V, VMAX, VSTAR…) ───────────────────────────────────
   'Double Rare':                   CardRarity.DOUBLE_RARE,  // EN-style key (kept for compat)
   'Double rare':                   CardRarity.DOUBLE_RARE,  // actual FR API string

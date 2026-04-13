@@ -148,8 +148,8 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Common":                    CardRarity.COMMON,
   "Uncommon":                  CardRarity.UNCOMMON,
   "Rare":                      CardRarity.RARE,
-  "Rare Holo":                 CardRarity.RARE,
-  "Rare Holo EX":              CardRarity.DOUBLE_RARE,
+  "Rare Holo":                 CardRarity.HOLO_RARE,
+  "Rare Holo EX":              CardRarity.ULTRA_RARE,     // EX-era & XY-era EX Pokémon (gold star)
   "Rare Holo GX":              CardRarity.DOUBLE_RARE,
   "Rare Holo V":               CardRarity.DOUBLE_RARE,
   "Rare Holo VMAX":            CardRarity.DOUBLE_RARE,
@@ -166,7 +166,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   // Anciens sets
   "Rare Ultra":                CardRarity.ULTRA_RARE,    // Full Art pré-EV (SM, XY, BW)
   "Rare Rainbow":              CardRarity.HYPER_RARE,
-  "Rare Secret":               CardRarity.ILLUSTRATION_RARE,
+  "Rare Secret":               CardRarity.SECRET_RARE,
   "Rare Gold":                 CardRarity.HYPER_RARE,
   "Amazing Rare":              CardRarity.RARE,
   "Radiant Rare":              CardRarity.ILLUSTRATION_RARE,
@@ -186,7 +186,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Black White Rare":          CardRarity.NOIR_BLANC_RARE,
   // Anciens sets — HGSS, BW, DP, etc.
   "Rare Holo LV.X":           CardRarity.DOUBLE_RARE,
-  "Rare Holo Star":            CardRarity.ILLUSTRATION_RARE,
+  "Rare Holo Star":            CardRarity.ULTRA_RARE,     // Gold Star Pokémon (EX era)
   "Rare ACE":                  CardRarity.DOUBLE_RARE,
 };
 
@@ -196,6 +196,7 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.ULTRA_RARE,
   CardRarity.ILLUSTRATION_RARE,
   CardRarity.SPECIAL_ILLUSTRATION_RARE,
+  CardRarity.SECRET_RARE,
   CardRarity.HYPER_RARE,
   CardRarity.MEGA_HYPER_RARE,
   CardRarity.MEGA_ATTAQUE_RARE,

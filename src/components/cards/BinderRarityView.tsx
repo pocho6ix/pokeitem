@@ -3,7 +3,7 @@ import { useState, useEffect, lazy, Suspense, memo } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
 import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
 
-const DARK_ICON_OVERLAY = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE])
+const DARK_ICON_OVERLAY = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE, CardRarity.HOLO_RARE])
 
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
@@ -14,12 +14,14 @@ const DISPLAY_ORDER: CardRarity[] = [
   CardRarity.MEGA_ATTAQUE_RARE,
   CardRarity.MEGA_HYPER_RARE,
   CardRarity.HYPER_RARE,
+  CardRarity.SECRET_RARE,
   CardRarity.NOIR_BLANC_RARE,
   CardRarity.SPECIAL_ILLUSTRATION_RARE,
   CardRarity.ILLUSTRATION_RARE,
   CardRarity.ULTRA_RARE,
   CardRarity.ACE_SPEC_RARE,
   CardRarity.DOUBLE_RARE,
+  CardRarity.HOLO_RARE,
   CardRarity.RARE,
   CardRarity.UNCOMMON,
   CardRarity.COMMON,
