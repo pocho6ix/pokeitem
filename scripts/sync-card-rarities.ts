@@ -178,6 +178,16 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Rare Prime":                CardRarity.RARE,
   "Rare BREAK":                CardRarity.DOUBLE_RARE,
   "Rare Prism Star":           CardRarity.DOUBLE_RARE,
+  // Trainer Gallery / Galerie Galactique (SWSH era sub-sets)
+  "Trainer Gallery Rare Holo": CardRarity.ILLUSTRATION_RARE,
+  // Celebrations Classic Collection
+  "Classic Collection":        CardRarity.RARE,
+  // ME era (Foudre Noire / Flamme Blanche)
+  "Black White Rare":          CardRarity.DOUBLE_RARE,
+  // Anciens sets — HGSS, BW, DP, etc.
+  "Rare Holo LV.X":           CardRarity.DOUBLE_RARE,
+  "Rare Holo Star":            CardRarity.ILLUSTRATION_RARE,
+  "Rare ACE":                  CardRarity.DOUBLE_RARE,
 };
 
 const SPECIAL_RARITIES = new Set<CardRarity>([
@@ -193,8 +203,14 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
 
 // ── Sets avec un sous-set PTCGIO séparé (ex: Shiny Vault) ────────────────────
 
-const SLUG_TO_PTCG_SECONDARY: Record<string, string> = {
-  "destinees-radieuses": "swsh45sv", // Shining Fates Shiny Vault
+const SLUG_TO_PTCG_SECONDARY: Record<string, string[]> = {
+  "destinees-radieuses":    ["swsh45sv"],           // Shining Fates Shiny Vault
+  "stars-etincelantes":     ["swsh9tg"],            // Trainer Gallery
+  "astres-radieux":         ["swsh10tg"],           // Trainer Gallery
+  "origine-perdue":         ["swsh11tg"],           // Trainer Gallery
+  "tempete-argentee":       ["swsh12tg"],           // Trainer Gallery
+  "zenith-supreme":         ["swsh12pt5gg"],        // Galerie Galactique
+  "celebrations":           ["cel25c"],             // Classic Collection
 };
 
 // ── Mapping : slug série → TCGdex set ID (fallback pour sets absents de PTCGIO) ──
@@ -210,6 +226,11 @@ const SLUG_TO_TCGDEX: Record<string, string> = {
 
 function normalizeNumber(n: string): string {
   return n.replace(/^([A-Z]*)0+(\d+)$/, "$1$2");
+}
+
+/** Strip trailing A/An suffix (e.g. "107A" → "107", "15A2" → "15") for Celebrations classic */
+function stripAlternativeSuffix(n: string): string {
+  return n.replace(/A\d*$/, "");
 }
 
 // ── Fetch cards with rarity from TCGdex (FR) ─────────────────────────────────
@@ -292,7 +313,9 @@ async function applyRarityMap(
 ): Promise<number> {
   const toUpdate = dbCards
     .map((c) => {
-      const rarity = rarityMap.get(c.number) ?? rarityMap.get(normalizeNumber(c.number));
+      const rarity = rarityMap.get(c.number)
+        ?? rarityMap.get(normalizeNumber(c.number))
+        ?? rarityMap.get(stripAlternativeSuffix(c.number));
       if (!rarity) return null;
       return { id: c.id, rarity, isSpecial: SPECIAL_RARITIES.has(rarity) };
     })
@@ -351,11 +374,13 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
       rarityMap = await fetchPTCGRarities(ptcgId);
     }
 
-    // Merge secondary PTCGIO set (e.g. Shiny Vault) into rarityMap
-    const ptcgSecondaryId = SLUG_TO_PTCG_SECONDARY[slug];
-    if (ptcgSecondaryId) {
-      const secondary = await fetchPTCGRarities(ptcgSecondaryId);
-      for (const [k, v] of secondary) rarityMap.set(k, v);
+    // Merge secondary PTCGIO sets (e.g. Shiny Vault, Trainer Gallery) into rarityMap
+    const ptcgSecondaryIds = SLUG_TO_PTCG_SECONDARY[slug];
+    if (ptcgSecondaryIds) {
+      for (const secId of ptcgSecondaryIds) {
+        const secondary = await fetchPTCGRarities(secId);
+        for (const [k, v] of secondary) rarityMap.set(k, v);
+      }
     }
 
     // Fallback to TCGdex if PTCGIO returned nothing
