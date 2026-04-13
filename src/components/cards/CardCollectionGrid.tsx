@@ -507,30 +507,32 @@ const VERSION_BADGE_IMG: Record<CardVersion, string> = {
 const BADGE_SIZE = 15; // px — round badge
 
 /** Renders a single version badge as a round image.
- *  dimmed = version not owned (but card owned in another version) → 40% opacity */
+ *  dimmed = version not owned (but card owned in another version) → 40% opacity
+ *  qty > 1 → "2x" label to the left of the badge */
 function VersionBadgeIcon({
   version, qty, dimmed = false,
 }: {
   version: CardVersion; qty?: number; dimmed?: boolean;
 }) {
   return (
-    <div
-      className={`relative shrink-0 rounded-full overflow-hidden ${dimmed ? "opacity-40" : ""}`}
-      style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={VERSION_BADGE_IMG[version]}
-        alt=""
-        style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
-        className="object-cover"
-      />
-      {/* qty bubble when > 1 */}
+    <div className={`flex items-center gap-0.5 ${dimmed ? "opacity-40" : ""}`}>
       {qty && qty > 1 && (
-        <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-[#E7BA76] text-[6px] font-black text-black leading-none shadow">
-          {qty}
+        <span className="text-[7px] font-black leading-none text-black drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]">
+          {qty}x
         </span>
       )}
+      <div
+        className="shrink-0 rounded-full overflow-hidden"
+        style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={VERSION_BADGE_IMG[version]}
+          alt=""
+          style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
+          className="object-cover"
+        />
+      </div>
     </div>
   );
 }
