@@ -162,30 +162,19 @@ export function CollectionHeroCard({ total }: Props) {
   const [chartValues, setChartValues] = useState<number[]>([]);
   const [change24h, setChange24h] = useState<number | null>(null);
 
-  // Fetch 7-day chart data for sparkline + 24h change
+  // Fetch 1-month chart data for sparkline + 30-day change
   useEffect(() => {
-    fetch("/api/portfolio/chart?period=7J")
+    fetch("/api/portfolio/chart?period=1M")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (!json?.data?.length) return;
         const points: ChartPoint[] = json.data;
         setChartValues(points.map((p) => p.value));
 
-        // Find point closest to 24h ago
-        const yesterday = Date.now() - 24 * 60 * 60 * 1000;
-        let bestIdx = 0;
-        let bestDiff = Infinity;
-        points.forEach((p, i) => {
-          const diff = Math.abs(new Date(p.date).getTime() - yesterday);
-          if (diff < bestDiff) {
-            bestDiff = diff;
-            bestIdx = i;
-          }
-        });
-
-        const v24ago = points[bestIdx]?.value;
-        if (v24ago && v24ago > 0) {
-          setChange24h(((total - v24ago) / v24ago) * 100);
+        // First point = value ~30 days ago
+        const firstValue = points[0]?.value;
+        if (firstValue && firstValue > 0) {
+          setChange24h(((total - firstValue) / firstValue) * 100);
         }
       })
       .catch(() => {});
@@ -235,7 +224,7 @@ export function CollectionHeroCard({ total }: Props) {
             <span className="text-xs font-medium" style={{ color: changeColor }}>
               {hidden
                 ? "*** %"
-                : `${isUp ? "+" : ""}${change24h.toFixed(2)} % (24h)`}
+                : `${isUp ? "+" : ""}${change24h.toFixed(2)} % (30j)`}
             </span>
           )}
         </div>
