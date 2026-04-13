@@ -223,108 +223,109 @@ export function ReferralBlock() {
     <div className="space-y-4">
 
       {/* ── Progression + Concours ──────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 space-y-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 className="font-semibold text-[var(--text-primary)]" suppressHydrationWarning>Inviter un ami</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1000 points</p>
-            <p className="text-xs text-[var(--text-secondary)]">+1 semaine Premium gratuite par ami invité</p>
-          </div>
-          {CONTEST_CONFIG.active && countdown !== null && (
-            <span className="shrink-0 rounded-full border border-[var(--border-default)] px-3 py-1 text-xs text-[var(--text-tertiary)]">
-              {countdown}
-            </span>
-          )}
-        </div>
+      <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] overflow-hidden">
 
-        {/* Stepper */}
-        {statsLoading ? (
-          <div className="animate-pulse h-8 rounded-xl bg-white/5" />
-        ) : (
-          <div className="flex items-center px-1">
-            {[0, 1, 2].map((i) => {
-              const completed = i < validatedCount
-              const isLast = i === 2
-              return (
-                <div key={i} className="flex items-center" style={{ flex: isLast ? undefined : 1 }}>
-                  <div
-                    className="shrink-0 flex items-center justify-center rounded-full transition-all"
-                    style={{
-                      width: 32, height: 32,
-                      backgroundColor: completed ? '#D4A853' : 'transparent',
-                      border: completed ? 'none' : '2px solid #2A3A4A',
-                    }}
-                  >
-                    {completed && (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M2 7L5.5 10.5L12 3.5" stroke="#080C12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+        {/* Prize image — very top of the block, edge-to-edge */}
+        {CONTEST_CONFIG.active && (
+          <div
+            className="w-full"
+            style={{
+              boxShadow: 'inset 0 0 0 1.5px rgba(212,168,83,0.4)',
+              animation: 'prize-pulse 3s ease-in-out infinite',
+            }}
+          >
+            <style>{`
+              @keyframes prize-pulse {
+                0%, 100% { box-shadow: inset 0 0 0 1.5px rgba(212,168,83,0.4), 0 0 18px 2px rgba(212,168,83,0.15); }
+                50%       { box-shadow: inset 0 0 0 1.5px rgba(212,168,83,0.7), 0 0 28px 4px rgba(212,168,83,0.28); }
+              }
+            `}</style>
+            {CONTEST_CONFIG.prizeImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={CONTEST_CONFIG.prizeImageUrl}
+                alt="Lot à gagner — UPC Flammes Fantasmagoriques"
+                className="w-full h-auto block"
+                style={{ aspectRatio: '16/9', objectFit: 'cover' }}
+              />
+            ) : (
+              <div
+                className="flex flex-col items-center justify-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"
+                style={{ aspectRatio: '16/9' }}
+              >
+                <span style={{ fontSize: 32 }}>🎁</span>
+                <span className="text-xs font-medium">Image du lot à venir</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="p-5 space-y-4">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="font-semibold text-[var(--text-primary)]" suppressHydrationWarning>Inviter un ami</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1000 points</p>
+              <p className="text-xs text-[var(--text-secondary)]">+1 semaine Premium gratuite par ami invité</p>
+            </div>
+            {CONTEST_CONFIG.active && (
+              <span suppressHydrationWarning className="shrink-0 rounded-full border border-[var(--border-default)] px-3 py-1 text-xs text-[var(--text-tertiary)]">
+                {countdown ?? '…'}
+              </span>
+            )}
+          </div>
+
+          {/* Stepper */}
+          {statsLoading ? (
+            <div className="animate-pulse h-8 rounded-xl bg-white/5" />
+          ) : (
+            <div className="flex items-center px-1">
+              {[0, 1, 2].map((i) => {
+                const completed = i < validatedCount
+                const isLast = i === 2
+                return (
+                  <div key={i} className="flex items-center" style={{ flex: isLast ? undefined : 1 }}>
+                    <div
+                      className="shrink-0 flex items-center justify-center rounded-full transition-all"
+                      style={{
+                        width: 32, height: 32,
+                        backgroundColor: completed ? '#D4A853' : 'transparent',
+                        border: completed ? 'none' : '2px solid #2A3A4A',
+                      }}
+                    >
+                      {completed && (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M2 7L5.5 10.5L12 3.5" stroke="#080C12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+                    {!isLast && (
+                      <div
+                        className="flex-1 transition-all duration-500"
+                        style={{
+                          height: 2,
+                          backgroundColor: i < validatedCount - 1 ? '#D4A853' : '#1E2D3D',
+                          margin: '0 6px',
+                        }}
+                      />
                     )}
                   </div>
-                  {!isLast && (
-                    <div
-                      className="flex-1 transition-all duration-500"
-                      style={{
-                        height: 2,
-                        backgroundColor: i < validatedCount - 1 ? '#D4A853' : '#1E2D3D',
-                        margin: '0 6px',
-                      }}
-                    />
-                  )}
-                </div>
-              )
-            })}
-            <span className="ml-4 shrink-0 text-sm text-[var(--text-secondary)]">
-              {Math.min(validatedCount, 3)}/3 invités
-            </span>
-          </div>
-        )}
+                )
+              })}
+              <span className="ml-4 shrink-0 text-sm text-[var(--text-secondary)]">
+                {Math.min(validatedCount, 3)}/3 invités
+              </span>
+            </div>
+          )}
 
-        {/* Concours prize line */}
-        {CONTEST_CONFIG.active && (
-          <>
+          {/* Concours text */}
+          {CONTEST_CONFIG.active && (
             <p className="text-xs text-[var(--text-tertiary)] border-t border-[var(--border-default)] pt-3 leading-relaxed">
               <span className="font-semibold text-[#D4A853]">Concours</span>
-              {' · '}Le joueur avec le plus de points remporte {CONTEST_CONFIG.prizeMain} 🔥 Plein d&apos;autres lots pour les meilleurs du leaderboard :{' '}
-              <span className="font-semibold text-[var(--text-secondary)]">{CONTEST_CONFIG.prizeDetails} !</span>
+              {' · '}Le joueur avec le plus de points remporte une UPC Flammes Fantasmagoriques 🔥 Plein d&apos;autres lots pour les meilleurs du leaderboard.
             </p>
-
-            {/* Prize image */}
-            <div
-              className="relative w-full overflow-hidden rounded-xl"
-              style={{
-                boxShadow: '0 0 0 1.5px rgba(212,168,83,0.4), 0 0 18px 2px rgba(212,168,83,0.15)',
-                animation: 'prize-pulse 3s ease-in-out infinite',
-              }}
-            >
-              <style>{`
-                @keyframes prize-pulse {
-                  0%, 100% { box-shadow: 0 0 0 1.5px rgba(212,168,83,0.4), 0 0 18px 2px rgba(212,168,83,0.15); }
-                  50%       { box-shadow: 0 0 0 1.5px rgba(212,168,83,0.7), 0 0 28px 4px rgba(212,168,83,0.28); }
-                }
-              `}</style>
-
-              {CONTEST_CONFIG.prizeImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={CONTEST_CONFIG.prizeImageUrl}
-                  alt="Lot à gagner — UPC Flammes Fantasmagoriques"
-                  className="w-full h-auto block"
-                  style={{ aspectRatio: '16/9', objectFit: 'cover' }}
-                />
-              ) : (
-                <div
-                  className="flex flex-col items-center justify-center gap-2 bg-[var(--bg-secondary)] text-[var(--text-tertiary)]"
-                  style={{ aspectRatio: '16/9' }}
-                >
-                  <span style={{ fontSize: 32 }}>🎁</span>
-                  <span className="text-xs font-medium">Image du lot à venir</span>
-                </div>
-              )}
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       {/* ── Lien de parrainage ──────────────────────────────────────────── */}
