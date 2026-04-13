@@ -155,7 +155,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Rare Holo VMAX":            CardRarity.DOUBLE_RARE,
   "Rare Holo VSTAR":           CardRarity.DOUBLE_RARE,
   "Double Rare":               CardRarity.DOUBLE_RARE,
-  "Ultra Rare":                CardRarity.DOUBLE_RARE,    // Full-Art EX (SV era)
+  "Ultra Rare":                CardRarity.ULTRA_RARE,     // Full-Art EX, Full-Art Supporter
   "Illustration Rare":         CardRarity.ILLUSTRATION_RARE,
   "Special Illustration Rare": CardRarity.SPECIAL_ILLUSTRATION_RARE,
   "Hyper Rare":                CardRarity.HYPER_RARE,
@@ -164,7 +164,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "ACE SPEC Rare":             CardRarity.ACE_SPEC_RARE,
   "Promo":                     CardRarity.PROMO,
   // Anciens sets
-  "Rare Ultra":                CardRarity.ILLUSTRATION_RARE,  // Full Art pré-EV
+  "Rare Ultra":                CardRarity.ULTRA_RARE,    // Full Art pré-EV (SM, XY, BW)
   "Rare Rainbow":              CardRarity.HYPER_RARE,
   "Rare Secret":               CardRarity.ILLUSTRATION_RARE,
   "Rare Gold":                 CardRarity.HYPER_RARE,
@@ -183,7 +183,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   // Celebrations Classic Collection
   "Classic Collection":        CardRarity.RARE,
   // ME era (Foudre Noire / Flamme Blanche)
-  "Black White Rare":          CardRarity.DOUBLE_RARE,
+  "Black White Rare":          CardRarity.NOIR_BLANC_RARE,
   // Anciens sets — HGSS, BW, DP, etc.
   "Rare Holo LV.X":           CardRarity.DOUBLE_RARE,
   "Rare Holo Star":            CardRarity.ILLUSTRATION_RARE,
@@ -192,6 +192,8 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
 
 const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.DOUBLE_RARE,
+  CardRarity.NOIR_BLANC_RARE,
+  CardRarity.ULTRA_RARE,
   CardRarity.ILLUSTRATION_RARE,
   CardRarity.SPECIAL_ILLUSTRATION_RARE,
   CardRarity.HYPER_RARE,

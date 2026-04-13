@@ -16,6 +16,8 @@ const DISPLAY_ORDER: CardRarity[] = [
   CardRarity.HYPER_RARE,
   CardRarity.SPECIAL_ILLUSTRATION_RARE,
   CardRarity.ILLUSTRATION_RARE,
+  CardRarity.ULTRA_RARE,
+  CardRarity.NOIR_BLANC_RARE,
   CardRarity.ACE_SPEC_RARE,
   CardRarity.DOUBLE_RARE,
   CardRarity.RARE,

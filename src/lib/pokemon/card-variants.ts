@@ -3,6 +3,8 @@ import { CardRarity } from '@/types/card'
 // Raretés sans version Reverse (cartes spéciales : EX, Full Art, IR, SAR, etc.)
 export const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.DOUBLE_RARE,               // EX, V, VMAX, VSTAR
+  CardRarity.NOIR_BLANC_RARE,           // Noir Blanc Rare (ME era chase cards)
+  CardRarity.ULTRA_RARE,                // Full Art EX, Full Art Supporter
   CardRarity.ILLUSTRATION_RARE,         // IR (Full Art)
   CardRarity.SPECIAL_ILLUSTRATION_RARE, // SAR
   CardRarity.HYPER_RARE,                // HR
@@ -20,6 +22,8 @@ export function isSpecialCard(rarity: CardRarity | null | undefined): boolean {
 // Labels courts pour les badges dans la grille
 export const RARITY_BADGE_LABELS: Partial<Record<CardRarity, string>> = {
   [CardRarity.DOUBLE_RARE]:               'EX',
+  [CardRarity.NOIR_BLANC_RARE]:          'NBR',
+  [CardRarity.ULTRA_RARE]:               'UR',
   [CardRarity.ILLUSTRATION_RARE]:         'IR',
   [CardRarity.SPECIAL_ILLUSTRATION_RARE]: 'SAR',
   [CardRarity.HYPER_RARE]:               'HR',
@@ -41,8 +45,8 @@ export const TCGDEX_RARITY_MAP: Record<string, CardRarity> = {
   // ── Double Rare (EX, V, VMAX, VSTAR…) ───────────────────────────────────
   'Double Rare':                   CardRarity.DOUBLE_RARE,  // EN-style key (kept for compat)
   'Double rare':                   CardRarity.DOUBLE_RARE,  // actual FR API string
-  'Ultra Rare':                    CardRarity.DOUBLE_RARE,  // V cards, GX, Full-Art EX
-  'Rare Noir Blanc':               CardRarity.DOUBLE_RARE,  // Foudre Noire / Flamme Blanche tier
+  'Ultra Rare':                    CardRarity.ULTRA_RARE,   // Full-Art EX, Full-Art Supporter
+  'Rare Noir Blanc':               CardRarity.NOIR_BLANC_RARE,  // Foudre Noire / Flamme Blanche chase cards
   // ── Magnifique rare (VSTAR special art, Amazing Rare, Rainbow Rare) ──────
   'Magnifique rare':               CardRarity.HYPER_RARE,   // SWSH VSTAR special art, SM Rainbow Rare
   // ── Illustration Rare (AR) ───────────────────────────────────────────────
