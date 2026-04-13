@@ -331,9 +331,11 @@ export function CardScanner() {
         setPanelCard(data.candidates[0]);
         setIdentifyPhase("result");
         refreshSubscription();
+        // Go directly to the full result screen
+        setState("result");
       } else {
         setIdentifyPhase("waiting");
-        setError("Carte non reconnue. Réessayez.");
+        setState("result");
       }
     } catch {
       setIdentifyPhase("waiting");
@@ -1063,8 +1065,7 @@ export function CardScanner() {
               <button
                 onClick={() => void addFromPanel(panelCard)}
                 disabled={isAdding}
-                className="rounded-xl px-3 py-2 text-sm font-semibold transition-opacity active:opacity-80 disabled:opacity-50"
-                style={{ border: "1.5px solid #D4A853", color: "#D4A853", background: "transparent" }}
+                className="btn-gold rounded-xl px-3 py-2 text-sm font-semibold text-black active:scale-[0.98] transition-all disabled:opacity-50"
               >
                 {isAdding ? "…" : "+ Collection"}
               </button>
@@ -1074,7 +1075,7 @@ export function CardScanner() {
                   className="text-[11px]"
                   style={{ color: "#8B95A5" }}
                 >
-                  Voir détails
+                  Est-ce la bonne carte ?
                 </button>
               )}
             </div>
