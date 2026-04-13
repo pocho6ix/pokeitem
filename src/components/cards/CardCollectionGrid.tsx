@@ -510,13 +510,13 @@ const BADGE_SIZE = 15; // px — round badge
  *  dimmed = version not owned (but card owned in another version) → 40% opacity
  *  qty > 1 → "×2" label after the badge */
 function VersionBadgeIcon({
-  version, qty, dimmed = false,
+  version, qty = 0, dimmed = false,
 }: {
   version: CardVersion; qty?: number; dimmed?: boolean;
 }) {
-  const showQty = qty != null && qty > 1;
+  const showQty = qty > 1;
   return (
-    <div className={`flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 ${showQty ? "pr-1" : "pr-0.5"} py-0.5 ${dimmed ? "opacity-40" : ""}`}>
+    <div className={`flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 ${showQty ? "pr-1" : "pr-0.5"} py-0.5${dimmed ? " opacity-40" : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={VERSION_BADGE_IMG[version]}
@@ -1074,7 +1074,7 @@ export function CardCollectionGrid({
                       {/* DESC order so NORMALE renders last = visually at bottom */}
                       {[...allVersions].reverse().map((v) => {
                         const isVersionOwned = ownedCardMap?.has(v) ?? false;
-                        const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : undefined;
+                        const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : 0;
                         // Dim individually only when card IS owned but this specific version isn't
                         const dimmed = isOwned && !isVersionOwned;
                         return (
