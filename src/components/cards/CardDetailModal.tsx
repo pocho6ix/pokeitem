@@ -128,6 +128,10 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const [addSuccess, setAddSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // Ownership state
+  const [isOwned, setIsOwned] = useState(false);
+  const [removeSuccess, setRemoveSuccess] = useState(false);
+
   // Cards with special rarities (EX, IR, SAR, HR, MUR, MAR, ACE, Promo)
   // don't have a reverse variant — hide the toggle entirely.
   const canHaveReverse =
@@ -140,12 +144,19 @@ export function CardDetailModal({ cardId, onClose }: Props) {
       setLoading(true);
       setError(false);
       try {
-        const res = await fetch(`/api/cards/${cardId}/price-history?period=${p}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const [priceRes, ownedRes] = await Promise.all([
+          fetch(`/api/cards/${cardId}/price-history?period=${p}`),
+          fetch(`/api/cards/${cardId}/owned`),
+        ]);
+        if (!priceRes.ok) throw new Error(`HTTP ${priceRes.status}`);
+        const data = await priceRes.json();
         setCard(data.card);
         setSerie(data.serie);
         setHistory(data.history);
+        if (ownedRes.ok) {
+          const ownedData = await ownedRes.json();
+          setIsOwned(ownedData.owned);
+        }
       } catch (err) {
         console.error("[CardDetailModal] fetch failed:", err);
         setError(true);
@@ -216,9 +227,29 @@ export function CardDetailModal({ cardId, onClose }: Props) {
         });
         if (!res.ok) throw new Error();
         setAddSuccess(true);
+        setIsOwned(true);
         setTimeout(() => { setShowAddSheet(false); setAddSuccess(false); }, 1200);
       } catch {
         // silent — user can retry
+      }
+    });
+  }
+
+  async function handleRemoveFromCollection() {
+    if (!card) return;
+    startTransition(async () => {
+      try {
+        const res = await fetch("/api/cards/collection", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ entries: [{ cardId: card.id }] }),
+        });
+        if (!res.ok) throw new Error();
+        setRemoveSuccess(true);
+        setIsOwned(false);
+        setTimeout(() => setRemoveSuccess(false), 1500);
+      } catch {
+        // silent
       }
     });
   }
@@ -521,15 +552,26 @@ export function CardDetailModal({ cardId, onClose }: Props) {
             </div>
           </div>
 
-          {/* ── Add to collection CTA ────────────────────────────────────── */}
+          {/* ── Add / Remove CTA ─────────────────────────────────────────── */}
           {card && (
-            <button
-              onClick={() => setShowAddSheet(true)}
-              className="btn-gold w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-black active:scale-[0.98] transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              Ajouter à ma collection
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => setShowAddSheet(true)}
+                className="btn-gold w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-black active:scale-[0.98] transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter à ma collection
+              </button>
+              {isOwned && (
+                <button
+                  onClick={handleRemoveFromCollection}
+                  disabled={isPending || removeSuccess}
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60 active:scale-[0.98] transition-all"
+                >
+                  {removeSuccess ? "✓ Retiré" : "Retirer de ma collection"}
+                </button>
+              )}
+            </div>
           )}
 
           {/* ── Price history chart ───────────────────────────────────── */}
