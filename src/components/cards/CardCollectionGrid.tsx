@@ -648,6 +648,8 @@ export function CardCollectionGrid({
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
     // "missing" = at least one applicable version is NOT owned
     if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
+    // In reverse mode, hide single-version cards (special cards don't have reverse)
+    if (showReverse) result = result.filter((c) => !c.isSpecial);
 
     return [...result].sort((a, b) => {
       let cmp = 0;
