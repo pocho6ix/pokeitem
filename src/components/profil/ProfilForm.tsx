@@ -7,7 +7,6 @@ import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { ProfileTabs } from "@/components/profil/ProfileTabs";
 import { UsageBars } from "@/components/subscription/UsageBars";
 import { useSubscription } from "@/hooks/useSubscription";
-import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
 
 interface UserProfile {
   id: string;
@@ -359,9 +358,6 @@ export function ProfilForm() {
           </div>
         </div>
       </section>
-      {/* Telegram community */}
-      <TelegramBannerButton />
-
       {/* Logout */}
       <button
         type="button"
