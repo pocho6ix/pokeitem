@@ -14,7 +14,6 @@ import { ReferralBlock } from "@/components/profil/ReferralBlock";
 import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
-import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
 import { getPriceForVersion } from "@/lib/display-price";
 
 
@@ -145,7 +144,6 @@ export default async function HomePage() {
             <div className="mx-auto max-w-xl space-y-4">
               <ReferralBlock />
               <QuestsBlock />
-              <TelegramBannerButton />
             </div>
           </section>
         </HideValuesProvider>
