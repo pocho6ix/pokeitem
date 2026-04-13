@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { CardVersion } from "@/data/card-versions";
 import { getPriceForVersion } from "@/lib/display-price";
 import { DoublesGrid } from "@/components/cards/DoublesGrid";
+import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import type { BlocGroup } from "@/components/cards/DoublesGrid";
 
 export const metadata: Metadata = {
@@ -100,6 +101,9 @@ export default async function PortfolioDoublesPage() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Classeur
       </Link>
+      <div className="mb-4 max-w-xl">
+        <HeroSearchBar />
+      </div>
       <DoublesGrid blocs={blocs} totalDoubles={rows.length} totalSeries={totalSeries} />
     </>
   );

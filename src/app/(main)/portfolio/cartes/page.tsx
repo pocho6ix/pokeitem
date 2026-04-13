@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { BinderCartesWrapper } from "@/components/cards/BinderCartesWrapper";
+import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
@@ -141,6 +142,9 @@ export default async function PortfolioCartesPage({
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         Classeur
       </Link>
+      <div className="mb-4 max-w-xl">
+        <HeroSearchBar />
+      </div>
       <BinderCartesWrapper blocs={blocs} baseUrl="/portfolio/cartes" />
     </>
   );
