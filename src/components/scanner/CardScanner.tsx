@@ -5,6 +5,8 @@ import {
   useState,
   useCallback,
   useEffect,
+  lazy,
+  Suspense,
 } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +16,10 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
 import type { CardCandidate, IdentifyResponse } from "@/app/api/scanner/identify/route";
+
+const CardDetailModal = lazy(() =>
+  import("@/components/cards/CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -95,8 +101,7 @@ function TipsBubble({ visible, onDismiss }: { visible: boolean; onDismiss: () =>
         </div>
         <button
           onClick={onDismiss}
-          className="w-full rounded-xl py-3 text-sm font-semibold transition-opacity active:opacity-80"
-          style={{ background: "#D4A853", color: "#0A0E14" }}
+          className="btn-gold w-full rounded-xl py-3 text-sm font-semibold text-black active:scale-[0.98] transition-all"
         >
           Compris !
         </button>
@@ -195,6 +200,9 @@ export function CardScanner() {
   const [error, setError]               = useState<string | null>(null);
   const [tipsVisible, setTipsVisible]   = useState(false);
   const [tipsAutoOpen, setTipsAutoOpen] = useState(false);
+
+  // Card detail
+  const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
   // Search
   const [searchQuery, setSearchQuery]   = useState("");
@@ -603,7 +611,7 @@ export function CardScanner() {
             )}
           </div>
 
-          <div className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4">
+          <button onClick={() => setDetailCardId(selectedCard.cardId)} className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4 text-left w-[calc(100%-2rem)]">
             <h2 className="text-base font-bold text-white mb-0.5">{selectedCard.card.name}</h2>
             <p className="text-xs text-white/40 mb-3">{selectedCard.serie.name} · #{selectedCard.card.number}</p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -616,7 +624,8 @@ export function CardScanner() {
                 {selectedCard.card.rarity.toLowerCase().replace(/_/g, " ")}
               </span>
             </div>
-          </div>
+            <p className="mt-2 text-[10px] text-white/25 text-center">Appuyer pour voir les détails →</p>
+          </button>
 
           {versions.length > 1 && (
             <div className="mx-4 mb-4">
@@ -624,7 +633,7 @@ export function CardScanner() {
               <div className="flex flex-wrap gap-2">
                 {versions.map((v) => (
                   <button key={v} onClick={() => setSelectedVersion(v)}
-                    className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "border-white/80 bg-white text-black" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
+                    className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "btn-gold border-transparent text-black shadow-sm" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
                   >
                     {CARD_VERSION_LABELS[v]}
                   </button>
@@ -637,8 +646,7 @@ export function CardScanner() {
             <button
               onClick={() => void addFromConfirm(selectedCard, confirmSource)}
               disabled={isAdding}
-              className="flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 transition-opacity active:opacity-80"
-              style={{ background: "#D4A853" }}
+              className="btn-gold flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 active:scale-[0.98] transition-all"
             >
               {isAdding ? (
                 <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Ajout…</>
@@ -690,7 +698,7 @@ export function CardScanner() {
                 </div>
               )}
             </div>
-            <div className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4">
+            <button onClick={() => setDetailCardId(top.cardId)} className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4 text-left w-[calc(100%-2rem)]">
               <div className="flex items-center gap-2 mb-1">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-green-400 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
                 <span className="text-[11px] text-green-400 font-medium">Carte identifiée</span>
@@ -704,7 +712,8 @@ export function CardScanner() {
                 )}
                 <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] text-white/40 capitalize">{top.card.rarity.toLowerCase().replace(/_/g, " ")}</span>
               </div>
-            </div>
+              <p className="mt-2 text-[10px] text-white/25 text-center">Appuyer pour voir les détails →</p>
+            </button>
 
             {(() => {
               const versions = getSerieVersions(top.serie.slug, top.serie.blocSlug);
@@ -715,7 +724,7 @@ export function CardScanner() {
                   <div className="flex flex-wrap gap-2">
                     {versions.map((v) => (
                       <button key={v} onClick={() => setSelectedVersion(v)}
-                        className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "border-white/80 bg-white text-black" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
+                        className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "btn-gold border-transparent text-black shadow-sm" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
                       >
                         {CARD_VERSION_LABELS[v]}
                       </button>
@@ -729,8 +738,7 @@ export function CardScanner() {
               <button
                 onClick={() => void addFromConfirm(top, "auto")}
                 disabled={isAdding}
-                className="flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 transition-opacity active:opacity-80"
-                style={{ background: "#D4A853" }}
+                className="btn-gold flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 active:scale-[0.98] transition-all"
               >
                 {isAdding ? (
                   <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Ajout…</>
@@ -800,7 +808,7 @@ export function CardScanner() {
               <p className="mt-1 text-xs text-white/35 leading-relaxed">Essayez sous un meilleur éclairage,<br />sans reflets, avec la carte bien cadrée.</p>
             </div>
             <div className="flex flex-col gap-2.5 w-full max-w-xs">
-              <button onClick={backToScanning} className="rounded-2xl py-4 text-sm font-semibold text-black transition-opacity active:opacity-80" style={{ background: "#D4A853" }}>
+              <button onClick={backToScanning} className="btn-gold rounded-2xl py-4 text-sm font-semibold text-black active:scale-[0.98] transition-all">
                 Réessayer
               </button>
               <button
@@ -858,8 +866,7 @@ export function CardScanner() {
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full max-w-xs rounded-2xl py-4 text-sm font-semibold text-black"
-            style={{ background: "#D4A853" }}
+            className="btn-gold w-full max-w-xs rounded-2xl py-4 text-sm font-semibold text-black active:scale-[0.98] transition-all"
           >
             Importer depuis la galerie
           </button>
@@ -1103,6 +1110,12 @@ export function CardScanner() {
         limit={paywallState.limit}
         onClose={closePaywall}
       />
+
+      {detailCardId && (
+        <Suspense fallback={null}>
+          <CardDetailModal cardId={detailCardId} onClose={() => setDetailCardId(null)} />
+        </Suspense>
+      )}
 
       <style jsx global>{`
         @keyframes panelSlideUp {
