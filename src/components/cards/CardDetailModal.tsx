@@ -1,12 +1,38 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { X } from "lucide-react";
+import { useState, useEffect, useCallback, useTransition } from "react";
+import { X, Plus } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from "@/types/card";
+import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES } from "@/types/card";
 import { isSpecialCard } from "@/lib/pokemon/card-variants";
+import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import type { CardRarity } from "@/types/card";
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+// ─── Add-to-collection constants ─────────────────────────────────────────────
+
+const CONDITION_BADGES: { value: CardCondition; label: string; badge: string }[] = [
+  { value: CardCondition.POOR,         label: "Poor",         badge: "badge_poor.png"         },
+  { value: CardCondition.PLAYED,       label: "Played",       badge: "badge_played.png"       },
+  { value: CardCondition.LIGHT_PLAYED, label: "Light Played", badge: "badge_light_played.png" },
+  { value: CardCondition.GOOD,         label: "Good",         badge: "badge_good.png"         },
+  { value: CardCondition.EXCELLENT,    label: "Excellent",    badge: "badge_excellent.png"    },
+  { value: CardCondition.NEAR_MINT,    label: "Near Mint",    badge: "badge_near_mint.png"    },
+  { value: CardCondition.MINT,         label: "Mint",         badge: "badge_mint.png"         },
+  { value: CardCondition.GRADED,       label: "Gradée",       badge: "badge_graded.png"       },
+];
+const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
+const VERSION_LABELS: Record<CardVersion, string> = {
+  [CardVersion.NORMAL]:             "Normale",
+  [CardVersion.REVERSE]:            "Reverse",
+  [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
+  [CardVersion.REVERSE_MASTERBALL]: "Masterball",
+};
+type PriceMode = "packed" | "current" | "manual";
 
 // Recharts lazy-loaded — not needed until modal opens
 const PriceHistoryChart = dynamic(
@@ -90,6 +116,18 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Add-to-collection sheet state
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [addQty, setAddQty] = useState(1);
+  const [addCondition, setAddCondition] = useState<CardCondition>(CardCondition.NEAR_MINT);
+  const [addVersion, setAddVersion] = useState<CardVersion>(CardVersion.NORMAL);
+  const [addLanguage, setAddLanguage] = useState("FR");
+  const [addPriceMode, setAddPriceMode] = useState<PriceMode>("current");
+  const [addManualPrice, setAddManualPrice] = useState("");
+  const [addGradeValue, setAddGradeValue] = useState<number | null>(null);
+  const [addSuccess, setAddSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   // Cards with special rarities (EX, IR, SAR, HR, MUR, MAR, ACE, Promo)
   // don't have a reverse variant — hide the toggle entirely.
   const canHaveReverse =
@@ -148,6 +186,43 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
   const rarityImage = rarity ? CARD_RARITY_IMAGE[rarity] : null;
 
+  // Available versions for the add sheet
+  const availableVersions: CardVersion[] = (card && serie && !card.isSpecial && !isSpecialCard(card.rarity as CardRarity))
+    ? getSerieVersions(serie.slug)
+    : [CardVersion.NORMAL];
+
+  const currentPrice = card?.priceFr ?? card?.price ?? null;
+
+  async function handleAddToCollection() {
+    if (!card) return;
+    startTransition(async () => {
+      try {
+        const res = await fetch("/api/cards/collection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cards: [{
+              cardId: card.id,
+              quantity: addQty,
+              condition: addCondition,
+              language: addLanguage,
+              version: addVersion,
+              foil: false,
+              priceMode: addPriceMode,
+              manualPrice: addPriceMode === "manual" && addManualPrice ? parseFloat(addManualPrice) : undefined,
+              gradeValue: addCondition === CardCondition.GRADED ? addGradeValue : undefined,
+            }],
+          }),
+        });
+        if (!res.ok) throw new Error();
+        setAddSuccess(true);
+        setTimeout(() => { setShowAddSheet(false); setAddSuccess(false); }, 1200);
+      } catch {
+        // silent — user can retry
+      }
+    });
+  }
+
   // Error state — show a clean message instead of broken UI
   if (error) {
     return (
@@ -171,6 +246,168 @@ export function CardDetailModal({ cardId, onClose }: Props) {
   }
 
   return (
+    <>
+    {/* ── Add-to-collection sheet ─────────────────────────────────────────── */}
+    {showAddSheet && (
+      <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60" onClick={() => setShowAddSheet(false)}>
+        <div
+          className="w-full max-w-lg rounded-t-3xl bg-[var(--bg-card)] shadow-2xl flex flex-col max-h-[85vh]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="h-1 w-10 rounded-full bg-[var(--border-default)]" />
+          </div>
+
+          <div className="overflow-y-auto px-5 pt-2 pb-10">
+            {/* Header */}
+            <div className="mb-4 flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-[var(--text-primary)]">Ajouter à ma collection</h2>
+                <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{card?.name}</p>
+              </div>
+              <button
+                onClick={() => setShowAddSheet(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Version */}
+            {availableVersions.length > 1 && (
+              <div className="mb-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Version</p>
+                <div className={cn("grid gap-1.5", availableVersions.length <= 2 ? "grid-cols-2" : "grid-cols-4")}>
+                  {availableVersions.map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setAddVersion(v)}
+                      className={cn(
+                        "flex flex-col items-center rounded-xl border px-1 py-2 text-xs font-medium transition-all",
+                        addVersion === v
+                          ? "btn-gold border-transparent text-black shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
+                      )}
+                    >
+                      {VERSION_LABELS[v]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quantity */}
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Quantité</p>
+              <div className="flex items-center justify-between rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2">
+                <button onClick={() => setAddQty(Math.max(1, addQty - 1))} className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold text-[var(--text-secondary)]">−</button>
+                <span className="text-lg font-bold text-[var(--text-primary)]">{addQty}</span>
+                <button onClick={() => setAddQty(Math.min(99, addQty + 1))} className="flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold text-[var(--text-secondary)]">+</button>
+              </div>
+            </div>
+
+            {/* Condition */}
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">État de la carte</p>
+              <div className="flex justify-between items-center">
+                {CONDITION_BADGES.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => { setAddCondition(c.value); setAddGradeValue(null); }}
+                    className="rounded-full transition-all focus:outline-none"
+                    style={{
+                      opacity: addCondition === c.value ? 1 : 0.45,
+                      outline: addCondition === c.value ? '2px solid #E7BA76' : 'none',
+                      outlineOffset: 2,
+                    }}
+                    aria-label={c.label}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/images/badges/${c.badge}`} alt={c.label} className="h-7 w-7 rounded-full object-cover" />
+                  </button>
+                ))}
+              </div>
+              {addCondition === CardCondition.GRADED && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {GRADE_VALUES.map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setAddGradeValue(addGradeValue === g ? null : g)}
+                      className={cn(
+                        "rounded-xl border px-3 py-1.5 text-xs font-bold transition-all",
+                        addGradeValue === g
+                          ? "btn-gold border-transparent text-black shadow-sm"
+                          : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                      )}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Language */}
+            <div className="mb-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Langue</p>
+              <select
+                value={addLanguage}
+                onChange={(e) => setAddLanguage(e.target.value)}
+                className="w-full rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#E7BA76]"
+              >
+                {CARD_LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+              </select>
+            </div>
+
+            {/* Price mode */}
+            <div className="mb-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Prix d&apos;achat</p>
+              <div className="grid grid-cols-3 gap-2">
+                {(["packed", "current", "manual"] as PriceMode[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setAddPriceMode(m)}
+                    className={cn(
+                      "rounded-2xl border py-2.5 text-sm font-medium transition-all",
+                      addPriceMode === m
+                        ? "btn-gold border-transparent text-black shadow-sm"
+                        : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
+                    )}
+                  >
+                    {m === "packed" ? "Packée" : m === "current" ? "Cote actuelle" : "Manuel"}
+                    <span className={cn("block text-[10px] font-normal mt-0.5", addPriceMode === m ? "text-black/60" : "text-[var(--text-tertiary)]")}>
+                      {m === "packed" ? "0,70\u00a0€" : m === "current" ? (currentPrice != null ? `${currentPrice.toFixed(2)}\u00a0€` : "—") : "Saisir"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {addPriceMode === "manual" && (
+                <div className="mt-3 flex items-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5">
+                  <input
+                    type="number" min="0" step="0.01" placeholder="0,00"
+                    value={addManualPrice}
+                    onChange={(e) => setAddManualPrice(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+                  />
+                  <span className="text-sm text-[var(--text-secondary)]">€</span>
+                </div>
+              )}
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={handleAddToCollection}
+              disabled={isPending || addSuccess}
+              className="btn-gold w-full rounded-2xl py-4 text-base font-bold text-black disabled:opacity-60 active:scale-[0.98]"
+            >
+              {addSuccess ? "✓ Ajouté !" : isPending ? "Enregistrement…" : "Ajouter à ma collection"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -284,6 +521,17 @@ export function CardDetailModal({ cardId, onClose }: Props) {
             </div>
           </div>
 
+          {/* ── Add to collection CTA ────────────────────────────────────── */}
+          {card && (
+            <button
+              onClick={() => setShowAddSheet(true)}
+              className="btn-gold w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-black active:scale-[0.98] transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Ajouter à ma collection
+            </button>
+          )}
+
           {/* ── Price history chart ───────────────────────────────────── */}
           <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
             <div className="flex items-center justify-between mb-3">
@@ -390,6 +638,7 @@ export function CardDetailModal({ cardId, onClose }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

@@ -174,7 +174,7 @@ export function ProfilForm() {
           className="profil-pro-banner w-full rounded-full px-6 py-3.5 text-center transition-all hover:brightness-110 active:scale-[0.97]"
         >
           <span className="relative z-10 text-sm font-bold uppercase tracking-wide" style={{ color: '#1A1A1A' }}>
-            ★ DEVENIR PRO
+            ★ DEVENIR PREMIUM
           </span>
           <style jsx>{`
             .profil-pro-banner {
