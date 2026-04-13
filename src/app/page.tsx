@@ -100,12 +100,18 @@ export default async function HomePage() {
       {userId ? (
         /* ── Authenticated: dashboard-style hero ── */
         <HideValuesProvider>
-          <div className="px-4 pb-6 pt-6 sm:px-6 lg:px-8">
+          <div className="px-4 pb-2 pt-6 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-xl">
               <HeroSearchBar />
               {collectionValue && (
                 <CollectionHeroCard total={collectionValue.total} firstCardDate={firstCardDate?.toISOString() ?? null} />
               )}
+            </div>
+          </div>
+
+          <div className="px-4 pt-3 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-xl">
+              <ClasseurBetaOffer />
             </div>
           </div>
 
@@ -137,7 +143,6 @@ export default async function HomePage() {
 
           <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? "pb-4" : "pb-28"}`}>
             <div className="mx-auto max-w-xl space-y-4">
-              <ClasseurBetaOffer />
               <ReferralBlock />
               <QuestsBlock />
               <TelegramBannerButton />
