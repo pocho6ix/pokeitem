@@ -110,9 +110,10 @@ export function HeroSearchBar() {
     inputRef.current?.focus();
   }
 
-  const displayPrice = (c: CardResult) => {
-    const p = c.priceFr ?? c.price;
-    return p ? fmt(p) : null;
+  const displayPrice = (c: CardResult): { label: string; flag: string } | null => {
+    if (c.priceFr)  return { label: fmt(c.priceFr), flag: "🇫🇷" };
+    if (c.price)    return { label: fmt(c.price),   flag: "🌐" };
+    return null;
   };
 
   return (
@@ -174,7 +175,9 @@ export function HeroSearchBar() {
 
                   {/* Price */}
                   {price && (
-                    <span className="shrink-0 text-xs font-semibold text-[#E7BA76]">{price}</span>
+                    <span className="shrink-0 text-xs font-semibold text-[var(--text-primary)]">
+                      {price.flag} {price.label}
+                    </span>
                   )}
                 </button>
               );

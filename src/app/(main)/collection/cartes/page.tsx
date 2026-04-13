@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { TabNav } from "@/components/ui/TabNav";
+import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
@@ -116,6 +117,10 @@ export default async function CollectionCartesPage() {
           { label: "Produits scellés", href: "/collection/produits", active: false },
         ]}
       />
+
+      <div className="my-4 max-w-xl">
+        <HeroSearchBar />
+      </div>
 
       <BlocSerieCardList blocs={blocs} baseUrl="/collection/cartes" />
     </div>
