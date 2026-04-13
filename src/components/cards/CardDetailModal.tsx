@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback, useTransition, useRef } from "react";
 import { X, Plus } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -113,6 +113,8 @@ function formatEur(value: number | null | undefined): string {
 
 export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCard }: Props) {
   const isInline = variant === "inline";
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const [card, setCard] = useState<CardDetail | null>(null);
   const [serie, setSerie] = useState<SerieDetail | null>(null);
   const [history, setHistory] = useState<PricePoint[]>([]);
@@ -181,11 +183,13 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
   useEffect(() => {
     if (isInline) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose, isInline]);
+    // isInline is stable (derived from variant prop); onCloseRef avoids stale closure
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInline]);
 
   // Prevent body scroll (modal only)
   useEffect(() => {
@@ -194,6 +198,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
     return () => {
       document.body.style.overflow = "";
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInline]);
 
   function handlePeriodChange(p: Period) {
