@@ -646,8 +646,8 @@ export function CardCollectionGrid({
     if (rarityFilter)  result = result.filter((c) => c.rarity === rarityFilter);
     if (typeFilter.size > 0) result = result.filter((c) => cardMatchesTypeFilter(c, typeFilter));
     if (viewFilter === "owned")   result = result.filter((c) => ownedMap.has(c.id));
-    // "missing" = no version owned at all (owning any version means the card is not "missing")
-    if (viewFilter === "missing") result = result.filter((c) => !ownedMap.has(c.id));
+    // "missing" = at least one applicable version is NOT owned
+    if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
 
     return [...result].sort((a, b) => {
       let cmp = 0;
@@ -663,11 +663,12 @@ export function CardCollectionGrid({
     });
   }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, showReverse, ownedMap, availableVersions]);
 
+  // "owned" = at least one version owned; "complete" = ALL versions owned
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
-  // Cards where no version is owned at all
+  // "missing" = at least one applicable version is NOT owned
   const missingCount = useMemo(
-    () => cards.filter((c) => !ownedMap.has(c.id)).length,
-    [cards, ownedMap]
+    () => cards.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0).length,
+    [cards, ownedMap, availableVersions]
   );
   const progressPct  = cards.length > 0 ? Math.round((ownedCount / cards.length) * 100) : 0;
 

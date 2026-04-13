@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Trash2, X, CheckSquare, ArrowUpDown, Search } from "lucide-react";
 import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition } from "@/types/card";
-import { CardVersion } from "@/data/card-versions";
+import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
 
 const CardDetailModal = lazy(() =>
@@ -155,17 +155,32 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
     { key: "price",   label: "Prix" },
   ];
 
-  // ── Owned card set (by cardId) ───────────────────────────────────────────
-  const ownedCardIds = useMemo(() => new Set(cards.map((c) => c.cardId)), [cards]);
+  // ── Owned versions per cardId ────────────────────────────────────────────
+  const ownedVersionsByCardId = useMemo(() => {
+    const m = new Map<string, Set<CardVersion>>();
+    for (const c of cards) {
+      if (!m.has(c.cardId)) m.set(c.cardId, new Set());
+      m.get(c.cardId)!.add(c.version);
+    }
+    return m;
+  }, [cards]);
 
-  // ── All missing cards (unfiltered) ──────────────────────────────────────
+  // ── Serie available versions ───────────────────────────────────────────
+  const serieVersions = useMemo(() => getSerieVersions(serieSlug, blocSlug), [serieSlug, blocSlug]);
+
+  // ── All missing cards (unfiltered) — missing = at least one applicable version NOT owned
   const allMissingCards = useMemo<MissingCard[]>(() => {
     if (!allCards) return [];
-    return allCards.filter((c) => !ownedCardIds.has(c.cardId));
-  }, [allCards, ownedCardIds]);
+    return allCards.filter((c) => {
+      const applicable = c.isSpecial ? [CardVersion.NORMAL] : serieVersions;
+      const owned = ownedVersionsByCardId.get(c.cardId);
+      if (!owned) return true; // not owned at all
+      return applicable.some((v) => !owned.has(v));
+    });
+  }, [allCards, ownedVersionsByCardId, serieVersions]);
 
   // ── Tab counts (stable, before search/rarity filters) ───────────────────
-  const ownedCount   = ownedCardIds.size;
+  const ownedCount   = ownedVersionsByCardId.size;
   const missingCount = allMissingCards.length;
 
   // ── Sort helper ──────────────────────────────────────────────────────────
@@ -664,6 +679,19 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{c.number}</div>
+                      )}
+                      {/* Owned version badges for partially-owned cards */}
+                      {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (
+                        <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
+                          {(c.isSpecial ? [CardVersion.NORMAL] : serieVersions).map((v) => {
+                            const isOwned = ownedVersionsByCardId.get(c.cardId)?.has(v);
+                            return (
+                              <div key={v} className={isOwned ? "" : "opacity-30"}>
+                                <VersionBadgeIcon version={v} />
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                       <NumberRarityBadge number={c.number} rarity={c.rarity} />
                     </div>

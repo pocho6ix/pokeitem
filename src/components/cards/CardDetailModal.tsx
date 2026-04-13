@@ -137,12 +137,13 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
   const [isOwned, setIsOwned] = useState(false);
   const [removeSuccess, setRemoveSuccess] = useState(false);
 
-  // Cards with special rarities (EX, IR, SAR, HR, MUR, MAR, ACE, Promo)
-  // don't have a reverse variant — hide the toggle entirely.
+  // Hide reverse toggle when the card can't have a reverse variant
+  // OR when there's simply no reverse price data available.
   const canHaveReverse =
     card != null &&
     !card.isSpecial &&
-    !isSpecialCard(card.rarity as CardRarity);
+    !isSpecialCard(card.rarity as CardRarity) &&
+    card.priceReverse != null;
 
   const fetchData = useCallback(
     async (p: Period) => {
@@ -354,10 +355,9 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               {canHaveReverse && (
                 <button
                   onClick={() => setChartMode(m => m === "reverse" ? "normal" : "reverse")}
-                  disabled={card?.priceReverse == null}
                   title={chartMode === "reverse" ? "Afficher prix normal" : "Afficher prix Reverse"}
                   style={{ width: 28, height: 28 }}
-                  className={`relative shrink-0 rounded-full overflow-hidden transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                  className={`relative shrink-0 rounded-full overflow-hidden transition-all ${
                     chartMode === "reverse"
                       ? "ring-2 ring-[#E7BA76] ring-offset-1 ring-offset-[var(--bg-primary)]"
                       : "opacity-50 hover:opacity-80"
@@ -429,8 +429,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               </button>
               <button
                 onClick={() => setChartMode("reverse")}
-                disabled={card?.priceReverse == null}
-                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                   chartMode === "reverse"
                     ? "bg-[#E7BA76]/15 text-[#E7BA76]"
                     : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
