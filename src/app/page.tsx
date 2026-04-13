@@ -11,6 +11,7 @@ import { CollectionHeroCard } from "@/components/dashboard/CollectionHeroCard";
 import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import { HideValuesProvider } from "@/components/ui/HideValuesContext";
 import { ReferralBlock } from "@/components/profil/ReferralBlock";
+import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
 import { TelegramBannerButton } from "@/components/ui/TelegramBannerButton";
@@ -136,6 +137,7 @@ export default async function HomePage() {
 
           <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? "pb-4" : "pb-28"}`}>
             <div className="mx-auto max-w-xl space-y-4">
+              <ClasseurBetaOffer />
               <ReferralBlock />
               <QuestsBlock />
               <TelegramBannerButton />
