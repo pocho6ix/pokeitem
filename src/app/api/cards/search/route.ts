@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const cards = await prisma.card.findMany({
+  // Fetch more than needed so we can re-sort with image priority
+  const raw = await prisma.card.findMany({
     where: {
       OR: [
         { name:   { contains: q, mode: "insensitive" } },
@@ -18,23 +19,31 @@ export async function GET(request: NextRequest) {
       ],
     },
     select: {
-      id:        true,
-      name:      true,
-      number:    true,
-      imageUrl:  true,
-      rarity:    true,
-      price:     true,
-      priceFr:   true,
-      serie: {
-        select: { name: true, slug: true },
-      },
+      id:       true,
+      name:     true,
+      number:   true,
+      imageUrl: true,
+      rarity:   true,
+      price:    true,
+      priceFr:  true,
+      serie: { select: { name: true, slug: true } },
     },
     orderBy: [
-      { priceFr: "desc" },
-      { price:   "desc" },
+      { priceFr: { sort: "desc", nulls: "last" } },
+      { price:   { sort: "desc", nulls: "last" } },
     ],
-    take: limit,
+    take: 100, // over-fetch then re-sort
   });
 
-  return NextResponse.json({ results: cards });
+  // Cards with an image first, then by price desc, no-image last
+  const sorted = [...raw].sort((a, b) => {
+    const aHasImg = a.imageUrl ? 1 : 0;
+    const bHasImg = b.imageUrl ? 1 : 0;
+    if (aHasImg !== bHasImg) return bHasImg - aHasImg;
+    const aPrice = a.priceFr ?? a.price ?? 0;
+    const bPrice = b.priceFr ?? b.price ?? 0;
+    return bPrice - aPrice;
+  });
+
+  return NextResponse.json({ results: sorted.slice(0, limit) });
 }

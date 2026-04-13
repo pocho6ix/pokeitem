@@ -75,13 +75,13 @@ export function HeroSearchBar() {
     }, 280);
   }
 
-  // Enter → fetch up to 20 results and show all
-  async function handleEnter() {
+  // Enter / "Voir tout" → fetch up to 30 results and show all
+  async function handleShowAll() {
     if (query.trim().length < 2) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     setLoading(true);
     try {
-      const res = await fetch(`/api/cards/search?q=${encodeURIComponent(query)}&limit=20`);
+      const res = await fetch(`/api/cards/search?q=${encodeURIComponent(query)}&limit=30`);
       const json = await res.json();
       setResults(json.results ?? []);
       setOpen(true);
@@ -95,7 +95,7 @@ export function HeroSearchBar() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleEnter();
+      handleShowAll();
     }
     if (e.key === "Escape") {
       setOpen(false);
@@ -152,7 +152,7 @@ export function HeroSearchBar() {
               return (
                 <button
                   key={card.id}
-                  onPointerDown={(e) => e.preventDefault()} // prevent blur before click
+                  onPointerDown={(e) => e.preventDefault()}
                   onClick={() => { setOpen(false); setDetailId(card.id); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/5"
                 >
@@ -179,6 +179,21 @@ export function HeroSearchBar() {
                 </button>
               );
             })}
+
+            {/* "Voir tout" — only when showing the short list (< 30) */}
+            {results.length < 30 && (
+              <button
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={handleShowAll}
+                className="flex w-full items-center justify-center gap-1.5 border-t border-[var(--border-default)] py-2.5 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:bg-white/5 hover:text-[var(--text-primary)]"
+              >
+                {loading ? (
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-[#9CA3AF] border-t-transparent" />
+                ) : (
+                  <>Voir tout ({results.length} résultats)</>
+                )}
+              </button>
+            )}
           </div>
         )}
 
