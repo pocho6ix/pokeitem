@@ -145,10 +145,27 @@ function MiniSparkline({ values, color }: { values: number[]; color: string }) {
   );
 }
 
+// ── Period selection based on account age ─────────────────────────────────────
+
+type Period = "7J" | "1M" | "3M" | "6M" | "1A" | "MAX";
+
+function getPeriodFromFirstCard(firstCardDate: string | null): { period: Period; label: string } {
+  if (!firstCardDate) return { period: "1M", label: "30j" };
+  const ageMs = Date.now() - new Date(firstCardDate).getTime();
+  const days  = ageMs / (1000 * 60 * 60 * 24);
+  if (days < 7)   return { period: "7J",  label: "7j"  };
+  if (days < 30)  return { period: "1M",  label: "30j" };
+  if (days < 90)  return { period: "3M",  label: "3M"  };
+  if (days < 180) return { period: "6M",  label: "6M"  };
+  if (days < 365) return { period: "1A",  label: "1A"  };
+  return              { period: "MAX", label: "max" };
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
   total: number;
+  firstCardDate: string | null;
 }
 
 interface ChartPoint {
@@ -156,31 +173,32 @@ interface ChartPoint {
   value: number;
 }
 
-export function CollectionHeroCard({ total }: Props) {
+export function CollectionHeroCard({ total, firstCardDate }: Props) {
   const router = useRouter();
   const { hidden, toggle: toggleHidden } = useHideValues();
   const [chartValues, setChartValues] = useState<number[]>([]);
-  const [change24h, setChange24h] = useState<number | null>(null);
+  const [changePercent, setChangePercent] = useState<number | null>(null);
 
-  // Fetch 1-month chart data for sparkline + 30-day change
+  const { period, label } = getPeriodFromFirstCard(firstCardDate);
+
   useEffect(() => {
-    fetch("/api/portfolio/chart?period=1M")
+    fetch(`/api/portfolio/chart?period=${period}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (!json?.data?.length) return;
         const points: ChartPoint[] = json.data;
         setChartValues(points.map((p) => p.value));
 
-        // First point = value ~30 days ago
+        // First point = reference value at start of period
         const firstValue = points[0]?.value;
         if (firstValue && firstValue > 0) {
-          setChange24h(((total - firstValue) / firstValue) * 100);
+          setChangePercent(((total - firstValue) / firstValue) * 100);
         }
       })
       .catch(() => {});
-  }, [total]);
+  }, [total, period]);
 
-  const isUp = change24h === null ? null : change24h >= 0;
+  const isUp = changePercent === null ? null : changePercent >= 0;
   const changeColor =
     isUp === null ? "#9CA3AF" : isUp ? "#4ade80" : "#ef4444";
   const chartColor =
@@ -220,11 +238,11 @@ export function CollectionHeroCard({ total }: Props) {
             </button>
           </div>
 
-          {change24h !== null && (
+          {changePercent !== null && (
             <span className="text-xs font-medium" style={{ color: changeColor }}>
               {hidden
                 ? "*** %"
-                : `${isUp ? "+" : ""}${change24h.toFixed(2)} % (30j)`}
+                : `${isUp ? "+" : ""}${changePercent.toFixed(2)} % (${label})`}
             </span>
           )}
         </div>

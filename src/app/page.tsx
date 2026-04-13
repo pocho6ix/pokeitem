@@ -52,6 +52,15 @@ async function getTopCards(userId: string) {
     .slice(0, 6);
 }
 
+async function getFirstCardDate(userId: string): Promise<Date | null> {
+  const first = await prisma.userCard.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+    select: { createdAt: true },
+  });
+  return first?.createdAt ?? null;
+}
+
 async function getCollectionValue(userId: string) {
   // Cards market value
   const userCards = await prisma.userCard.findMany({
@@ -79,9 +88,9 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions);
   const userId  = (session?.user as { id?: string } | undefined)?.id ?? null;
 
-  const [collectionValue, topCards] = userId
-    ? await Promise.all([getCollectionValue(userId), getTopCards(userId)])
-    : [null, [] as Awaited<ReturnType<typeof getTopCards>>];
+  const [collectionValue, topCards, firstCardDate] = userId
+    ? await Promise.all([getCollectionValue(userId), getTopCards(userId), getFirstCardDate(userId)])
+    : [null, [] as Awaited<ReturnType<typeof getTopCards>>, null];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -94,7 +103,7 @@ export default async function HomePage() {
             <div className="mx-auto max-w-xl">
               <HeroSearchBar />
               {collectionValue && (
-                <CollectionHeroCard total={collectionValue.total} />
+                <CollectionHeroCard total={collectionValue.total} firstCardDate={firstCardDate?.toISOString() ?? null} />
               )}
             </div>
           </div>
