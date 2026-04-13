@@ -25,14 +25,14 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
         <PortfolioMiniStats />
       </Suspense>
 
+      {/* Evolution chart — right after the KPI stats */}
+      <PortfolioEvolutionChart />
+
       {/* Navigation tiles — hidden on sub-pages */}
       <PortfolioTiles />
 
       {/* Page content */}
       {children}
-
-      {/* Evolution chart */}
-      <PortfolioEvolutionChart />
     </div>
   );
 }

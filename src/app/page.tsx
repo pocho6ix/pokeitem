@@ -100,7 +100,7 @@ export default async function HomePage() {
           </div>
 
           {topCards.length > 0 && (
-            <section className="px-4 pt-8 pb-4 sm:px-6 lg:px-8">
+            <section className="px-4 pt-3 pb-4 sm:px-6 lg:px-8">
               <div className="mx-auto max-w-xl">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-[var(--text-primary)]">
