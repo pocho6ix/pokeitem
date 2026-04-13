@@ -155,6 +155,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Rare Holo VMAX":            CardRarity.DOUBLE_RARE,
   "Rare Holo VSTAR":           CardRarity.DOUBLE_RARE,
   "Double Rare":               CardRarity.DOUBLE_RARE,
+  "Ultra Rare":                CardRarity.DOUBLE_RARE,    // Full-Art EX (SV era)
   "Illustration Rare":         CardRarity.ILLUSTRATION_RARE,
   "Special Illustration Rare": CardRarity.SPECIAL_ILLUSTRATION_RARE,
   "Hyper Rare":                CardRarity.HYPER_RARE,
