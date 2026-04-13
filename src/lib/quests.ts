@@ -144,4 +144,4 @@ export const ACTIVE_QUESTS = QUESTS.filter(q => q.active)
 export const QUEST_MAP = Object.fromEntries(QUESTS.map(q => [q.id, q]))
 
 // Points awarded per validated referral
-export const REFERRAL_POINTS = 1000
+export const REFERRAL_POINTS = 3000

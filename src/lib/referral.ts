@@ -24,15 +24,12 @@ export async function validateReferralCode(code: string) {
   })
 }
 
-export type SlotState = 'validated' | 'pending' | 'empty'
-
 export async function getReferralStats(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       referralCode: true,
       username: true,
-      referralWeeksGiven: true,
       referrals: {
         select: { id: true, emailVerified: true },
         orderBy: { createdAt: 'asc' },
@@ -44,20 +41,11 @@ export async function getReferralStats(userId: string) {
   const validatedCount = user.referrals.filter(r => r.emailVerified != null).length
   const pendingCount   = user.referrals.filter(r => r.emailVerified == null).length
 
-  // Build 3 visual slots: validated → pending → empty
-  const slots: SlotState[] = [0, 1, 2].map((i): SlotState => {
-    if (i < validatedCount) return 'validated'
-    if ((i - validatedCount) < pendingCount) return 'pending'
-    return 'empty'
-  })
-
   return {
     referralCode:   user.referralCode,
     referralLink:   await getReferralLink(userId),
     validatedCount,
     pendingCount,
-    weeksGiven:     user.referralWeeksGiven,
-    slots,
   }
 }
 
@@ -75,44 +63,14 @@ export async function onReferralEmailVerified(refereeId: string) {
 
   const referrer = await prisma.user.findUnique({
     where: { id: referee.referredById },
-    select: {
-      plan: true,
-      planExpiresAt: true,
-      referralWeeksGiven: true,
-      _count: {
-        select: {
-          referrals: { where: { emailVerified: { not: null } } }
-        }
-      }
-    }
+    select: { id: true },
   })
 
   if (!referrer) return
 
-  // ── Award 1000 pts for every verified referral (idempotent) ──────────────
+  // ── Award 3000 pts for every verified referral (idempotent) ─────────────
   await awardReferralPoints(referee.referredById, refereeId).catch((err) => {
     console.error('[referral] awardReferralPoints failed:', err)
-  })
-
-  // ── Award Pro weeks (capped at 3) ─────────────────────────────────────────
-  const validatedCount = referrer._count.referrals
-  const weeksToGive    = Math.min(validatedCount, 3) - referrer.referralWeeksGiven
-
-  if (weeksToGive <= 0) return // All applicable weeks already given
-
-  const now      = new Date()
-  const baseDate = (referrer.plan === 'PRO' && referrer.planExpiresAt && referrer.planExpiresAt > now)
-    ? referrer.planExpiresAt
-    : now
-  const newEnd = new Date(baseDate.getTime() + weeksToGive * 7 * 24 * 60 * 60 * 1000)
-
-  await prisma.user.update({
-    where: { id: referee.referredById },
-    data: {
-      plan: 'PRO',
-      planExpiresAt: newEnd,
-      referralWeeksGiven: referrer.referralWeeksGiven + weeksToGive,
-    },
   })
 }
 

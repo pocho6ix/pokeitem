@@ -141,8 +141,7 @@ function InstallModal({
             <span className="font-semibold text-[var(--text-primary)]">
               app.pokeitem.fr
             </span>{" "}
-            sur ton téléphone pour installer l&rsquo;app et profiter des 2
-            semaines offertes.
+            sur ton téléphone pour installer l&rsquo;app et profiter du mois offert.
           </p>
         )}
 
@@ -176,7 +175,7 @@ function SuccessScreen() {
           Bienvenue dans la bêta&nbsp;!
         </h2>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
-          Ton abonnement Premium est activé pour 7 jours. Merci de nous aider à
+          Ton abonnement Premium est activé pour 1 mois. Merci de nous aider à
           améliorer PokéItem&nbsp;💪
         </p>
         <button
@@ -305,9 +304,7 @@ export function BetaPageContent() {
             <span className="font-semibold text-[var(--text-primary)]">
               gratuitement pendant 1 mois
             </span>
-            &nbsp;: 1&nbsp;semaine offerte en ajoutant l&rsquo;app sur ton écran
-            d&rsquo;accueil + 1&nbsp;semaine par ami invité (jusqu&rsquo;à
-            3&nbsp;semaines), soit 1&nbsp;mois au total.
+            &nbsp;en ajoutant l&rsquo;app sur ton écran d&rsquo;accueil.
             Aucune carte de crédit ni paiement requis.
           </p>
           <p>

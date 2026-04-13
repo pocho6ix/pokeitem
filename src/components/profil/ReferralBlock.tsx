@@ -265,8 +265,7 @@ export function ReferralBlock() {
           <div className="flex items-start justify-between gap-2">
             <div>
               <h3 className="font-semibold text-[var(--text-primary)]" suppressHydrationWarning>Inviter un ami</h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">+1000 points</p>
-              <p className="text-xs text-[var(--text-secondary)]">+1 semaine Premium gratuite par ami invité</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">+3 000 pts par ami invité</p>
             </div>
             {CONTEST_CONFIG.active && (
               <span suppressHydrationWarning className="shrink-0 rounded-full border border-[var(--border-default)] px-3 py-1 text-xs text-[var(--text-tertiary)]">
@@ -275,46 +274,22 @@ export function ReferralBlock() {
             )}
           </div>
 
-          {/* Stepper */}
+          {/* Invited counter */}
           {statsLoading ? (
             <div className="animate-pulse h-8 rounded-xl bg-white/5" />
           ) : (
-            <div className="flex items-center px-1">
-              {[0, 1, 2].map((i) => {
-                const completed = i < validatedCount
-                const isLast = i === 2
-                return (
-                  <div key={i} className="flex items-center" style={{ flex: isLast ? undefined : 1 }}>
-                    <div
-                      className="shrink-0 flex items-center justify-center rounded-full transition-all"
-                      style={{
-                        width: 32, height: 32,
-                        backgroundColor: completed ? '#D4A853' : 'transparent',
-                        border: completed ? 'none' : '2px solid #2A3A4A',
-                      }}
-                    >
-                      {completed && (
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M2 7L5.5 10.5L12 3.5" stroke="#080C12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </div>
-                    {!isLast && (
-                      <div
-                        className="flex-1 transition-all duration-500"
-                        style={{
-                          height: 2,
-                          backgroundColor: i < validatedCount - 1 ? '#D4A853' : '#1E2D3D',
-                          margin: '0 6px',
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-              <span className="ml-4 shrink-0 text-sm text-[var(--text-secondary)]">
-                {Math.min(validatedCount, 3)}/3 invités
+            <div className="flex items-center gap-3 px-1">
+              <Users className="h-4 w-4 text-[#D4A853] shrink-0" />
+              <span className="text-sm text-[var(--text-secondary)]">
+                {validatedCount === 0
+                  ? 'Aucun ami invité pour l\'instant'
+                  : `${validatedCount} ami${validatedCount > 1 ? 's' : ''} invité${validatedCount > 1 ? 's' : ''}`}
               </span>
+              {validatedCount > 0 && (
+                <span className="ml-auto text-sm font-bold text-[#D4A853]">
+                  +{(validatedCount * 3000).toLocaleString('fr-FR')} pts
+                </span>
+              )}
             </div>
           )}
 
