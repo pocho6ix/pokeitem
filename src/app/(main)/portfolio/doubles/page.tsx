@@ -102,7 +102,7 @@ export default async function PortfolioDoublesPage() {
         Classeur
       </Link>
       <div className="mb-4 max-w-xl">
-        <HeroSearchBar />
+        <HeroSearchBar ownedOnly />
       </div>
       <DoublesGrid blocs={blocs} totalDoubles={rows.length} totalSeries={totalSeries} />
     </>

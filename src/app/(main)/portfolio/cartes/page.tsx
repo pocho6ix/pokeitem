@@ -143,7 +143,7 @@ export default async function PortfolioCartesPage({
         Classeur
       </Link>
       <div className="mb-4 max-w-xl">
-        <HeroSearchBar />
+        <HeroSearchBar ownedOnly />
       </div>
       <BinderCartesWrapper blocs={blocs} baseUrl="/portfolio/cartes" />
     </>

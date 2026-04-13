@@ -58,19 +58,19 @@ const VERSION_SORT_ORDER: Record<CardVersion, number> = {
 
 const BADGE_SIZE = 15;
 
-function VersionBadgeIcon({ version }: { version: CardVersion }) {
+function VersionBadgeIcon({ version, qty }: { version: CardVersion; qty?: number }) {
+  const showQty = qty != null && qty > 1;
   return (
-    <div
-      className="relative shrink-0 rounded-full overflow-hidden"
-      style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
-    >
+    <div className={`flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 ${showQty ? "pr-1" : "pr-0.5"} py-0.5`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={VERSION_BADGE_IMG[version]}
         alt=""
-        style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
-        className="object-cover"
+        className="h-4 w-4 shrink-0 rounded-full object-cover"
       />
+      {showQty && (
+        <span className="text-[8px] font-bold leading-none text-white">×{qty}</span>
+      )}
     </div>
   );
 }
@@ -84,6 +84,7 @@ interface GroupedCard {
   imageUrl: string | null;
   isSpecial: boolean;
   ownedVersions: CardVersion[];
+  versionQty: Map<CardVersion, number>;
   displayPrice: number | null;
   displayIsFrenchPrice: boolean;
   displayCondition: CardCondition;
@@ -193,14 +194,15 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
   const sortedEntries = useMemo(() => applySortFilter(cards), [cards, search, rarityFilter, sortBy, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const groupedCards = useMemo<GroupedCard[]>(() => {
-    const map = new Map<string, { base: ClasseurCard; versionsMap: Map<CardVersion, ClasseurCard> }>();
+    const map = new Map<string, { base: ClasseurCard; versionsMap: Map<CardVersion, ClasseurCard>; qtyMap: Map<CardVersion, number> }>();
     for (const c of sortedEntries) {
-      if (!map.has(c.cardId)) map.set(c.cardId, { base: c, versionsMap: new Map() });
+      if (!map.has(c.cardId)) map.set(c.cardId, { base: c, versionsMap: new Map(), qtyMap: new Map() });
       const grp = map.get(c.cardId)!;
       grp.versionsMap.set(c.version, c);
+      grp.qtyMap.set(c.version, (grp.qtyMap.get(c.version) ?? 0) + 1);
       if (c.version === CardVersion.NORMAL) grp.base = c;
     }
-    return [...map.values()].map(({ base, versionsMap }) => {
+    return [...map.values()].map(({ base, versionsMap, qtyMap }) => {
       const ownedVersions = [...versionsMap.keys()].sort(
         (a, b) => VERSION_SORT_ORDER[a] - VERSION_SORT_ORDER[b]
       );
@@ -213,6 +215,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
         imageUrl: base.imageUrl,
         isSpecial: base.isSpecial ?? false,
         ownedVersions,
+        versionQty: qtyMap,
         displayPrice: displayEntry.price,
         displayIsFrenchPrice: displayEntry.isFrenchPrice ?? false,
         displayCondition: displayEntry.condition,
@@ -540,7 +543,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       {grp.ownedVersions.length > 0 && !grp.isSpecial && (
                         <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
                           {[...grp.ownedVersions].reverse().map((v) => (
-                            <VersionBadgeIcon key={v} version={v} />
+                            <VersionBadgeIcon key={v} version={v} qty={grp.versionQty.get(v)} />
                           ))}
                         </div>
                       )}

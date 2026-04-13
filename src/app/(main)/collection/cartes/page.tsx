@@ -119,7 +119,7 @@ export default async function CollectionCartesPage() {
       />
 
       <div className="my-4 max-w-xl">
-        <HeroSearchBar />
+        <HeroSearchBar ownedOnly />
       </div>
 
       <BlocSerieCardList blocs={blocs} baseUrl="/collection/cartes" />

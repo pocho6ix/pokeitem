@@ -690,66 +690,15 @@ export function CardScanner() {
         </div>
 
         {result.level === "high" && top && !showSuggestionsView ? (
-          <div className="flex flex-1 flex-col overflow-y-auto">
-            <div className="flex justify-center py-6">
-              {top.card.imageUrl ? (
-                <Image src={top.card.imageUrl} alt={top.card.name} width={160} height={224} className="rounded-xl shadow-2xl shadow-black/60 object-contain" />
-              ) : (
-                <div className="flex h-56 w-40 items-center justify-center rounded-xl bg-white/5">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-10 w-10 text-white/20"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="12" cy="10" r="3"/></svg>
-                </div>
-              )}
-            </div>
-            <button onClick={() => setDetailCardId(top.cardId)} className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4 text-left w-[calc(100%-2rem)]">
-              <div className="flex items-center gap-2 mb-1">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 text-green-400 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
-                <span className="text-[11px] text-green-400 font-medium">Carte identifiée</span>
-                <span className="ml-auto text-[11px] text-white/25">{top.confidence}%</span>
-              </div>
-              <h2 className="text-base font-bold text-white mb-0.5">{top.card.name}</h2>
-              <p className="text-xs text-white/40 mb-3">{top.serie.name} · #{top.card.number}</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                {top.card.price != null && (
-                  <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "rgba(212,168,83,0.15)", color: "#D4A853" }}>{formatPrice(top.card.price)}</span>
-                )}
-                <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] text-white/40 capitalize">{top.card.rarity.toLowerCase().replace(/_/g, " ")}</span>
-              </div>
-              <p className="mt-2 text-[10px] text-white/25 text-center">Appuyer pour voir les détails →</p>
-            </button>
-
-            {(() => {
-              const versions = getSerieVersions(top.serie.slug, top.serie.blocSlug);
-              if (versions.length <= 1) return null;
-              return (
-                <div className="mx-4 mb-4">
-                  <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-white/30">Version</p>
-                  <div className="flex flex-wrap gap-2">
-                    {versions.map((v) => (
-                      <button key={v} onClick={() => setSelectedVersion(v)}
-                        className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "btn-gold border-transparent text-black shadow-sm" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
-                      >
-                        {CARD_VERSION_LABELS[v]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="mx-4 flex flex-col gap-2.5 pb-10">
-              <button
-                onClick={() => void addFromConfirm(top, "auto")}
-                disabled={isAdding}
-                className="btn-gold flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 active:scale-[0.98] transition-all"
-              >
-                {isAdding ? (
-                  <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Ajout…</>
-                ) : "Ajouter à ma collection"}
-              </button>
-              <button onClick={() => setShowSuggestions(true)} className="text-center text-xs text-white/35 hover:text-white/60 transition-colors py-2">
-                Ce n&apos;est pas la bonne carte →
-              </button>
-            </div>
+          <div className="flex flex-1 flex-col overflow-y-auto px-4 pt-2 pb-10">
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="rounded-full border-2 border-t-transparent animate-spin" style={{ width: 32, height: 32, borderColor: "#D4A853", borderTopColor: "transparent" }} /></div>}>
+              <CardDetailModal
+                cardId={top.cardId}
+                onClose={backToScanning}
+                variant="inline"
+                onWrongCard={() => setShowSuggestions(true)}
+              />
+            </Suspense>
           </div>
 
         ) : showSuggestionsView && result.candidates.length > 0 ? (

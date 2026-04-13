@@ -91,6 +91,10 @@ interface SerieDetail {
 interface Props {
   cardId: string;
   onClose: () => void;
+  /** "modal" (default) = fixed overlay; "inline" = embedded in parent layout */
+  variant?: "modal" | "inline";
+  /** Shown at the bottom in inline variant — "Ce n'est pas la bonne carte ?" */
+  onWrongCard?: () => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -107,7 +111,8 @@ function formatEur(value: number | null | undefined): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function CardDetailModal({ cardId, onClose }: Props) {
+export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCard }: Props) {
+  const isInline = variant === "inline";
   const [card, setCard] = useState<CardDetail | null>(null);
   const [serie, setSerie] = useState<SerieDetail | null>(null);
   const [history, setHistory] = useState<PricePoint[]>([]);
@@ -171,22 +176,24 @@ export function CardDetailModal({ cardId, onClose }: Props) {
     fetchData(period);
   }, [fetchData, period]);
 
-  // Close on Escape
+  // Close on Escape (modal only)
   useEffect(() => {
+    if (isInline) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [onClose, isInline]);
 
-  // Prevent body scroll
+  // Prevent body scroll (modal only)
   useEffect(() => {
+    if (isInline) return;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [isInline]);
 
   function handlePeriodChange(p: Period) {
     setPeriod(p);
@@ -256,25 +263,270 @@ export function CardDetailModal({ cardId, onClose }: Props) {
 
   // Error state — show a clean message instead of broken UI
   if (error) {
-    return (
-      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-        <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-        <div className="relative z-10 w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-default)] shadow-2xl p-8 text-center">
+    const errorContent = (
+      <div className={isInline ? "p-8 text-center" : "relative z-10 w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-default)] shadow-2xl p-8 text-center"}>
+        {!isInline && (
           <button onClick={onClose} className="absolute top-3 right-3 rounded-full p-1.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
             <X className="w-5 h-5" />
           </button>
-          <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">Impossible de charger la fiche</p>
-          <p className="text-xs text-[var(--text-tertiary)] mb-4">Vérifiez votre connexion et réessayez.</p>
-          <button
-            onClick={() => fetchData(period)}
-            className="rounded-lg bg-[#10B981]/15 px-4 py-2 text-sm font-semibold text-[#10B981] hover:bg-[#10B981]/25 transition-colors"
-          >
-            Réessayer
-          </button>
-        </div>
+        )}
+        <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">Impossible de charger la fiche</p>
+        <p className="text-xs text-[var(--text-tertiary)] mb-4">Vérifiez votre connexion et réessayez.</p>
+        <button
+          onClick={() => fetchData(period)}
+          className="rounded-lg bg-[#10B981]/15 px-4 py-2 text-sm font-semibold text-[#10B981] hover:bg-[#10B981]/25 transition-colors"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+    if (isInline) return errorContent;
+    return (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+        <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+        {errorContent}
       </div>
     );
   }
+
+  // ── Shared content (used in both modal and inline) ─────────────────────
+
+  const detailContent = (
+    <>
+    <div className={isInline ? "space-y-5" : "p-5 space-y-5"}>
+      {/* ── Card header ──────────────────────────────────────────── */}
+      <div className="flex gap-4">
+        {/* Card image */}
+        <div className="relative w-28 aspect-[2.5/3.5] shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)]">
+          {card?.imageUrl ? (
+            <Image
+              src={card.imageUrl}
+              alt={card.name}
+              fill
+              sizes="112px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-xs text-[var(--text-tertiary)]">
+              {card?.number ?? "…"}
+            </div>
+          )}
+        </div>
+
+        {/* Card info */}
+        <div className="flex-1 min-w-0 py-1">
+          <h2 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
+            {card?.name ?? "Chargement…"}
+          </h2>
+          {serie && (
+            <p className="mt-1 text-sm text-[var(--text-secondary)] truncate">
+              {serie.name} · {card?.number}
+            </p>
+          )}
+          {isPromoSerie ? (
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
+              <Image src="/rarities/promo.png" alt="Promo" width={16} height={16} className="w-4 h-4 object-contain" />
+              Promo
+            </span>
+          ) : rarityImage && (
+            <span
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] p-1"
+              title={rarityLabel ?? undefined}
+            >
+              <Image src={rarityImage} alt={rarityLabel ?? ""} width={16} height={16} className="w-4 h-4 object-contain"
+                style={(rarity === "COMMON" || rarity === "UNCOMMON" || rarity === "RARE" || rarity === "NO_RARITY")
+                  ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
+                  : undefined}
+              />
+            </span>
+          )}
+
+          {/* Price display */}
+          <div className="mt-3">
+            <div className="flex items-center gap-2">
+              <p className="text-xl font-bold text-[var(--text-primary)]">
+                {chartMode === "reverse"
+                  ? formatEur(card?.priceReverse)
+                  : formatEur(card?.priceFr ?? card?.price)}
+              </p>
+
+              {/* Reverse toggle badge */}
+              {canHaveReverse && (
+                <button
+                  onClick={() => setChartMode(m => m === "reverse" ? "normal" : "reverse")}
+                  disabled={card?.priceReverse == null}
+                  title={chartMode === "reverse" ? "Afficher prix normal" : "Afficher prix Reverse"}
+                  style={{ width: 28, height: 28 }}
+                  className={`relative shrink-0 rounded-full overflow-hidden transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                    chartMode === "reverse"
+                      ? "ring-2 ring-[#E7BA76] ring-offset-1 ring-offset-[var(--bg-primary)]"
+                      : "opacity-50 hover:opacity-80"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/reverse-badge.png"
+                    alt="Reverse"
+                    style={{ width: 28, height: 28 }}
+                    className="object-cover"
+                  />
+                </button>
+              )}
+            </div>
+
+            {chartMode === "reverse" ? (
+              <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1 mt-0.5">
+                Reverse · marché global
+              </p>
+            ) : card?.priceFr != null && card.price != null ? (
+              <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+                Prix global : {formatEur(card.price)}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Add / Remove CTA ─────────────────────────────────────────── */}
+      {card && (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setShowAddSheet(true)}
+            className="btn-gold w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-black active:scale-[0.98] transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter à ma collection
+          </button>
+          {isOwned && (
+            <button
+              onClick={handleRemoveFromCollection}
+              disabled={isPending || removeSuccess}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60 active:scale-[0.98] transition-all"
+            >
+              {removeSuccess ? "✓ Retiré" : "Retirer de ma collection"}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Price history chart ───────────────────────────────────── */}
+      <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+            {chartMode === "reverse" ? "Prix Reverse" : "Historique du prix"}
+          </h3>
+          {canHaveReverse && (
+            <div className="inline-flex rounded-lg bg-[var(--bg-secondary)] p-0.5">
+              <button
+                onClick={() => setChartMode("normal")}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
+                  chartMode === "normal"
+                    ? "bg-[#E7BA76]/15 text-[#E7BA76]"
+                    : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                Normal
+              </button>
+              <button
+                onClick={() => setChartMode("reverse")}
+                disabled={card?.priceReverse == null}
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  chartMode === "reverse"
+                    ? "bg-[#E7BA76]/15 text-[#E7BA76]"
+                    : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+                }`}
+              >
+                Reverse
+              </button>
+            </div>
+          )}
+        </div>
+
+        {chartMode === "reverse" ? (
+          /* ── Reverse: no chart yet, minimal price display ── */
+          <div className="flex flex-col items-center gap-1 py-6">
+            <p className="text-3xl font-bold text-[var(--text-primary)]">
+              {formatEur(card?.priceReverse)}
+            </p>
+            <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
+              <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Marché global · Cardmarket
+            </p>
+            {card?.priceUpdatedAt && (
+              <p className="mt-3 text-[10px] text-[var(--text-tertiary)]/60">
+                Mis à jour le {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
+              </p>
+            )}
+            <p className="mt-4 text-[10px] text-[var(--text-tertiary)]/50 italic text-center max-w-[260px] leading-relaxed">
+              L&apos;historique Reverse sera disponible au fil du temps.
+            </p>
+          </div>
+        ) : (
+          <PriceHistoryChart
+            data={history}
+            currentPrice={card?.price ?? null}
+            currentPriceFr={card?.priceFr}
+            currentPriceReverse={card?.priceReverse}
+            mode={chartMode}
+            period={period}
+            onPeriodChange={handlePeriodChange}
+            loading={loading}
+          />
+        )}
+      </div>
+
+      {/* ── Market prices table ───────────────────────────────────── */}
+      <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+            Prix du marché
+          </h3>
+          {(card?.cardmarketUrl || card?.cardmarketId) && (
+            <a
+              href={
+                card.cardmarketUrl
+                  ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}?language=2`
+                  : `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
+              title="Voir sur Cardmarket"
+            >
+              <span className="bg-white px-2 py-1 flex items-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/cardmarket.png" alt="Cardmarket" className="h-4 w-auto object-contain" />
+              </span>
+            </a>
+          )}
+        </div>
+        <div className="space-y-2">
+          <PriceRow label="🇫🇷 Prix FR (Near Mint)" value={card?.priceFr} highlight />
+          <PriceRow label="Prix tendance" value={card?.price} />
+          {card?.priceReverse != null && (
+            <PriceRow label="Prix Reverse" value={card.priceReverse} />
+          )}
+          {card?.priceUpdatedAt && (
+            <p className="text-[10px] text-[var(--text-tertiary)] pt-1">
+              Dernière mise à jour : {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* ── "Ce n'est pas la bonne carte ?" (inline scanner variant) ── */}
+      {onWrongCard && (
+        <div className="pt-2 pb-6 text-center">
+          <button
+            onClick={onWrongCard}
+            className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+          >
+            Ce n&apos;est pas la bonne carte ?
+          </button>
+        </div>
+      )}
+    </div>
+    </>
+  );
 
   return (
     <>
@@ -439,247 +691,33 @@ export function CardDetailModal({ cardId, onClose }: Props) {
       </div>
     )}
 
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+    {/* ── Inline variant: just render content directly ── */}
+    {isInline ? detailContent : (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
-      {/* Modal / Bottom sheet */}
-      <div className="relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-default)] shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 duration-300">
-        {/* Drag handle (mobile) */}
-        <div className="sm:hidden flex justify-center pt-3 pb-1">
-          <div className="h-1 w-10 rounded-full bg-[var(--text-tertiary)]/30" />
-        </div>
-
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-20 rounded-full p-1.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="p-5 space-y-5">
-          {/* ── Card header ──────────────────────────────────────────── */}
-          <div className="flex gap-4">
-            {/* Card image */}
-            <div className="relative w-28 aspect-[2.5/3.5] shrink-0 rounded-lg overflow-hidden bg-[var(--bg-secondary)]">
-              {card?.imageUrl ? (
-                <Image
-                  src={card.imageUrl}
-                  alt={card.name}
-                  fill
-                  sizes="112px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-[var(--text-tertiary)]">
-                  {card?.number ?? "…"}
-                </div>
-              )}
-            </div>
-
-            {/* Card info */}
-            <div className="flex-1 min-w-0 py-1">
-              <h2 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
-                {card?.name ?? "Chargement…"}
-              </h2>
-              {serie && (
-                <p className="mt-1 text-sm text-[var(--text-secondary)] truncate">
-                  {serie.name} · {card?.number}
-                </p>
-              )}
-              {isPromoSerie ? (
-                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] px-2 py-0.5 text-xs font-medium text-[var(--text-primary)]">
-                  <Image src="/rarities/promo.png" alt="Promo" width={16} height={16} className="w-4 h-4 object-contain" />
-                  Promo
-                </span>
-              ) : rarityImage && (
-                <span
-                  className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-default)] p-1"
-                  title={rarityLabel ?? undefined}
-                >
-                  <Image src={rarityImage} alt={rarityLabel ?? ""} width={16} height={16} className="w-4 h-4 object-contain"
-                    style={(rarity === "COMMON" || rarity === "UNCOMMON" || rarity === "RARE" || rarity === "NO_RARITY")
-                      ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
-                      : undefined}
-                  />
-                </span>
-              )}
-
-              {/* Price display */}
-              <div className="mt-3">
-                <div className="flex items-center gap-2">
-                  <p className="text-xl font-bold text-[var(--text-primary)]">
-                    {chartMode === "reverse"
-                      ? formatEur(card?.priceReverse)
-                      : formatEur(card?.priceFr ?? card?.price)}
-                  </p>
-
-                  {/* Reverse toggle badge */}
-                  {canHaveReverse && (
-                    <button
-                      onClick={() => setChartMode(m => m === "reverse" ? "normal" : "reverse")}
-                      disabled={card?.priceReverse == null}
-                      title={chartMode === "reverse" ? "Afficher prix normal" : "Afficher prix Reverse"}
-                      style={{ width: 28, height: 28 }}
-                      className={`relative shrink-0 rounded-full overflow-hidden transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
-                        chartMode === "reverse"
-                          ? "ring-2 ring-[#E7BA76] ring-offset-1 ring-offset-[var(--bg-primary)]"
-                          : "opacity-50 hover:opacity-80"
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/reverse-badge.png"
-                        alt="Reverse"
-                        style={{ width: 28, height: 28 }}
-                        className="object-cover"
-                      />
-                    </button>
-                  )}
-                </div>
-
-                {chartMode === "reverse" ? (
-                  <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1 mt-0.5">
-                    Reverse · marché global
-                  </p>
-                ) : card?.priceFr != null && card.price != null ? (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
-                    Prix global : {formatEur(card.price)}
-                  </p>
-                ) : null}
-              </div>
-            </div>
+        {/* Modal / Bottom sheet */}
+        <div className="relative z-10 w-full sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-default)] shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 duration-300">
+          {/* Drag handle (mobile) */}
+          <div className="sm:hidden flex justify-center pt-3 pb-1">
+            <div className="h-1 w-10 rounded-full bg-[var(--text-tertiary)]/30" />
           </div>
 
-          {/* ── Add / Remove CTA ─────────────────────────────────────────── */}
-          {card && (
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => setShowAddSheet(true)}
-                className="btn-gold w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-black active:scale-[0.98] transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                Ajouter à ma collection
-              </button>
-              {isOwned && (
-                <button
-                  onClick={handleRemoveFromCollection}
-                  disabled={isPending || removeSuccess}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60 active:scale-[0.98] transition-all"
-                >
-                  {removeSuccess ? "✓ Retiré" : "Retirer de ma collection"}
-                </button>
-              )}
-            </div>
-          )}
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-20 rounded-full p-1.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-          {/* ── Price history chart ───────────────────────────────────── */}
-          <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                {chartMode === "reverse" ? "Prix Reverse" : "Historique du prix"}
-              </h3>
-              {canHaveReverse && (
-                <div className="inline-flex rounded-lg bg-[var(--bg-secondary)] p-0.5">
-                  <button
-                    onClick={() => setChartMode("normal")}
-                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                      chartMode === "normal"
-                        ? "bg-[#E7BA76]/15 text-[#E7BA76]"
-                        : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                    }`}
-                  >
-                    Normal
-                  </button>
-                  <button
-                    onClick={() => setChartMode("reverse")}
-                    disabled={card?.priceReverse == null}
-                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                      chartMode === "reverse"
-                        ? "bg-[#E7BA76]/15 text-[#E7BA76]"
-                        : "text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
-                    }`}
-                  >
-                    Reverse
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {chartMode === "reverse" ? (
-              /* ── Reverse: no chart yet, minimal price display ── */
-              <div className="flex flex-col items-center gap-1 py-6">
-                <p className="text-3xl font-bold text-[var(--text-primary)]">
-                  {formatEur(card?.priceReverse)}
-                </p>
-                <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
-                  <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Marché global · Cardmarket
-                </p>
-                {card?.priceUpdatedAt && (
-                  <p className="mt-3 text-[10px] text-[var(--text-tertiary)]/60">
-                    Mis à jour le {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
-                  </p>
-                )}
-                <p className="mt-4 text-[10px] text-[var(--text-tertiary)]/50 italic text-center max-w-[260px] leading-relaxed">
-                  L'historique Reverse sera disponible au fil du temps.
-                </p>
-              </div>
-            ) : (
-              <PriceHistoryChart
-                data={history}
-                currentPrice={card?.price ?? null}
-                currentPriceFr={card?.priceFr}
-                currentPriceReverse={card?.priceReverse}
-                mode={chartMode}
-                period={period}
-                onPeriodChange={handlePeriodChange}
-                loading={loading}
-              />
-            )}
-          </div>
-
-          {/* ── Market prices table ───────────────────────────────────── */}
-          <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                Prix du marché
-              </h3>
-              {(card?.cardmarketUrl || card?.cardmarketId) && (
-                <a
-                  href={
-                    card.cardmarketUrl
-                      ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}?language=2`
-                      : `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
-                  title="Voir sur Cardmarket"
-                >
-                  <span className="bg-white px-2 py-1 flex items-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/cardmarket.png" alt="Cardmarket" className="h-4 w-auto object-contain" />
-                  </span>
-                </a>
-              )}
-            </div>
-            <div className="space-y-2">
-              <PriceRow label="🇫🇷 Prix FR (Near Mint)" value={card?.priceFr} highlight />
-              <PriceRow label="Prix tendance" value={card?.price} />
-              {card?.priceReverse != null && (
-                <PriceRow label="Prix Reverse" value={card.priceReverse} />
-              )}
-              {card?.priceUpdatedAt && (
-                <p className="text-[10px] text-[var(--text-tertiary)] pt-1">
-                  Dernière mise à jour : {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
-                </p>
-              )}
-            </div>
+          <div className="p-5">
+            {detailContent}
           </div>
         </div>
       </div>
-    </div>
+    )}
     </>
   );
 }

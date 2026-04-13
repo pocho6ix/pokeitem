@@ -18,13 +18,14 @@ interface CardResult {
   priceFr:  number | null;
   price:    number | null;
   serie:    { name: string; slug: string };
+  qty?:     number;
 }
 
 function fmt(n: number) {
   return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
 }
 
-export function HeroSearchBar() {
+export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {}) {
   const [placeholder, setPlaceholder] = useState("");
   const [query,       setQuery]       = useState("");
   const [results,     setResults]     = useState<CardResult[]>([]);
@@ -63,7 +64,7 @@ export function HeroSearchBar() {
     setLoading(true);
     timerRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/cards/search?q=${encodeURIComponent(value)}&limit=6`);
+        const res = await fetch(`/api/cards/search?q=${encodeURIComponent(value)}&limit=6${ownedOnly ? "&owned=true" : ""}`);
         const json = await res.json();
         setResults(json.results ?? []);
         setOpen(true);
@@ -81,7 +82,7 @@ export function HeroSearchBar() {
     if (timerRef.current) clearTimeout(timerRef.current);
     setLoading(true);
     try {
-      const res = await fetch(`/api/cards/search?q=${encodeURIComponent(query)}&limit=30`);
+      const res = await fetch(`/api/cards/search?q=${encodeURIComponent(query)}&limit=30${ownedOnly ? "&owned=true" : ""}`);
       const json = await res.json();
       setResults(json.results ?? []);
       setOpen(true);
@@ -158,10 +159,15 @@ export function HeroSearchBar() {
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/5"
                 >
                   {/* Card image thumbnail */}
-                  <div className="h-12 w-9 shrink-0 overflow-hidden rounded-md bg-[var(--bg-subtle)]">
+                  <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-md bg-[var(--bg-subtle)]">
                     {card.imageUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={card.imageUrl} alt="" className="h-full w-full object-cover" />
+                    )}
+                    {card.qty != null && card.qty > 1 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4A853] px-1 text-[9px] font-bold text-black leading-none">
+                        x{card.qty}
+                      </span>
                     )}
                   </div>
 
