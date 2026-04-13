@@ -8,7 +8,7 @@ export function HomepageCTASection() {
   if (status === "loading" || session) return null;
 
   return (
-    <section className="py-20 bg-[var(--bg-primary)]">
+    <section className="pt-6 pb-20 bg-[var(--bg-primary)]">
       <div className="mx-auto max-w-3xl px-4 text-center">
         <h2 className="text-3xl font-bold text-[var(--text-primary)]">
           Prêt à gérer votre collection ?
