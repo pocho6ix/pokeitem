@@ -19,7 +19,7 @@ export interface CardMarketPrice {
 function buildSearchUrl(itemName: string, serieName?: string): string {
   const query = serieName ? `${serieName} ${itemName}` : itemName;
   const encoded = encodeURIComponent(query);
-  return `https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encoded}`;
+  return `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encoded}`;
 }
 
 /**

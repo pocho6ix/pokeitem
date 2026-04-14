@@ -488,7 +488,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
             <a
               href={
                 card.cardmarketUrl
-                  ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}?language=2`
+                  ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}`
                   : `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
               }
               target="_blank"
