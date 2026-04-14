@@ -52,24 +52,31 @@ function MobileTopBar() {
   const avatarSrc  = session ? getAvatarSrc(userId, hasAvatar) : null;
 
   return (
-    <div className="flex h-14 items-center justify-between px-4 md:hidden">
-      {/* Left: logo icon + greeting */}
-      <div className="flex items-center gap-3">
-        <Logo variant="icon" size="md" />
-        <div className="leading-tight">
-          {pseudo ? (
-            <>
-              <p className="text-[11px] text-[var(--text-tertiary)]" suppressHydrationWarning>{getGreeting()},</p>
-              <p className="text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
-            </>
-          ) : (
-            <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
-          )}
-        </div>
+    <div className="relative flex h-14 items-center justify-between gap-3 px-4 md:hidden">
+      {/* Left: greeting */}
+      <div className="min-w-0 flex-1 leading-tight">
+        {pseudo ? (
+          <>
+            <p className="text-[11px] text-[var(--text-tertiary)]" suppressHydrationWarning>{getGreeting()},</p>
+            <p className="truncate text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
+          </>
+        ) : (
+          <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
+        )}
       </div>
 
+      {/* Center: long logo */}
+      <Link
+        href="/"
+        className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        aria-label="PokeItem"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-long.png" alt="PokeItem" className="h-8 w-auto" />
+      </Link>
+
       {/* Right: profile icon */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-1 items-center justify-end gap-2">
         {session ? (
           <Link href="/profil" title="Mon profil" className="block h-9 w-9 shrink-0">
             {avatarSrc ? (
