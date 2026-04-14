@@ -7,8 +7,9 @@ import { HeroSearchBar } from "@/components/ui/HeroSearchBar";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
-import { getCachedSeriesList } from "@/lib/cached-queries";
+import { getCachedSeriesList, getCachedSerieCardCounts } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
+import { getSerieVersions } from "@/data/card-versions";
 import type { BlocCardProgress } from "@/types/card";
 
 export const metadata: Metadata = {
@@ -19,11 +20,15 @@ export const metadata: Metadata = {
 export const revalidate = 0; // dynamic — owned data is per-user
 
 async function buildBlocProgress(userId: string | null, rarityFilter?: string | null): Promise<BlocCardProgress[]> {
-  // CDN-cached 1h — user-independent dataset
-  const seriesInDb = await getCachedSeriesList();
+  // CDN-cached — user-independent datasets
+  const [seriesInDb, cardCounts] = await Promise.all([
+    getCachedSeriesList(),
+    getCachedSerieCardCounts(),
+  ]);
 
   // Owned card counts + market values per serie
-  const ownedBySerieId = new Map<string, number>();
+  const ownedBySerieId = new Map<string, number>();        // unique cardIds
+  const ownedSlotsBySerieId = new Map<string, number>();   // unique (cardId, version) pairs
   const valueBySerieId = new Map<string, number>();
   // Total cards per serie for the active rarity (used when filter is active)
   const totalByRaritySerieId = new Map<string, number>();
@@ -32,20 +37,12 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
     const rarityWhere = rarityFilter ? { card: { rarity: rarityFilter as never } } : {};
 
     // All independent queries run in parallel
-    const [ownedDistinct, ownedWithPrices, totalByRarity] = await Promise.all([
-      // Unique-card count (distinct cardId for completion %)
-      // Note: distinct + relation select can produce invalid SQL in some Prisma versions;
-      // groupBy on cardId is more reliable and equally expressive.
-      prisma.userCard.groupBy({
-        by: ["cardId"],
+    const [ownedRaw, ownedWithPrices, totalByRarity] = await Promise.all([
+      // All (cardId, version) pairs owned — aggregated client-side so we get
+      // both unique-card count (progress %) and unique-slot count (completion)
+      prisma.userCard.findMany({
         where: { userId, ...rarityWhere },
-      }).then(async (rows) => {
-        const cardIds = rows.map((r) => r.cardId);
-        const cards = await prisma.card.findMany({
-          where: { id: { in: cardIds } },
-          select: { id: true, serieId: true },
-        });
-        return cards.map((c) => ({ cardId: c.id, card: { serieId: c.serieId } }));
+        select: { cardId: true, version: true, card: { select: { serieId: true } } },
       }),
       // Market value = price × quantity; prefer FR price when available
       prisma.userCard.findMany({
@@ -66,10 +63,18 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
         : Promise.resolve([]),
     ]);
 
-    for (const uc of ownedDistinct) {
+    const cardsBySerie = new Map<string, Set<string>>();
+    const slotsBySerie = new Map<string, Set<string>>();
+    for (const uc of ownedRaw) {
       const sid = uc.card.serieId;
-      ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
+      if (!cardsBySerie.has(sid)) cardsBySerie.set(sid, new Set());
+      if (!slotsBySerie.has(sid)) slotsBySerie.set(sid, new Set());
+      cardsBySerie.get(sid)!.add(uc.cardId);
+      slotsBySerie.get(sid)!.add(`${uc.cardId}:${uc.version}`);
     }
+    for (const [sid, set] of cardsBySerie) ownedBySerieId.set(sid, set.size);
+    for (const [sid, set] of slotsBySerie) ownedSlotsBySerieId.set(sid, set.size);
+
     for (const uc of ownedWithPrices) {
       const sid   = uc.card.serieId;
       const price = getPriceForVersion(uc.card, uc.version);
@@ -99,17 +104,31 @@ async function buildBlocProgress(userId: string | null, rarityFilter?: string | 
 
     // Only keep series where the user owns at least one card
     const seriesWithCards = sorted
-      .map((serie) => ({
-        serieSlug:         serie.slug,
-        serieName:         serie.name,
-        serieAbbreviation: serie.abbreviation ?? null,
-        serieImageUrl:     imageUrlBySlug.get(serie.slug) ?? serie.imageUrl ?? null,
-        totalCards:   rarityFilter
-          ? (totalByRaritySerieId.get(serie.id) ?? 0)
-          : (countBySlug.get(serie.slug) ?? 0),
-        ownedCards:   ownedBySerieId.get(serie.id) ?? 0,
-        marketValue:  Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
-      }))
+      .map((serie) => {
+        // Completion ignored when a rarity filter is active (totals are partial)
+        let isComplete = false;
+        if (!rarityFilter) {
+          const versions = getSerieVersions(serie.slug, bloc.slug);
+          const counts = cardCounts[serie.id] ?? { total: 0, special: 0 };
+          const normalCards = counts.total - counts.special;
+          const totalSlots  = normalCards * versions.length + counts.special;
+          const ownedSlots  = ownedSlotsBySerieId.get(serie.id) ?? 0;
+          isComplete = totalSlots > 0 && ownedSlots >= totalSlots;
+        }
+
+        return {
+          serieSlug:         serie.slug,
+          serieName:         serie.name,
+          serieAbbreviation: serie.abbreviation ?? null,
+          serieImageUrl:     imageUrlBySlug.get(serie.slug) ?? serie.imageUrl ?? null,
+          totalCards:   rarityFilter
+            ? (totalByRaritySerieId.get(serie.id) ?? 0)
+            : (countBySlug.get(serie.slug) ?? 0),
+          ownedCards:   ownedBySerieId.get(serie.id) ?? 0,
+          marketValue:  Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
+          isComplete,
+        };
+      })
       .filter((s) => s.ownedCards > 0);
 
     return {

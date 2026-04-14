@@ -86,6 +86,12 @@ export interface SerieCardProgress {
   ownedCards: number;
   /** Sum of card market prices × quantity for owned cards in this series */
   marketValue: number;
+  /**
+   * True when the user owns every (cardId, version) slot of this serie —
+   * i.e. every card in every applicable version (Normale / Reverse / Poké Ball / Master Ball).
+   * Special / full-art cards are treated as NORMAL only.
+   */
+  isComplete: boolean;
 }
 
 // Progress summary per bloc

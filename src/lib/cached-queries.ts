@@ -25,6 +25,30 @@ export const getCachedSeriesList = unstable_cache(
   { revalidate: 300 }
 )
 
+/**
+ * Card counts per serie: total + isSpecial breakdown.
+ * Used to compute completion (serie is complete when user owns every
+ * applicable (cardId, version) slot). `special` counts cards that only
+ * exist as NORMAL (full art / special cards).
+ */
+export const getCachedSerieCardCounts = unstable_cache(
+  async (): Promise<Record<string, { total: number; special: number }>> => {
+    const rows = await prisma.card.groupBy({
+      by: ["serieId", "isSpecial"],
+      _count: { id: true },
+    });
+    const map: Record<string, { total: number; special: number }> = {};
+    for (const r of rows) {
+      if (!map[r.serieId]) map[r.serieId] = { total: 0, special: 0 };
+      map[r.serieId].total += r._count.id;
+      if (r.isSpecial) map[r.serieId].special += r._count.id;
+    }
+    return map;
+  },
+  ["db-serie-card-counts"],
+  { revalidate: 300 }
+);
+
 /** Cards for a single serie — heavy query, cached 1h per serieSlug */
 export const getCachedSerieCards = unstable_cache(
   async (serieSlug: string) =>

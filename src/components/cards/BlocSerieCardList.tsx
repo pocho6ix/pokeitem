@@ -78,8 +78,8 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                             className="font-data text-xs font-semibold text-emerald-400"
                           />
                         )}
-                        {/* Complete badge */}
-                        {pct === 100 && (
+                        {/* Complete badge — shows only when every (card, version) slot is owned */}
+                        {serie.isComplete && (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="shrink-0">
                             <circle cx="12" cy="12" r="11" stroke="#D4A853" strokeWidth="2" />
                             <path d="m7 12.5 3.5 3.5 6.5-7" stroke="#D4A853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

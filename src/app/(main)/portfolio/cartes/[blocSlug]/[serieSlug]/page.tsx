@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { getCachedSerieCards } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
 import { CardRarity, CardCondition } from "@/types/card";
-import { CardVersion } from "@/data/card-versions";
+import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
 import { ClasseurCardGrid, type ClasseurCard, type MissingCard } from "@/components/cards/ClasseurCardGrid";
 
@@ -107,6 +107,23 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
 
   const ownedCount = new Set(cards.map((c) => c.cardId)).size;
 
+  // ── Completion: user owns every applicable (cardId, version) slot ──────
+  const serieVersions = getSerieVersions(serieSlug, blocSlug);
+  const ownedSlots = new Set(userCards.map((uc) => `${uc.cardId}:${uc.version}`));
+  let isSerieComplete = (serieDb.cards?.length ?? 0) > 0;
+  if (isSerieComplete) {
+    for (const c of serieDb.cards ?? []) {
+      const applicable = c.isSpecial ? [CardVersion.NORMAL] : serieVersions;
+      for (const v of applicable) {
+        if (!ownedSlots.has(`${c.id}:${v}`)) {
+          isSerieComplete = false;
+          break;
+        }
+      }
+      if (!isSerieComplete) break;
+    }
+  }
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -143,14 +160,24 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
         )}
         <div>
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">{serieStatic.name}</h2>
-          <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
-            {bloc.name} · {serieStatic.abbreviation}
-            {allCards.length > 0 && (
-              <span className="ml-2 font-medium text-[var(--text-primary)]">
-                · {ownedCount} / {allCards.length} carte{allCards.length > 1 ? "s" : ""}
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
+            <p>
+              {bloc.name} · {serieStatic.abbreviation}
+              {allCards.length > 0 && (
+                <span className="ml-2 font-medium text-[var(--text-primary)]">
+                  · {ownedCount} / {allCards.length} carte{allCards.length > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+            {isSerieComplete && (
+              <span className="btn-gold inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+                Complète
               </span>
             )}
-          </p>
+          </div>
         </div>
       </div>
 

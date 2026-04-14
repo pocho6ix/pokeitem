@@ -12,6 +12,7 @@ import { CardCollectionGrid } from "@/components/cards/CardCollectionGrid";
 import { BackButton } from "@/components/ui/BackButton";
 import type { CardRow, OwnedEntry } from "@/components/cards/CardCollectionGrid";
 import { CardRarity } from "@/types/card";
+import { getSerieVersions, CardVersion } from "@/data/card-versions";
 
 interface PageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
@@ -61,6 +62,23 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
       select: { id: true, cardId: true, quantity: true, condition: true, language: true, foil: true, version: true },
     });
     initialOwned = userCards as OwnedEntry[];
+  }
+
+  // ── Completion check: user owns every applicable (cardId, version) slot ─
+  const serieVersions = getSerieVersions(serieSlug, blocSlug);
+  const ownedSlots = new Set(initialOwned.map((o) => `${o.cardId}:${o.version}`));
+  let isSerieComplete = dbCards.length > 0 && userId !== null;
+  if (isSerieComplete) {
+    for (const c of dbCards) {
+      const applicable = c.isSpecial ? [CardVersion.NORMAL] : serieVersions;
+      for (const v of applicable) {
+        if (!ownedSlots.has(`${c.id}:${v}`)) {
+          isSerieComplete = false;
+          break;
+        }
+      }
+      if (!isSerieComplete) break;
+    }
   }
 
   // ── Shape cards for the grid ────────────────────────────────────────────
@@ -126,14 +144,24 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
             {serieStatic.name}
           </h1>
-          <p className="mt-1 text-[var(--text-secondary)]">
-            Série {bloc.name} · {serieStatic.abbreviation}
-            {cards.length > 0 && (
-              <span className="ml-2 font-medium text-[var(--text-primary)]">
-                · {cards.length} cartes
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[var(--text-secondary)]">
+            <p>
+              Série {bloc.name} · {serieStatic.abbreviation}
+              {cards.length > 0 && (
+                <span className="ml-2 font-medium text-[var(--text-primary)]">
+                  · {cards.length} cartes
+                </span>
+              )}
+            </p>
+            {isSerieComplete && (
+              <span className="btn-gold inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+                Complète
               </span>
             )}
-          </p>
+          </div>
         </div>
       </div>
 

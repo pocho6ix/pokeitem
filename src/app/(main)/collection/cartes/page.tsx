@@ -7,8 +7,9 @@ import { BlocSerieCardList } from "@/components/cards/BlocSerieCardList";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { prisma } from "@/lib/prisma";
-import { getCachedSeriesList } from "@/lib/cached-queries";
+import { getCachedSeriesList, getCachedSerieCardCounts } from "@/lib/cached-queries";
 import { getPriceForVersion } from "@/lib/display-price";
+import { getSerieVersions } from "@/data/card-versions";
 import type { BlocCardProgress } from "@/types/card";
 
 export const metadata: Metadata = {
@@ -19,21 +20,27 @@ export const metadata: Metadata = {
 export const revalidate = 0; // dynamic — owned data is per-user
 
 async function buildBlocProgress(userId: string | null): Promise<BlocCardProgress[]> {
-  // ── Fetch all series with their card counts (CDN-cached 1h) ─────────────
-  const seriesInDb = await getCachedSeriesList();
+  // ── Fetch all series + card counts (total / special) ──────────────────
+  const [seriesInDb, cardCounts] = await Promise.all([
+    getCachedSeriesList(),
+    getCachedSerieCardCounts(),
+  ]);
 
-  // ── Fetch owned card counts per serie for this user ───────────────────
-  const ownedBySerieId = new Map<string, number>();
+  // ── Fetch owned card / slot counts per serie for this user ────────────
+  const ownedBySerieId = new Map<string, number>();          // unique cardIds
+  const ownedSlotsBySerieId = new Map<string, number>();     // unique (cardId, version) pairs
   const valueBySerieId = new Map<string, number>();
 
   if (userId) {
     // Both queries are independent — run in parallel
     const [owned, ownedWithPrices] = await Promise.all([
-      // Count unique cards per serie (one card = one slot, regardless of versions owned)
+      // All (cardId, version) slots owned by this user — no `distinct`,
+      // we aggregate client-side so we get both:
+      //  • ownedCards   = unique cardIds per serie  (progress %)
+      //  • ownedSlots   = unique (cardId, version) per serie (completion check)
       prisma.userCard.findMany({
         where: { userId },
-        select: { card: { select: { serieId: true } }, cardId: true },
-        distinct: ["cardId"],
+        select: { cardId: true, version: true, card: { select: { serieId: true } } },
       }),
       // Market value = price × quantity; prefer FR price when available
       prisma.userCard.findMany({
@@ -46,10 +53,18 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
       }),
     ]);
 
+    const cardsBySerie = new Map<string, Set<string>>();
+    const slotsBySerie = new Map<string, Set<string>>();
     for (const uc of owned) {
       const sid = uc.card.serieId;
-      ownedBySerieId.set(sid, (ownedBySerieId.get(sid) ?? 0) + 1);
+      if (!cardsBySerie.has(sid)) cardsBySerie.set(sid, new Set());
+      if (!slotsBySerie.has(sid)) slotsBySerie.set(sid, new Set());
+      cardsBySerie.get(sid)!.add(uc.cardId);
+      slotsBySerie.get(sid)!.add(`${uc.cardId}:${uc.version}`);
     }
+    for (const [sid, set] of cardsBySerie) ownedBySerieId.set(sid, set.size);
+    for (const [sid, set] of slotsBySerie) ownedSlotsBySerieId.set(sid, set.size);
+
     for (const uc of ownedWithPrices) {
       const sid = uc.card.serieId;
       const price = getPriceForVersion(uc.card, uc.version);
@@ -81,15 +96,27 @@ async function buildBlocProgress(userId: string | null): Promise<BlocCardProgres
       blocSlug:         bloc.slug,
       blocName:         bloc.name,
       blocAbbreviation: bloc.abbreviation ?? null,
-      series: sorted.map((serie) => ({
-        serieSlug:         serie.slug,
-        serieName:         serie.name,
-        serieAbbreviation: serie.abbreviation ?? null,
-        serieImageUrl:     imageUrlBySlug.get(serie.slug) ?? serie.imageUrl ?? null,
-        totalCards:  countBySlug.get(serie.slug) ?? 0,
-        ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
-        marketValue: Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
-      })),
+      series: sorted.map((serie) => {
+        // Completion = user owns every applicable (cardId, version) slot.
+        // Slots = (normalCards × versions.length) + specialCards (NORMAL only).
+        const versions = getSerieVersions(serie.slug, bloc.slug);
+        const counts = cardCounts[serie.id] ?? { total: 0, special: 0 };
+        const normalCards = counts.total - counts.special;
+        const totalSlots  = normalCards * versions.length + counts.special;
+        const ownedSlots  = ownedSlotsBySerieId.get(serie.id) ?? 0;
+        const isComplete  = totalSlots > 0 && ownedSlots >= totalSlots;
+
+        return {
+          serieSlug:         serie.slug,
+          serieName:         serie.name,
+          serieAbbreviation: serie.abbreviation ?? null,
+          serieImageUrl:     imageUrlBySlug.get(serie.slug) ?? serie.imageUrl ?? null,
+          totalCards:  countBySlug.get(serie.slug) ?? 0,
+          ownedCards:  ownedBySerieId.get(serie.id) ?? 0,
+          marketValue: Math.round((valueBySerieId.get(serie.id) ?? 0) * 100) / 100,
+          isComplete,
+        };
+      }),
     };
   });
 }
