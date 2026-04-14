@@ -256,15 +256,9 @@ function AddToCollectionModal({
   const [showConditionInfo,  setShowConditionInfo]  = useState(false);
 
   function toggleVersion(v: CardVersion) {
-    setSelectedVersions((prev) => {
-      const next = new Set(prev);
-      if (next.has(v)) {
-        if (next.size > 1) next.delete(v); // keep at least one
-      } else {
-        next.add(v);
-      }
-      return next;
-    });
+    // Single-select: clicking a version always replaces the current selection,
+    // so the user can't accidentally add a card in two versions at once.
+    setSelectedVersions(new Set([v]));
   }
 
   // Current price preview (single card + single version only) — prefer FR price
@@ -323,9 +317,6 @@ function AddToCollectionModal({
                   );
                 })}
               </div>
-              {selectedVersions.size > 1 && (
-                <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">{selectedVersions.size} versions sélectionnées</p>
-              )}
             </div>
           )}
           {selectedCards.length === 1 && selectedCards[0].isSpecial && (

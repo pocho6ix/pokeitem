@@ -140,7 +140,7 @@ export default async function HomePage() {
             </section>
           )}
 
-          <section className={`px-4 pt-3 sm:px-6 lg:px-8 ${topCards.length > 0 ? "pb-4" : "pb-28"}`}>
+          <section className="px-4 pt-3 pb-32 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-xl space-y-4">
               <ReferralBlock />
               <QuestsBlock />
