@@ -150,10 +150,10 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Rare":                      CardRarity.RARE,
   "Rare Holo":                 CardRarity.HOLO_RARE,
   "Rare Holo EX":              CardRarity.ULTRA_RARE,     // EX-era & XY-era EX Pokémon (gold star)
-  "Rare Holo GX":              CardRarity.DOUBLE_RARE,
-  "Rare Holo V":               CardRarity.DOUBLE_RARE,
-  "Rare Holo VMAX":            CardRarity.DOUBLE_RARE,
-  "Rare Holo VSTAR":           CardRarity.DOUBLE_RARE,
+  "Rare Holo GX":              CardRarity.HOLO_RARE,      // SM-era GX → Holo Rare (Double Rare n'existe pas dans ce bloc)
+  "Rare Holo V":               CardRarity.HOLO_RARE,      // SWSH-era V → Holo Rare
+  "Rare Holo VMAX":            CardRarity.HOLO_RARE,      // SWSH-era VMAX → Holo Rare
+  "Rare Holo VSTAR":           CardRarity.HOLO_RARE,      // SWSH-era VSTAR → Holo Rare
   "Double Rare":               CardRarity.DOUBLE_RARE,
   "Ultra Rare":                CardRarity.ULTRA_RARE,     // Full-Art EX, Full-Art Supporter
   "Illustration Rare":         CardRarity.ILLUSTRATION_RARE,
@@ -176,8 +176,8 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Shiny Ultra Rare":          CardRarity.HYPER_RARE,
   "Rare Shining":              CardRarity.ILLUSTRATION_RARE,
   "Rare Prime":                CardRarity.RARE,
-  "Rare BREAK":                CardRarity.DOUBLE_RARE,
-  "Rare Prism Star":           CardRarity.DOUBLE_RARE,
+  "Rare BREAK":                CardRarity.HOLO_RARE,      // XY-era BREAK → Holo Rare
+  "Rare Prism Star":           CardRarity.HOLO_RARE,      // SM-era Prism Star → Holo Rare
   // Trainer Gallery / Galerie Galactique (SWSH era sub-sets)
   "Trainer Gallery Rare Holo": CardRarity.ILLUSTRATION_RARE,
   // Celebrations Classic Collection
@@ -185,9 +185,9 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   // ME era (Foudre Noire / Flamme Blanche)
   "Black White Rare":          CardRarity.NOIR_BLANC_RARE,
   // Anciens sets — HGSS, BW, DP, etc.
-  "Rare Holo LV.X":           CardRarity.DOUBLE_RARE,
+  "Rare Holo LV.X":           CardRarity.HOLO_RARE,      // DP/HGSS-era LV.X → Holo Rare
   "Rare Holo Star":            CardRarity.ULTRA_RARE,     // Gold Star Pokémon (EX era)
-  "Rare ACE":                  CardRarity.DOUBLE_RARE,
+  "Rare ACE":                  CardRarity.HOLO_RARE,      // ACE SPEC anciens → Holo Rare
 };
 
 const SPECIAL_RARITIES = new Set<CardRarity>([

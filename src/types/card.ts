@@ -153,17 +153,19 @@ export const CARD_RARITY_IMAGE: Record<CardRarity, string> = {
   [CardRarity.PROMO]: '/rarities/promo.png',
 };
 
-/** Blocs that use the recent (silver outlined stars) Ultra Rare icon */
-const RECENT_ULTRA_RARE_BLOCS = new Set(['ecarlate-violet', 'mega-evolution']);
+/** Blocs that use the recent icon variants (EV + ME) */
+const RECENT_BLOCS = new Set(['ecarlate-violet', 'mega-evolution']);
 
 /**
- * Get the rarity image path, with bloc-aware override for Ultra Rare.
- * For Écarlate & Violet and Méga-Évolution blocs, Ultra Rare uses the
- * newer silver-outlined stars icon instead of the classic gold stars.
+ * Get the rarity image path, with bloc-aware overrides.
+ * For Écarlate & Violet and Méga-Évolution blocs:
+ *  - Ultra Rare → silver outlined stars
+ *  - Double Rare → new double rare icon
  */
 export function getCardRarityImage(rarity: CardRarity, blocSlug?: string): string {
-  if (rarity === CardRarity.ULTRA_RARE && blocSlug && RECENT_ULTRA_RARE_BLOCS.has(blocSlug)) {
-    return '/rarities/ultra_rare_recent.png';
+  if (blocSlug && RECENT_BLOCS.has(blocSlug)) {
+    if (rarity === CardRarity.ULTRA_RARE) return '/rarities/ultra_rare_recent.png';
+    if (rarity === CardRarity.DOUBLE_RARE) return '/rarities/double_rare_recent.png';
   }
   return CARD_RARITY_IMAGE[rarity];
 }
