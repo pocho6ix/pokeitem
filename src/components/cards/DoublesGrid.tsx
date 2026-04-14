@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CardVersion } from '@/data/card-versions'
+import { CollectionValue } from '@/components/collection/CollectionValue'
 
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
@@ -69,11 +70,21 @@ interface DoublesGridProps {
   blocs: BlocGroup[]
   totalDoubles: number
   totalSeries: number
+  /** Total monetary value of the "extra copies" (sum of (quantity-1) × price) */
+  extraValue?: number
+  /** Hide the "Extensions" KPI — useful on a single-serie detail page */
+  hideSeriesCount?: boolean
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, totalSeries }: DoublesGridProps) {
+export function DoublesGrid({
+  blocs: initialBlocs,
+  totalDoubles: initialTotal,
+  totalSeries,
+  extraValue,
+  hideSeriesCount = false,
+}: DoublesGridProps) {
   const router = useRouter()
   const [blocs, setBlocs] = useState(initialBlocs)
   const [totalDoubles, setTotalDoubles] = useState(initialTotal)
@@ -160,15 +171,28 @@ export function DoublesGrid({ blocs: initialBlocs, totalDoubles: initialTotal, t
   return (
     <div className="relative pb-24">
       {/* Summary + select toggle */}
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="rounded-xl bg-blue-50 px-4 py-2 dark:bg-blue-950/30">
           <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total doublons</p>
           <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{totalDoubles}</p>
         </div>
-        <div className="rounded-xl bg-[var(--bg-secondary)] px-4 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Extensions</p>
-          <p className="text-2xl font-bold text-[var(--text-primary)]">{totalSeries}</p>
-        </div>
+        {!hideSeriesCount && (
+          <div className="rounded-xl bg-[var(--bg-secondary)] px-4 py-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Extensions</p>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{totalSeries}</p>
+          </div>
+        )}
+        {typeof extraValue === 'number' && extraValue > 0 && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-500 dark:text-emerald-400">
+              Valeur des surplus
+            </p>
+            <CollectionValue
+              value={extraValue}
+              className="font-data text-2xl font-bold text-emerald-600 dark:text-emerald-300"
+            />
+          </div>
+        )}
         <button
           onClick={toggleSelectMode}
           className={`ml-auto rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${
