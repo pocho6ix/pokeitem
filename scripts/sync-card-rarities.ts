@@ -150,10 +150,10 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   "Rare":                      CardRarity.RARE,
   "Rare Holo":                 CardRarity.HOLO_RARE,
   "Rare Holo EX":              CardRarity.ULTRA_RARE,     // EX-era & XY-era EX Pokémon (gold star)
-  "Rare Holo GX":              CardRarity.HOLO_RARE,      // SM-era GX → Holo Rare (Double Rare n'existe pas dans ce bloc)
-  "Rare Holo V":               CardRarity.HOLO_RARE,      // SWSH-era V → Holo Rare
-  "Rare Holo VMAX":            CardRarity.HOLO_RARE,      // SWSH-era VMAX → Holo Rare
-  "Rare Holo VSTAR":           CardRarity.HOLO_RARE,      // SWSH-era VSTAR → Holo Rare
+  "Rare Holo GX":              CardRarity.ULTRA_RARE,     // SM-era GX → Ultra Rare (étoile dorée)
+  "Rare Holo V":               CardRarity.ULTRA_RARE,     // SWSH-era V → Ultra Rare
+  "Rare Holo VMAX":            CardRarity.ULTRA_RARE,     // SWSH-era VMAX → Ultra Rare
+  "Rare Holo VSTAR":           CardRarity.ULTRA_RARE,     // SWSH-era VSTAR → Ultra Rare
   "Double Rare":               CardRarity.DOUBLE_RARE,
   "Ultra Rare":                CardRarity.ULTRA_RARE,     // Full-Art EX, Full-Art Supporter
   "Illustration Rare":         CardRarity.ILLUSTRATION_RARE,
@@ -185,7 +185,7 @@ const PTCG_RARITY_MAP: Record<string, CardRarity> = {
   // ME era (Foudre Noire / Flamme Blanche)
   "Black White Rare":          CardRarity.NOIR_BLANC_RARE,
   // Anciens sets — HGSS, BW, DP, etc.
-  "Rare Holo LV.X":           CardRarity.HOLO_RARE,      // DP/HGSS-era LV.X → Holo Rare
+  "Rare Holo LV.X":           CardRarity.ULTRA_RARE,     // DP/HGSS-era LV.X → Ultra Rare (étoile dorée)
   "Rare Holo Star":            CardRarity.ULTRA_RARE,     // Gold Star Pokémon (EX era)
   "Rare ACE":                  CardRarity.HOLO_RARE,      // ACE SPEC anciens → Holo Rare
 };
