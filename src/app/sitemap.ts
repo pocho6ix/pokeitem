@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
-import { BLOG_POSTS } from "@/data/blog-posts";
 
 const BASE_URL = "https://app.pokeitem.fr";
 
@@ -26,12 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/blog`,
-      lastModified: new Date("2026-03-29"),
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
   ];
 
   // Bloc pages
@@ -50,15 +43,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // Blog posts
-  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS
-    .filter((post) => post.published)
-    .map((post) => ({
-      url: `${BASE_URL}/blog/${post.slug}`,
-      lastModified: post.publishedAt ? new Date(post.publishedAt) : new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    }));
-
-  return [...staticPages, ...blocPages, ...seriePages, ...blogPages];
+  return [...staticPages, ...blocPages, ...seriePages];
 }
