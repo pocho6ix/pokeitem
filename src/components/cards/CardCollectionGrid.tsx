@@ -8,6 +8,7 @@ import {
   CARD_RARITY_LABELS,
   CARD_RARITY_IMAGE,
   CARD_RARITY_ORDER,
+  getCardRarityImage,
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
@@ -950,7 +951,7 @@ export function CardCollectionGrid({
                     : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={CARD_RARITY_IMAGE[rarity]}
+                  src={getCardRarityImage(rarity, blocSlug)}
                   alt={CARD_RARITY_LABELS[rarity]}
                   suppressHydrationWarning
                   className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
@@ -1061,7 +1062,7 @@ export function CardCollectionGrid({
                   <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={CARD_RARITY_IMAGE[card.rarity]} alt="" className="h-3 w-auto object-contain opacity-90"
+                    <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3 w-auto object-contain opacity-90"
                       style={(card.rarity === CardRarity.COMMON || card.rarity === CardRarity.UNCOMMON || card.rarity === CardRarity.RARE)
                         ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
                         : undefined}

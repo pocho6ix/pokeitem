@@ -248,3 +248,8 @@ export {
   EX_SERIES,
   WOTC_SERIES,
 };
+
+/** Lookup: serieSlug → blocSlug */
+export const SERIE_TO_BLOC: Record<string, string> = Object.fromEntries(
+  SERIES.map((s) => [s.slug, s.blocSlug])
+);

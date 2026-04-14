@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition, useEffect, lazy, Suspense } from "rea
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Trash2, X, CheckSquare, ArrowUpDown, Search } from "lucide-react";
-import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition } from "@/types/card";
+import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition, getCardRarityImage } from "@/types/card";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
 
@@ -355,7 +355,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
               active ? "border-[#E7BA76] bg-[#E7BA76]/20 text-[#E7BA76]"
                 : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={CARD_RARITY_IMAGE[rarity]} alt={CARD_RARITY_LABELS[rarity]}
+            <img src={getCardRarityImage(rarity, blocSlug)} alt={CARD_RARITY_LABELS[rarity]}
               className={cn("h-4 w-auto object-contain", active ? "brightness-125" : "brightness-90")}
               style={(rarity === CardRarity.COMMON || rarity === CardRarity.UNCOMMON || rarity === CardRarity.RARE || rarity === CardRarity.NO_RARITY)
                 ? { filter: "drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))" }
@@ -374,7 +374,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
       <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
         <span>{number}</span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={CARD_RARITY_IMAGE[rarity]} alt="" className="h-3 w-auto object-contain opacity-90"
+        <img src={getCardRarityImage(rarity, blocSlug)} alt="" className="h-3 w-auto object-contain opacity-90"
           style={
             rarity === CardRarity.COMMON || rarity === CardRarity.UNCOMMON || rarity === CardRarity.RARE || rarity === CardRarity.NO_RARITY
               ? { filter: "drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))" }

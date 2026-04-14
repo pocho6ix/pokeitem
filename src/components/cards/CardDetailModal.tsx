@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback, useTransition, useRef } from "react";
 import { X, Plus } from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES } from "@/types/card";
+import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES, getCardRarityImage } from "@/types/card";
 import { isSpecialCard } from "@/lib/pokemon/card-variants";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
+import { SERIE_TO_BLOC } from "@/data/series";
 import type { CardRarity } from "@/types/card";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -208,7 +209,8 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
   const isPromoSerie = serie ? PROMO_SERIE_SLUGS.has(serie.slug) : false;
   const rarity = card?.rarity as keyof typeof CARD_RARITY_LABELS | undefined;
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
-  const rarityImage = rarity ? CARD_RARITY_IMAGE[rarity] : null;
+  const blocSlug = serie ? SERIE_TO_BLOC[serie.slug] : undefined;
+  const rarityImage = rarity ? getCardRarityImage(rarity, blocSlug) : null;
 
   // Available versions for the add sheet
   const availableVersions: CardVersion[] = (card && serie && !card.isSpecial && !isSpecialCard(card.rarity as CardRarity))
