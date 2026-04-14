@@ -173,17 +173,31 @@ const PROMO_SERIES: PromoSerie[] = [
     order: 20,
     cmEpisodeId: 127,
   },
-  // ── WOTC / Nintendo ─────────────────────────────────────────────────────────
+  // ── EX / Nintendo ───────────────────────────────────────────────────────────
+  // Nintendo Black Star Promos span 2003–2007 and are classified under the EX
+  // block on reference catalogs (Pokécardex, Bulbapedia).
   {
     tcgdexId: "np",
     slug: "promos-nintendo",
     name: "Promos Nintendo",
     nameEn: "Nintendo Black Star Promos",
     abbreviation: "NP",
-    blocSlug: "wotc",
+    blocSlug: "ex",
     releaseDate: "2003-07-01",
     order: 20,
     cmEpisodeId: 151,
+  },
+  // ── WOTC / Wizards ──────────────────────────────────────────────────────────
+  {
+    tcgdexId: "basep",
+    slug: "promos-wizards",
+    name: "Promos Wizards",
+    nameEn: "Wizards Black Star Promos",
+    abbreviation: "WP",
+    blocSlug: "wotc",
+    releaseDate: "1999-07-01",
+    order: 20,
+    // cmEpisodeId inconnu (non vérifié sur Cardmarket) — prix FR non scrapés
   },
 ]
 

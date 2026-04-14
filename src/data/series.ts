@@ -197,6 +197,7 @@ const EX_SERIES: SerieStatic[] = [
   { name: 'Dragon', nameEn: 'Dragon', slug: 'dragon-ex', abbreviation: 'EX03', blocSlug: 'ex', imageUrl: '/images/series/dragon-ex.png', releaseDate: '2003-11-24', order: 12 },
   { name: 'Groudon vs Kyogre', nameEn: 'Magma vs Aqua', slug: 'groudon-vs-kyogre', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/groudon-vs-kyogre.png', releaseDate: '2003-09-17', order: 13 },
   { name: 'Rubis & Saphir', nameEn: 'Ruby & Sapphire', slug: 'rubis-et-saphir', abbreviation: 'EX01', blocSlug: 'ex', imageUrl: '/images/series/rubis-et-saphir.png', releaseDate: '2003-06-18', order: 14 },
+  { name: 'Promos Nintendo', nameEn: 'Nintendo Promos', slug: 'promos-nintendo', abbreviation: 'NP', blocSlug: 'ex', imageUrl: '/images/series/promos-nintendo.png', releaseDate: null, order: 20 },
 ];
 
 // ==========================================================================
@@ -214,7 +215,7 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Fossile', nameEn: 'Fossil', slug: 'fossile', abbreviation: 'WOTC-FO', blocSlug: 'wotc', imageUrl: '/images/series/fossile.png', releaseDate: '1999-10-08', order: 7 },
   { name: 'Jungle', nameEn: 'Jungle', slug: 'jungle', abbreviation: 'WOTC-JU', blocSlug: 'wotc', imageUrl: '/images/series/jungle.png', releaseDate: '1999-06-16', order: 8 },
   { name: 'Set de base', nameEn: 'Base Set', slug: 'set-de-base', abbreviation: 'WOTC-BS', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base.png', releaseDate: '1999-01-09', order: 9 },
-  { name: 'Promos Nintendo', nameEn: 'Nintendo Promos', slug: 'promos-nintendo', abbreviation: 'NP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
+  { name: 'Promos Wizards', nameEn: 'Wizards Black Star Promos', slug: 'promos-wizards', abbreviation: 'WP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
 
 // ---------------------------------------------------------------------------

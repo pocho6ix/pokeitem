@@ -95,6 +95,7 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "promos-heartgold-soulsilver": V_NORMAL,
   "promos-diamant-et-perle":     V_NORMAL,
   "promos-nintendo":             V_NORMAL,
+  "promos-wizards":              V_NORMAL,
 };
 
 // ── Bloc-level defaults (fallback when serie not in map above) ───────────────
