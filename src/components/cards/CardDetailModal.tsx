@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES, getCardRarityImage } from "@/types/card";
 import { isSpecialCard } from "@/lib/pokemon/card-variants";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
-import { SERIE_TO_BLOC } from "@/data/series";
+import { SERIES } from "@/data/series";
 import type { CardRarity } from "@/types/card";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -209,7 +209,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
   const isPromoSerie = serie ? PROMO_SERIE_SLUGS.has(serie.slug) : false;
   const rarity = card?.rarity as keyof typeof CARD_RARITY_LABELS | undefined;
   const rarityLabel = rarity ? CARD_RARITY_LABELS[rarity] : null;
-  const blocSlug = serie ? SERIE_TO_BLOC[serie.slug] : undefined;
+  const blocSlug = serie ? SERIES.find(s => s.slug === serie.slug)?.blocSlug : undefined;
   const rarityImage = rarity ? getCardRarityImage(rarity, blocSlug) : null;
 
   // Available versions for the add sheet
