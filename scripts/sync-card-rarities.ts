@@ -204,6 +204,28 @@ const SPECIAL_RARITIES = new Set<CardRarity>([
   CardRarity.PROMO,
 ]);
 
+// Blocs "récents" qui peuvent utiliser toute la palette de raretés modernes
+// (Double Rare, Illustration Rare, Special Illustration Rare, Hyper Rare, etc.)
+const RECENT_BLOCS = new Set(["ecarlate-violet", "mega-evolution"]);
+
+/**
+ * Pokécardex règles pour les anciens blocs (non-EV/ME) :
+ *  - Trainer Gallery (TG*) → SECRET_RARE
+ *  - ILLUSTRATION_RARE (non-TG) → ULTRA_RARE (Radiants, etc.)
+ *  - SPECIAL_ILLUSTRATION_RARE → SECRET_RARE
+ *  - HYPER_RARE → SECRET_RARE
+ *  - DOUBLE_RARE → HOLO_RARE (ce niveau n'existe pas hors EV/ME)
+ */
+function remapForOldBloc(rarity: CardRarity, number: string): CardRarity {
+  const isTG = number.toUpperCase().startsWith("TG");
+  if (isTG) return CardRarity.SECRET_RARE;
+  if (rarity === CardRarity.ILLUSTRATION_RARE) return CardRarity.ULTRA_RARE;
+  if (rarity === CardRarity.SPECIAL_ILLUSTRATION_RARE) return CardRarity.SECRET_RARE;
+  if (rarity === CardRarity.HYPER_RARE) return CardRarity.SECRET_RARE;
+  if (rarity === CardRarity.DOUBLE_RARE) return CardRarity.HOLO_RARE;
+  return rarity;
+}
+
 // ── Sets avec un sous-set PTCGIO séparé (ex: Shiny Vault) ────────────────────
 
 const SLUG_TO_PTCG_SECONDARY: Record<string, string[]> = {
@@ -313,13 +335,17 @@ async function applyRarityMap(
   rarityMap: Map<string, CardRarity>,
   dbCards: { id: string; number: string }[],
   dryRun: boolean,
+  blocSlug: string | null,
 ): Promise<number> {
+  const isOldBloc = !blocSlug || !RECENT_BLOCS.has(blocSlug);
+
   const toUpdate = dbCards
     .map((c) => {
-      const rarity = rarityMap.get(c.number)
+      let rarity = rarityMap.get(c.number)
         ?? rarityMap.get(normalizeNumber(c.number))
         ?? rarityMap.get(stripAlternativeSuffix(c.number));
       if (!rarity) return null;
+      if (isOldBloc) rarity = remapForOldBloc(rarity, c.number);
       return { id: c.id, rarity, isSpecial: SPECIAL_RARITIES.has(rarity) };
     })
     .filter(Boolean) as { id: string; rarity: CardRarity; isSpecial: boolean }[];
@@ -341,8 +367,12 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
   const { dryRun } = opts;
   if (dryRun) console.log("🔍 Mode dry-run\n");
 
-  const seriesInDb = await prisma.serie.findMany({ select: { id: true, slug: true } });
-  const serieBySlug = new Map(seriesInDb.map((s) => [s.slug, s.id]));
+  const seriesInDb = await prisma.serie.findMany({
+    select: { id: true, slug: true, bloc: { select: { slug: true } } },
+  });
+  const serieBySlug = new Map(
+    seriesInDb.map((s) => [s.slug, { id: s.id, blocSlug: s.bloc?.slug ?? null }]),
+  );
 
   // All known slugs (union of PTCGIO + TCGdex)
   const allSlugs = new Set([...Object.keys(SLUG_TO_PTCG), ...Object.keys(SLUG_TO_PTCG_SECONDARY), ...Object.keys(SLUG_TO_TCGDEX)]);
@@ -364,8 +394,9 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
   for (const slug of slugs) {
     const ptcgId   = SLUG_TO_PTCG[slug];
     const tcgdexId = SLUG_TO_TCGDEX[slug];
-    const serieId  = serieBySlug.get(slug);
-    if (!serieId) { console.warn(`⚠ Série "${slug}" absente de la DB`); continue; }
+    const serieInfo = serieBySlug.get(slug);
+    if (!serieInfo) { console.warn(`⚠ Série "${slug}" absente de la DB`); continue; }
+    const { id: serieId, blocSlug } = serieInfo;
 
     const label = ptcgId ?? `tcgdex:${tcgdexId}`;
     process.stdout.write(`📦 ${label.padEnd(14)} → ${slug.padEnd(42)}`);
@@ -395,7 +426,7 @@ async function main(opts: { sets?: string[]; dryRun: boolean }) {
     if (rarityMap.size === 0) { console.log(`aucune rareté`); continue; }
 
     const dbCards = await prisma.card.findMany({ where: { serieId }, select: { id: true, number: true } });
-    const updated = await applyRarityMap(rarityMap, dbCards, dryRun);
+    const updated = await applyRarityMap(rarityMap, dbCards, dryRun, blocSlug);
 
     console.log(`${updated}/${dbCards.length} cartes`);
     totalUpdated += updated;
