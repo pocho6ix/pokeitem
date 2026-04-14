@@ -27,17 +27,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Bloc pages
+  // Bloc pages — canonical /collection/cartes/<bloc>
   const blocPages: MetadataRoute.Sitemap = BLOCS.map((bloc) => ({
-    url: `${BASE_URL}/collection/${bloc.slug}`,
+    url: `${BASE_URL}/collection/cartes/${bloc.slug}`,
     lastModified: new Date("2026-03-29"),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
-  // Serie pages — use releaseDate as lastmod
+  // Serie pages — canonical /collection/cartes/<bloc>/<serie>, releaseDate as lastmod
   const seriePages: MetadataRoute.Sitemap = SERIES.map((serie) => ({
-    url: `${BASE_URL}/collection/${serie.blocSlug}/${serie.slug}`,
+    url: `${BASE_URL}/collection/cartes/${serie.blocSlug}/${serie.slug}`,
     lastModified: serie.releaseDate ? new Date(serie.releaseDate) : new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.6,
