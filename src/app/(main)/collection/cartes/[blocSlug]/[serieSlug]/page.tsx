@@ -154,14 +154,11 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
               )}
             </p>
             {isSerieComplete && (
-              <span
-                className="btn-gold inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full"
-                aria-label="Série complète"
-                title="Série complète"
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a1308" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <span className="btn-gold inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-black">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m5 12 5 5L20 7" />
                 </svg>
+                Complète
               </span>
             )}
           </div>
