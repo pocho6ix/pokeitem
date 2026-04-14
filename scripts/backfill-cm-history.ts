@@ -91,17 +91,25 @@ async function main() {
   console.log(`Quota journalier : ${DAILY_QUOTA} appels API\n`)
 
   // Skip cards already backfilled.
-  // A card is considered backfilled if it has at least one price record older than
-  // 1 year — meaning we fetched its full CM history (not just the daily price update).
-  // The daily price update only adds recent records, so cards with only recent records
-  // still need a full backfill.
-  const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+  //
+  // Original heuristic ("no point older than 1 year") was too weak: cards backfilled
+  // less than a year ago (when CM only returns ~12 months of history) kept being
+  // re-selected every run. The API would happily return the same ~40 points, upsert
+  // would no-op thanks to the (cardId, recordedAt) unique constraint, and each chunk
+  // burned ~600 calls without adding any new rows.
+  //
+  // Tightened rule: a card is considered "already backfilled" if it has any price
+  // point older than 30 days. Rationale: the daily cron only adds recent points
+  // (<1 day old), so anything older than 30 days can only have been written by a
+  // prior run of THIS script. Keeping 30 days as the cut-off leaves a healthy buffer
+  // for brand-new imports to still get picked up.
+  const backfillCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   if (SERIE_SLUG) console.log(`Filtre série : ${SERIE_SLUG}\n`)
 
   const cards = await prisma.card.findMany({
     where: {
       cardmarketId: { not: null },
-      priceHistory: { none: { recordedAt: { lte: oneYearAgo } } },
+      priceHistory: { none: { recordedAt: { lte: backfillCutoff } } },
       ...(SERIE_SLUG ? { serie: { slug: SERIE_SLUG } } : {}),
     },
     select: { id: true, cardmarketId: true },
