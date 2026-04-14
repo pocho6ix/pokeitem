@@ -7,7 +7,6 @@ import { Home, Package, ScanLine, BookOpen, User, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
-import { Logo } from "@/components/shared/Logo";
 import { CommandSearch } from "@/components/shared/CommandSearch";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
@@ -138,7 +137,10 @@ export function Header() {
         <div className="mx-auto hidden h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 md:flex">
 
           {/* Logo */}
-          <Logo />
+          <Link href="/" aria-label="PokeItem" className="shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-long.png" alt="PokeItem" className="h-10 w-auto" />
+          </Link>
 
           {/* Nav links */}
           <nav className="flex items-center gap-1">
