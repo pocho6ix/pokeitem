@@ -46,7 +46,7 @@ async function main() {
     console.log("ℹ promos-nintendo absent en DB — skip (il sera créé par seed-promos).");
   } else {
     const needsMove   = nintendo.blocId !== ex.id;
-    const needsImage  = nintendo.imageUrl !== "/images/series/promos-nintendo.png";
+    const needsImage  = nintendo.imageUrl !== "/images/series/promos-nintendo.webp";
     const needsOrder  = nintendo.order !== 20;
     console.log(`📦 promos-nintendo  bloc: ${nintendo.bloc.slug} → ex  image: ${needsImage ? "updated" : "ok"}  order: ${nintendo.order} → 20`);
     if (!DRY_RUN && (needsMove || needsImage || needsOrder)) {
@@ -54,7 +54,7 @@ async function main() {
         where: { id: nintendo.id },
         data: {
           blocId:   ex.id,
-          imageUrl: "/images/series/promos-nintendo.png",
+          imageUrl: "/images/series/promos-nintendo.webp",
           order:    20,
         },
       });

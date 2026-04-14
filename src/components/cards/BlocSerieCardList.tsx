@@ -78,7 +78,7 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                             className="font-data text-xs font-semibold text-emerald-400"
                           />
                         )}
-                        {/* Complete badge — shows only when every (card, version) slot is owned */}
+                        {/* Complete badge — gold filled circle + check, matches the CTA buttons */}
                         {serie.isComplete && (
                           <span
                             className="btn-gold inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full"
