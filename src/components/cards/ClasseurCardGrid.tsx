@@ -680,19 +680,22 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{c.number}</div>
                       )}
-                      {/* Owned version badges for partially-owned cards */}
-                      {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (
-                        <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                          {(c.isSpecial ? [CardVersion.NORMAL] : serieVersions).map((v) => {
-                            const isOwned = ownedVersionsByCardId.get(c.cardId)?.has(v);
-                            return (
-                              <div key={v} className={isOwned ? "" : "opacity-30"}>
+                      {/* Missing-version badges — only show the versions NOT yet owned
+                          (so a partially-owned card surfaces what's still needed) */}
+                      {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (() => {
+                        const owned = ownedVersionsByCardId.get(c.cardId)!;
+                        const missing = serieVersions.filter((v) => !owned.has(v));
+                        if (missing.length === 0) return null;
+                        return (
+                          <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
+                            {missing.map((v) => (
+                              <div key={v} className="opacity-60">
                                 <VersionBadgeIcon version={v} />
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        );
+                      })()}
                       <NumberRarityBadge number={c.number} rarity={c.rarity} />
                     </div>
                     <div className="px-1.5 pb-2 pt-1">

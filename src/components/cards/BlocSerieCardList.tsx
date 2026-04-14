@@ -80,10 +80,15 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                         )}
                         {/* Complete badge — shows only when every (card, version) slot is owned */}
                         {serie.isComplete && (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                            <circle cx="12" cy="12" r="11" stroke="#D4A853" strokeWidth="2" />
-                            <path d="m7 12.5 3.5 3.5 6.5-7" stroke="#D4A853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <span
+                            className="btn-gold inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full"
+                            aria-label="Série complète"
+                            title="Série complète"
+                          >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a1308" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="m5 12 5 5L20 7" />
+                            </svg>
+                          </span>
                         )}
                       </div>
                     </div>
