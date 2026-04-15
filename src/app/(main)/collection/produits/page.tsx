@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
-import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { TabNav } from "@/components/ui/TabNav";
 
@@ -96,7 +95,6 @@ export default function CollectionProduitsPage() {
                     <h2 className="font-semibold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors">
                       {bloc.name}
                     </h2>
-                    <Badge variant="secondary">{bloc.abbreviation}</Badge>
                   </div>
                   <p className="text-sm text-[var(--text-secondary)]">
                     {formatPeriod(bloc.startDate, bloc.endDate)}

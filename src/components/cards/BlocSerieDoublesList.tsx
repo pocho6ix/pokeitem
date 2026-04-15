@@ -59,11 +59,6 @@ export function BlocSerieDoublesList({ blocs }: BlocSerieDoublesListProps) {
             <h2 className="text-xl font-bold text-[var(--text-primary)]">
               {bloc.blocName}
             </h2>
-            {bloc.blocAbbreviation && (
-              <span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
-                {bloc.blocAbbreviation}
-              </span>
-            )}
           </div>
 
           {/* Series list */}

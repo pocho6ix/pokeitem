@@ -103,7 +103,6 @@ export default async function BlocPage({ params }: BlocPageProps) {
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
             {bloc.name}
           </h1>
-          <Badge variant="secondary">{bloc.abbreviation}</Badge>
         </div>
         <p className="mt-2 text-[var(--text-secondary)]">
           Série {bloc.nameEn} &mdash;{" "}
