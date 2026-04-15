@@ -1,13 +1,18 @@
 /**
  * Backfill CM API price history into CardPriceHistory.
  *
- * For every card with a cardmarketId, fetches all historical price points
- * from the Cardmarket TCG API and upserts them into the DB.
+ * For every card with a cardmarketId that hasn't been backfilled yet
+ * (no price point older than 30 days), fetches all historical price points
+ * from the Cardmarket TCG API and upserts them into the DB. As a bonus,
+ * the card's current `priceFr` / `priceFrUpdatedAt` is refreshed from the
+ * most recent point in the fetched history — so today's price is updated
+ * on the same pass.
  *
  * Usage:
  *   npx tsx scripts/backfill-cm-history.ts
  *   npx tsx scripts/backfill-cm-history.ts --dry-run
  *   npx tsx scripts/backfill-cm-history.ts --limit 500   # process only N cards
+ *   npx tsx scripts/backfill-cm-history.ts --serie=slug  # filter to one serie
  */
 
 import { PrismaClient } from "@prisma/client"
@@ -144,6 +149,13 @@ async function main() {
 
         if (history.length === 0) return
 
+        // Most recent day with a usable price → used to refresh the card's
+        // "current" priceFr so the rest of the app sees today's value alongside
+        // the newly-imported history.
+        const latestWithPrice = [...history]
+          .reverse()
+          .find((h) => h.cmLow != null)
+
         if (!DRY_RUN) {
           const upserts = history
             .filter((h) => h.cmLow != null)
@@ -164,6 +176,19 @@ async function main() {
 
           for (let j = 0; j < upserts.length; j += CHUNK_DB) {
             await Promise.all(upserts.slice(j, j + CHUNK_DB))
+          }
+
+          // Refresh the card's current price from the latest history point.
+          // We use priceFr (the FR market) since the CM API returns cm_low
+          // which corresponds to the FR/EU low — same source as priceFr.
+          if (latestWithPrice) {
+            await prisma.card.update({
+              where: { id: card.id },
+              data: {
+                priceFr:          latestWithPrice.cmLow!,
+                priceFrUpdatedAt: new Date(),
+              },
+            })
           }
         }
 
