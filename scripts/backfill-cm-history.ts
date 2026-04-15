@@ -21,10 +21,10 @@ const LIMIT = LIMIT_ARG ? parseInt(LIMIT_ARG.split("=")[1]) : undefined
 const SERIE_ARG = process.argv.find((a) => a.startsWith("--serie="))
 const SERIE_SLUG = SERIE_ARG ? SERIE_ARG.split("=")[1] : undefined
 
-// Daily API quota guard — stop before hitting RapidAPI hard limit (15 000/day)
-// Override with --quota=N  (e.g. --quota=12000)
+// Daily API quota guard — RapidAPI hard limit is 15 000/day.
+// Override with --quota=N  (e.g. --quota=12000 to leave headroom for the daily cron)
 const QUOTA_ARG = process.argv.find((a) => a.startsWith("--quota="))
-const DAILY_QUOTA = QUOTA_ARG ? parseInt(QUOTA_ARG.split("=")[1]) : 13_500
+const DAILY_QUOTA = QUOTA_ARG ? parseInt(QUOTA_ARG.split("=")[1]) : 15_000
 let apiCallCount = 0
 
 const HOST = "cardmarket-api-tcg.p.rapidapi.com"
@@ -120,7 +120,7 @@ async function main() {
 
   const BATCH = 1         // sequential — évite saturation pool Prisma
   const DELAY = 300       // ms between cards
-  const CHUNK_DB = 5      // upserts per Promise.all
+  const CHUNK_DB = 1      // upserts fully sequential — P2024 pool-exhaustion guard
 
   let total = 0
   let totalPoints = 0
