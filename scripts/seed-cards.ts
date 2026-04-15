@@ -138,7 +138,7 @@ const TCGDEX_MAPPING: Record<string, string> = {
   ex4: "groudon-vs-kyogre",
   ex5: "legendes-oubliees",
   ex6: "fire-red-leaf-green",
-  ex7: "team-rocket-returns",
+  // ex7 (Team Rocket Returns) absent de TCGdex FR → traité via PTCG_ONLY_MAPPING
   ex8: "deoxys",
   ex9: "emeraude",
   ex10: "forces-cachees",
@@ -172,6 +172,8 @@ const PTCG_ONLY_MAPPING: Record<string, string> = {
   "gym2":   "gym-challenge",
   "ecard3": "skyridge",
   "base6":  "legendary-collection",
+  "ex7":    "team-rocket-returns",
+  "basep":  "promos-wizards",
 }
 
 // ---------------------------------------------------------------------------
