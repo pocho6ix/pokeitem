@@ -72,6 +72,17 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 5,
   },
   {
+    name: "L'Appel des Légendes",
+    nameEn: 'Call of Legends',
+    slug: 'appel-des-legendes',
+    abbreviation: 'CL',
+    logoUrl: null,
+    imageUrl: '/images/blocs/appel-des-legendes.png',
+    startDate: '2011-03-01',
+    endDate: '2011-03-30',
+    order: 6,
+  },
+  {
     name: 'HeartGold SoulSilver',
     nameEn: 'HeartGold SoulSilver',
     slug: 'heartgold-soulsilver',
@@ -80,7 +91,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/heartgold-soulsilver.png',
     startDate: '2010-02-01',
     endDate: '2010-11-30',
-    order: 6,
+    order: 7,
   },
   {
     name: 'Platine',
@@ -91,7 +102,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/platine.png',
     startDate: '2009-02-01',
     endDate: '2009-11-30',
-    order: 7,
+    order: 8,
   },
   {
     name: 'Diamant & Perle',
@@ -102,7 +113,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/diamant-perle.png',
     startDate: '2007-05-01',
     endDate: '2009-02-01',
-    order: 8,
+    order: 9,
   },
   {
     name: 'EX',
@@ -113,7 +124,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/ex.png',
     startDate: '2003-06-01',
     endDate: '2006-11-30',
-    order: 9,
+    order: 10,
   },
   {
     name: 'Wizards of the Coast',
@@ -124,7 +135,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/wotc.png',
     startDate: '1999-01-01',
     endDate: '2003-06-01',
-    order: 10,
+    order: 11,
   },
   {
     name: "McDonald's",
@@ -135,7 +146,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/mcdonalds.png',
     startDate: '2011-01-01',
     endDate: null,
-    order: 11,
+    order: 12,
   },
   {
     name: 'Jumbos',
@@ -146,6 +157,6 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/jumbos.png',
     startDate: '1998-01-01',
     endDate: null,
-    order: 12,
+    order: 13,
   },
 ];

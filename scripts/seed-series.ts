@@ -27,13 +27,14 @@ const BLOCS_DATA = [
   { name: "Soleil & Lune", nameEn: "Sun & Moon", slug: "soleil-lune", abbreviation: "SL", logoUrl: null, imageUrl: "/images/blocs/soleil-lune.png", startDate: "2017-02-01", endDate: "2020-02-01", order: 3 },
   { name: "XY", nameEn: "XY", slug: "xy", abbreviation: "XY", logoUrl: null, imageUrl: "/images/blocs/xy.png", startDate: "2014-02-01", endDate: "2016-11-01", order: 4 },
   { name: "Noir & Blanc", nameEn: "Black & White", slug: "noir-blanc", abbreviation: "NB", logoUrl: null, imageUrl: "/images/blocs/noir-blanc.png", startDate: "2011-03-01", endDate: "2013-11-01", order: 5 },
-  { name: "HeartGold SoulSilver", nameEn: "HeartGold SoulSilver", slug: "heartgold-soulsilver", abbreviation: "HGSS", logoUrl: null, imageUrl: "/images/blocs/heartgold-soulsilver.png", startDate: "2010-02-01", endDate: "2010-11-01", order: 6 },
-  { name: "Platine", nameEn: "Platinum", slug: "platine", abbreviation: "PL", logoUrl: null, imageUrl: "/images/blocs/platine.png", startDate: "2009-02-01", endDate: "2009-11-01", order: 7 },
-  { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", logoUrl: null, imageUrl: "/images/blocs/diamant-perle.png", startDate: "2007-05-01", endDate: "2009-02-01", order: 8 },
-  { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", logoUrl: null, imageUrl: "/images/blocs/ex.png", startDate: "2003-06-01", endDate: "2006-11-01", order: 9 },
-  { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 10 },
-  { name: "McDonald's", nameEn: "McDonald's", slug: "mcdonalds", abbreviation: "MCDO", logoUrl: null, imageUrl: "/images/blocs/mcdonalds.png", startDate: "2011-01-01", endDate: null, order: 11 },
-  { name: "Jumbos", nameEn: "Jumbos", slug: "jumbos", abbreviation: "JUMBO", logoUrl: null, imageUrl: "/images/blocs/jumbos.png", startDate: "1998-01-01", endDate: null, order: 12 },
+  { name: "L'Appel des Légendes", nameEn: "Call of Legends", slug: "appel-des-legendes", abbreviation: "CL", logoUrl: null, imageUrl: "/images/blocs/appel-des-legendes.png", startDate: "2011-03-01", endDate: "2011-03-30", order: 6 },
+  { name: "HeartGold SoulSilver", nameEn: "HeartGold SoulSilver", slug: "heartgold-soulsilver", abbreviation: "HGSS", logoUrl: null, imageUrl: "/images/blocs/heartgold-soulsilver.png", startDate: "2010-02-01", endDate: "2010-11-01", order: 7 },
+  { name: "Platine", nameEn: "Platinum", slug: "platine", abbreviation: "PL", logoUrl: null, imageUrl: "/images/blocs/platine.png", startDate: "2009-02-01", endDate: "2009-11-01", order: 8 },
+  { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", logoUrl: null, imageUrl: "/images/blocs/diamant-perle.png", startDate: "2007-05-01", endDate: "2009-02-01", order: 9 },
+  { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", logoUrl: null, imageUrl: "/images/blocs/ex.png", startDate: "2003-06-01", endDate: "2006-11-01", order: 10 },
+  { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 11 },
+  { name: "McDonald's", nameEn: "McDonald's", slug: "mcdonalds", abbreviation: "MCDO", logoUrl: null, imageUrl: "/images/blocs/mcdonalds.png", startDate: "2011-01-01", endDate: null, order: 12 },
+  { name: "Jumbos", nameEn: "Jumbos", slug: "jumbos", abbreviation: "JUMBO", logoUrl: null, imageUrl: "/images/blocs/jumbos.png", startDate: "1998-01-01", endDate: null, order: 13 },
 ];
 
 // ─── Séries ─────────────────────────────────────────────────────────────────
@@ -122,6 +123,8 @@ const SERIES_DATA = [
   { name: "Nobles Victoires", nameEn: "Noble Victories", slug: "nobles-victoires", abbreviation: "NB03", blocSlug: "noir-blanc", imageUrl: "/images/series/nobles-victoires.png", releaseDate: "2011-11-16", order: 7 },
   { name: "Pouvoirs Émergents", nameEn: "Emerging Powers", slug: "pouvoirs-emergents", abbreviation: "NB02", blocSlug: "noir-blanc", imageUrl: "/images/series/pouvoirs-emergents.png", releaseDate: "2011-08-31", order: 8 },
   { name: "Noir et Blanc", nameEn: "Black & White", slug: "noir-et-blanc", abbreviation: "NB01", blocSlug: "noir-blanc", imageUrl: "/images/series/noir-et-blanc.png", releaseDate: "2011-04-25", order: 9 },
+  // L'Appel des Légendes
+  { name: "L'Appel des Légendes", nameEn: "Call of Legends", slug: "appel-des-legendes", abbreviation: "CL", blocSlug: "appel-des-legendes", imageUrl: "/images/series/appel-des-legendes.png", releaseDate: "2011-03-26", order: 0 },
   // HeartGold SoulSilver
   { name: "Triomphant", nameEn: "Triumphant", slug: "triomphe", abbreviation: "HGSS4", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/triomphe.png", releaseDate: "2010-11-03", order: 0 },
   { name: "Indomptable", nameEn: "Undaunted", slug: "indomptable", abbreviation: "HGSS3", blocSlug: "heartgold-soulsilver", imageUrl: "/images/series/indomptable.png", releaseDate: "2010-08-18", order: 1 },

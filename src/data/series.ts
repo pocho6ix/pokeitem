@@ -140,6 +140,14 @@ const NOIR_BLANC_SERIES: SerieStatic[] = [
 ];
 
 // ==========================================================================
+// L'Appel des Légendes (Call of Legends)
+// ==========================================================================
+
+const APPEL_DES_LEGENDES_SERIES: SerieStatic[] = [
+  { name: "L'Appel des Légendes", nameEn: 'Call of Legends', slug: 'appel-des-legendes', abbreviation: 'CL', blocSlug: 'appel-des-legendes', imageUrl: '/images/series/appel-des-legendes.png', releaseDate: '2011-03-26', order: 0 },
+];
+
+// ==========================================================================
 // HeartGold SoulSilver (HGSS)
 // ==========================================================================
 
@@ -264,6 +272,7 @@ export const SERIES: SerieStatic[] = [
   ...SOLEIL_LUNE_SERIES,
   ...XY_SERIES,
   ...NOIR_BLANC_SERIES,
+  ...APPEL_DES_LEGENDES_SERIES,
   ...HGSS_SERIES,
   ...PLATINE_SERIES,
   ...DIAMANT_PERLE_SERIES,
@@ -280,6 +289,7 @@ export {
   SOLEIL_LUNE_SERIES,
   XY_SERIES,
   NOIR_BLANC_SERIES,
+  APPEL_DES_LEGENDES_SERIES,
   HGSS_SERIES,
   PLATINE_SERIES,
   DIAMANT_PERLE_SERIES,

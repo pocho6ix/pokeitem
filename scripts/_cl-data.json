@@ -1,0 +1,751 @@
+{
+  "shortName": "CL",
+  "fullName": "L'appel des légendes",
+  "releaseDateFR": "2011-03-26 00:00:00",
+  "totalCards": 106,
+  "secretCards": 11,
+  "cartes": [
+    {
+      "ordre": 1,
+      "name": "Mélodelfe",
+      "nameEn": "Clefable",
+      "rarete": 4,
+      "numCard": "1"
+    },
+    {
+      "ordre": 2,
+      "name": "Deoxys",
+      "nameEn": "Deoxys",
+      "rarete": 4,
+      "numCard": "2"
+    },
+    {
+      "ordre": 3,
+      "name": "Dialga",
+      "nameEn": "Dialga",
+      "rarete": 4,
+      "numCard": "3"
+    },
+    {
+      "ordre": 4,
+      "name": "Mentali",
+      "nameEn": "Espeon",
+      "rarete": 4,
+      "numCard": "4"
+    },
+    {
+      "ordre": 5,
+      "name": "Foretress",
+      "nameEn": "Forretress",
+      "rarete": 4,
+      "numCard": "5"
+    },
+    {
+      "ordre": 6,
+      "name": "Groudon",
+      "nameEn": "Groudon",
+      "rarete": 4,
+      "numCard": "6"
+    },
+    {
+      "ordre": 7,
+      "name": "Léviator",
+      "nameEn": "Gyarados",
+      "rarete": 4,
+      "numCard": "7"
+    },
+    {
+      "ordre": 8,
+      "name": "Kapoera",
+      "nameEn": "Hitmontop",
+      "rarete": 4,
+      "numCard": "8"
+    },
+    {
+      "ordre": 9,
+      "name": "Ho-Oh",
+      "nameEn": "Ho-Oh",
+      "rarete": 4,
+      "numCard": "9"
+    },
+    {
+      "ordre": 10,
+      "name": "Démolosse",
+      "nameEn": "Houndoom",
+      "rarete": 4,
+      "numCard": "10"
+    },
+    {
+      "ordre": 11,
+      "name": "Jirachi",
+      "nameEn": "Jirachi",
+      "rarete": 4,
+      "numCard": "11"
+    },
+    {
+      "ordre": 12,
+      "name": "Kyogre",
+      "nameEn": "Kyogre",
+      "rarete": 4,
+      "numCard": "12"
+    },
+    {
+      "ordre": 13,
+      "name": "Phyllali",
+      "nameEn": "Leafeon",
+      "rarete": 4,
+      "numCard": "13"
+    },
+    {
+      "ordre": 14,
+      "name": "Lucario",
+      "nameEn": "Lucario",
+      "rarete": 4,
+      "numCard": "14"
+    },
+    {
+      "ordre": 15,
+      "name": "Lugia",
+      "nameEn": "Lugia",
+      "rarete": 4,
+      "numCard": "15"
+    },
+    {
+      "ordre": 16,
+      "name": "Maganon",
+      "nameEn": "Magmortar",
+      "rarete": 4,
+      "numCard": "16"
+    },
+    {
+      "ordre": 17,
+      "name": "Feunard",
+      "nameEn": "Ninetales",
+      "rarete": 4,
+      "numCard": "17"
+    },
+    {
+      "ordre": 18,
+      "name": "Pachirisu",
+      "nameEn": "Pachirisu",
+      "rarete": 4,
+      "numCard": "18"
+    },
+    {
+      "ordre": 19,
+      "name": "Palkia",
+      "nameEn": "Palkia",
+      "rarete": 4,
+      "numCard": "19"
+    },
+    {
+      "ordre": 20,
+      "name": "Rayquaza",
+      "nameEn": "Rayquaza",
+      "rarete": 4,
+      "numCard": "20"
+    },
+    {
+      "ordre": 21,
+      "name": "Queulorior",
+      "nameEn": "Smeargle",
+      "rarete": 4,
+      "numCard": "21"
+    },
+    {
+      "ordre": 22,
+      "name": "Noctali",
+      "nameEn": "Umbreon",
+      "rarete": 4,
+      "numCard": "22"
+    },
+    {
+      "ordre": 23,
+      "name": "Pharamp",
+      "nameEn": "Ampharos",
+      "rarete": 3,
+      "numCard": "23"
+    },
+    {
+      "ordre": 24,
+      "name": "Mélo",
+      "nameEn": "Cleffa",
+      "rarete": 3,
+      "numCard": "24"
+    },
+    {
+      "ordre": 25,
+      "name": "Aligatueur",
+      "nameEn": "Feraligatr",
+      "rarete": 3,
+      "numCard": "25"
+    },
+    {
+      "ordre": 26,
+      "name": "Granbull",
+      "nameEn": "Granbull",
+      "rarete": 3,
+      "numCard": "26"
+    },
+    {
+      "ordre": 27,
+      "name": "Méganium",
+      "nameEn": "Meganium",
+      "rarete": 3,
+      "numCard": "27"
+    },
+    {
+      "ordre": 28,
+      "name": "Magirêve",
+      "nameEn": "Mismagius",
+      "rarete": 3,
+      "numCard": "28"
+    },
+    {
+      "ordre": 29,
+      "name": "M. Mime",
+      "nameEn": "Mr. Mime",
+      "rarete": 3,
+      "numCard": "29"
+    },
+    {
+      "ordre": 30,
+      "name": "Roucarnage",
+      "nameEn": "Pidgeot",
+      "rarete": 3,
+      "numCard": "30"
+    },
+    {
+      "ordre": 31,
+      "name": "Airmure",
+      "nameEn": "Skarmory",
+      "rarete": 3,
+      "numCard": "31"
+    },
+    {
+      "ordre": 32,
+      "name": "Roigada",
+      "nameEn": "Slowking",
+      "rarete": 3,
+      "numCard": "32"
+    },
+    {
+      "ordre": 33,
+      "name": "Ronflex",
+      "nameEn": "Snorlax",
+      "rarete": 3,
+      "numCard": "33"
+    },
+    {
+      "ordre": 34,
+      "name": "Bouldeneu",
+      "nameEn": "Tangrowth",
+      "rarete": 3,
+      "numCard": "34"
+    },
+    {
+      "ordre": 35,
+      "name": "Typhlosion",
+      "nameEn": "Typhlosion",
+      "rarete": 3,
+      "numCard": "35"
+    },
+    {
+      "ordre": 36,
+      "name": "Debugant",
+      "nameEn": "Tyrogue",
+      "rarete": 3,
+      "numCard": "36"
+    },
+    {
+      "ordre": 37,
+      "name": "Ursaring",
+      "nameEn": "Ursaring",
+      "rarete": 3,
+      "numCard": "37"
+    },
+    {
+      "ordre": 38,
+      "name": "Smogogo",
+      "nameEn": "Weezing",
+      "rarete": 3,
+      "numCard": "38"
+    },
+    {
+      "ordre": 39,
+      "name": "Mangriff",
+      "nameEn": "Zangoose",
+      "rarete": 3,
+      "numCard": "39"
+    },
+    {
+      "ordre": 40,
+      "name": "Macronium",
+      "nameEn": "Bayleef",
+      "rarete": 2,
+      "numCard": "40"
+    },
+    {
+      "ordre": 41,
+      "name": "Crocrodil",
+      "nameEn": "Croconaw",
+      "rarete": 2,
+      "numCard": "41"
+    },
+    {
+      "ordre": 42,
+      "name": "Donphan",
+      "nameEn": "Donphan",
+      "rarete": 2,
+      "numCard": "42"
+    },
+    {
+      "ordre": 43,
+      "name": "Lainergie",
+      "nameEn": "Flaaffy",
+      "rarete": 2,
+      "numCard": "43"
+    },
+    {
+      "ordre": 44,
+      "name": "Pyroli",
+      "nameEn": "Flareon",
+      "rarete": 2,
+      "numCard": "44"
+    },
+    {
+      "ordre": 45,
+      "name": "Voltali",
+      "nameEn": "Jolteon",
+      "rarete": 2,
+      "numCard": "45"
+    },
+    {
+      "ordre": 46,
+      "name": "Magby",
+      "nameEn": "Magby",
+      "rarete": 2,
+      "numCard": "46"
+    },
+    {
+      "ordre": 47,
+      "name": "Mime Jr.",
+      "nameEn": "Mime Jr.",
+      "rarete": 2,
+      "numCard": "47"
+    },
+    {
+      "ordre": 48,
+      "name": "Roucoups",
+      "nameEn": "Pidgeotto",
+      "rarete": 2,
+      "numCard": "48"
+    },
+    {
+      "ordre": 49,
+      "name": "Feurisson",
+      "nameEn": "Quilava",
+      "rarete": 2,
+      "numCard": "49"
+    },
+    {
+      "ordre": 50,
+      "name": "Riolu",
+      "nameEn": "Riolu",
+      "rarete": 2,
+      "numCard": "50"
+    },
+    {
+      "ordre": 51,
+      "name": "Séviper",
+      "nameEn": "Seviper",
+      "rarete": 2,
+      "numCard": "51"
+    },
+    {
+      "ordre": 52,
+      "name": "Aquali",
+      "nameEn": "Vaporeon",
+      "rarete": 2,
+      "numCard": "52"
+    },
+    {
+      "ordre": 53,
+      "name": "Germignon",
+      "nameEn": "Chikorita",
+      "rarete": 1,
+      "numCard": "53"
+    },
+    {
+      "ordre": 54,
+      "name": "Mélofée",
+      "nameEn": "Clefairy",
+      "rarete": 1,
+      "numCard": "54"
+    },
+    {
+      "ordre": 55,
+      "name": "Héricendre",
+      "nameEn": "Cyndaquil",
+      "rarete": 1,
+      "numCard": "55"
+    },
+    {
+      "ordre": 56,
+      "name": "Évoli",
+      "nameEn": "Eevee",
+      "rarete": 1,
+      "numCard": "56"
+    },
+    {
+      "ordre": 57,
+      "name": "Tygnon",
+      "nameEn": "Hitmonchan",
+      "rarete": 1,
+      "numCard": "57"
+    },
+    {
+      "ordre": 58,
+      "name": "Kicklee",
+      "nameEn": "Hitmonlee",
+      "rarete": 1,
+      "numCard": "58"
+    },
+    {
+      "ordre": 59,
+      "name": "Malosse",
+      "nameEn": "Houndour",
+      "rarete": 1,
+      "numCard": "59"
+    },
+    {
+      "ordre": 60,
+      "name": "Smogo",
+      "nameEn": "Koffing",
+      "rarete": 1,
+      "numCard": "60"
+    },
+    {
+      "ordre": 61,
+      "name": "Magicarpe",
+      "nameEn": "Magikarp",
+      "rarete": 1,
+      "numCard": "61"
+    },
+    {
+      "ordre": 62,
+      "name": "Magmar",
+      "nameEn": "Magmar",
+      "rarete": 1,
+      "numCard": "62"
+    },
+    {
+      "ordre": 63,
+      "name": "Wattouat",
+      "nameEn": "Mareep",
+      "rarete": 1,
+      "numCard": "63"
+    },
+    {
+      "ordre": 64,
+      "name": "Mysdibule",
+      "nameEn": "Mawile",
+      "rarete": 1,
+      "numCard": "64"
+    },
+    {
+      "ordre": 65,
+      "name": "Feuforêve",
+      "nameEn": "Misdreavus",
+      "rarete": 1,
+      "numCard": "65"
+    },
+    {
+      "ordre": 66,
+      "name": "Phanpy",
+      "nameEn": "Phanpy",
+      "rarete": 1,
+      "numCard": "66"
+    },
+    {
+      "ordre": 67,
+      "name": "Roucool",
+      "nameEn": "Pidgey",
+      "rarete": 1,
+      "numCard": "67"
+    },
+    {
+      "ordre": 68,
+      "name": "Pomdepik",
+      "nameEn": "Pineco",
+      "rarete": 1,
+      "numCard": "68"
+    },
+    {
+      "ordre": 69,
+      "name": "Relicanth",
+      "nameEn": "Relicanth",
+      "rarete": 1,
+      "numCard": "69"
+    },
+    {
+      "ordre": 70,
+      "name": "Ramoloss",
+      "nameEn": "Slowpoke",
+      "rarete": 1,
+      "numCard": "70"
+    },
+    {
+      "ordre": 71,
+      "name": "Snubbull",
+      "nameEn": "Snubbull",
+      "rarete": 1,
+      "numCard": "71"
+    },
+    {
+      "ordre": 72,
+      "name": "Saquedeneu",
+      "nameEn": "Tangela",
+      "rarete": 1,
+      "numCard": "72"
+    },
+    {
+      "ordre": 73,
+      "name": "Teddiursa",
+      "nameEn": "Teddiursa",
+      "rarete": 1,
+      "numCard": "73"
+    },
+    {
+      "ordre": 74,
+      "name": "Kaiminus",
+      "nameEn": "Totodile",
+      "rarete": 1,
+      "numCard": "74"
+    },
+    {
+      "ordre": 75,
+      "name": "Goupix",
+      "nameEn": "Vulpix",
+      "rarete": 1,
+      "numCard": "75"
+    },
+    {
+      "ordre": 76,
+      "name": "Encouragements hystériques",
+      "nameEn": "Cheerleader's Cheer",
+      "rarete": 2,
+      "numCard": "76"
+    },
+    {
+      "ordre": 77,
+      "name": "Copieuse",
+      "nameEn": "Copycat",
+      "rarete": 2,
+      "numCard": "77"
+    },
+    {
+      "ordre": 78,
+      "name": "Double Boule",
+      "nameEn": "Dual Ball",
+      "rarete": 2,
+      "numCard": "78"
+    },
+    {
+      "ordre": 79,
+      "name": "Questionnaire d'interview",
+      "nameEn": "Interviewer's Questions",
+      "rarete": 2,
+      "numCard": "79"
+    },
+    {
+      "ordre": 80,
+      "name": "Nettoyeur perdu",
+      "nameEn": "Lost Remover",
+      "rarete": 2,
+      "numCard": "80"
+    },
+    {
+      "ordre": 81,
+      "name": "Monde perdu",
+      "nameEn": "Lost World",
+      "rarete": 2,
+      "numCard": "81"
+    },
+    {
+      "ordre": 82,
+      "name": "Méthode d'Entraînement du Professeur Orme",
+      "nameEn": "Professor Elm's Training Method",
+      "rarete": 2,
+      "numCard": "82"
+    },
+    {
+      "ordre": 83,
+      "name": "Nouvelle théorie du Prof. Chen",
+      "nameEn": "Professor Oak's New Theory",
+      "rarete": 2,
+      "numCard": "83"
+    },
+    {
+      "ordre": 84,
+      "name": "Archive des recherches",
+      "nameEn": "Research Record",
+      "rarete": 2,
+      "numCard": "84"
+    },
+    {
+      "ordre": 85,
+      "name": "Entraînement de Sage",
+      "nameEn": "Sage's Training",
+      "rarete": 2,
+      "numCard": "85"
+    },
+    {
+      "ordre": 86,
+      "name": "Énergie Obscurité",
+      "nameEn": "Darkness Energy",
+      "rarete": 2,
+      "numCard": "86"
+    },
+    {
+      "ordre": 87,
+      "name": "Énergie Métal",
+      "nameEn": "Metal Energy",
+      "rarete": 2,
+      "numCard": "87"
+    },
+    {
+      "ordre": 88,
+      "name": "Énergie Plante",
+      "nameEn": "Grass Energy",
+      "rarete": 1,
+      "numCard": "88"
+    },
+    {
+      "ordre": 89,
+      "name": "Énergie Feu",
+      "nameEn": "Fire Energy",
+      "rarete": 1,
+      "numCard": "89"
+    },
+    {
+      "ordre": 90,
+      "name": "Énergie Eau",
+      "nameEn": "Water Energy",
+      "rarete": 1,
+      "numCard": "90"
+    },
+    {
+      "ordre": 91,
+      "name": "Énergie Électrique",
+      "nameEn": "Lightning Energy",
+      "rarete": 1,
+      "numCard": "91"
+    },
+    {
+      "ordre": 92,
+      "name": "Énergie Psy",
+      "nameEn": "Psychic Energy",
+      "rarete": 1,
+      "numCard": "92"
+    },
+    {
+      "ordre": 93,
+      "name": "Énergie Combat",
+      "nameEn": "Fighting Energy",
+      "rarete": 1,
+      "numCard": "93"
+    },
+    {
+      "ordre": 94,
+      "name": "Énergie Obscurité",
+      "nameEn": "Darkness Energy",
+      "rarete": 1,
+      "numCard": "94"
+    },
+    {
+      "ordre": 95,
+      "name": "Énergie Métal",
+      "nameEn": "Metal Energy",
+      "rarete": 1,
+      "numCard": "95"
+    },
+    {
+      "ordre": 96,
+      "name": "Deoxys",
+      "nameEn": "Deoxys",
+      "rarete": 6,
+      "numCard": "SL1"
+    },
+    {
+      "ordre": 97,
+      "name": "Dialga",
+      "nameEn": "Dialga",
+      "rarete": 6,
+      "numCard": "SL2"
+    },
+    {
+      "ordre": 98,
+      "name": "Entei",
+      "nameEn": "Entei",
+      "rarete": 6,
+      "numCard": "SL3"
+    },
+    {
+      "ordre": 99,
+      "name": "Groudon",
+      "nameEn": "Groudon",
+      "rarete": 6,
+      "numCard": "SL4"
+    },
+    {
+      "ordre": 100,
+      "name": "Ho-Oh",
+      "nameEn": "Ho-Oh",
+      "rarete": 6,
+      "numCard": "SL5"
+    },
+    {
+      "ordre": 101,
+      "name": "Kyogre",
+      "nameEn": "Kyogre",
+      "rarete": 6,
+      "numCard": "SL6"
+    },
+    {
+      "ordre": 102,
+      "name": "Lugia",
+      "nameEn": "Lugia",
+      "rarete": 6,
+      "numCard": "SL7"
+    },
+    {
+      "ordre": 103,
+      "name": "Palkia",
+      "nameEn": "Palkia",
+      "rarete": 6,
+      "numCard": "SL8"
+    },
+    {
+      "ordre": 104,
+      "name": "Raikou",
+      "nameEn": "Raikou",
+      "rarete": 6,
+      "numCard": "SL9"
+    },
+    {
+      "ordre": 105,
+      "name": "Rayquaza",
+      "nameEn": "Rayquaza",
+      "rarete": 6,
+      "numCard": "SL10"
+    },
+    {
+      "ordre": 106,
+      "name": "Suicune",
+      "nameEn": "Suicune",
+      "rarete": 6,
+      "numCard": "SL11"
+    }
+  ]
+}
