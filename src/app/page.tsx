@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Header } from "@/components/layout/Header";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { HomepageCTASection } from "@/components/ui/HomepageCTASection";
+import { HomepageFAQ } from "@/components/ui/HomepageFAQ";
 import { HeroCTAButtons } from "@/components/ui/HeroCTAButtons";
 import Link from "next/link";
 import Image from "next/image";
@@ -177,6 +178,8 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+
+          <HomepageFAQ />
         </div>
       )}
 

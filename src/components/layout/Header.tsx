@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ScanLine, BookOpen, User, LogOut } from "lucide-react";
@@ -45,38 +45,48 @@ function getAvatarSrc(
 
 function MobileTopBar() {
   const { data: session } = useSession();
-  const pseudo     = session?.user?.name ?? null;
-  const userId     = (session?.user as { id?: string } | undefined)?.id ?? null;
-  const hasAvatar  = (session?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
-  const avatarSrc  = session ? getAvatarSrc(userId, hasAvatar) : null;
+  // Hydration guard: SSR + client first render must agree, so we treat
+  // everyone as guest until after client mount. next-auth can desync here
+  // when HMR keeps a stale client-side session cached.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const effectiveSession = mounted ? session : null;
+
+  const pseudo     = effectiveSession?.user?.name ?? null;
+  const userId     = (effectiveSession?.user as { id?: string } | undefined)?.id ?? null;
+  const hasAvatar  = (effectiveSession?.user as { hasAvatar?: boolean } | undefined)?.hasAvatar;
+  const avatarSrc  = effectiveSession ? getAvatarSrc(userId, hasAvatar) : null;
 
   return (
     <div className="relative flex h-14 items-center justify-between gap-3 px-4 md:hidden">
-      {/* Left: greeting */}
-      <div className="min-w-0 flex-1 leading-tight">
-        {pseudo ? (
-          <>
-            <p className="text-[11px] text-[var(--text-tertiary)]" suppressHydrationWarning>{getGreeting()},</p>
-            <p className="truncate text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
-          </>
-        ) : (
-          <p className="text-sm font-bold text-[var(--text-primary)]">PokeItem</p>
-        )}
-      </div>
+      {/* Left: greeting (authed) OR long logo (guest) */}
+      {pseudo ? (
+        <div className="min-w-0 flex-1 leading-tight">
+          <p className="text-[11px] text-[var(--text-tertiary)]" suppressHydrationWarning>{getGreeting()},</p>
+          <p className="truncate text-sm font-bold text-[var(--text-primary)]">{pseudo}</p>
+        </div>
+      ) : (
+        <Link href="/" aria-label="PokeItem" className="flex flex-1 items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-long.png" alt="PokeItem" className="h-8 w-auto" />
+        </Link>
+      )}
 
-      {/* Center: long logo */}
-      <Link
-        href="/"
-        className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        aria-label="PokeItem"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-long.png" alt="PokeItem" className="h-8 w-auto" />
-      </Link>
+      {/* Center: long logo — only when authed */}
+      {pseudo && (
+        <Link
+          href="/"
+          className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          aria-label="PokeItem"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-long.png" alt="PokeItem" className="h-8 w-auto" />
+        </Link>
+      )}
 
       {/* Right: profile icon */}
       <div className="flex flex-1 items-center justify-end gap-2">
-        {session ? (
+        {effectiveSession ? (
           <Link href="/profil" title="Mon profil" className="block h-9 w-9 shrink-0">
             {avatarSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
