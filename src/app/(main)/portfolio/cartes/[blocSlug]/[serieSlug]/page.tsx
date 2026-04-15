@@ -163,17 +163,14 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
         )}
         <div>
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">{serieStatic.name}</h2>
+          {formatDateFR(serieStatic.releaseDate) && (
+            <p className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
+              <FlagFR size={9} className="rounded-[1px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.2)]" />
+              <span>{formatDateFR(serieStatic.releaseDate)}</span>
+            </p>
+          )}
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {SYMBOL_SLUGS.has(serieStatic.slug) && (
-                <Image
-                  src={`/images/symbols/${serieStatic.slug}.png`}
-                  alt=""
-                  width={16}
-                  height={16}
-                  className="h-4 w-4 shrink-0 object-contain opacity-80"
-                />
-              )}
               <span>
                 {bloc.name} · {serieStatic.abbreviation}
                 {allCards.length > 0 && (
@@ -182,12 +179,14 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
                   </span>
                 )}
               </span>
-              {formatDateFR(serieStatic.releaseDate) && (
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true">·</span>
-                  <FlagFR size={10} className="rounded-[1px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.2)]" />
-                  <span>{formatDateFR(serieStatic.releaseDate)}</span>
-                </span>
+              {SYMBOL_SLUGS.has(serieStatic.slug) && (
+                <Image
+                  src={`/images/symbols/${serieStatic.slug}.png`}
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="h-[26px] w-[26px] shrink-0 object-contain opacity-80"
+                />
               )}
             </p>
             {isSerieComplete && (
