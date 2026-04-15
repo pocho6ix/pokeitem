@@ -149,14 +149,19 @@ const TCGDEX_MAPPING: Record<string, string> = {
   ex16: "gardiens-du-pouvoir",
 
   // ── Wizards of the Coast ──────────────────────────────────────────────────
-  // TCGdex FR uniquement disponible pour : base1-base5, ecard1-ecard2
-  // gym1/gym2 (Gym Heroes/Challenge), base4 (Base Set 2), ecard3 (Skyridge) → absents de TCGdex FR
+  // TCGdex FR uniquement disponible pour : base1-base5, ecard1-ecard2, neo1-neo4
+  // gym1/gym2 (Gym Heroes/Challenge), base4 (Base Set 2), ecard3 (Skyridge),
+  // base6 (Legendary Collection) → absents de TCGdex FR
   base1: "set-de-base",
   base2: "jungle",
   base3: "fossile",
   base5: "team-rocket",
   ecard1: "expedition",
   ecard2: "aquapolis",
+  neo1: "neo-genesis",
+  neo2: "neo-discovery",
+  neo3: "neo-revelation",
+  neo4: "neo-destiny",
 };
 
 // Sets uniquement disponibles via pokemontcg.io (absents de TCGdex FR)
@@ -166,6 +171,7 @@ const PTCG_ONLY_MAPPING: Record<string, string> = {
   "gym1":   "gym-heroes",
   "gym2":   "gym-challenge",
   "ecard3": "skyridge",
+  "base6":  "legendary-collection",
 }
 
 // ---------------------------------------------------------------------------
