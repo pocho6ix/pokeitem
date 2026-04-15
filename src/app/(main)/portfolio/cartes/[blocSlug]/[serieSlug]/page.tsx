@@ -13,6 +13,9 @@ import { CardRarity, CardCondition } from "@/types/card";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
 import { ClasseurCardGrid, type ClasseurCard, type MissingCard } from "@/components/cards/ClasseurCardGrid";
+import { SYMBOL_SLUGS } from "@/data/symbol-slugs";
+import { FlagFR } from "@/components/shared/FlagFR";
+import { formatDateFR } from "@/lib/format-date";
 
 interface PageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
@@ -161,11 +164,29 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
         <div>
           <h2 className="text-2xl font-bold text-[var(--text-primary)]">{serieStatic.name}</h2>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-[var(--text-secondary)]">
-            <p>
-              {bloc.name} · {serieStatic.abbreviation}
-              {allCards.length > 0 && (
-                <span className="ml-2 font-medium text-[var(--text-primary)]">
-                  · {ownedCount} / {allCards.length} carte{allCards.length > 1 ? "s" : ""}
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {SYMBOL_SLUGS.has(serieStatic.slug) && (
+                <Image
+                  src={`/images/symbols/${serieStatic.slug}.png`}
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="h-4 w-4 shrink-0 object-contain opacity-80"
+                />
+              )}
+              <span>
+                {bloc.name} · {serieStatic.abbreviation}
+                {allCards.length > 0 && (
+                  <span className="ml-2 font-medium text-[var(--text-primary)]">
+                    · {ownedCount} / {allCards.length} carte{allCards.length > 1 ? "s" : ""}
+                  </span>
+                )}
+              </span>
+              {formatDateFR(serieStatic.releaseDate) && (
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden="true">·</span>
+                  <FlagFR size={10} className="rounded-[1px] shadow-[0_0_0_0.5px_rgba(0,0,0,0.2)]" />
+                  <span>{formatDateFR(serieStatic.releaseDate)}</span>
                 </span>
               )}
             </p>
