@@ -32,7 +32,8 @@ const BLOCS_DATA = [
   { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", logoUrl: null, imageUrl: "/images/blocs/diamant-perle.png", startDate: "2007-05-01", endDate: "2009-02-01", order: 8 },
   { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", logoUrl: null, imageUrl: "/images/blocs/ex.png", startDate: "2003-06-01", endDate: "2006-11-01", order: 9 },
   { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 10 },
-  { name: "Jumbos", nameEn: "Jumbos", slug: "jumbos", abbreviation: "JUMBO", logoUrl: null, imageUrl: "/images/blocs/jumbos.png", startDate: "1998-01-01", endDate: null, order: 11 },
+  { name: "McDonald's", nameEn: "McDonald's", slug: "mcdonalds", abbreviation: "MCDO", logoUrl: null, imageUrl: "/images/blocs/mcdonalds.png", startDate: "2011-01-01", endDate: null, order: 11 },
+  { name: "Jumbos", nameEn: "Jumbos", slug: "jumbos", abbreviation: "JUMBO", logoUrl: null, imageUrl: "/images/blocs/jumbos.png", startDate: "1998-01-01", endDate: null, order: 12 },
 ];
 
 // ─── Séries ─────────────────────────────────────────────────────────────────
@@ -171,6 +172,23 @@ const SERIES_DATA = [
   { name: "Fossile", nameEn: "Fossil", slug: "fossile", abbreviation: "WOTC-FO", blocSlug: "wotc", imageUrl: "/images/series/fossile.png", releaseDate: "1999-10-08", order: 12 },
   { name: "Jungle", nameEn: "Jungle", slug: "jungle", abbreviation: "WOTC-JU", blocSlug: "wotc", imageUrl: "/images/series/jungle.png", releaseDate: "1999-06-16", order: 13 },
   { name: "Set de Base", nameEn: "Base Set", slug: "set-de-base", abbreviation: "WOTC-BS", blocSlug: "wotc", imageUrl: "/images/series/set-de-base.png", releaseDate: "1999-01-09", order: 14 },
+
+  // McDonald's
+  { name: "Promo McDonald's 2024",       nameEn: "McDonald's 2024 Promo",       slug: "promo-mcdonalds-2024",     abbreviation: "M24",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2024.png",     releaseDate: "2024-12-04", order: 0 },
+  { name: "Promo McDonald's 2023",       nameEn: "McDonald's 2023 Promo",       slug: "promo-mcdonalds-2023",     abbreviation: "M23",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2023.png",     releaseDate: "2023-08-01", order: 1 },
+  { name: "Promo McDonald's 2022",       nameEn: "McDonald's 2022 Promo",       slug: "promo-mcdonalds-2022",     abbreviation: "MC11US", blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2022.png",     releaseDate: "2022-08-03", order: 2 },
+  { name: "Promo McDonald's 2021",       nameEn: "McDonald's 2021 Promo",       slug: "promo-mcdonalds-2021",     abbreviation: "MC10US", blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2021.png",     releaseDate: "2021-04-14", order: 3 },
+  { name: "Promo McDonald's 2019",       nameEn: "McDonald's 2019 Promo",       slug: "promo-mcdonalds-2019",     abbreviation: "MC9",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2019.png",     releaseDate: "2019-10-30", order: 4 },
+  { name: "Promo McDonald's 2019 - USA", nameEn: "McDonald's 2019 Promo - USA", slug: "promo-mcdonalds-2019-usa", abbreviation: "MC9US",  blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2019-usa.png", releaseDate: "2019-10-15", order: 5 },
+  { name: "Promo McDonald's 2018 - USA", nameEn: "McDonald's 2018 Promo - USA", slug: "promo-mcdonalds-2018-usa", abbreviation: "MC8US",  blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2018-usa.png", releaseDate: "2018-10-16", order: 6 },
+  { name: "Promo McDonald's 2018",       nameEn: "McDonald's 2018 Promo",       slug: "promo-mcdonalds-2018",     abbreviation: "MC8",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2018.png",     releaseDate: "2018-06-13", order: 7 },
+  { name: "Promo McDonald's 2017",       nameEn: "McDonald's 2017 Promo",       slug: "promo-mcdonalds-2017",     abbreviation: "MC7",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2017.png",     releaseDate: "2017-10-11", order: 8 },
+  { name: "Promo McDonald's 2016",       nameEn: "McDonald's 2016 Promo",       slug: "promo-mcdonalds-2016",     abbreviation: "MC6",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2016.png",     releaseDate: "2016-12-14", order: 9 },
+  { name: "Promo McDonald's 2015",       nameEn: "McDonald's 2015 Promo",       slug: "promo-mcdonalds-2015",     abbreviation: "MC5",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2015.png",     releaseDate: "2015-10-14", order: 10 },
+  { name: "Promo McDonald's 2014",       nameEn: "McDonald's 2014 Promo",       slug: "promo-mcdonalds-2014",     abbreviation: "MC4",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2014.png",     releaseDate: "2014-04-02", order: 11 },
+  { name: "Promo McDonald's 2013",       nameEn: "McDonald's 2013 Promo",       slug: "promo-mcdonalds-2013",     abbreviation: "MC3",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2013.png",     releaseDate: "2013-10-13", order: 12 },
+  { name: "Promo McDonald's 2012",       nameEn: "McDonald's 2012 Promo",       slug: "promo-mcdonalds-2012",     abbreviation: "MC2",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2012.png",     releaseDate: "2012-06-15", order: 13 },
+  { name: "Promo McDonald's 2011",       nameEn: "McDonald's 2011 Promo",       slug: "promo-mcdonalds-2011",     abbreviation: "MC1",    blocSlug: "mcdonalds", imageUrl: "/images/series/promo-mcdonalds-2011.png",     releaseDate: "2012-01-04", order: 14 },
 
   // Jumbos
   { name: "Jumbo", nameEn: "Jumbo", slug: "jumbo", abbreviation: "JUMBO", blocSlug: "jumbos", imageUrl: "/images/series/jumbo.png", releaseDate: "1998-01-01", order: 0 },

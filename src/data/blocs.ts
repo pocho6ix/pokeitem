@@ -127,6 +127,17 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 10,
   },
   {
+    name: "McDonald's",
+    nameEn: "McDonald's",
+    slug: 'mcdonalds',
+    abbreviation: 'MCDO',
+    logoUrl: null,
+    imageUrl: '/images/blocs/mcdonalds.png',
+    startDate: '2011-01-01',
+    endDate: null,
+    order: 11,
+  },
+  {
     name: 'Jumbos',
     nameEn: 'Jumbos',
     slug: 'jumbos',
@@ -135,6 +146,6 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/jumbos.png',
     startDate: '1998-01-01',
     endDate: null,
-    order: 11,
+    order: 12,
   },
 ];
