@@ -7,7 +7,7 @@ import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Logo } from "@/components/shared/Logo";
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -75,7 +75,16 @@ export function ConnexionForm() {
   return (
     <Card>
       <CardHeader className="items-center space-y-4 pb-2">
-        <Logo size="lg" />
+        <Link href="/" aria-label="PokeItem" className="flex justify-center">
+          <Image
+            src="/logo-long.png"
+            alt="PokeItem"
+            width={240}
+            height={60}
+            priority
+            className="h-12 w-auto"
+          />
+        </Link>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           Connexion &agrave; PokeItem
         </h1>
