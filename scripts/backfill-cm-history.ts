@@ -41,6 +41,37 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
+/**
+ * Retry a Prisma operation when Neon closes the connection (P1017) or
+ * refuses a new one (P1001). Tries up to `maxRetries` times with an
+ * exponential backoff + explicit reconnect between attempts.
+ */
+async function withRetry<T>(
+  label: string,
+  fn: () => Promise<T>,
+  maxRetries = 5,
+): Promise<T> {
+  let attempt = 0
+  while (true) {
+    try {
+      return await fn()
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code
+      const isConnErr = code === "P1017" || code === "P1001" || code === "P1002"
+      if (!isConnErr || attempt >= maxRetries) throw err
+
+      attempt++
+      const delay = 500 * Math.pow(2, attempt - 1) // 500, 1000, 2000, 4000, 8000
+      console.log(
+        `  ⚠ ${label} : ${code} (tentative ${attempt}/${maxRetries}) — reconnexion dans ${delay}ms`
+      )
+      await sleep(delay)
+      try { await prisma.$disconnect() } catch {}
+      try { await prisma.$connect() } catch {}
+    }
+  }
+}
+
 interface HistoryDay { date: string; cmLow: number | null }
 interface CMHistoryRaw { cm_low?: number | null }
 interface FetchResult { days: HistoryDay[]; quotaExceeded: boolean }
@@ -157,11 +188,12 @@ async function main() {
           .find((h) => h.cmLow != null)
 
         if (!DRY_RUN) {
-          const upserts = history
-            .filter((h) => h.cmLow != null)
-            .map((h) => {
-              const recordedAt = new Date(h.date)
-              return prisma.cardPriceHistory.upsert({
+          const points = history.filter((h) => h.cmLow != null)
+
+          for (const h of points) {
+            const recordedAt = new Date(h.date)
+            await withRetry(`upsert ${card.id}`, () =>
+              prisma.cardPriceHistory.upsert({
                 where: { cardId_recordedAt: { cardId: card.id, recordedAt } },
                 create: {
                   cardId: card.id,
@@ -172,23 +204,22 @@ async function main() {
                 },
                 update: { priceFr: h.cmLow },
               })
-            })
-
-          for (let j = 0; j < upserts.length; j += CHUNK_DB) {
-            await Promise.all(upserts.slice(j, j + CHUNK_DB))
+            )
           }
 
           // Refresh the card's current price from the latest history point.
           // We use priceFr (the FR market) since the CM API returns cm_low
           // which corresponds to the FR/EU low — same source as priceFr.
           if (latestWithPrice) {
-            await prisma.card.update({
-              where: { id: card.id },
-              data: {
-                priceFr:          latestWithPrice.cmLow!,
-                priceFrUpdatedAt: new Date(),
-              },
-            })
+            await withRetry(`card.update ${card.id}`, () =>
+              prisma.card.update({
+                where: { id: card.id },
+                data: {
+                  priceFr:          latestWithPrice.cmLow!,
+                  priceFrUpdatedAt: new Date(),
+                },
+              })
+            )
           }
         }
 
