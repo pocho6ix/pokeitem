@@ -223,6 +223,14 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Promos Wizards', nameEn: 'Wizards Black Star Promos', slug: 'promos-wizards', abbreviation: 'WP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
 
+// ==========================================================================
+// JUMBOS
+// ==========================================================================
+
+const JUMBOS_SERIES: SerieStatic[] = [
+  { name: 'Jumbo', nameEn: 'Jumbo', slug: 'jumbo', abbreviation: 'JUMBO', blocSlug: 'jumbos', imageUrl: '/images/series/jumbo.png', releaseDate: '1998-01-01', order: 0 },
+];
+
 // ---------------------------------------------------------------------------
 // Combined export
 // ---------------------------------------------------------------------------
@@ -239,6 +247,7 @@ export const SERIES: SerieStatic[] = [
   ...DIAMANT_PERLE_SERIES,
   ...EX_SERIES,
   ...WOTC_SERIES,
+  ...JUMBOS_SERIES,
 ];
 
 export {
@@ -253,6 +262,7 @@ export {
   DIAMANT_PERLE_SERIES,
   EX_SERIES,
   WOTC_SERIES,
+  JUMBOS_SERIES,
 };
 
 /** Lookup: serieSlug → blocSlug */

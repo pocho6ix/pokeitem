@@ -126,4 +126,15 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     endDate: '2003-06-01',
     order: 10,
   },
+  {
+    name: 'Jumbos',
+    nameEn: 'Jumbos',
+    slug: 'jumbos',
+    abbreviation: 'JUMBO',
+    logoUrl: null,
+    imageUrl: '/images/blocs/jumbos.png',
+    startDate: '1998-01-01',
+    endDate: null,
+    order: 11,
+  },
 ];

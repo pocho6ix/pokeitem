@@ -32,6 +32,7 @@ const BLOCS_DATA = [
   { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", logoUrl: null, imageUrl: "/images/blocs/diamant-perle.png", startDate: "2007-05-01", endDate: "2009-02-01", order: 8 },
   { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", logoUrl: null, imageUrl: "/images/blocs/ex.png", startDate: "2003-06-01", endDate: "2006-11-01", order: 9 },
   { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 10 },
+  { name: "Jumbos", nameEn: "Jumbos", slug: "jumbos", abbreviation: "JUMBO", logoUrl: null, imageUrl: "/images/blocs/jumbos.png", startDate: "1998-01-01", endDate: null, order: 11 },
 ];
 
 // ─── Séries ─────────────────────────────────────────────────────────────────
@@ -170,6 +171,9 @@ const SERIES_DATA = [
   { name: "Fossile", nameEn: "Fossil", slug: "fossile", abbreviation: "WOTC-FO", blocSlug: "wotc", imageUrl: "/images/series/fossile.png", releaseDate: "1999-10-08", order: 12 },
   { name: "Jungle", nameEn: "Jungle", slug: "jungle", abbreviation: "WOTC-JU", blocSlug: "wotc", imageUrl: "/images/series/jungle.png", releaseDate: "1999-06-16", order: 13 },
   { name: "Set de Base", nameEn: "Base Set", slug: "set-de-base", abbreviation: "WOTC-BS", blocSlug: "wotc", imageUrl: "/images/series/set-de-base.png", releaseDate: "1999-01-09", order: 14 },
+
+  // Jumbos
+  { name: "Jumbo", nameEn: "Jumbo", slug: "jumbo", abbreviation: "JUMBO", blocSlug: "jumbos", imageUrl: "/images/series/jumbo.png", releaseDate: "1998-01-01", order: 0 },
 ];
 
 const prisma = new PrismaClient();
