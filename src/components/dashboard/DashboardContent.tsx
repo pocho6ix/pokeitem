@@ -13,16 +13,13 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Wallet,
-  Trash2,
   Search,
-  RefreshCw,
 } from "lucide-react";
 import { UpdatePriceModal } from "@/components/portfolio/UpdatePriceModal";
-import { ItemImage } from "@/components/shared/ItemImage";
+import { PortfolioItemsList } from "@/components/portfolio/PortfolioItemsList";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { formatPrice, formatPriceChange } from "@/lib/utils";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
+import { CollectionValue } from "@/components/collection/CollectionValue";
+import { formatPriceChange } from "@/lib/utils";
 
 // Recharts (~150 KB gzipped) — lazy-loaded so it never enters the initial bundle
 const DashboardChartsSection = dynamic(
@@ -113,7 +110,7 @@ function KpiCard({
   trendLabel,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   trend?: number;
   icon: React.ElementType;
   trendLabel?: string;
@@ -126,7 +123,7 @@ function KpiCard({
           <span className="text-sm text-[var(--text-secondary)]">{label}</span>
           <Icon className="h-4 w-4 text-[var(--text-tertiary)]" />
         </div>
-        <p className="font-data mt-2 text-2xl font-bold text-[var(--text-primary)]">{value}</p>
+        <div className="font-data mt-2 text-2xl font-bold text-[var(--text-primary)]">{value}</div>
         {trend !== undefined && (
           <div className="mt-1 flex items-center gap-1">
             {positive ? (
@@ -166,8 +163,12 @@ function TopPerformerRow({
       <span className="text-sm font-bold text-[var(--text-tertiary)] w-5">{rank}.</span>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium text-[var(--text-primary)]">{name}</p>
-        <p className="text-xs text-[var(--text-tertiary)]">
-          Acheté: {formatPrice(purchasePrice)} &middot; Actuel: {formatPrice(currentPrice)}
+        <p className="flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
+          <span>Acheté:</span>
+          <CollectionValue value={purchasePrice} />
+          <span>·</span>
+          <span>Actuel:</span>
+          <CollectionValue value={currentPrice} />
         </p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
@@ -362,17 +363,22 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             label="Valeur Actuelle"
-            value={formatPrice(summary.totalCurrentValue)}
+            value={<CollectionValue value={summary.totalCurrentValue} />}
             icon={BarChart3}
           />
           <KpiCard
             label="Investi Total"
-            value={formatPrice(summary.totalInvested)}
+            value={<CollectionValue value={summary.totalInvested} />}
             icon={Wallet}
           />
           <KpiCard
             label="P&L"
-            value={`${isPositive ? "+" : ""}${formatPrice(summary.totalPnl)}`}
+            value={
+              <>
+                {isPositive ? "+" : ""}
+                <CollectionValue value={summary.totalPnl} className="inline" />
+              </>
+            }
             trend={summary.totalPnlPercent}
             icon={TrendingUp}
           />
@@ -435,116 +441,29 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         />
       )}
 
-      {/* Items table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mes Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border-default)] text-left text-xs font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
-                  <th className="pb-3 pr-2 w-14"></th>
-                  <th className="pb-3 pr-4">Nom</th>
-                  <th className="pb-3 pr-4">Type</th>
-                  <th className="pb-3 pr-4 text-right">Qté</th>
-                  <th className="pb-3 pr-4 text-right">Achat</th>
-                  <th className="pb-3 pr-4 text-right">Actuel</th>
-                  <th className="pb-3 pr-4 text-right">P&L</th>
-                  <th className="pb-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border-default)]">
-                {items.map((row) => {
-                  const plPositive = row.pnl >= 0;
-                  return (
-                    <tr key={row.id} className="group hover:bg-[var(--bg-card-hover)]">
-                      <td className="py-3 pr-2">
-                        <ItemImage
-                          src={row.item.imageUrl}
-                          slug={row.item.slug}
-                          alt={row.item.name}
-                          size="sm"
-                          className="w-12 h-12 rounded-lg"
-                        />
-                      </td>
-                      <td className="py-3 pr-4">
-                        <p className="font-medium text-[var(--text-primary)]">
-                          {row.item.name}
-                        </p>
-                        {row.item.serie && (
-                          <p className="text-xs text-[var(--text-tertiary)]">
-                            {row.item.serie.name}
-                          </p>
-                        )}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge className={ITEM_TYPE_COLORS[row.item.type]}>
-                          {ITEM_TYPE_LABELS[row.item.type]}
-                        </Badge>
-                      </td>
-                      <td className="font-data py-3 pr-4 text-right text-[var(--text-primary)]">
-                        {row.quantity}
-                      </td>
-                      <td className="font-data py-3 pr-4 text-right text-[var(--text-primary)]">
-                        <div>{formatPrice(row.purchasePrice)}</div>
-                        {row.quantity > 1 && (
-                          <div className="text-xs text-[var(--text-tertiary)]">
-                            {formatPrice(row.purchasePricePerUnit)}/u
-                          </div>
-                        )}
-                      </td>
-                      <td className="font-data py-3 pr-4 text-right text-[var(--text-primary)]">
-                        <div>{formatPrice(row.currentValue)}</div>
-                        {row.quantity > 1 && (
-                          <div className="text-xs text-[var(--text-tertiary)]">
-                            {formatPrice(row.currentValuePerUnit)}/u
-                          </div>
-                        )}
-                        {row.item.priceUpdatedAt && (
-                          <div className="text-[10px] text-[var(--text-tertiary)]">
-                            {new Date(row.item.priceUpdatedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
-                          </div>
-                        )}
-                      </td>
-                      <td className={`font-data py-3 pr-4 text-right font-medium ${plPositive ? "text-green-500" : "text-red-500"}`}>
-                        <div>
-                          {plPositive ? "+" : ""}
-                          {formatPrice(row.pnl)}
-                        </div>
-                        <div className="text-xs">
-                          {plPositive ? "+" : ""}
-                          {row.pnlPercent.toFixed(1)}%
-                        </div>
-                      </td>
-                      <td className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => setPricingItem(row.item)}
-                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-[#E7BA76]/10 hover:text-[#E7BA76] transition-colors"
-                            title="Actualiser le prix"
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(row.id)}
-                            disabled={deleting === row.id}
-                            className="rounded-lg p-1.5 text-[var(--text-tertiary)] hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/30 transition-colors"
-                            title="Supprimer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Items list — row-based, mirrors the "mes doubles" look */}
+      <section>
+        <div className="mb-3 flex items-baseline justify-between gap-2">
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Mes Items</h2>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {summary.itemCount} item{summary.itemCount > 1 ? "s" : ""}
+            {summary.uniqueItemCount !== summary.itemCount && (
+              <>
+                {" "}·{" "}
+                <span className="text-[var(--text-tertiary)]">
+                  {summary.uniqueItemCount} unique{summary.uniqueItemCount > 1 ? "s" : ""}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+        <PortfolioItemsList
+          items={items}
+          onUpdatePrice={(item) => setPricingItem(item)}
+          onDelete={handleDelete}
+          deletingId={deleting}
+        />
+      </section>
     </div>
   );
 }
