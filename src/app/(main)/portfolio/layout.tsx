@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
 import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { PortfolioTiles } from "./PortfolioTiles";
+import { PortfolioBackLink } from "./PortfolioBackLink";
 
 
 // Recharts (~150 KB) chargé en lazy — code splitting sans bloquer le bundle principal
@@ -16,6 +17,9 @@ const PortfolioEvolutionChart = dynamic(
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+      {/* Back to classeur root — only on sub-pages */}
+      <PortfolioBackLink />
 
       {/* Beta offer for new non-subscribed users */}
       <ClasseurBetaOffer />
