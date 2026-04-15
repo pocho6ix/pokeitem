@@ -117,12 +117,13 @@ const SERIES_DATA = [
   { name: "Glaciation Plasma", nameEn: "Plasma Freeze", slug: "glaciation-plasma", abbreviation: "NB09", blocSlug: "noir-blanc", imageUrl: "/images/series/glaciation-plasma.png", releaseDate: "2013-05-08", order: 1 },
   { name: "Tempête Plasma", nameEn: "Plasma Storm", slug: "tempete-plasma", abbreviation: "NB08", blocSlug: "noir-blanc", imageUrl: "/images/series/tempete-plasma.png", releaseDate: "2013-02-06", order: 2 },
   { name: "Frontières Franchies", nameEn: "Boundaries Crossed", slug: "frontieres-franchies", abbreviation: "NB07", blocSlug: "noir-blanc", imageUrl: "/images/series/frontieres-franchies.png", releaseDate: "2012-11-07", order: 3 },
-  { name: "Dragons Exaltés", nameEn: "Dragons Exalted", slug: "dragons-exaltes", abbreviation: "NB06", blocSlug: "noir-blanc", imageUrl: "/images/series/dragons-exaltes.png", releaseDate: "2012-08-15", order: 4 },
-  { name: "Explorateurs Obscurs", nameEn: "Dark Explorers", slug: "explorateurs-obscurs", abbreviation: "NB05", blocSlug: "noir-blanc", imageUrl: "/images/series/explorateurs-obscurs.png", releaseDate: "2012-05-09", order: 5 },
-  { name: "Destinées Futures", nameEn: "Next Destinies", slug: "destinees-futures", abbreviation: "NB04", blocSlug: "noir-blanc", imageUrl: "/images/series/destinees-futures.png", releaseDate: "2012-02-08", order: 6 },
-  { name: "Nobles Victoires", nameEn: "Noble Victories", slug: "nobles-victoires", abbreviation: "NB03", blocSlug: "noir-blanc", imageUrl: "/images/series/nobles-victoires.png", releaseDate: "2011-11-16", order: 7 },
-  { name: "Pouvoirs Émergents", nameEn: "Emerging Powers", slug: "pouvoirs-emergents", abbreviation: "NB02", blocSlug: "noir-blanc", imageUrl: "/images/series/pouvoirs-emergents.png", releaseDate: "2011-08-31", order: 8 },
-  { name: "Noir et Blanc", nameEn: "Black & White", slug: "noir-et-blanc", abbreviation: "NB01", blocSlug: "noir-blanc", imageUrl: "/images/series/noir-et-blanc.png", releaseDate: "2011-04-25", order: 9 },
+  // order 4 is reserved for "Coffre des Dragons" (seeded via scripts/seed-promos.ts, releaseDate 2012-09-29)
+  { name: "Dragons Exaltés", nameEn: "Dragons Exalted", slug: "dragons-exaltes", abbreviation: "NB06", blocSlug: "noir-blanc", imageUrl: "/images/series/dragons-exaltes.png", releaseDate: "2012-08-15", order: 5 },
+  { name: "Explorateurs Obscurs", nameEn: "Dark Explorers", slug: "explorateurs-obscurs", abbreviation: "NB05", blocSlug: "noir-blanc", imageUrl: "/images/series/explorateurs-obscurs.png", releaseDate: "2012-05-09", order: 6 },
+  { name: "Destinées Futures", nameEn: "Next Destinies", slug: "destinees-futures", abbreviation: "NB04", blocSlug: "noir-blanc", imageUrl: "/images/series/destinees-futures.png", releaseDate: "2012-02-08", order: 7 },
+  { name: "Nobles Victoires", nameEn: "Noble Victories", slug: "nobles-victoires", abbreviation: "NB03", blocSlug: "noir-blanc", imageUrl: "/images/series/nobles-victoires.png", releaseDate: "2011-11-16", order: 8 },
+  { name: "Pouvoirs Émergents", nameEn: "Emerging Powers", slug: "pouvoirs-emergents", abbreviation: "NB02", blocSlug: "noir-blanc", imageUrl: "/images/series/pouvoirs-emergents.png", releaseDate: "2011-08-31", order: 9 },
+  { name: "Noir et Blanc", nameEn: "Black & White", slug: "noir-et-blanc", abbreviation: "NB01", blocSlug: "noir-blanc", imageUrl: "/images/series/noir-et-blanc.png", releaseDate: "2011-04-25", order: 10 },
   // L'Appel des Légendes
   { name: "L'Appel des Légendes", nameEn: "Call of Legends", slug: "appel-des-legendes", abbreviation: "CL", blocSlug: "appel-des-legendes", imageUrl: "/images/series/appel-des-legendes.png", releaseDate: "2011-03-26", order: 0 },
   // HeartGold SoulSilver

@@ -145,8 +145,8 @@ const PROMO_SERIES: PromoSerie[] = [
     nameEn: "Dragon Vault",
     abbreviation: "DV1",
     blocSlug: "noir-blanc",
-    releaseDate: "2012-10-05",
-    order: 21,
+    releaseDate: "2012-09-29",
+    order: 4,
     cmEpisodeId: 95,
   },
   // ── HeartGold SoulSilver ────────────────────────────────────────────────────
