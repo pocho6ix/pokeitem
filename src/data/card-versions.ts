@@ -101,17 +101,20 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
 // ── Bloc-level defaults (fallback when serie not in map above) ───────────────
 
 const BLOC_DEFAULT_VERSIONS: Record<string, readonly CardVersion[]> = {
-  "mega-evolution":       V_REVERSE, // ME01, ME02: Normale + Reverse (no stamp)
-  "ecarlate-violet":      V_REVERSE, // EV01–EV10: Normale + Reverse (most sets)
-  "epee-bouclier":        V_REVERSE,
-  "soleil-lune":          V_REVERSE,
-  "xy":                   V_REVERSE,
-  "noir-blanc":           V_REVERSE,
-  "heartgold-soulsilver": V_REVERSE,
-  "platine":              V_REVERSE,
-  "diamant-perle":        V_REVERSE,
-  "ex":                   V_REVERSE,
-  "wotc":                 V_REVERSE, // Expédition, Aquapolis, Skyridge have Reverse
+  "mega-evolution":           V_REVERSE, // ME01, ME02: Normale + Reverse (no stamp)
+  "ecarlate-violet":          V_REVERSE, // EV01–EV10: Normale + Reverse (most sets)
+  "epee-bouclier":            V_REVERSE,
+  "soleil-lune":              V_REVERSE,
+  "xy":                       V_REVERSE,
+  "noir-blanc":               V_REVERSE,
+  "heartgold-soulsilver":     V_REVERSE,
+  "platine":                  V_REVERSE,
+  "diamant-perle":            V_REVERSE,
+  "ex":                       V_REVERSE,
+  "wotc":                     V_REVERSE, // Expédition, Aquapolis, Skyridge have Reverse
+  // ── Promos hors-série — pas de Reverse ─────────────────────────────────
+  "collection-mcdo":          V_NORMAL,  // McDonald's promos — version unique
+  "pokemon-organized-play":   V_NORMAL,  // POP sets — version unique
 };
 
 // ── Public helper ────────────────────────────────────────────────────────────

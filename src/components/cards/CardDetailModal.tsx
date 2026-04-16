@@ -46,12 +46,22 @@ const PriceHistoryChart = dynamic(
 
 // Énergie series (MEE, SVE) are excluded — they use NO_RARITY explicitly
 const PROMO_SERIE_SLUGS = new Set([
-  "promos-mega-evolution",
-  "promos-ecarlate-et-violet",
-  "promos-epee-et-bouclier", "promos-soleil-et-lune",
-  "promos-xy", "bienvenue-a-kalos", "promos-noir-et-blanc",
-  "coffre-des-dragons", "promos-heartgold-soulsilver",
-  "promos-diamant-et-perle", "promos-nintendo",
+  // Promos Black Star & séries spéciales
+  "energies-mega-evolution",   "promos-mega-evolution",
+  "promos-ecarlate-et-violet", "energies-ecarlate-et-violet",
+  "promos-epee-et-bouclier",   "promos-soleil-et-lune",
+  "promos-xy",                 "bienvenue-a-kalos",
+  "promos-noir-et-blanc",      "coffre-des-dragons",
+  "promos-heartgold-soulsilver", "promos-diamant-et-perle",
+  "promos-nintendo",           "promos-wizards",
+  // Collection McDonald's
+  "promo-mcdo-2024", "promo-mcdo-2023", "promo-mcdo-2022", "promo-mcdo-2021",
+  "promo-mcdo-2019", "promo-mcdo-2018", "promo-mcdo-2017", "promo-mcdo-2016",
+  "promo-mcdo-2015", "promo-mcdo-2014", "promo-mcdo-2013", "promo-mcdo-2012",
+  "promo-mcdo-2011",
+  // Pokémon Organized Play
+  "pop-1", "pop-2", "pop-3", "pop-4", "pop-5",
+  "pop-6", "pop-7", "pop-8", "pop-9",
 ]);
 
 // ─── Types ───────────────────────────────────────────────────────────────────

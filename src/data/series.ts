@@ -224,6 +224,42 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Promos Wizards', nameEn: 'Wizards Black Star Promos', slug: 'promos-wizards', abbreviation: 'WP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
 
+// ==========================================================================
+// Collection McDonald's (MC)
+// ==========================================================================
+
+const MCDO_SERIES: SerieStatic[] = [
+  { name: "Collection McDonald's 2024", nameEn: "McDonald's Collection 2024", slug: 'promo-mcdo-2024', abbreviation: 'MC24', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2024.webp', releaseDate: '2024-12-04', order: 0 },
+  { name: "Collection McDonald's 2023", nameEn: "McDonald's Collection 2023", slug: 'promo-mcdo-2023', abbreviation: 'MC23', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2023.webp', releaseDate: '2023-08-01', order: 1 },
+  { name: "Collection McDonald's 2022", nameEn: "McDonald's Collection 2022", slug: 'promo-mcdo-2022', abbreviation: 'MC22', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2022.webp', releaseDate: '2022-08-03', order: 2 },
+  { name: "Collection McDonald's 2021", nameEn: "McDonald's Collection 2021", slug: 'promo-mcdo-2021', abbreviation: 'MC21', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2021.webp', releaseDate: '2021-02-09', order: 3 },
+  { name: "Collection McDonald's 2019", nameEn: "McDonald's Collection 2019", slug: 'promo-mcdo-2019', abbreviation: 'MC19', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2019.webp', releaseDate: '2019-10-30', order: 4 },
+  { name: "Collection McDonald's 2018", nameEn: "McDonald's Collection 2018", slug: 'promo-mcdo-2018', abbreviation: 'MC18', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2018.webp', releaseDate: '2018-06-13', order: 5 },
+  { name: "Collection McDonald's 2017", nameEn: "McDonald's Collection 2017", slug: 'promo-mcdo-2017', abbreviation: 'MC17', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2017.webp', releaseDate: '2017-08-03', order: 6 },
+  { name: "Collection McDonald's 2016", nameEn: "McDonald's Collection 2016", slug: 'promo-mcdo-2016', abbreviation: 'MC16', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2016.webp', releaseDate: '2016-08-20', order: 7 },
+  { name: "Collection McDonald's 2015", nameEn: "McDonald's Collection 2015", slug: 'promo-mcdo-2015', abbreviation: 'MC15', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2015.webp', releaseDate: '2015-11-27', order: 8 },
+  { name: "Collection McDonald's 2014", nameEn: "McDonald's Collection 2014", slug: 'promo-mcdo-2014', abbreviation: 'MC14', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2014.webp', releaseDate: '2014-05-23', order: 9 },
+  { name: "Collection McDonald's 2013", nameEn: "McDonald's Collection 2013", slug: 'promo-mcdo-2013', abbreviation: 'MC13', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2013.webp', releaseDate: '2013-11-01', order: 10 },
+  { name: "Collection McDonald's 2012", nameEn: "McDonald's Collection 2012", slug: 'promo-mcdo-2012', abbreviation: 'MC12', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2012.webp', releaseDate: '2012-06-15', order: 11 },
+  { name: "Collection McDonald's 2011", nameEn: "McDonald's Collection 2011", slug: 'promo-mcdo-2011', abbreviation: 'MC11', blocSlug: 'collection-mcdo', imageUrl: '/images/series/promo-mcdo-2011.webp', releaseDate: '2011-06-17', order: 12 },
+];
+
+// ==========================================================================
+// Pokémon Organized Play (POP)
+// ==========================================================================
+
+const POP_SERIES: SerieStatic[] = [
+  { name: 'POP Série 9', nameEn: 'POP Series 9', slug: 'pop-9', abbreviation: 'POP9', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-9.webp', releaseDate: '2009-03-01', order: 0 },
+  { name: 'POP Série 8', nameEn: 'POP Series 8', slug: 'pop-8', abbreviation: 'POP8', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-8.webp', releaseDate: '2008-09-01', order: 1 },
+  { name: 'POP Série 7', nameEn: 'POP Series 7', slug: 'pop-7', abbreviation: 'POP7', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-7.webp', releaseDate: '2008-03-01', order: 2 },
+  { name: 'POP Série 6', nameEn: 'POP Series 6', slug: 'pop-6', abbreviation: 'POP6', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-6.webp', releaseDate: '2007-09-01', order: 3 },
+  { name: 'POP Série 5', nameEn: 'POP Series 5', slug: 'pop-5', abbreviation: 'POP5', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-5.webp', releaseDate: '2007-03-01', order: 4 },
+  { name: 'POP Série 4', nameEn: 'POP Series 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 5 },
+  { name: 'POP Série 3', nameEn: 'POP Series 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 6 },
+  { name: 'POP Série 2', nameEn: 'POP Series 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 7 },
+  { name: 'POP Série 1', nameEn: 'POP Series 1', slug: 'pop-1', abbreviation: 'POP1', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-1.webp', releaseDate: '2004-09-01', order: 8 },
+];
+
 // ---------------------------------------------------------------------------
 // Combined export
 // ---------------------------------------------------------------------------
@@ -240,6 +276,8 @@ export const SERIES: SerieStatic[] = [
   ...DIAMANT_PERLE_SERIES,
   ...EX_SERIES,
   ...WOTC_SERIES,
+  ...MCDO_SERIES,
+  ...POP_SERIES,
 ];
 
 export {
@@ -254,6 +292,8 @@ export {
   DIAMANT_PERLE_SERIES,
   EX_SERIES,
   WOTC_SERIES,
+  MCDO_SERIES,
+  POP_SERIES,
 };
 
 /** Lookup: serieSlug → blocSlug */
