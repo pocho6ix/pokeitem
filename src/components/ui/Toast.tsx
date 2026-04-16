@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -80,6 +81,8 @@ const icons: Record<ToastVariant, ReactNode> = {
 
 function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const toast = useCallback((message: string, variant: ToastVariant = "info", options?: ToastOptions) => {
     const id = crypto.randomUUID();
@@ -96,7 +99,7 @@ function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {typeof document !== "undefined" &&
+      {mounted &&
         createPortal(
           <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
             {toasts.map((t) => (
