@@ -32,7 +32,7 @@ export function PortfolioItemsSection({
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [sort, setSort] = useState<SortKey>("recent");
-  const [view, setView] = useState<ViewMode>("list");
+  const [view, setView] = useState<ViewMode>("grid");
 
   // Hydrate view from localStorage (client only)
   useEffect(() => {
