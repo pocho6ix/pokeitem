@@ -192,7 +192,7 @@ const EX_SERIES: SerieStatic[] = [
   { name: 'Émeraude', nameEn: 'Emerald', slug: 'emeraude', abbreviation: 'EX09', blocSlug: 'ex', imageUrl: '/images/series/emeraude.png', releaseDate: '2005-05-09', order: 6 },
   { name: 'Deoxys', nameEn: 'Deoxys', slug: 'deoxys', abbreviation: 'EX08', blocSlug: 'ex', imageUrl: '/images/series/deoxys.png', releaseDate: '2005-02-09', order: 7 },
   { name: 'Team Rocket Returns', nameEn: 'Team Rocket Returns', slug: 'team-rocket-returns', abbreviation: 'EX07', blocSlug: 'ex', imageUrl: '/images/series/team-rocket-returns.png', releaseDate: '2004-11-08', order: 8 },
-  { name: 'Fire Red & Leaf Green', nameEn: 'FireRed & LeafGreen', slug: 'fire-red-leaf-green', abbreviation: 'EX06', blocSlug: 'ex', imageUrl: '/images/series/fire-red-leaf-green.png', releaseDate: '2004-08-30', order: 9 },
+  { name: 'Rouge Feu & Vert Feuille', nameEn: 'FireRed & LeafGreen', slug: 'fire-red-leaf-green', abbreviation: 'EX06', blocSlug: 'ex', imageUrl: '/images/series/fire-red-leaf-green.png', releaseDate: '2004-08-30', order: 9 },
   { name: 'Légendes Oubliées', nameEn: 'Hidden Legends', slug: 'legendes-oubliees', abbreviation: 'EX05', blocSlug: 'ex', imageUrl: '/images/series/legendes-oubliees.png', releaseDate: '2004-06-12', order: 10 },
   { name: 'Team Magma vs Team Aqua', nameEn: 'Team Magma vs Team Aqua', slug: 'team-magma-vs-team-aqua', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/groudon-vs-kyogre.png', releaseDate: '2003-09-17', order: 11 },
   { name: 'Dragon', nameEn: 'Dragon', slug: 'dragon-ex', abbreviation: 'EX03', blocSlug: 'ex', imageUrl: '/images/series/dragon-ex.png', releaseDate: '2003-11-24', order: 12 },
