@@ -20,8 +20,8 @@ export function WishlistHeartButton({ cardId, size = "md", className }: Props) {
   const { toast } = useToast();
   const [animating, setAnimating] = useState(false);
 
-  const sizeClass = size === "sm" ? "h-5 w-5" : size === "md" ? "h-7 w-7" : "h-9 w-9";
-  const iconSize = size === "sm" ? 10 : size === "md" ? 14 : 18;
+  const sizeClass = size === "sm" ? "h-6 w-6" : size === "md" ? "h-8 w-8" : "h-10 w-10";
+  const iconSize = size === "sm" ? 13 : size === "md" ? 17 : 22;
 
   async function toggle(e: React.MouseEvent) {
     e.stopPropagation();
@@ -88,34 +88,34 @@ export function WishlistHeartButton({ cardId, size = "md", className }: Props) {
       className={cn(
         sizeClass,
         "flex items-center justify-center rounded-full transition-transform hover:scale-110",
-        "bg-black/45 backdrop-blur-sm",
+        "bg-black/60 backdrop-blur-sm",
         animating && (isIn ? "scale-[0.85]" : "scale-[1.25]"),
         className
       )}
     >
       {isIn ? (
-        // Filled heart — violet
+        // Filled heart — violet with strong glow
         <svg
           width={iconSize}
           height={iconSize}
           viewBox="0 0 24 24"
-          fill="#A855F7"
-          stroke="#A855F7"
+          fill="#C084FC"
+          stroke="#C084FC"
           strokeWidth="1.5"
-          style={{ filter: "drop-shadow(0 0 4px rgba(168,85,247,0.5))" }}
+          style={{ filter: "drop-shadow(0 0 5px rgba(192,132,252,0.9)) drop-shadow(0 0 2px rgba(168,85,247,1))" }}
         >
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       ) : (
-        // Outline heart — white
+        // Outline heart — bright white with subtle shadow for contrast
         <svg
           width={iconSize}
           height={iconSize}
           viewBox="0 0 24 24"
           fill="none"
           stroke="white"
-          strokeWidth="1.5"
-          opacity="0.9"
+          strokeWidth="2"
+          style={{ filter: "drop-shadow(0 0 2px rgba(0,0,0,0.8))" }}
         >
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>

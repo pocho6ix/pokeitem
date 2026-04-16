@@ -1044,18 +1044,16 @@ export function CardCollectionGrid({
                   {/* Wishlist heart — top left */}
                   <WishlistHeartButton
                     cardId={card.id}
-                    size="sm"
+                    size="md"
                     className="absolute top-1 left-1 z-10"
                   />
 
                   {/* Number + rarity badge — bottom left */}
-                  <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+                  <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.8)" }}>
                     <span>{card.number}</span>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3 w-auto object-contain opacity-90"
-                      style={(card.rarity === CardRarity.COMMON || card.rarity === CardRarity.UNCOMMON || card.rarity === CardRarity.RARE)
-                        ? { filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))' }
-                        : undefined}
+                    <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3.5 w-auto object-contain"
+                      style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,1)) drop-shadow(0 0 1px rgba(255,255,255,0.9)) brightness(1.15)' }}
                     />
                   </div>
 
