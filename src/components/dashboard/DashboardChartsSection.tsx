@@ -189,46 +189,6 @@ export function DashboardChartsSection({
         </Card>
       )}
 
-      {/* Distribution donut */}
-      {distributionByType.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Répartition par type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={distributionByType}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    {distributionByType.map((_, index) => (
-                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    formatter={(value: string) => (
-                      <span className="text-xs text-[var(--text-secondary)]">
-                        {ITEM_TYPE_LABELS[value] ?? value}
-                      </span>
-                    )}
-                  />
-                  <RechartsTooltip formatter={(value) => [`${value}%`]} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </>
   );
 }

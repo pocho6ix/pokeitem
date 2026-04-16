@@ -29,7 +29,7 @@ export function ItemsHeader({ count, totalInvested, perfPct }: ItemsHeaderProps)
       </div>
       <Link
         href="/portfolio/ajouter"
-        className="btn-gold shrink-0 rounded-xl px-3 py-1.5 text-[13px] font-semibold text-[#1a0e00] flex items-center gap-1.5"
+        className="btn-gold shrink-0 rounded-xl px-3 py-1.5 text-[13px] font-semibold text-black flex items-center gap-1.5"
       >
         <Plus className="h-4 w-4" />
         Ajouter
