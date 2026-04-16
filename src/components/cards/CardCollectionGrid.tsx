@@ -19,6 +19,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
+import { useWishlistStore } from "@/stores/wishlistStore";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -563,6 +564,8 @@ export function CardCollectionGrid({
 
   const [ownedMap, setOwnedMap] = useState<OwnedVersionMap>(() => buildOwnedMap(initialOwned));
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
+  const wishlistStore = useWishlistStore();
 
   // ── Hydration guard — conditional buttons only render after client mount ──
   // Prevents server/client mismatch when isAuthenticated or availableVersions
@@ -829,6 +832,32 @@ export function CardCollectionGrid({
     });
   }, [ownedMap, initialOwned, isAuthenticated]);
 
+  const handleAddAllMissingToWishlist = useCallback(async () => {
+    if (addingToWishlist) return;
+    // Cards shown in the current "missing" filtered view not yet in wishlist
+    const toAdd = filteredCards.filter((c) => !wishlistStore.ids.has(c.id));
+    if (toAdd.length === 0) return;
+
+    setAddingToWishlist(true);
+    // Optimistic
+    toAdd.forEach((c) => wishlistStore.add(c.id));
+    try {
+      const res = await fetch("/api/wishlist/cards/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardIds: toAdd.map((c) => c.id) }),
+      });
+      if (!res.ok) {
+        // Rollback
+        toAdd.forEach((c) => wishlistStore.remove(c.id));
+      }
+    } catch {
+      toAdd.forEach((c) => wishlistStore.remove(c.id));
+    } finally {
+      setAddingToWishlist(false);
+    }
+  }, [filteredCards, wishlistStore, addingToWishlist]);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -995,6 +1024,43 @@ export function CardCollectionGrid({
             <button onClick={deselectAll} className="text-xs text-[var(--text-tertiary)] underline">Tout désélectionner</button>
           </div>
         </div>
+      )}
+
+      {/* Add all missing to wishlist — shown only on "manquantes" tab */}
+      {viewFilter === "missing" && filteredCards.length > 0 && isAuthenticated && (
+        (() => {
+          const alreadyInWishlist = filteredCards.filter((c) => wishlistStore.ids.has(c.id)).length;
+          const toAddCount = filteredCards.length - alreadyInWishlist;
+          return (
+            <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#C084FC]/30 bg-[#C084FC]/5 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Liste de souhaits</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {toAddCount > 0
+                    ? `${toAddCount} carte${toAddCount > 1 ? "s" : ""} à ajouter`
+                    : "Toutes les cartes manquantes sont déjà dans ta liste"}
+                </p>
+              </div>
+              <button
+                onClick={handleAddAllMissingToWishlist}
+                disabled={addingToWishlist || toAddCount === 0}
+                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#C084FC] px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-[#A855F7] disabled:opacity-50 active:scale-95"
+              >
+                {addingToWishlist ? (
+                  <>
+                    <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    Ajout…
+                  </>
+                ) : (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    Tout ajouter
+                  </>
+                )}
+              </button>
+            </div>
+          );
+        })()
       )}
 
       {/* Card grid */}
