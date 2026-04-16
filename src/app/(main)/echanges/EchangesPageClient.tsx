@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useToast } from "@/components/ui/Toast";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const RATE_LIMIT_KEY = "echanges_next_recompute_at";
 const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 min
@@ -37,9 +38,73 @@ function getNextRecomputeAt(): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
+const GOLD_GRADIENT = "linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)";
+
+function LockedEchanges() {
+  const router = useRouter();
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+      {/* Icon */}
+      <div
+        className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl"
+        style={{ background: "rgba(231,186,118,0.12)", border: "1.5px solid rgba(231,186,118,0.3)" }}
+      >
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E7BA76" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          <rect x="9" y="9" width="6" height="6" rx="1"/>
+        </svg>
+      </div>
+
+      {/* Badge */}
+      <span
+        className="mb-4 inline-block rounded-full px-3 py-1 text-xs font-bold tracking-wide"
+        style={{ background: GOLD_GRADIENT, color: "#1A1A1A" }}
+      >
+        ★ PREMIUM
+      </span>
+
+      <h2 className="mb-2 text-xl font-bold text-[var(--text-primary)]">Matchmaking d&apos;échanges</h2>
+      <p className="mb-2 max-w-xs text-sm text-[var(--text-secondary)]">
+        Trouve automatiquement des dresseurs avec qui échanger tes doubles contre tes cartes souhaitées.
+      </p>
+
+      {/* Benefits */}
+      <ul className="mb-7 mt-4 space-y-2 text-left w-full max-w-xs">
+        {[
+          "Matching automatique doubles × souhaits",
+          "Score d'équilibre de l'échange",
+          "Coordonnées de contact du dresseur",
+          "Actualisation en temps réel",
+        ].map((b) => (
+          <li key={b} className="flex items-center gap-2.5 text-sm text-[var(--text-primary)]">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#E7BA76]/20 text-[#E7BA76]">
+              <svg viewBox="0 0 10 10" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1.5 5 3.5 7.5 8.5 2.5"/>
+              </svg>
+            </span>
+            {b}
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => router.push("/pricing")}
+        className="relative w-full max-w-xs overflow-hidden rounded-full py-4 text-sm font-bold uppercase tracking-wide text-[#1A1A1A] transition-all active:scale-[0.97]"
+        style={{ background: GOLD_GRADIENT, boxShadow: "0 2px 12px rgba(191,149,63,0.35)" }}
+      >
+        Passer à Pro →
+      </button>
+      <p className="mt-3 text-xs text-[var(--text-tertiary)]">
+        À partir de 3,33€/mois · 7 jours d&apos;essai gratuit
+      </p>
+    </div>
+  );
+}
+
 export function EchangesPageClient() {
   const router = useRouter();
   const { toast } = useToast();
+  const { isPro, isLoading: subLoading } = useSubscription();
 
   const [matches, setMatches] = useState<MatchItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,6 +179,9 @@ export function EchangesPageClient() {
   const minutesLeft = nextRecomputeAt && nextRecomputeAt > now
     ? Math.ceil((nextRecomputeAt.getTime() - now.getTime()) / 60_000)
     : 0;
+
+  // Premium gate
+  if (!subLoading && !isPro) return <LockedEchanges />;
 
   return (
     <div>

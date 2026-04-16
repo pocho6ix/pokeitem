@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ScanLine, BookOpen, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const MOBILE_NAV_ITEMS = [
   { href: "/", label: "Accueil", icon: Home },
@@ -15,6 +16,7 @@ const MOBILE_NAV_ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { isPro } = useSubscription();
 
   return (
     /* Outer shell — leaves room for the iPhone home indicator */
@@ -28,12 +30,13 @@ export function MobileNav() {
           const isActive = item.href === "/"
             ? pathname === "/"
             : pathname.startsWith(item.href);
+          const isLocked = item.href === "/echanges" && !isPro;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-2 py-0.5 transition-colors",
+                "relative flex flex-col items-center gap-0.5 px-2 py-0.5 transition-colors",
                 isActive
                   ? "text-[var(--color-primary)]"
                   : "text-[var(--text-tertiary)]"
@@ -41,6 +44,9 @@ export function MobileNav() {
             >
               <item.icon className="h-5 w-5 shrink-0" />
               <span className="text-[10px] leading-tight">{item.label}</span>
+              {isLocked && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#E7BA76] text-[7px] font-bold text-black">★</span>
+              )}
             </Link>
           );
         })}
