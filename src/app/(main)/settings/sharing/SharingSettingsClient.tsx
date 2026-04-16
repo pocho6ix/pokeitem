@@ -114,6 +114,40 @@ export function SharingSettingsClient() {
     });
   }
 
+  const GOLD_GRADIENT = "linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)";
+  const GOLD_SHADOW = "0 0 10px rgba(183,135,40,0.5), 0 2px 6px rgba(183,135,40,0.3)";
+
+  function Toggle({ checked, onChange, size = "md" }: { checked: boolean; onChange: () => void; size?: "sm" | "md" }) {
+    const isLg = size === "md";
+    return (
+      <button
+        role="switch"
+        aria-checked={checked}
+        onClick={onChange}
+        className="relative shrink-0 rounded-full transition-all duration-200"
+        style={{
+          width: isLg ? 52 : 44,
+          height: isLg ? 30 : 26,
+          background: checked ? GOLD_GRADIENT : "var(--bg-tertiary)",
+          boxShadow: checked ? GOLD_SHADOW : "inset 0 1px 3px rgba(0,0,0,0.25)",
+        }}
+      >
+        <span
+          className="absolute rounded-full bg-white transition-transform duration-200"
+          style={{
+            top: 3,
+            width: isLg ? 24 : 20,
+            height: isLg ? 24 : 20,
+            transform: checked
+              ? `translateX(${isLg ? 22 : 18}px)`
+              : "translateX(3px)",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+          }}
+        />
+      </button>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -147,12 +181,7 @@ export function SharingSettingsClient() {
               {settings.isActive ? "Ton classeur est visible publiquement" : "Ton classeur est privé"}
             </p>
           </div>
-          <button
-            onClick={() => setSettings((prev) => ({ ...prev, isActive: !prev.isActive }))}
-            className={`relative h-7 w-12 rounded-full transition-colors ${settings.isActive ? "bg-[#E7BA76]" : "bg-[var(--bg-tertiary)]"}`}
-          >
-            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${settings.isActive ? "translate-x-5" : "translate-x-0.5"}`} />
-          </button>
+          <Toggle checked={settings.isActive} onChange={() => setSettings((prev) => ({ ...prev, isActive: !prev.isActive }))} size="md" />
         </div>
 
         {/* Slug display when active */}
@@ -195,12 +224,7 @@ export function SharingSettingsClient() {
                 <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
                 {hint && <p className="text-xs text-[var(--text-secondary)]">{hint}</p>}
               </div>
-              <button
-                onClick={() => setSettings((prev) => ({ ...prev, [key]: !prev[key] }))}
-                className={`relative h-6 w-11 rounded-full transition-colors ${settings[key] ? "bg-[#E7BA76]" : "bg-[var(--bg-tertiary)]"}`}
-              >
-                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${settings[key] ? "translate-x-5" : "translate-x-0.5"}`} />
-              </button>
+              <Toggle checked={settings[key]} onChange={() => setSettings((prev) => ({ ...prev, [key]: !prev[key] }))} size="sm" />
             </div>
           ))}
         </div>

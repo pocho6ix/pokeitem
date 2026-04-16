@@ -1049,12 +1049,10 @@ export function CardCollectionGrid({
                   />
 
                   {/* Number + rarity badge — bottom left */}
-                  <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/80 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.8)" }}>
+                  <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/50 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
                     <span>{card.number}</span>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3.5 w-auto object-contain"
-                      style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,1)) drop-shadow(0 0 1px rgba(255,255,255,0.9)) brightness(1.15)' }}
-                    />
+                    <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3 w-auto object-contain" />
                   </div>
 
                   {/* Version badges — always shown on all cards, bottom right
