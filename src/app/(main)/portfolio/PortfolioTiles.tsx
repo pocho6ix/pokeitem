@@ -83,7 +83,6 @@ export function PortfolioTiles() {
           countLabel="cartes"
           value={null}
           onPress={() => router.push("/portfolio/souhaits")}
-          premium
         />
       </div>
 
