@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface CollectionTileProps {
   title: string;
@@ -17,6 +19,8 @@ interface CollectionTileProps {
   disabled?: boolean;
   comingSoon?: boolean;
   teaserText?: string;
+  /** Si true, la tuile est verrouillée pour les utilisateurs FREE */
+  premium?: boolean;
 }
 
 const formatValue = (v: number) =>
@@ -25,6 +29,8 @@ const formatValue = (v: number) =>
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(v);
+
+const GOLD_GRADIENT = "linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)";
 
 export function CollectionTile({
   title,
@@ -38,13 +44,26 @@ export function CollectionTile({
   disabled = false,
   comingSoon = false,
   teaserText,
+  premium = false,
 }: CollectionTileProps) {
+  const router = useRouter();
+  const { isPro } = useSubscription();
+  const isLocked = premium && !isPro;
   const isDisabled = disabled || comingSoon;
 
+  const handleClick = () => {
+    if (isDisabled) return;
+    if (isLocked) {
+      router.push("/pricing");
+      return;
+    }
+    onPress?.();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!isDisabled && (e.key === "Enter" || e.key === " ")) {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      onPress?.();
+      handleClick();
     }
   };
 
@@ -61,10 +80,10 @@ export function CollectionTile({
 
   return (
     <div
-      role={isDisabled ? "presentation" : "button"}
+      role="button"
       tabIndex={isDisabled ? -1 : 0}
-      aria-label={isDisabled ? title : `${title}${meta ? ` — ${meta}` : ""}`}
-      onClick={isDisabled ? undefined : onPress}
+      aria-label={`${title}${meta ? ` — ${meta}` : ""}`}
+      onClick={isDisabled ? undefined : handleClick}
       onKeyDown={handleKeyDown}
       className={cn(
         "bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-150",
@@ -110,10 +129,17 @@ export function CollectionTile({
         ) : null}
       </div>
 
-      {/* Right side: coming-soon pill OR chevron */}
+      {/* Right side: coming-soon pill | PREMIUM badge | chevron */}
       {comingSoon ? (
         <span className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-card-hover)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
           Bientôt
+        </span>
+      ) : isLocked ? (
+        <span
+          className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide"
+          style={{ background: GOLD_GRADIENT, color: "#1A1A1A" }}
+        >
+          ★ PREMIUM
         </span>
       ) : (
         <ChevronRight size={16} strokeWidth={1.5} className="shrink-0 text-[var(--text-tertiary)]" />

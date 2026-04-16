@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Plan } from "@prisma/client";
 import { WishlistPageClient } from "./WishlistPageClient";
 
 export const metadata: Metadata = {
@@ -18,6 +19,20 @@ export default async function WishlistPage() {
     redirect("/connexion");
   }
   const userId = (session.user as { id: string }).id;
+
+  // ── Premium gate ─────────────────────────────────────────────
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true, planExpiresAt: true, trialEndsAt: true },
+  });
+  const isTrialing = !!(user?.trialEndsAt && user.trialEndsAt > new Date());
+  const isPro =
+    isTrialing ||
+    (user?.plan === Plan.PRO &&
+      (!user.planExpiresAt || user.planExpiresAt > new Date()));
+  if (!isPro) {
+    redirect("/pricing");
+  }
 
   const rawItems = await prisma.cardWishlistItem.findMany({
     where: { userId },
