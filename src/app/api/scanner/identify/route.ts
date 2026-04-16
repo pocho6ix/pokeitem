@@ -137,17 +137,16 @@ const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   "ex1": "rubis-et-saphir",      "ex2": "tempete-de-sable",
   "ex3": "dragon-ex",            "ex4": "team-magma-vs-team-aqua",
   "ex5": "legendes-oubliees",    "ex6": "fire-red-leaf-green",
-  "ex7": "team-rocket-returns",  "ex8": "deoxys",
+  "ex8": "deoxys",
   "ex9": "emeraude",             "ex10": "forces-cachees",
   "ex11": "especes-delta",       "ex12": "createurs-de-legendes",
   "ex13": "fantomes-holon",      "ex14": "gardiens-de-cristal",
   "ex16": "gardiens-du-pouvoir",
   // ── Wizards of the Coast ───────────────────────────────────────────────────
   "base1": "set-de-base",  "base2": "jungle",
-  "base3": "fossile",      "base4": "set-de-base-2",
-  "base5": "team-rocket",  "gym1": "gym-heroes",
-  "gym2": "gym-challenge", "ecard1": "expedition",
-  "ecard2": "aquapolis",   "ecard3": "skyridge",
+  "base3": "fossile",
+  "base5": "team-rocket",  "ecard1": "expedition",
+  "ecard2": "aquapolis",
 };
 
 // ─── DB lookup helper ─────────────────────────────────────────────────────────
