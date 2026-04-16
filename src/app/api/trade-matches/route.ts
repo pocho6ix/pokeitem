@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const MIN_BALANCE = 0.7;
 const MIN_VALUE_CENTS = 200;
 
 export async function GET(req: NextRequest) {
@@ -15,19 +14,19 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
   const offset = parseInt(searchParams.get("offset") ?? "0", 10);
 
-  // Find all viable matches for this user (both A and B sides)
+  // Viable = at least one side has >= 2€ (partial exchanges settled in cash are OK)
   const matches = await prisma.tradeMatch.findMany({
     where: {
-      OR: [{ userAId: userId }, { userBId: userId }],
-      balanceScore: { gte: MIN_BALANCE },
-      aValueCents: { gte: MIN_VALUE_CENTS },
-      bValueCents: { gte: MIN_VALUE_CENTS },
+      AND: [
+        { OR: [{ userAId: userId }, { userBId: userId }] },
+        { OR: [{ aValueCents: { gte: MIN_VALUE_CENTS } }, { bValueCents: { gte: MIN_VALUE_CENTS } }] },
+      ],
     },
     include: {
       userA: { select: { id: true, name: true, image: true, classeurShare: { select: { slug: true, isActive: true } } } },
       userB: { select: { id: true, name: true, image: true, classeurShare: { select: { slug: true, isActive: true } } } },
     },
-    orderBy: { balanceScore: "desc" },
+    orderBy: [{ balanceScore: "desc" }, { aValueCents: "desc" }],
     take: limit,
     skip: offset,
   });
@@ -35,6 +34,8 @@ export async function GET(req: NextRequest) {
   const formatted = matches.map((m) => {
     const isA = m.userAId === userId;
     const partner = isA ? m.userB : m.userA;
+    const youGiveValueCents    = isA ? m.aValueCents : m.bValueCents;
+    const youReceiveValueCents = isA ? m.bValueCents : m.aValueCents;
     return {
       id: m.id,
       partner: {
@@ -45,8 +46,10 @@ export async function GET(req: NextRequest) {
       },
       youGiveCount: isA ? m.aGivesCardIds.length : m.bGivesCardIds.length,
       youReceiveCount: isA ? m.bGivesCardIds.length : m.aGivesCardIds.length,
-      youGiveValueCents: isA ? m.aValueCents : m.bValueCents,
-      youReceiveValueCents: isA ? m.bValueCents : m.aValueCents,
+      youGiveValueCents,
+      youReceiveValueCents,
+      // positive = you receive more in cards → you owe cash; negative = you give more → you receive cash
+      cashBalanceCents: youGiveValueCents - youReceiveValueCents,
       balanceScore: m.balanceScore,
       computedAt: m.computedAt.toISOString(),
     };

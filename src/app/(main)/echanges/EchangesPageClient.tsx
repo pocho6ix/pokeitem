@@ -22,6 +22,7 @@ interface MatchItem {
   youReceiveCount: number;
   youGiveValueCents: number;
   youReceiveValueCents: number;
+  cashBalanceCents: number;
   balanceScore: number;
   computedAt: string;
 }
@@ -287,20 +288,43 @@ export function EchangesPageClient() {
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-[var(--text-primary)] truncate">{match.partner.displayName}</p>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--text-secondary)]">
-                    <span>Tu donnes: {match.youGiveCount} ({formatEuros(match.youGiveValueCents)})</span>
-                    <span>Tu reçois: {match.youReceiveCount} ({formatEuros(match.youReceiveValueCents)})</span>
+                    {match.youGiveCount > 0 && (
+                      <span>Tu donnes: {match.youGiveCount} ({formatEuros(match.youGiveValueCents)})</span>
+                    )}
+                    {match.youReceiveCount > 0 && (
+                      <span>Tu reçois: {match.youReceiveCount} ({formatEuros(match.youReceiveValueCents)})</span>
+                    )}
                   </div>
-                  {/* Balance bar */}
+                  {/* Cash balance badge + balance bar */}
                   <div className="mt-2 flex items-center gap-2">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-                      <div
-                        className="h-full rounded-full bg-[#E7BA76]"
-                        style={{ width: `${Math.round(match.balanceScore * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-semibold text-[var(--text-secondary)]">
-                      {Math.round(match.balanceScore * 100)}%
-                    </span>
+                    {match.balanceScore > 0 ? (
+                      <>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
+                          <div
+                            className="h-full rounded-full bg-[#E7BA76]"
+                            style={{ width: `${Math.round(match.balanceScore * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-semibold text-[var(--text-secondary)]">
+                          {Math.round(match.balanceScore * 100)}%
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-[var(--text-tertiary)]">Échange contre liquidités</span>
+                    )}
+                    {match.cashBalanceCents !== 0 && (
+                      <span
+                        className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          match.cashBalanceCents > 0
+                            ? "bg-orange-500/15 text-orange-400"
+                            : "bg-green-500/15 text-green-400"
+                        }`}
+                      >
+                        {match.cashBalanceCents > 0
+                          ? `Tu paies ${formatEuros(match.cashBalanceCents)}`
+                          : `Tu reçois ${formatEuros(-match.cashBalanceCents)}`}
+                      </span>
+                    )}
                   </div>
                 </div>
 

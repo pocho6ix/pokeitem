@@ -31,7 +31,7 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
       youReceiveValueCents: isAVisitor ? cached.bValueCents : cached.aValueCents,
       balanceScore: cached.balanceScore,
       computedAt: cached.computedAt,
-      isViable: cached.balanceScore >= 0.7 && Math.min(cached.aValueCents, cached.bValueCents) >= 200,
+      isViable: Math.max(cached.aValueCents, cached.bValueCents) >= 200,
     };
     }
   }
@@ -75,5 +75,6 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
     balanceScore: result.balanceScore,
     computedAt: new Date(),
     isViable: true,
+    cashBalanceCents: result.aValueCents - result.bValueCents,
   };
 }

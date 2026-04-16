@@ -49,6 +49,7 @@ interface MatchData {
   youReceiveCardIds: string[];
   youGiveValueCents: number;
   youReceiveValueCents: number;
+  cashBalanceCents?: number;
   balanceScore: number;
   computedAt: string | Date;
   isViable: boolean;
