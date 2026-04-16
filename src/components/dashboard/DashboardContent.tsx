@@ -16,10 +16,11 @@ import {
   Search,
 } from "lucide-react";
 import { UpdatePriceModal } from "@/components/portfolio/UpdatePriceModal";
-import { PortfolioItemsList } from "@/components/portfolio/PortfolioItemsList";
+import { PortfolioItemsSection } from "@/components/portfolio/PortfolioItemsSection";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { formatPriceChange } from "@/lib/utils";
+import type { PortfolioItemData, PortfolioSummary } from "@/types/portfolio";
 
 // Recharts (~150 KB gzipped) — lazy-loaded so it never enters the initial bundle
 const DashboardChartsSection = dynamic(
@@ -38,44 +39,6 @@ const DashboardChartsSection = dynamic(
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface PortfolioItemData {
-  id: string;
-  item: {
-    id: string;
-    name: string;
-    slug: string;
-    type: string;
-    imageUrl: string | null;
-    currentPrice: number | null;
-    priceTrend: number | null;
-    priceFrom: number | null;
-    priceUpdatedAt: string | null;
-    lastScrapedAt: string | null;
-    cardmarketUrl: string | null;
-    retailPrice: number | null;
-    serie?: { name: string; bloc?: { name: string } };
-  };
-  quantity: number;
-  purchasePrice: number;
-  purchasePricePerUnit: number;
-  purchaseDate: string | null;
-  currentValue: number;
-  currentValuePerUnit: number;
-  pnl: number;
-  pnlPercent: number;
-  notes: string | null;
-  createdAt: string;
-}
-
-interface PortfolioSummary {
-  totalInvested: number;
-  totalCurrentValue: number;
-  totalPnl: number;
-  totalPnlPercent: number;
-  itemCount: number;
-  uniqueItemCount: number;
-}
 
 interface ChartDataPoint {
   date: string;
@@ -441,29 +404,14 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         />
       )}
 
-      {/* Items list — row-based, mirrors the "mes doubles" look */}
-      <section>
-        <div className="mb-3 flex items-baseline justify-between gap-2">
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Mes Items</h2>
-          <p className="text-xs text-[var(--text-secondary)]">
-            {summary.itemCount} item{summary.itemCount > 1 ? "s" : ""}
-            {summary.uniqueItemCount !== summary.itemCount && (
-              <>
-                {" "}·{" "}
-                <span className="text-[var(--text-tertiary)]">
-                  {summary.uniqueItemCount} unique{summary.uniqueItemCount > 1 ? "s" : ""}
-                </span>
-              </>
-            )}
-          </p>
-        </div>
-        <PortfolioItemsList
-          items={items}
-          onUpdatePrice={(item) => setPricingItem(item)}
-          onDelete={handleDelete}
-          deletingId={deleting}
-        />
-      </section>
+      {/* Items section — redesigned with search, filter, sort, and view toggle */}
+      <PortfolioItemsSection
+        items={items}
+        summary={summary}
+        onUpdatePrice={(item) => setPricingItem(item)}
+        onDelete={handleDelete}
+        deletingId={deleting}
+      />
     </div>
   );
 }
