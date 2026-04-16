@@ -1,19 +1,21 @@
 // @capacitor/share is not installed — using Web Share API + clipboard fallback
+// To add native share: install @capacitor/core and @capacitor/share
 
-export async function shareProfile(slug: string, displayName: string, onCopied?: () => void) {
+export async function shareProfile(slug: string, _displayName: string, onCopied?: () => void) {
   const url = `https://app.pokeitem.fr/u/${slug}`;
   const text = `Regarde mon classeur Pokémon sur Pokéitem`;
 
-  // Try Capacitor if available (native app)
+  // Try Capacitor if available (native app) — dynamic import so it doesn't break web builds
   try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const { Share } = await import("@capacitor/share");
-        await Share.share({ title: "Mon classeur Pokéitem", text, url, dialogTitle: "Partager mon classeur" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const capModule = await import("@capacitor/core" as any).catch(() => null);
+    if (capModule?.Capacitor?.isNativePlatform?.()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const shareModule = await import("@capacitor/share" as any).catch(() => null);
+      if (shareModule?.Share) {
+        await shareModule.Share.share({ title: "Mon classeur Pokéitem", text, url, dialogTitle: "Partager mon classeur" }).catch(() => {});
         return;
-      } catch { /* user cancelled */ }
-      return;
+      }
     }
   } catch { /* @capacitor/core not installed */ }
 
