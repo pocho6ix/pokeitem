@@ -18,6 +18,7 @@ import { POKEMON_TYPES, POKEMON_TYPE_MAP, type TypeConfig } from "@/lib/pokemon-
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -1040,14 +1041,12 @@ export function CardCollectionGrid({
                     <div className="holo-overlay absolute inset-0 z-[5] pointer-events-none rounded-lg" />
                   )}
 
-                  {/* Detail button — top left */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setDetailCardId(card.id); }}
-                    className="absolute top-1 left-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                    title="Voir les détails"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                  </button>
+                  {/* Wishlist heart — top left */}
+                  <WishlistHeartButton
+                    cardId={card.id}
+                    size="sm"
+                    className="absolute top-1 left-1 z-10"
+                  />
 
                   {/* Number + rarity badge — bottom left */}
                   <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
