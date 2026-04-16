@@ -114,6 +114,15 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     return m;
   }, [items]);
 
+  // Premier blocSlug par rareté (pour l'image)
+  const rarityBlocMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const wi of items) {
+      if (!m.has(wi.card.rarity)) m.set(wi.card.rarity, wi.card.serie.bloc.slug);
+    }
+    return m;
+  }, [items]);
+
   const rarities = useMemo(
     () =>
       [...rarityCounts.entries()]
@@ -150,14 +159,42 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
   // ── Grouped by serie ──────────────────────────────────────────────────────
 
   const groupedBySerie = useMemo(() => {
+    // Pour la vue "par série" on repart toujours des items bruts (filtrés par rareté/search)
+    // et on trie les cartes par numéro à l'intérieur de chaque extension
+    const baseList = (() => {
+      let list = [...items];
+      if (activeRarity) list = list.filter((wi) => wi.card.rarity === activeRarity);
+      if (search.trim()) {
+        const q = search.trim().toLowerCase();
+        list = list.filter(
+          (wi) =>
+            wi.card.name.toLowerCase().includes(q) ||
+            wi.card.number.toLowerCase().includes(q) ||
+            wi.card.serie.name.toLowerCase().includes(q)
+        );
+      }
+      return list;
+    })();
+
     const map = new Map<string, { serie: WishlistCard["serie"]; items: WishlistItem[] }>();
-    for (const wi of filtered) {
+    for (const wi of baseList) {
       const sid = wi.card.serie.id;
       if (!map.has(sid)) map.set(sid, { serie: wi.card.serie, items: [] });
       map.get(sid)!.items.push(wi);
     }
-    return [...map.values()];
-  }, [filtered]);
+    // Trier les cartes par numéro dans chaque extension
+    for (const group of map.values()) {
+      group.items.sort((a, b) =>
+        a.card.number.localeCompare(b.card.number, undefined, { numeric: true })
+      );
+    }
+    // Trier les extensions : la plus récemment ajoutée en premier
+    return [...map.values()].sort((a, b) => {
+      const latestA = Math.max(...a.items.map((wi) => new Date(wi.addedAt).getTime()));
+      const latestB = Math.max(...b.items.map((wi) => new Date(wi.addedAt).getTime()));
+      return latestB - latestA;
+    });
+  }, [items, activeRarity, search]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -316,31 +353,53 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
       {/* ── Rarity chips ──────────────────────────────────────────── */}
       {rarities.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
+          {/* "Toutes" chip — texte uniquement */}
           <button
             onClick={() => setActiveRarity(null)}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors border",
+              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
               activeRarity === null
-                ? "bg-purple-500 text-white border-purple-500"
-                : "bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border)] hover:border-purple-400"
+                ? "border-purple-500 bg-purple-500 text-white"
+                : "border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-purple-400"
             )}
           >
             Toutes ({items.length})
           </button>
-          {rarities.map(({ rarity, count }) => (
-            <button
-              key={rarity}
-              onClick={() => setActiveRarity(rarity === activeRarity ? null : rarity)}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors border",
-                activeRarity === rarity
-                  ? "bg-purple-500 text-white border-purple-500"
-                  : "bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border)] hover:border-purple-400"
-              )}
-            >
-              {CARD_RARITY_LABELS[rarity as CardRarity] ?? rarity} ({count})
-            </button>
-          ))}
+
+          {/* Chips par rareté — image + count */}
+          {rarities.map(({ rarity, count }) => {
+            const blocSlug = rarityBlocMap.get(rarity) ?? "";
+            const isActive = activeRarity === rarity;
+            const needsWhiteFilter =
+              rarity === CardRarity.COMMON ||
+              rarity === CardRarity.UNCOMMON ||
+              rarity === CardRarity.RARE ||
+              rarity === "NO_RARITY";
+            return (
+              <button
+                key={rarity}
+                onClick={() => setActiveRarity(isActive ? null : rarity)}
+                title={CARD_RARITY_LABELS[rarity as CardRarity] ?? rarity}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                  isActive
+                    ? "border-purple-500 bg-purple-500/15 text-purple-400"
+                    : "border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-purple-400"
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getCardRarityImage(rarity as CardRarity, blocSlug)}
+                  alt={CARD_RARITY_LABELS[rarity as CardRarity] ?? rarity}
+                  className={cn("h-4 w-auto object-contain", isActive ? "brightness-125" : "brightness-90")}
+                  style={needsWhiteFilter
+                    ? { filter: "drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 0.5px rgba(255,255,255,0.9))" }
+                    : undefined}
+                />
+                <span>{count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
