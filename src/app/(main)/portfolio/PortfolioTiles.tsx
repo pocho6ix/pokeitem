@@ -13,6 +13,7 @@ interface StatsData {
   doublesCount?: number;
   cardValue?: number | null;
   doublesValue?: number | null;
+  itemsValue?: number | null;
   totalValue?: number;
   wishlistCount?: number;
 }
@@ -71,7 +72,7 @@ export function PortfolioTiles() {
           accentColor="#4ADE80"
           count={stats?.totalItems}
           countLabel="produits"
-          value={stats?.totalValue ?? null}
+          value={stats?.itemsValue ?? null}
           onPress={() => router.push("/portfolio/items")}
         />
         <CollectionTile

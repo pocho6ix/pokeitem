@@ -114,6 +114,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       totalItems,
       totalValue: Math.round(totalValue * 100) / 100,
+      itemsValue: Math.round(itemsValue * 100) / 100,
       totalInvested: Math.round(totalInvestedAll * 100) / 100,
       profitLoss: Math.round(profitLoss * 100) / 100,
       profitLossPercent: Math.round(profitLossPercent * 100) / 100,

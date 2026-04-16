@@ -8,7 +8,6 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { createPortal } from "react-dom";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -99,38 +98,36 @@ function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {mounted &&
-        createPortal(
-          <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
-            {toasts.map((t) => (
-              <div
-                key={t.id}
-                className={cn(toastVariants({ variant: t.variant }))}
-              >
-                {icons[t.variant]}
-                <span className="flex-1">{t.message}</span>
-                {t.action && (
-                  <button
-                    onClick={() => { t.action!.onClick(); dismiss(t.id); }}
-                    className="text-white underline text-xs font-semibold ml-2 hover:opacity-80 transition-opacity"
-                  >
-                    {t.action.label}
-                  </button>
-                )}
+      {mounted && (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className={cn(toastVariants({ variant: t.variant }))}
+            >
+              {icons[t.variant]}
+              <span className="flex-1">{t.message}</span>
+              {t.action && (
                 <button
-                  onClick={() => dismiss(t.id)}
-                  className="ml-2 rounded p-0.5 hover:bg-white/20 transition-colors"
-                  aria-label="Dismiss"
+                  onClick={() => { t.action!.onClick(); dismiss(t.id); }}
+                  className="text-white underline text-xs font-semibold ml-2 hover:opacity-80 transition-opacity"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  {t.action.label}
                 </button>
-              </div>
-            ))}
-          </div>,
-          document.body
-        )}
+              )}
+              <button
+                onClick={() => dismiss(t.id)}
+                className="ml-2 rounded p-0.5 hover:bg-white/20 transition-colors"
+                aria-label="Dismiss"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </ToastContext.Provider>
   );
 }
