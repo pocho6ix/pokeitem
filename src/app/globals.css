@@ -83,6 +83,12 @@ body {
   transform: scale(0.98);
 }
 
+/* Item type badge — gold gradient, static (no hover/active transitions) */
+.badge-gold {
+  background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+  color: #1a0e00;
+}
+
 /* Dark mode — deep navy radial gradient (fixed so it stays while scrolling) */
 .dark body {
   background:
