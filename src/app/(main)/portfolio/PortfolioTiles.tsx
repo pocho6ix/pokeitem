@@ -38,7 +38,7 @@ export function PortfolioTiles() {
       <h2 className="mb-3 text-lg font-semibold text-[var(--text-primary)]">
         Mes collections
       </h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex flex-col gap-2">
         <CollectionTile
           title="Mes cartes"
           icon={BookOpen}

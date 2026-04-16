@@ -24,6 +24,9 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
       {/* Beta offer for new non-subscribed users */}
       <ClasseurBetaOffer />
 
+      {/* Navigation tiles — hidden on sub-pages */}
+      <PortfolioTiles />
+
       {/* Portfolio KPI metrics */}
       <Suspense>
         <PortfolioMiniStats />
@@ -31,9 +34,6 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
 
       {/* Evolution chart — right after the KPI stats */}
       <PortfolioEvolutionChart />
-
-      {/* Navigation tiles — hidden on sub-pages */}
-      <PortfolioTiles />
 
       {/* Page content */}
       {children}

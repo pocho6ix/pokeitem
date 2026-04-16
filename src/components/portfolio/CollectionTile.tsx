@@ -1,6 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CollectionTileProps {
@@ -59,54 +60,48 @@ export function CollectionTile({
     <div
       role={isDisabled ? "presentation" : "button"}
       tabIndex={isDisabled ? -1 : 0}
-      aria-label={
-        isDisabled
-          ? title
-          : `${title}${meta ? ` — ${meta}` : ""}`
-      }
+      aria-label={isDisabled ? title : `${title}${meta ? ` — ${meta}` : ""}`}
       onClick={isDisabled ? undefined : onPress}
       onKeyDown={handleKeyDown}
       className={cn(
-        "bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl p-4 flex flex-col gap-3 transition-all duration-150",
+        "bg-[var(--bg-card)] border border-[var(--border-default)] rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-150",
         isDisabled
           ? "opacity-70 cursor-not-allowed"
-          : "cursor-pointer hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] active:scale-[0.98]"
+          : "cursor-pointer hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] active:scale-[0.99]"
       )}
     >
-      {/* Top row: icon + coming soon pill */}
-      <div className="flex items-start justify-between">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: `${accentColor}1a` }}
-        >
-          <Icon
-            size={22}
-            strokeWidth={1.5}
-            style={{ color: accentColor }}
-          />
-        </div>
-        {comingSoon && (
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-card-hover)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
-            Bientôt
-          </span>
-        )}
+      {/* Icon */}
+      <div
+        className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center"
+        style={{ backgroundColor: `${accentColor}1a` }}
+      >
+        <Icon size={20} strokeWidth={1.5} style={{ color: accentColor }} />
       </div>
 
       {/* Title + meta */}
-      <div className="flex flex-col gap-0.5">
+      <div className="flex-1 min-w-0">
         <p className="text-[15px] font-semibold text-[var(--text-primary)] leading-tight">
           {title}
         </p>
         {isEmpty ? (
-          <p className="text-[13px] font-data tabular-nums text-[var(--text-tertiary)]">
+          <p className="text-[12px] font-data tabular-nums text-[var(--text-tertiary)] mt-0.5">
             Aucun élément
           </p>
         ) : meta ? (
-          <p className="text-[13px] font-data tabular-nums text-[var(--text-secondary)]">
+          <p className="text-[12px] font-data tabular-nums text-[var(--text-secondary)] mt-0.5">
             {meta}
           </p>
         ) : null}
       </div>
+
+      {/* Right side: coming-soon pill OR chevron */}
+      {comingSoon ? (
+        <span className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-card-hover)] text-[var(--text-tertiary)] border border-[var(--border-default)]">
+          Bientôt
+        </span>
+      ) : (
+        <ChevronRight size={16} strokeWidth={1.5} className="shrink-0 text-[var(--text-tertiary)]" />
+      )}
     </div>
   );
 }
