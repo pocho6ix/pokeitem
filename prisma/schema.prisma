@@ -51,6 +51,7 @@ model User {
   sessions          Session[]
   portfolio         PortfolioItem[]
   wishlist          WishlistItem[]
+  cardWishlist      CardWishlistItem[]
   manualValuations  ManualValuation[]
   userCards         UserCard[]
   userCardDoubles   UserCardDouble[]
@@ -362,10 +363,11 @@ model Card {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  serie        Serie              @relation(fields: [serieId], references: [id])
-  userCards    UserCard[]
-  userDoubles  UserCardDouble[]
-  priceHistory CardPriceHistory[]
+  serie             Serie              @relation(fields: [serieId], references: [id])
+  userCards         UserCard[]
+  userDoubles       UserCardDouble[]
+  priceHistory      CardPriceHistory[]
+  cardWishlistItems CardWishlistItem[]
 
   @@unique([serieId, number])
   @@index([serieId])
@@ -597,4 +599,26 @@ model DailyQuestClaim {
 
   @@index([userId, questId])
   @@map("daily_quest_claims")
+}
+
+// ─── LISTE DE SOUHAITS (CARTES) ──────────────────────────────
+
+model CardWishlistItem {
+  id       String   @id @default(cuid())
+  userId   String
+  cardId   String
+  setId    String
+  priority Int      @default(1)
+  maxPrice Float?
+  note     String?
+  addedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@index([userId, setId])
+  @@index([userId, addedAt(sort: Desc)])
+  @@map("card_wishlist_items")
 }
