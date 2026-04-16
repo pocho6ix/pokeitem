@@ -49,7 +49,6 @@ interface MatchData {
   youReceiveCardIds: string[];
   youGiveValueCents: number;
   youReceiveValueCents: number;
-  cashBalanceCents?: number;
   balanceScore: number;
   computedAt: string | Date;
   isViable: boolean;
@@ -84,6 +83,146 @@ function memberYear(iso: string): string {
   return new Date(iso).getFullYear().toString();
 }
 
+// ── Match block (inline collapsible) ─────────────────────────────────────────
+
+interface MatchBlockProps {
+  match: MatchData;
+  profile: Props["profile"];
+  sections: Props["sections"];
+  toast: (msg: string, type?: string) => void;
+}
+
+function MatchBlock({ match, profile, sections, toast }: MatchBlockProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const deltaCents = match.youReceiveValueCents - match.youGiveValueCents;
+  const deltaStr = deltaCents === 0
+    ? ""
+    : ` · delta ${deltaCents > 0 ? "+" : ""}${(deltaCents / 100).toFixed(2).replace(".", ",")} €`;
+
+  const giveCards = sections.doubles
+    .filter((d) => match.youGiveCardIds.includes(d.card.id))
+    .map((d) => d.card);
+  const receiveCards = sections.wishlist
+    .filter((wi) => match.youReceiveCardIds.includes(wi.card.id))
+    .map((wi) => wi.card);
+
+  async function handleCopyDiscord() {
+    if (!profile.contact.discord) return;
+    try {
+      await navigator.clipboard.writeText(profile.contact.discord);
+      toast("Discord copié !", "success");
+    } catch {
+      toast("Impossible de copier", "error");
+    }
+  }
+
+  return (
+    <div className="mb-6 overflow-hidden rounded-2xl border border-[#E7BA76]/40 bg-[var(--bg-card)]">
+      {/* Collapsed header — always visible */}
+      <button
+        className="flex w-full items-center gap-3 p-4 text-left"
+        onClick={() => setIsExpanded((v) => !v)}
+      >
+        <span className="text-base">💱</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
+            Échange possible · {Math.round(match.balanceScore * 100)} % équilibré
+          </p>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {match.youGiveCardIds.length} ↔ {match.youReceiveCardIds.length} cartes{deltaStr}
+          </p>
+        </div>
+        <span className="shrink-0 text-xs font-medium text-[#E7BA76]">
+          {isExpanded ? "Détail ▲" : "Détail ▼"}
+        </span>
+      </button>
+
+      {/* Expanded content */}
+      {isExpanded && (
+        <div
+          className="border-t border-[var(--border-default)] px-4 pb-4 pt-3"
+          style={{ animation: "fadeIn 0.3s ease" }}
+        >
+          <div className="grid grid-cols-2 gap-4">
+            {/* Tu donnes */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[var(--text-secondary)]">
+                Tu donnes ({formatEuros(match.youGiveValueCents)})
+              </p>
+              <div className="flex gap-1 overflow-x-auto">
+                {giveCards.slice(0, 8).map((card) =>
+                  card.imageUrl ? (
+                    <div key={card.id} className="relative h-[58px] w-[42px] shrink-0 overflow-hidden rounded-md">
+                      <Image src={card.imageUrl} alt={card.name} fill className="object-cover" sizes="42px" />
+                    </div>
+                  ) : (
+                    <div key={card.id} className="h-[58px] w-[42px] shrink-0 rounded-md bg-[var(--bg-secondary)]" />
+                  )
+                )}
+                {giveCards.length === 0 && (
+                  <p className="text-xs text-[var(--text-tertiary)]">{match.youGiveCardIds.length} carte(s)</p>
+                )}
+              </div>
+            </div>
+
+            {/* Tu reçois */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[var(--text-secondary)]">
+                Tu reçois ({formatEuros(match.youReceiveValueCents)})
+              </p>
+              <div className="flex gap-1 overflow-x-auto">
+                {receiveCards.slice(0, 8).map((card) =>
+                  card.imageUrl ? (
+                    <div key={card.id} className="relative h-[58px] w-[42px] shrink-0 overflow-hidden rounded-md">
+                      <Image src={card.imageUrl} alt={card.name} fill className="object-cover" sizes="42px" />
+                    </div>
+                  ) : (
+                    <div key={card.id} className="h-[58px] w-[42px] shrink-0 rounded-md bg-[var(--bg-secondary)]" />
+                  )
+                )}
+                {receiveCards.length === 0 && (
+                  <p className="text-xs text-[var(--text-tertiary)]">{match.youReceiveCardIds.length} carte(s)</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Contact buttons */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {profile.contact.discord && (
+              <button
+                onClick={handleCopyDiscord}
+                className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+              >
+                📋 Copier Discord
+              </button>
+            )}
+            {profile.contact.email && (
+              <a
+                href={`mailto:${profile.contact.email}`}
+                className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+              >
+                ✉️ Email
+              </a>
+            )}
+            {profile.contact.twitter && (
+              <a
+                href={`https://twitter.com/${profile.contact.twitter.replace("@", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+              >
+                🐦 Twitter
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function PublicProfileClient({
@@ -95,13 +234,12 @@ export function PublicProfileClient({
   const visitorSet = new Set(visitorWishlistIds);
 
   // Determine available tabs
-  const tabs: Tab[] = [];
-  if (visibility.cards) tabs.push("cards");
-  if (visibility.doubles) tabs.push("doubles");
-  if (visibility.wishlist) tabs.push("wishlist");
+  const allTabs: Tab[] = [];
+  if (visibility.cards) allTabs.push("cards");
+  if (visibility.doubles) allTabs.push("doubles");
+  if (visibility.wishlist) allTabs.push("wishlist");
 
-  const [activeTab, setActiveTab] = useState<Tab>(tabs[0] ?? "cards");
-  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>(allTabs[0] ?? "cards");
 
   // One entry per (cardId, version) — no duplication by quantity
   const cardsFlat: CardItem[] = sections.cards.map((uc) => ({
@@ -115,12 +253,6 @@ export function PublicProfileClient({
     quantity: d.quantity,
   }));
   const wishlistCards: CardItem[] = sections.wishlist.map((wi) => wi.card);
-
-  const tabLabels: Record<Tab, string> = {
-    cards: `Cartes (${stats.cardsCount})`,
-    doubles: `Doubles (${stats.doublesCount})`,
-    wishlist: `Souhaits (${stats.wishlistCount})`,
-  };
 
   const avatarSrc = profile.avatarUrl ?? getDefaultAvatar(profile.slug);
 
@@ -162,110 +294,31 @@ export function PublicProfileClient({
         <div className="min-w-0">
           <h1 className="text-xl font-bold text-[var(--text-primary)]">{profile.displayName}</h1>
           <p className="text-sm text-[var(--text-secondary)]">Dresseur depuis {memberYear(profile.memberSince)}</p>
-
-          {/* Stats chips */}
-          <div className="mt-2 flex flex-wrap gap-2">
-            {visibility.cards && (
-              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">
-                {stats.cardsCount} cartes
-              </span>
-            )}
-            {visibility.doubles && (
-              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">
-                {stats.doublesCount} doubles
-              </span>
-            )}
-            {visibility.wishlist && (
-              <span className="rounded-full border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1 text-xs text-[var(--text-secondary)]">
-                {stats.wishlistCount} souhaits
-              </span>
-            )}
-          </div>
+          {/* Stats inline */}
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {stats.cardsCount} cartes · {stats.doublesCount} doubles · {stats.wishlistCount} ♡
+          </p>
         </div>
       </div>
 
-      {/* Match block */}
-      {match && match.isViable && !isOwner && (
-        <div className="mb-6 overflow-hidden rounded-2xl shadow-lg">
-          <div className="btn-gold p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-black"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-              <span className="text-sm font-bold text-black">Échange possible !</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-black/10 p-3 text-center">
-                <p className="text-xs font-semibold text-black/70">Tu donnes</p>
-                <p className="text-lg font-bold text-black">{match.youGiveCardIds.length} cartes</p>
-                <p className="text-xs text-black/70">{formatEuros(match.youGiveValueCents)}</p>
-              </div>
-              <div className="rounded-xl bg-black/10 p-3 text-center">
-                <p className="text-xs font-semibold text-black/70">Tu reçois</p>
-                <p className="text-lg font-bold text-black">{match.youReceiveCardIds.length} cartes</p>
-                <p className="text-xs text-black/70">{formatEuros(match.youReceiveValueCents)}</p>
-              </div>
-            </div>
-
-            {/* Balance bar */}
-            <div className="mt-3">
-              <div className="mb-1 flex items-center justify-between text-xs text-black/70">
-                <span>Équilibre</span>
-                <span>{Math.round(match.balanceScore * 100)}%</span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-black/20">
-                <div
-                  className="h-full rounded-full bg-black/50 transition-all"
-                  style={{ width: `${Math.round(match.balanceScore * 100)}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => setShowMatchModal(true)}
-                className="flex-1 rounded-xl bg-black/20 py-2 text-sm font-semibold text-black hover:bg-black/30 transition-colors"
-              >
-                Voir le détail
-              </button>
-              {/* Contact button */}
-              {profile.contact.discord && (
-                <a
-                  href={`https://discord.com/users/${profile.contact.discord}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-xl bg-black/20 px-3 py-2 text-sm font-semibold text-black hover:bg-black/30 transition-colors"
-                >
-                  Discord
-                </a>
-              )}
-              {!profile.contact.discord && profile.contact.twitter && (
-                <a
-                  href={`https://twitter.com/${profile.contact.twitter.replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-xl bg-black/20 px-3 py-2 text-sm font-semibold text-black hover:bg-black/30 transition-colors"
-                >
-                  Twitter
-                </a>
-              )}
-              {!profile.contact.discord && !profile.contact.twitter && profile.contact.email && (
-                <a
-                  href={`mailto:${profile.contact.email}`}
-                  className="flex items-center gap-2 rounded-xl bg-black/20 px-3 py-2 text-sm font-semibold text-black hover:bg-black/30 transition-colors"
-                >
-                  Email
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Match block — only when viable */}
+      {match !== null && !isOwner && (
+        <MatchBlock
+          match={match}
+          profile={profile}
+          sections={sections}
+          toast={toast}
+        />
       )}
 
-      {/* No match messages */}
-      {!match && isAuthenticated && !isOwner && (
+      {/* No match message */}
+      {match === null && isAuthenticated && !isOwner && (
         <div className="mb-6 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-          Pas d&apos;échange possible pour l&apos;instant — tes doubles et ta wishlist ne correspondent pas avec ceux de {profile.displayName}.
+          Pas d&apos;échange viable pour l&apos;instant. Continue d&apos;ajouter des cartes à ta liste de souhaits pour augmenter tes chances.
         </div>
       )}
+
+      {/* Not authenticated */}
       {!isAuthenticated && (
         <div className="mb-6 overflow-hidden rounded-2xl shadow-lg">
           <div className="btn-gold p-4 text-center">
@@ -281,7 +334,7 @@ export function PublicProfileClient({
         </div>
       )}
 
-      {/* Contact section for owner view */}
+      {/* Owner view banner */}
       {isOwner && (
         <div className="mb-6 rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/5 px-4 py-3 text-sm text-[var(--text-secondary)]">
           C&apos;est ton profil public.
@@ -292,25 +345,32 @@ export function PublicProfileClient({
       )}
 
       {/* Tabs */}
-      {tabs.length > 0 && (
+      {allTabs.length > 0 && (
         <div className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-[var(--bg-secondary)] p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab
-                  ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm"
-                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              }`}
-            >
-              {tabLabels[tab]}
-            </button>
-          ))}
+          {allTabs.map((tab) => {
+            const count = tab === "cards" ? stats.cardsCount : tab === "doubles" ? stats.doublesCount : stats.wishlistCount;
+            const label = tab === "cards" ? "Cartes" : tab === "doubles" ? "Doubles" : "Souhaits";
+            const isEmpty = count === 0 && tab === "doubles";
+            return (
+              <button
+                key={tab}
+                onClick={() => { if (!isEmpty) setActiveTab(tab); }}
+                className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  isEmpty
+                    ? "cursor-not-allowed opacity-40 text-[var(--text-secondary)]"
+                    : activeTab === tab
+                      ? "bg-[var(--bg-card)] text-[var(--text-primary)] shadow-sm"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {label} ({count})
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Card sections — grouped by série + rarity filter */}
+      {/* Card sections */}
       {activeTab === "cards" && (
         <ProfileCardSection cards={cardsFlat} visitorWishlistIds={visitorSet} />
       )}
@@ -319,100 +379,6 @@ export function PublicProfileClient({
       )}
       {activeTab === "wishlist" && (
         <ProfileCardSection cards={wishlistCards} visitorWishlistIds={visitorSet} />
-      )}
-
-      {/* Match detail modal */}
-      {showMatchModal && match && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4"
-          onClick={() => setShowMatchModal(false)}
-        >
-          <div
-            className="w-full max-w-lg rounded-t-3xl bg-[var(--bg-card)] shadow-2xl sm:rounded-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="h-1 w-10 rounded-full bg-[var(--border-default)]" />
-            </div>
-            <div className="overflow-y-auto px-5 pt-2 pb-8 max-h-[80vh]">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-[var(--text-primary)]">Détail de l&apos;échange</h2>
-                <button
-                  onClick={() => setShowMatchModal(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="mb-2 text-sm font-semibold text-[var(--text-primary)]">
-                    Tu donnes ({match.youGiveCardIds.length})
-                  </p>
-                  <p className="mb-3 text-xs text-[var(--text-secondary)]">{formatEuros(match.youGiveValueCents)}</p>
-                  <ReadOnlyCardGrid
-                    cards={sections.doubles
-                      .filter((d) => match.youGiveCardIds.includes(d.card.id))
-                      .map((d) => d.card)}
-                    gridSize="small"
-                  />
-                </div>
-                <div>
-                  <p className="mb-2 text-sm font-semibold text-[var(--text-primary)]">
-                    Tu reçois ({match.youReceiveCardIds.length})
-                  </p>
-                  <p className="mb-3 text-xs text-[var(--text-secondary)]">{formatEuros(match.youReceiveValueCents)}</p>
-                  <ReadOnlyCardGrid
-                    cards={sections.doubles
-                      .filter((d) => match.youReceiveCardIds.includes(d.card.id))
-                      .map((d) => d.card)
-                      .concat(
-                        sections.wishlist
-                          .filter((wi) => match.youReceiveCardIds.includes(wi.card.id) &&
-                            !sections.doubles.some(d => match.youReceiveCardIds.includes(d.card.id) && d.card.id === wi.card.id))
-                          .map((wi) => wi.card)
-                      )}
-                    gridSize="small"
-                  />
-                </div>
-              </div>
-
-              {/* Contact in modal */}
-              <div className="mt-6 space-y-2">
-                <p className="text-sm font-semibold text-[var(--text-primary)]">Contacter {profile.displayName}</p>
-                {profile.contact.discord && (
-                  <a
-                    href={`https://discord.com/users/${profile.contact.discord}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-                  >
-                    Discord : {profile.contact.discord}
-                  </a>
-                )}
-                {profile.contact.email && (
-                  <a
-                    href={`mailto:${profile.contact.email}`}
-                    className="flex w-full items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-                  >
-                    Email : {profile.contact.email}
-                  </a>
-                )}
-                {profile.contact.twitter && (
-                  <a
-                    href={`https://twitter.com/${profile.contact.twitter.replace("@", "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-                  >
-                    Twitter : {profile.contact.twitter}
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

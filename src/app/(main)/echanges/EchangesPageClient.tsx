@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useToast } from "@/components/ui/Toast";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { useSubscription } from "@/hooks/useSubscription";
+import { shareProfile } from "@/lib/share/shareProfile";
 
 const RATE_LIMIT_KEY = "echanges_next_recompute_at";
 const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 min
@@ -22,7 +23,6 @@ interface MatchItem {
   youReceiveCount: number;
   youGiveValueCents: number;
   youReceiveValueCents: number;
-  cashBalanceCents: number;
   balanceScore: number;
   computedAt: string;
 }
@@ -45,7 +45,6 @@ function LockedEchanges() {
   const router = useRouter();
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      {/* Icon */}
       <div
         className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl"
         style={{ background: "rgba(231,186,118,0.12)", border: "1.5px solid rgba(231,186,118,0.3)" }}
@@ -56,7 +55,6 @@ function LockedEchanges() {
         </svg>
       </div>
 
-      {/* Badge */}
       <span
         className="mb-4 inline-block rounded-full px-3 py-1 text-xs font-bold tracking-wide"
         style={{ background: GOLD_GRADIENT, color: "#1A1A1A" }}
@@ -69,7 +67,6 @@ function LockedEchanges() {
         Trouve automatiquement des dresseurs avec qui échanger tes doubles contre tes cartes souhaitées.
       </p>
 
-      {/* Benefits */}
       <ul className="mb-7 mt-4 space-y-2 text-left w-full max-w-xs">
         {[
           "Matching automatique doubles × souhaits",
@@ -113,9 +110,9 @@ export function EchangesPageClient() {
   const [nextRecomputeAt, setNextRecomputeAt] = useState<Date | null>(null);
   const [now, setNow] = useState(new Date());
 
-  // Clock tick for countdown
+  // Clock tick every second for live countdown
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 10_000);
+    const t = setInterval(() => setNow(new Date()), 1_000);
     return () => clearInterval(t);
   }, []);
 
@@ -142,15 +139,30 @@ export function EchangesPageClient() {
 
   const canRecompute = !nextRecomputeAt || nextRecomputeAt <= now;
 
+  // Countdown string
+  const msLeft = nextRecomputeAt && nextRecomputeAt > now
+    ? nextRecomputeAt.getTime() - now.getTime()
+    : 0;
+  const minutesLeft = Math.floor(msLeft / 60_000);
+  const secondsLeft = Math.floor((msLeft % 60_000) / 1_000);
+  const countdownStr = msLeft > 0
+    ? `${minutesLeft}min ${String(secondsLeft).padStart(2, "0")}s`
+    : "";
+
   async function handleRecompute() {
-    if (!canRecompute || recomputing) return;
+    if (recomputing) return;
+
+    if (!canRecompute) {
+      toast(`Réessaie dans ${countdownStr}`, "info");
+      return;
+    }
+
     setRecomputing(true);
     try {
       const res = await fetch("/api/trade-matches/recompute", { method: "POST" });
       const data = await res.json();
 
       if (res.status === 429) {
-        // Rate limited by server
         const next = new Date(data.nextRecomputeAt);
         setNextRecomputeAt(next);
         localStorage.setItem(RATE_LIMIT_KEY, next.toISOString());
@@ -163,7 +175,6 @@ export function EchangesPageClient() {
         return;
       }
 
-      // Store next recompute time
       const next = new Date(Date.now() + RATE_LIMIT_MS);
       setNextRecomputeAt(next);
       localStorage.setItem(RATE_LIMIT_KEY, next.toISOString());
@@ -177,10 +188,6 @@ export function EchangesPageClient() {
     }
   }
 
-  const minutesLeft = nextRecomputeAt && nextRecomputeAt > now
-    ? Math.ceil((nextRecomputeAt.getTime() - now.getTime()) / 60_000)
-    : 0;
-
   // Premium gate
   if (!subLoading && !isPro) return <LockedEchanges />;
 
@@ -189,77 +196,95 @@ export function EchangesPageClient() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mes échanges</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Échanges possibles</h1>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Dresseurs avec qui tu peux échanger des cartes
+            Dresseurs avec qui tu peux faire un échange équilibré
           </p>
         </div>
-        <button
-          onClick={handleRecompute}
-          disabled={!canRecompute || recomputing}
-          className="btn-gold shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
-        >
-          {recomputing ? (
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-              Calcul…
-            </span>
-          ) : canRecompute ? (
-            "Actualiser"
-          ) : (
-            `${minutesLeft} min`
-          )}
-        </button>
+        {/* Recompute button */}
+        {canRecompute ? (
+          <button
+            onClick={handleRecompute}
+            disabled={recomputing}
+            className="btn-gold shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
+          >
+            {recomputing ? (
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                Calcul…
+              </span>
+            ) : (
+              "↻ Actualiser"
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={handleRecompute}
+            className="shrink-0 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-secondary)]"
+          >
+            ⏱ {countdownStr}
+          </button>
+        )}
       </div>
 
-      {/* Rate limit info */}
-      {!canRecompute && minutesLeft > 0 && (
-        <div className="mb-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-          Prochain recalcul disponible dans {minutesLeft} minute{minutesLeft !== 1 ? "s" : ""}.
-        </div>
-      )}
-
-      {/* Settings reminder */}
-      <div className="mb-6 rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/5 px-4 py-3 text-sm">
-        <span className="text-[var(--text-secondary)]">Pour apparaître dans les échanges, </span>
-        <a href="/settings/sharing" className="font-semibold text-[#E7BA76] underline">
-          active le partage de ton classeur
-        </a>
-        <span className="text-[var(--text-secondary)]"> et ajoute tes doubles + liste de souhaits.</span>
-      </div>
-
-      {/* Loading */}
+      {/* Skeleton loading */}
       {loading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E7BA76] border-t-transparent" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-[var(--bg-secondary)]" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-32 rounded bg-[var(--bg-secondary)]" />
+                  <div className="h-3 w-24 rounded bg-[var(--bg-secondary)]" />
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="h-16 rounded-xl bg-[var(--bg-secondary)]" />
+                <div className="h-16 rounded-xl bg-[var(--bg-secondary)]" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Empty state */}
       {!loading && matches.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-4 text-[var(--text-tertiary)]">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-          </svg>
-          <p className="text-lg font-semibold text-[var(--text-primary)]">Pas encore de match</p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          {/* Illustration */}
+          <div className="mb-6 flex items-center gap-3 opacity-30">
+            <div className="h-20 w-14 rounded-xl border-2 border-[var(--border-default)] bg-[var(--bg-secondary)]" />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+            <div className="h-20 w-14 rounded-xl border-2 border-[var(--border-default)] bg-[var(--bg-secondary)]" />
+          </div>
+
+          <p className="text-lg font-semibold text-[var(--text-primary)]">Aucun échange équilibré pour l&apos;instant</p>
           <p className="mt-2 max-w-xs text-sm text-[var(--text-secondary)]">
-            Clique sur &quot;Actualiser&quot; pour chercher des dresseurs avec qui échanger,
-            et assure-toi que ton classeur est partagé.
+            Tes doubles et ta wishlist ne matchent pas encore avec d&apos;autres dresseurs. Reviens plus tard ou élargis ta liste de souhaits.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3 justify-center">
+
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <button
-              onClick={handleRecompute}
-              disabled={!canRecompute || recomputing}
-              className="btn-gold rounded-xl px-4 py-2.5 text-sm font-semibold text-black disabled:opacity-50"
+              onClick={() => router.push("/portfolio/souhaits")}
+              className="btn-gold rounded-xl px-4 py-2.5 text-sm font-semibold text-black"
             >
-              Actualiser les échanges
+              Aller à ma wishlist
             </button>
-            <a
-              href="/settings/sharing"
+            <button
+              onClick={() => shareProfile("", "", () => toast("Lien copié !", "success"))}
               className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
             >
-              Paramètres de partage
-            </a>
+              Inviter un ami
+            </button>
+          </div>
+
+          {/* Onboarding */}
+          <div className="mt-6 rounded-xl border border-[#E7BA76]/30 bg-[#E7BA76]/5 px-4 py-3 text-sm max-w-sm text-left">
+            <span className="text-[var(--text-secondary)]">Pour trouver des échanges, </span>
+            <a href="/settings/sharing" className="font-semibold text-[#E7BA76] underline">active le partage</a>
+            <span className="text-[var(--text-secondary)]"> et ajoute tes doubles + liste de souhaits.</span>
           </div>
         </div>
       )}
@@ -269,78 +294,58 @@ export function EchangesPageClient() {
         <div className="space-y-3">
           {matches.map((match) => {
             const avatarSrc = match.partner.avatarUrl ?? getDefaultAvatar(match.partner.id);
+            const deltaCents = match.youReceiveValueCents - match.youGiveValueCents;
             return (
               <div
                 key={match.id}
-                className="flex items-center gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4 transition-colors hover:border-[#E7BA76]/50"
+                className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4"
               >
-                {/* Avatar */}
-                <div className="relative h-12 w-12 shrink-0">
-                  <Image
-                    src={avatarSrc}
-                    alt={match.partner.displayName}
-                    fill
-                    className="rounded-full object-cover ring-2 ring-[#E7BA76]/30"
-                  />
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div className="relative h-12 w-12 shrink-0">
+                    <Image
+                      src={avatarSrc}
+                      alt={match.partner.displayName}
+                      fill
+                      className="rounded-full object-cover ring-2 ring-[#E7BA76]/30"
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[var(--text-primary)] truncate">{match.partner.displayName}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      📊 {Math.round(match.balanceScore * 100)}% équilibré
+                      {deltaCents !== 0 && ` · delta ${deltaCents > 0 ? "+" : ""}${(deltaCents / 100).toFixed(2).replace(".", ",")}€`}
+                    </p>
+                  </div>
+
+                  {match.partner.slug ? (
+                    <button
+                      onClick={() => router.push(`/u/${match.partner.slug}`)}
+                      className="btn-gold shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-black"
+                    >
+                      Voir →
+                    </button>
+                  ) : (
+                    <span className="shrink-0 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs text-[var(--text-tertiary)]">
+                      Privé
+                    </span>
+                  )}
                 </div>
 
-                {/* Info */}
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-[var(--text-primary)] truncate">{match.partner.displayName}</p>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--text-secondary)]">
-                    {match.youGiveCount > 0 && (
-                      <span>Tu donnes: {match.youGiveCount} ({formatEuros(match.youGiveValueCents)})</span>
-                    )}
-                    {match.youReceiveCount > 0 && (
-                      <span>Tu reçois: {match.youReceiveCount} ({formatEuros(match.youReceiveValueCents)})</span>
-                    )}
+                {/* Two columns */}
+                <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-xl bg-[var(--bg-secondary)] p-3">
+                    <p className="text-[var(--text-tertiary)] mb-1">Tu donnes</p>
+                    <p className="font-semibold text-[var(--text-primary)]">{match.youGiveCount} cartes</p>
+                    <p className="text-[var(--text-secondary)]">{formatEuros(match.youGiveValueCents)}</p>
                   </div>
-                  {/* Cash balance badge + balance bar */}
-                  <div className="mt-2 flex items-center gap-2">
-                    {match.balanceScore > 0 ? (
-                      <>
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
-                          <div
-                            className="h-full rounded-full bg-[#E7BA76]"
-                            style={{ width: `${Math.round(match.balanceScore * 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-semibold text-[var(--text-secondary)]">
-                          {Math.round(match.balanceScore * 100)}%
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-[var(--text-tertiary)]">Échange contre liquidités</span>
-                    )}
-                    {match.cashBalanceCents !== 0 && (
-                      <span
-                        className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          match.cashBalanceCents > 0
-                            ? "bg-orange-500/15 text-orange-400"
-                            : "bg-green-500/15 text-green-400"
-                        }`}
-                      >
-                        {match.cashBalanceCents > 0
-                          ? `Tu paies ${formatEuros(match.cashBalanceCents)}`
-                          : `Tu reçois ${formatEuros(-match.cashBalanceCents)}`}
-                      </span>
-                    )}
+                  <div className="rounded-xl bg-[var(--bg-secondary)] p-3">
+                    <p className="text-[var(--text-tertiary)] mb-1">Tu reçois</p>
+                    <p className="font-semibold text-[var(--text-primary)]">{match.youReceiveCount} cartes</p>
+                    <p className="text-[var(--text-secondary)]">{formatEuros(match.youReceiveValueCents)}</p>
                   </div>
                 </div>
-
-                {/* CTA */}
-                {match.partner.slug ? (
-                  <button
-                    onClick={() => router.push(`/u/${match.partner.slug}`)}
-                    className="btn-gold shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-black"
-                  >
-                    Voir
-                  </button>
-                ) : (
-                  <span className="shrink-0 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs text-[var(--text-tertiary)]">
-                    Profil privé
-                  </span>
-                )}
               </div>
             );
           })}

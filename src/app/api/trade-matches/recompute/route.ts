@@ -11,17 +11,12 @@ export async function POST() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = (session.user as { id: string }).id;
 
-  // Rate limit: check if any *non-empty* match was computed in the last 10 min
-  // (empty matches — score 0 — don't block recompute since they may be stale)
   const cutoff = new Date(Date.now() - RATE_LIMIT_MS);
-  // Only rate-limit if a non-empty match was recently computed (at least one side has value)
   const recentMatch = await prisma.tradeMatch.findFirst({
     where: {
-      AND: [
-        { OR: [{ userAId: userId }, { userBId: userId }] },
-        { computedAt: { gt: cutoff } },
-        { OR: [{ aValueCents: { gt: 0 } }, { bValueCents: { gt: 0 } }] },
-      ],
+      OR: [{ userAId: userId }, { userBId: userId }],
+      computedAt: { gt: cutoff },
+      balanceScore: { gt: 0 },
     },
     orderBy: { computedAt: "desc" },
   });

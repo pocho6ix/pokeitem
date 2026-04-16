@@ -14,13 +14,12 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
   const offset = parseInt(searchParams.get("offset") ?? "0", 10);
 
-  // Viable = at least one side has >= 2€ (partial exchanges settled in cash are OK)
   const matches = await prisma.tradeMatch.findMany({
     where: {
-      AND: [
-        { OR: [{ userAId: userId }, { userBId: userId }] },
-        { OR: [{ aValueCents: { gte: MIN_VALUE_CENTS } }, { bValueCents: { gte: MIN_VALUE_CENTS } }] },
-      ],
+      OR: [{ userAId: userId }, { userBId: userId }],
+      balanceScore: { gte: 0.7 },
+      aValueCents: { gte: MIN_VALUE_CENTS },
+      bValueCents: { gte: MIN_VALUE_CENTS },
     },
     include: {
       userA: { select: { id: true, name: true, image: true, classeurShare: { select: { slug: true, isActive: true } } } },
@@ -48,8 +47,6 @@ export async function GET(req: NextRequest) {
       youReceiveCount: isA ? m.bGivesCardIds.length : m.aGivesCardIds.length,
       youGiveValueCents,
       youReceiveValueCents,
-      // positive = you receive more in cards → you owe cash; negative = you give more → you receive cash
-      cashBalanceCents: youGiveValueCents - youReceiveValueCents,
       balanceScore: m.balanceScore,
       computedAt: m.computedAt.toISOString(),
     };

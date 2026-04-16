@@ -22,7 +22,7 @@ export async function computeTradeMatch(a: TradeSide, b: TradeSide): Promise<Mat
   const aGives = a.doubles.filter(id => b.wishlist.includes(id));
   const bGives = b.doubles.filter(id => a.wishlist.includes(id));
 
-  if (aGives.length === 0 && bGives.length === 0) {
+  if (aGives.length === 0 || bGives.length === 0) {
     return { aGivesCardIds: [], bGivesCardIds: [], aValueCents: 0, bValueCents: 0, balanceScore: 0, isViable: false };
   }
 
@@ -31,8 +31,11 @@ export async function computeTradeMatch(a: TradeSide, b: TradeSide): Promise<Mat
   const bValueCents = bGives.reduce((s, id) => s + (values.get(id) ?? 0), 0);
   const maxVal = Math.max(aValueCents, bValueCents, 1);
   const balanceScore = Math.min(aValueCents, bValueCents) / maxVal;
-  // Viable if at least one side has >= 2€ worth of cards to give (the gap can be settled in cash)
-  const isViable = Math.max(aValueCents, bValueCents) >= MIN_VALUE_CENTS;
+  const isViable =
+    aGives.length > 0 &&
+    bGives.length > 0 &&
+    balanceScore >= MIN_BALANCE &&
+    Math.min(aValueCents, bValueCents) >= MIN_VALUE_CENTS;
 
   return { aGivesCardIds: aGives, bGivesCardIds: bGives, aValueCents, bValueCents, balanceScore, isViable };
 }

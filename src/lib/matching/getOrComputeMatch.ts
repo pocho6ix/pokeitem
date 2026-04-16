@@ -24,6 +24,8 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
     } else {
     // normalize to visitor's perspective
     const isAVisitor = cached.userAId === visitorId;
+    const isViable = cached.balanceScore >= 0.7 && Math.min(cached.aValueCents, cached.bValueCents) >= 200;
+    if (!isViable) return null;
     return {
       youGiveCardIds: isAVisitor ? cached.aGivesCardIds : cached.bGivesCardIds,
       youReceiveCardIds: isAVisitor ? cached.bGivesCardIds : cached.aGivesCardIds,
@@ -31,7 +33,7 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
       youReceiveValueCents: isAVisitor ? cached.bValueCents : cached.aValueCents,
       balanceScore: cached.balanceScore,
       computedAt: cached.computedAt,
-      isViable: Math.max(cached.aValueCents, cached.bValueCents) >= 200,
+      isViable: true,
     };
     }
   }
@@ -75,6 +77,5 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
     balanceScore: result.balanceScore,
     computedAt: new Date(),
     isViable: true,
-    cashBalanceCents: result.aValueCents - result.bValueCents,
   };
 }
