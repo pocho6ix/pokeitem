@@ -5,7 +5,6 @@ export const SYMBOL_SLUGS: ReadonlySet<string> = new Set([
   'alliance-infaillible',
   'appel-des-legendes',
   'aquapolis',
-  'arceus',
   'astres-radieux',
   'aube-majestueuse',
   'aventures-ensemble',

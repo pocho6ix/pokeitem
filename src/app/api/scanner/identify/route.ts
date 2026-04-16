@@ -120,14 +120,12 @@ const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   "bw5": "explorateurs-obscurs", "bw6": "dragons-exaltes",
   "bw7": "frontieres-franchies", "bw8": "tempete-plasma",
   "bw9": "glaciation-plasma", "bw10": "explosion-plasma",
-  "bw11": "legendary-treasures",
   // ── HGSS ───────────────────────────────────────────────────────────────────
   "hgss1": "heartgold-soulsilver-base", "hgss2": "dechainement",
   "hgss3": "indomptable",               "hgss4": "triomphe",
-  "col1": "arceus",
   // ── Platine ────────────────────────────────────────────────────────────────
   "pl1": "platine-base", "pl2": "rivaux-emergeants",
-  "pl3": "vainqueurs-supremes", "pl4": "arceus",
+  "pl3": "vainqueurs-supremes",
   // ── Diamant & Perle ────────────────────────────────────────────────────────
   "dp1": "diamant-et-perle",   "dp2": "tresors-mysterieux",
   "dp3": "merveilles-secretes", "dp4": "grands-envols",

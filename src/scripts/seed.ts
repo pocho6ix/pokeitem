@@ -91,7 +91,6 @@ const SERIES_DATA = [
   { blocSlug: "xy", name: "Générations", abbreviation: "XY-GEN", slug: "generations", releaseDate: new Date("2016-02-22"), order: 12 },
   { blocSlug: "xy", name: "Double Danger", abbreviation: "XY-DD", slug: "double-danger", releaseDate: new Date("2015-03-11"), order: 13 },
   // Noir & Blanc
-  { blocSlug: "noir-blanc", name: "Legendary Treasures", abbreviation: "NB11", slug: "legendary-treasures", releaseDate: new Date("2013-11-06"), order: 0 },
   { blocSlug: "noir-blanc", name: "Explosion Plasma", abbreviation: "NB10", slug: "explosion-plasma", releaseDate: new Date("2013-08-07"), order: 1 },
   { blocSlug: "noir-blanc", name: "Glaciation Plasma", abbreviation: "NB09", slug: "glaciation-plasma", releaseDate: new Date("2013-05-08"), order: 2 },
   { blocSlug: "noir-blanc", name: "Tempête Plasma", abbreviation: "NB08", slug: "tempete-plasma", releaseDate: new Date("2013-02-06"), order: 3 },
@@ -108,7 +107,6 @@ const SERIES_DATA = [
   { blocSlug: "heartgold-soulsilver", name: "Déchaînement", abbreviation: "HGSS02", slug: "dechainement", releaseDate: new Date("2010-05-26"), order: 2 },
   { blocSlug: "heartgold-soulsilver", name: "HeartGold SoulSilver", abbreviation: "HGSS01", slug: "heartgold-soulsilver-base", releaseDate: new Date("2010-02-10"), order: 3 },
   // Platine
-  { blocSlug: "platine", name: "Arceus", abbreviation: "PL04", slug: "arceus", releaseDate: new Date("2009-11-04"), order: 0 },
   { blocSlug: "platine", name: "Rivaux Émergeants", abbreviation: "PL03", slug: "rivaux-emergeants", releaseDate: new Date("2009-08-19"), order: 1 },
   { blocSlug: "platine", name: "Vainqueurs Suprêmes", abbreviation: "PL02", slug: "vainqueurs-supremes", releaseDate: new Date("2009-05-20"), order: 2 },
   { blocSlug: "platine", name: "Platine", abbreviation: "PL01", slug: "platine-base", releaseDate: new Date("2009-02-11"), order: 3 },

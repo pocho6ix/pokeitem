@@ -124,7 +124,6 @@ const XY_SERIES: SerieStatic[] = [
 // ==========================================================================
 
 const NOIR_BLANC_SERIES: SerieStatic[] = [
-  { name: 'Legendary Treasures', nameEn: 'Legendary Treasures', slug: 'legendary-treasures', abbreviation: 'NB11', blocSlug: 'noir-blanc', imageUrl: '/images/series/legendary-treasures.png', releaseDate: '2013-11-06', order: 0 },
   { name: 'Explosion Plasma', nameEn: 'Plasma Blast', slug: 'explosion-plasma', abbreviation: 'NB10', blocSlug: 'noir-blanc', imageUrl: '/images/series/explosion-plasma.png', releaseDate: '2013-08-07', order: 1 },
   { name: 'Glaciation Plasma', nameEn: 'Plasma Freeze', slug: 'glaciation-plasma', abbreviation: 'NB09', blocSlug: 'noir-blanc', imageUrl: '/images/series/glaciation-plasma.png', releaseDate: '2013-05-08', order: 2 },
   { name: 'Tempête Plasma', nameEn: 'Plasma Storm', slug: 'tempete-plasma', abbreviation: 'NB08', blocSlug: 'noir-blanc', imageUrl: '/images/series/tempete-plasma.png', releaseDate: '2013-02-06', order: 3 },
@@ -157,7 +156,6 @@ const HGSS_SERIES: SerieStatic[] = [
 // ==========================================================================
 
 const PLATINE_SERIES: SerieStatic[] = [
-  { name: 'Arceus', nameEn: 'Arceus', slug: 'arceus', abbreviation: 'PL04', blocSlug: 'platine', imageUrl: '/images/series/arceus.png', releaseDate: '2009-11-04', order: 0 },
   { name: 'Rivaux Émergeants', nameEn: 'Rising Rivals', slug: 'rivaux-emergeants', abbreviation: 'PL03', blocSlug: 'platine', imageUrl: '/images/series/rivaux-emergeants.png', releaseDate: '2009-08-19', order: 1 },
   { name: 'Vainqueurs Suprêmes', nameEn: 'Supreme Victors', slug: 'vainqueurs-supremes', abbreviation: 'PL02', blocSlug: 'platine', imageUrl: '/images/series/vainqueurs-supremes.png', releaseDate: '2009-05-20', order: 2 },
   { name: 'Platine', nameEn: 'Platinum', slug: 'platine-base', abbreviation: 'PL01', blocSlug: 'platine', imageUrl: '/images/series/platine-base.png', releaseDate: '2009-02-11', order: 3 },
@@ -243,7 +241,6 @@ const MCDO_SERIES: SerieStatic[] = [
 
 const POP_SERIES: SerieStatic[] = [
   { name: 'POP Série 9', nameEn: 'POP Series 9', slug: 'pop-9', abbreviation: 'POP9', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-9.webp', releaseDate: '2009-03-01', order: 0 },
-  { name: 'POP Série 7', nameEn: 'POP Series 7', slug: 'pop-7', abbreviation: 'POP7', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-7.webp', releaseDate: '2008-03-01', order: 1 },
   { name: 'POP Série 4', nameEn: 'POP Series 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 2 },
   { name: 'POP Série 3', nameEn: 'POP Series 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 3 },
   { name: 'POP Série 2', nameEn: 'POP Series 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 4 },
