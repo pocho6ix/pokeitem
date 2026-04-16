@@ -13,14 +13,24 @@ import { cn } from "@/lib/utils";
 
 type ToastVariant = "success" | "error" | "info";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: string;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
+}
+
+interface ToastOptions {
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  toast: (message: string, variant?: ToastVariant) => void;
+  toast: (message: string, variant?: ToastVariant, options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -71,9 +81,9 @@ const icons: Record<ToastVariant, ReactNode> = {
 function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = useCallback((message: string, variant: ToastVariant = "info") => {
+  const toast = useCallback((message: string, variant: ToastVariant = "info", options?: ToastOptions) => {
     const id = crypto.randomUUID();
-    setToasts((prev) => [...prev, { id, message, variant }]);
+    setToasts((prev) => [...prev, { id, message, variant, action: options?.action }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
@@ -96,6 +106,14 @@ function ToastProvider({ children }: { children: ReactNode }) {
               >
                 {icons[t.variant]}
                 <span className="flex-1">{t.message}</span>
+                {t.action && (
+                  <button
+                    onClick={() => { t.action!.onClick(); dismiss(t.id); }}
+                    className="text-white underline text-xs font-semibold ml-2 hover:opacity-80 transition-opacity"
+                  >
+                    {t.action.label}
+                  </button>
+                )}
                 <button
                   onClick={() => dismiss(t.id)}
                   className="ml-2 rounded p-0.5 hover:bg-white/20 transition-colors"
