@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, ScanLine, BookOpen, User, LogOut } from "lucide-react";
+import { Home, Package, ScanLine, BookOpen, User, LogOut, ArrowLeftRight, Settings } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
@@ -16,6 +16,7 @@ const NAV_ITEMS: { href: string; label: string; icon: React.ElementType; exact?:
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen, authRequired: true },
+  { href: "/echanges", label: "Échanges", icon: ArrowLeftRight, authRequired: true },
 ];
 
 // ─── Greeting helper ──────────────────────────────────────────────────────────
@@ -181,6 +182,13 @@ export function Header() {
 
             {session ? (
               <div className="flex items-center gap-2">
+                <Link
+                  href="/settings/sharing"
+                  title="Partage de classeur"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+                >
+                  <Settings className="h-4 w-4" />
+                </Link>
                 <Link href="/profil" title={session.user?.name ?? "Profil"} className="block h-8 w-8 shrink-0">
                   {avatarSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -245,6 +253,14 @@ export function Header() {
               >
                 <User className="h-5 w-5" />
                 Mon profil
+              </Link>
+              <Link
+                href="/settings/sharing"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"
+              >
+                <Settings className="h-5 w-5" />
+                Partage de classeur
               </Link>
               <button
                 onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}

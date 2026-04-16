@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BookOpen, Copy, Package, Star } from "lucide-react";
+import { BookOpen, Copy, Package, Star, ArrowLeftRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { CollectionTile } from "@/components/portfolio/CollectionTile";
 
@@ -82,6 +82,23 @@ export function PortfolioTiles() {
           premium
         />
       </div>
+
+      {/* Echanges banner */}
+      <button
+        onClick={() => router.push("/echanges")}
+        className="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#E7BA76]/40 bg-[#E7BA76]/8 px-4 py-3 text-left transition-colors hover:border-[#E7BA76]/70 hover:bg-[#E7BA76]/12"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E7BA76]/20">
+            <ArrowLeftRight className="h-5 w-5 text-[#E7BA76]" />
+          </div>
+          <div>
+            <p className="font-semibold text-[var(--text-primary)]">Trouver des échanges</p>
+            <p className="text-xs text-[var(--text-secondary)]">Compare tes doubles avec d&apos;autres dresseurs</p>
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-[var(--text-tertiary)]"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
     </div>
   );
 }

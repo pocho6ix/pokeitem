@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, ScanLine, BookOpen } from "lucide-react";
+import { Home, Package, ScanLine, BookOpen, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MOBILE_NAV_ITEMS = [
@@ -10,6 +10,7 @@ const MOBILE_NAV_ITEMS = [
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen },
+  { href: "/echanges", label: "Échanges", icon: ArrowLeftRight },
 ];
 
 export function MobileNav() {
