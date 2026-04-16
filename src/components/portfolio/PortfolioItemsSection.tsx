@@ -57,9 +57,44 @@ export function PortfolioItemsSection({
     [items]
   );
 
+  // Group rows by item.id — merge duplicate purchases into a single display row
+  const groupedItems = useMemo(() => {
+    const map = new Map<string, PortfolioItemData>();
+    for (const row of items) {
+      const existing = map.get(row.item.id);
+      if (!existing) {
+        map.set(row.item.id, { ...row });
+      } else {
+        // Merge: sum quantities, prices, values
+        const mergedQty = existing.quantity + row.quantity;
+        const mergedPurchase = existing.purchasePrice + row.purchasePrice;
+        const mergedValue = existing.currentValue + row.currentValue;
+        const mergedPnl = mergedValue - mergedPurchase;
+        const mergedPnlPct = mergedPurchase > 0 ? (mergedPnl / mergedPurchase) * 100 : 0;
+        // Keep the most recent createdAt for sort purposes
+        const newerDate =
+          new Date(row.createdAt) > new Date(existing.createdAt)
+            ? row.createdAt
+            : existing.createdAt;
+        map.set(row.item.id, {
+          ...existing,
+          quantity: mergedQty,
+          purchasePrice: mergedPurchase,
+          purchasePricePerUnit: mergedQty > 0 ? mergedPurchase / mergedQty : 0,
+          currentValue: mergedValue,
+          currentValuePerUnit: existing.currentValuePerUnit,
+          pnl: mergedPnl,
+          pnlPercent: mergedPnlPct,
+          createdAt: newerDate,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [items]);
+
   // Filter + sort
   const filteredItems = useMemo(() => {
-    let result = items;
+    let result = groupedItems;
     if (debouncedQuery) {
       const q = debouncedQuery.toLowerCase();
       result = result.filter((i) => i.item.name.toLowerCase().includes(q));
@@ -85,7 +120,7 @@ export function PortfolioItemsSection({
           return 0;
       }
     });
-  }, [items, debouncedQuery, typeFilter, sort]);
+  }, [groupedItems, debouncedQuery, typeFilter, sort]);
 
   return (
     <section className="space-y-4">
