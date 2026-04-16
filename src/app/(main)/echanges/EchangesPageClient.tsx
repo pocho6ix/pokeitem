@@ -109,6 +109,7 @@ export function EchangesPageClient() {
   const [recomputing, setRecomputing] = useState(false);
   const [nextRecomputeAt, setNextRecomputeAt] = useState<Date | null>(null);
   const [now, setNow] = useState(new Date());
+  const [referralLink, setReferralLink] = useState<string | null>(null);
 
   // Clock tick every second for live countdown
   useEffect(() => {
@@ -136,6 +137,14 @@ export function EchangesPageClient() {
   useEffect(() => {
     loadMatches();
   }, [loadMatches]);
+
+  // Fetch referral link once
+  useEffect(() => {
+    fetch("/api/referral/stats")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data?.referralLink) setReferralLink(data.referralLink); })
+      .catch(() => {});
+  }, []);
 
   const canRecompute = !nextRecomputeAt || nextRecomputeAt <= now;
 
@@ -273,7 +282,17 @@ export function EchangesPageClient() {
               Aller à ma wishlist
             </button>
             <button
-              onClick={() => shareProfile("", "", () => toast("Lien copié !", "success"))}
+              onClick={() => {
+                const link = referralLink ?? "https://app.pokeitem.fr";
+                if (typeof navigator !== "undefined" && navigator.share) {
+                  navigator.share({ title: "Pokéitem", url: link }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(link).then(
+                    () => toast("Lien de parrainage copié !", "success"),
+                    () => toast("Impossible de copier", "error"),
+                  );
+                }
+              }}
               className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
             >
               Inviter un ami
