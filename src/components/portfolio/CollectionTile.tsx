@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface CollectionTileProps {
   title: string;
   icon: LucideIcon;
+  imageUrl?: string;          // si fourni, remplace l'icône Lucide
   accentColor: string;
   count?: number;
   countLabel: string;
@@ -27,6 +29,7 @@ const formatValue = (v: number) =>
 export function CollectionTile({
   title,
   icon: Icon,
+  imageUrl,
   accentColor,
   count,
   countLabel,
@@ -70,12 +73,22 @@ export function CollectionTile({
           : "cursor-pointer hover:bg-[var(--bg-card-hover)] hover:border-[var(--border-hover)] active:scale-[0.99]"
       )}
     >
-      {/* Icon */}
+      {/* Icon or image */}
       <div
-        className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center"
-        style={{ backgroundColor: `${accentColor}1a` }}
+        className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center overflow-hidden"
+        style={{ backgroundColor: imageUrl ? "transparent" : `${accentColor}1a` }}
       >
-        <Icon size={20} strokeWidth={1.5} style={{ color: accentColor }} />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={title}
+            width={40}
+            height={40}
+            className="w-full h-full object-cover rounded-xl"
+          />
+        ) : (
+          <Icon size={20} strokeWidth={1.5} style={{ color: accentColor }} />
+        )}
       </div>
 
       {/* Title + meta */}

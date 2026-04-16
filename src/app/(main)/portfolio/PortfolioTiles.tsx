@@ -42,6 +42,7 @@ export function PortfolioTiles() {
         <CollectionTile
           title="Mes cartes"
           icon={BookOpen}
+          imageUrl="/images/tiles/mes-cartes.jpg"
           accentColor="#E7BA76"
           count={stats?.cardCount}
           countLabel="cartes"
@@ -51,6 +52,7 @@ export function PortfolioTiles() {
         <CollectionTile
           title="Mes doubles"
           icon={Copy}
+          imageUrl="/images/tiles/mes-doubles.jpg"
           accentColor="#60A5FA"
           count={stats?.doublesCount}
           countLabel="doublons"
@@ -60,6 +62,7 @@ export function PortfolioTiles() {
         <CollectionTile
           title="Mes items"
           icon={Package}
+          imageUrl="/images/tiles/mes-items.jpg"
           accentColor="#4ADE80"
           count={stats?.totalItems}
           countLabel="produits"
@@ -69,6 +72,7 @@ export function PortfolioTiles() {
         <CollectionTile
           title="Liste de souhait"
           icon={Star}
+          imageUrl="/images/tiles/liste-de-souhait.jpg"
           accentColor="#C084FC"
           count={0}
           countLabel=""
