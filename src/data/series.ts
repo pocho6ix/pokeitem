@@ -191,7 +191,7 @@ const EX_SERIES: SerieStatic[] = [
   { name: 'Deoxys', nameEn: 'Deoxys', slug: 'deoxys', abbreviation: 'EX08', blocSlug: 'ex', imageUrl: '/images/series/deoxys.png', releaseDate: '2005-02-09', order: 7 },
   { name: 'Rouge Feu & Vert Feuille', nameEn: 'FireRed & LeafGreen', slug: 'fire-red-leaf-green', abbreviation: 'EX06', blocSlug: 'ex', imageUrl: '/images/series/fire-red-leaf-green.png', releaseDate: '2004-08-30', order: 8 },
   { name: 'Légendes Oubliées', nameEn: 'Hidden Legends', slug: 'legendes-oubliees', abbreviation: 'EX05', blocSlug: 'ex', imageUrl: '/images/series/legendes-oubliees.png', releaseDate: '2004-06-12', order: 9 },
-  { name: 'Team Magma vs Team Aqua', nameEn: 'Team Magma vs Team Aqua', slug: 'team-magma-vs-team-aqua', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/groudon-vs-kyogre.png', releaseDate: '2003-09-17', order: 11 },
+  { name: 'Team Magma vs Team Aqua', nameEn: 'Team Magma vs Team Aqua', slug: 'team-magma-vs-team-aqua', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/team-magma-vs-team-aqua.png', releaseDate: '2003-09-17', order: 11 },
   { name: 'Dragon', nameEn: 'Dragon', slug: 'dragon-ex', abbreviation: 'EX03', blocSlug: 'ex', imageUrl: '/images/series/dragon-ex.png', releaseDate: '2003-11-24', order: 12 },
   { name: 'Tempête de Sable', nameEn: 'Sandstorm', slug: 'tempete-de-sable', abbreviation: 'EX10', blocSlug: 'ex', imageUrl: '/images/series/tempete-de-sable.png', releaseDate: '2005-05-18', order: 13 },
   { name: 'Rubis & Saphir', nameEn: 'Ruby & Sapphire', slug: 'rubis-et-saphir', abbreviation: 'EX01', blocSlug: 'ex', imageUrl: '/images/series/rubis-et-saphir.png', releaseDate: '2003-06-18', order: 14 },

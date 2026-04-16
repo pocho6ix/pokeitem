@@ -60,7 +60,7 @@ const PROMO_SERIE_SLUGS = new Set([
   "promo-mcdo-2015", "promo-mcdo-2014", "promo-mcdo-2013", "promo-mcdo-2012",
   "promo-mcdo-2011",
   // Pokémon Organized Play
-  "pop-1", "pop-2", "pop-3", "pop-4", "pop-7", "pop-9",
+  "pop-1", "pop-2", "pop-3", "pop-4", "pop-9",
 ]);
 
 // ─── Types ───────────────────────────────────────────────────────────────────
