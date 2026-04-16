@@ -250,14 +250,11 @@ const MCDO_SERIES: SerieStatic[] = [
 
 const POP_SERIES: SerieStatic[] = [
   { name: 'POP Série 9', nameEn: 'POP Series 9', slug: 'pop-9', abbreviation: 'POP9', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-9.webp', releaseDate: '2009-03-01', order: 0 },
-  { name: 'POP Série 8', nameEn: 'POP Series 8', slug: 'pop-8', abbreviation: 'POP8', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-8.webp', releaseDate: '2008-09-01', order: 1 },
-  { name: 'POP Série 7', nameEn: 'POP Series 7', slug: 'pop-7', abbreviation: 'POP7', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-7.webp', releaseDate: '2008-03-01', order: 2 },
-  { name: 'POP Série 6', nameEn: 'POP Series 6', slug: 'pop-6', abbreviation: 'POP6', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-6.webp', releaseDate: '2007-09-01', order: 3 },
-  { name: 'POP Série 5', nameEn: 'POP Series 5', slug: 'pop-5', abbreviation: 'POP5', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-5.webp', releaseDate: '2007-03-01', order: 4 },
-  { name: 'POP Série 4', nameEn: 'POP Series 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 5 },
-  { name: 'POP Série 3', nameEn: 'POP Series 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 6 },
-  { name: 'POP Série 2', nameEn: 'POP Series 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 7 },
-  { name: 'POP Série 1', nameEn: 'POP Series 1', slug: 'pop-1', abbreviation: 'POP1', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-1.webp', releaseDate: '2004-09-01', order: 8 },
+  { name: 'POP Série 7', nameEn: 'POP Series 7', slug: 'pop-7', abbreviation: 'POP7', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-7.webp', releaseDate: '2008-03-01', order: 1 },
+  { name: 'POP Série 4', nameEn: 'POP Series 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 2 },
+  { name: 'POP Série 3', nameEn: 'POP Series 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 3 },
+  { name: 'POP Série 2', nameEn: 'POP Series 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 4 },
+  { name: 'POP Série 1', nameEn: 'POP Series 1', slug: 'pop-1', abbreviation: 'POP1', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-1.webp', releaseDate: '2004-09-01', order: 5 },
 ];
 
 // ---------------------------------------------------------------------------
