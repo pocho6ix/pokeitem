@@ -15,6 +15,8 @@ export interface ProfileCardItem {
   price?: number | null;
   priceFr?: number | null;
   priceReverse?: number | null;
+  version?: string;
+  quantity?: number;
   serie: {
     id?: string;
     slug: string;
@@ -23,6 +25,13 @@ export interface ProfileCardItem {
     bloc: { slug: string };
   };
 }
+
+const VERSION_BADGE_IMG: Record<string, string> = {
+  NORMAL:             "/badge_normale.png",
+  REVERSE:            "/badge_reverse.png",
+  REVERSE_POKEBALL:   "/badge_pokeball.png",
+  REVERSE_MASTERBALL: "/badge_masterball.png",
+};
 
 interface Props {
   cards: ProfileCardItem[];
@@ -321,12 +330,30 @@ function CardTile({ card, inVisitorWishlist }: { card: ProfileCardItem; inVisito
           />
         </div>
 
-        {/* Price — bottom right */}
-        {displayPrice != null && displayPrice > 0 && (
-          <div className="absolute bottom-1 right-1 rounded bg-black/50 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
-            {displayPrice.toFixed(2)} €
-          </div>
-        )}
+        {/* Bottom right: version badge + quantity badge */}
+        <div className="absolute bottom-1 right-1 flex items-center gap-0.5">
+          {/* Quantity badge — shown only when qty > 1 (doubles) */}
+          {card.quantity != null && card.quantity > 1 && (
+            <div className="rounded bg-[#E7BA76] px-1 py-0.5 text-[9px] font-bold leading-none text-black">
+              ×{card.quantity}
+            </div>
+          )}
+          {/* Version badge */}
+          {card.version && card.version !== "NORMAL" && VERSION_BADGE_IMG[card.version] && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={VERSION_BADGE_IMG[card.version]}
+              alt={card.version}
+              className="h-4 w-4 rounded-full object-cover bg-black/50"
+            />
+          )}
+          {/* Price — shown only if no quantity badge */}
+          {(card.quantity == null || card.quantity <= 1) && displayPrice != null && displayPrice > 0 && (
+            <div className="rounded bg-black/50 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+              {displayPrice.toFixed(2)} €
+            </div>
+          )}
+        </div>
       </div>
 
       <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>

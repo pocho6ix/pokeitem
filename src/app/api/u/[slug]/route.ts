@@ -35,11 +35,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         },
       },
     }) : Promise.resolve([]),
-    share.shareDoubles ? prisma.userCardDouble.findMany({
-      where: { userId: owner.id },
+    share.shareDoubles ? prisma.userCard.findMany({
+      where: { userId: owner.id, quantity: { gt: 1 } },
+      orderBy: [{ card: { serie: { name: "asc" } } }, { card: { number: "asc" } }],
       select: {
-        quantity: true, cardId: true,
-        card: { select: { price: true, priceFr: true, priceReverse: true } },
+        quantity: true, version: true,
+        card: {
+          select: {
+            id: true, number: true, name: true, rarity: true, imageUrl: true,
+            price: true, priceFr: true, priceReverse: true, types: true,
+            serie: { select: { id: true, slug: true, name: true, abbreviation: true, bloc: { select: { slug: true } } } },
+          },
+        },
       },
     }) : Promise.resolve([]),
     share.shareWishlist ? prisma.cardWishlistItem.findMany({
@@ -62,7 +69,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     }) : Promise.resolve([]),
   ]);
 
-  const cardsCount = cardsRaw.reduce((s, uc) => s + uc.quantity, 0);
+  const cardsCount = cardsRaw.length; // unique (cardId, version) entries
   const cardsValueCents = Math.round(
     cardsRaw.reduce((s, uc) => s + getPriceForVersion(uc.card, uc.version) * uc.quantity, 0) * 100
   );
@@ -99,7 +106,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     stats: {
       cardsCount,
       cardsValueCents,
-      doublesCount: doublesRaw.reduce((s, d) => s + d.quantity, 0),
+      doublesCount: doublesRaw.length, // unique (cardId, version) rows with qty > 1
       wishlistCount: wishlistRaw.length,
       itemsCount,
     },

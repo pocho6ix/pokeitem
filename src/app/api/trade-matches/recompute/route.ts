@@ -11,12 +11,14 @@ export async function POST() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const userId = (session.user as { id: string }).id;
 
-  // Rate limit: check if any match for this user was computed in the last 10 min
+  // Rate limit: check if any *non-empty* match was computed in the last 10 min
+  // (empty matches — score 0 — don't block recompute since they may be stale)
   const cutoff = new Date(Date.now() - RATE_LIMIT_MS);
   const recentMatch = await prisma.tradeMatch.findFirst({
     where: {
       OR: [{ userAId: userId }, { userBId: userId }],
       computedAt: { gt: cutoff },
+      balanceScore: { gt: 0 },
     },
     orderBy: { computedAt: "desc" },
   });
@@ -29,9 +31,9 @@ export async function POST() {
     }, { status: 429 });
   }
 
-  // Load current user's data
+  // Load current user's data — doubles = UserCard with quantity > 1
   const [myDoubles, myWishlist] = await Promise.all([
-    prisma.userCardDouble.findMany({ where: { userId }, select: { cardId: true } }),
+    prisma.userCard.findMany({ where: { userId, quantity: { gt: 1 } }, select: { cardId: true }, distinct: ["cardId"] }),
     prisma.cardWishlistItem.findMany({ where: { userId }, select: { cardId: true } }),
   ]);
 
@@ -46,7 +48,7 @@ export async function POST() {
 
   for (const { userId: partnerId } of activeShares) {
     const [partnerDoubles, partnerWishlist] = await Promise.all([
-      prisma.userCardDouble.findMany({ where: { userId: partnerId }, select: { cardId: true } }),
+      prisma.userCard.findMany({ where: { userId: partnerId, quantity: { gt: 1 } }, select: { cardId: true }, distinct: ["cardId"] }),
       prisma.cardWishlistItem.findMany({ where: { userId: partnerId }, select: { cardId: true } }),
     ]);
 

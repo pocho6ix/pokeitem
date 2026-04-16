@@ -21,7 +21,10 @@ interface CardItem {
   priceFr?: number | null;
   priceReverse?: number | null;
   types?: string[];
+  version?: string;
+  quantity?: number;
   serie: {
+    id?: string;
     slug: string;
     name: string;
     abbreviation?: string | null;
@@ -35,10 +38,10 @@ interface WishlistItem {
   card: CardItem;
 }
 
-interface DoubleItem {
+interface CardSectionEntry {
   quantity: number;
-  cardId: string;
-  card: CardItem;
+  version: string;
+  card: Omit<CardItem, "version" | "quantity">;
 }
 
 interface MatchData {
@@ -61,7 +64,7 @@ interface Props {
   };
   visibility: { cards: boolean; doubles: boolean; wishlist: boolean; items: boolean };
   stats: { cardsCount: number; cardsValueCents: number; doublesCount: number; wishlistCount: number };
-  sections: { cards: { quantity: number; card: CardItem }[]; doubles: DoubleItem[]; wishlist: WishlistItem[] };
+  sections: { cards: CardSectionEntry[]; doubles: CardSectionEntry[]; wishlist: WishlistItem[] };
   match: MatchData | null;
   isAuthenticated: boolean;
   isOwner: boolean;
@@ -99,11 +102,17 @@ export function PublicProfileClient({
   const [activeTab, setActiveTab] = useState<Tab>(tabs[0] ?? "cards");
   const [showMatchModal, setShowMatchModal] = useState(false);
 
-  // Flatten cards for grid
-  const cardsFlat: CardItem[] = sections.cards.flatMap((uc) =>
-    Array.from({ length: uc.quantity }, () => uc.card)
-  );
-  const doublesFlat: CardItem[] = sections.doubles.map((d) => d.card);
+  // One entry per (cardId, version) — no duplication by quantity
+  const cardsFlat: CardItem[] = sections.cards.map((uc) => ({
+    ...uc.card,
+    version: uc.version,
+  }));
+  // Doubles = UserCard qty > 1, show version + quantity badge
+  const doublesFlat: CardItem[] = sections.doubles.map((d) => ({
+    ...d.card,
+    version: d.version,
+    quantity: d.quantity,
+  }));
   const wishlistCards: CardItem[] = sections.wishlist.map((wi) => wi.card);
 
   const tabLabels: Record<Tab, string> = {
@@ -343,7 +352,7 @@ export function PublicProfileClient({
                   <p className="mb-3 text-xs text-[var(--text-secondary)]">{formatEuros(match.youGiveValueCents)}</p>
                   <ReadOnlyCardGrid
                     cards={sections.doubles
-                      .filter((d) => match.youGiveCardIds.includes(d.cardId))
+                      .filter((d) => match.youGiveCardIds.includes(d.card.id))
                       .map((d) => d.card)}
                     gridSize="small"
                   />
@@ -355,13 +364,12 @@ export function PublicProfileClient({
                   <p className="mb-3 text-xs text-[var(--text-secondary)]">{formatEuros(match.youReceiveValueCents)}</p>
                   <ReadOnlyCardGrid
                     cards={sections.doubles
-                      .filter((d) => match.youReceiveCardIds.includes(d.cardId))
+                      .filter((d) => match.youReceiveCardIds.includes(d.card.id))
                       .map((d) => d.card)
                       .concat(
-                        // Cards the owner gives come from their doubles — use wishlist as fallback display
                         sections.wishlist
                           .filter((wi) => match.youReceiveCardIds.includes(wi.card.id) &&
-                            !sections.doubles.some(d => match.youReceiveCardIds.includes(d.cardId) && d.card.id === wi.card.id))
+                            !sections.doubles.some(d => match.youReceiveCardIds.includes(d.card.id) && d.card.id === wi.card.id))
                           .map((wi) => wi.card)
                       )}
                     gridSize="small"

@@ -18,6 +18,10 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
   });
 
   if (cached) {
+    // Skip cache if both sides had 0 cards — was computed before the fix
+    if (cached.aGivesCardIds.length === 0 && cached.bGivesCardIds.length === 0 && cached.balanceScore === 0) {
+      // fall through to fresh compute
+    } else {
     // normalize to visitor's perspective
     const isAVisitor = cached.userAId === visitorId;
     return {
@@ -29,13 +33,14 @@ export async function getOrComputeMatch(visitorId: string, ownerId: string) {
       computedAt: cached.computedAt,
       isViable: cached.balanceScore >= 0.7 && Math.min(cached.aValueCents, cached.bValueCents) >= 200,
     };
+    }
   }
 
-  // Compute fresh
+  // Compute fresh — doubles = UserCard with quantity > 1 (deduplicated by cardId)
   const [visitorDoubles, visitorWishlist, ownerDoubles, ownerWishlist] = await Promise.all([
-    prisma.userCardDouble.findMany({ where: { userId: visitorId }, select: { cardId: true } }),
+    prisma.userCard.findMany({ where: { userId: visitorId, quantity: { gt: 1 } }, select: { cardId: true }, distinct: ["cardId"] }),
     prisma.cardWishlistItem.findMany({ where: { userId: visitorId }, select: { cardId: true } }),
-    prisma.userCardDouble.findMany({ where: { userId: ownerId }, select: { cardId: true } }),
+    prisma.userCard.findMany({ where: { userId: ownerId, quantity: { gt: 1 } }, select: { cardId: true }, distinct: ["cardId"] }),
     prisma.cardWishlistItem.findMany({ where: { userId: ownerId }, select: { cardId: true } }),
   ]);
 
