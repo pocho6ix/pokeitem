@@ -75,8 +75,11 @@ export function CollectionTile({
     >
       {/* Icon or image */}
       <div
-        className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center overflow-hidden"
-        style={{ backgroundColor: imageUrl ? "transparent" : `${accentColor}1a` }}
+        className={cn(
+          "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center overflow-hidden",
+          imageUrl ? "btn-gold" : ""
+        )}
+        style={imageUrl ? undefined : { backgroundColor: `${accentColor}1a` }}
       >
         {imageUrl ? (
           <Image
