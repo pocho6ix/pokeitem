@@ -635,10 +635,14 @@ model ClasseurShare {
   userId         String   @unique
   slug           String   @unique
   visibility     String   @default("private") // "private" | "link" | "public"
+  isActive       Boolean  @default(false)
   shareCards     Boolean  @default(true)
   shareDoubles   Boolean  @default(true)
   shareItems     Boolean  @default(false)
   shareWishlist  Boolean  @default(true)
+  contactDiscord String?
+  contactEmail   String?
+  contactTwitter String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
