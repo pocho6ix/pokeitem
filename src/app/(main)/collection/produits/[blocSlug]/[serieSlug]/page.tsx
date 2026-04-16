@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import * as fs from "fs";
 import * as path from "path";
@@ -8,6 +9,7 @@ import { SERIES } from "@/data/series";
 import { ITEM_TYPES } from "@/data/item-types";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
+import { SYMBOL_SLUGS } from "@/data/symbol-slugs";
 import { SerieItemsGrid } from "@/components/collection/SerieItemsGrid";
 import { BackButton } from "@/components/ui/BackButton";
 import { prisma } from "@/lib/prisma";
@@ -179,7 +181,17 @@ export default async function SeriePage({ params }: SeriePageProps) {
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
             {serie.name}
           </h1>
-          <Badge variant="default">{serie.abbreviation}</Badge>
+          {SYMBOL_SLUGS.has(serie.slug) ? (
+            <Image
+              src={`/images/symbols/${serie.slug}.png`}
+              alt={`Symbole ${serie.name}`}
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+          ) : (
+            <Badge variant="default">{serie.abbreviation}</Badge>
+          )}
         </div>
         <p className="mt-2 text-[var(--text-secondary)]">
           {serie.releaseDate ? <>Sortie le{" "}{new Date(serie.releaseDate).toLocaleDateString("fr-FR", {

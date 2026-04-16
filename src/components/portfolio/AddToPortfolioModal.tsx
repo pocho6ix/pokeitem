@@ -117,7 +117,7 @@ export function AddToPortfolioModal({
           </p>
           <a
             href="/connexion"
-            className="block w-full rounded-xl bg-blue-600 px-4 py-3 text-center font-medium text-white hover:bg-blue-700"
+            className="block w-full rounded-xl btn-gold px-4 py-3 text-center font-medium text-black"
           >
             Se connecter
           </a>
@@ -299,10 +299,10 @@ export function AddToPortfolioModal({
           <button
             type="submit"
             disabled={loading || success}
-            className={`w-full rounded-xl px-4 py-3 font-medium text-white transition-colors ${
+            className={`w-full rounded-xl px-4 py-3 font-medium transition-colors disabled:opacity-50 ${
               success
-                ? "bg-green-500"
-                : "bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                ? "bg-green-500 text-white"
+                : "btn-gold text-black"
             }`}
           >
             {success
