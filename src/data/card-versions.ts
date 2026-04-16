@@ -55,10 +55,7 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "set-de-base":      V_NORMAL,
   "jungle":           V_NORMAL,
   "fossile":          V_NORMAL,
-  "set-de-base-2":    V_NORMAL,
   "team-rocket":      V_NORMAL,
-  "gym-heroes":       V_NORMAL,
-  "gym-challenge":    V_NORMAL,
   "neo-genesis":      V_NORMAL,
   "neo-discovery":    V_NORMAL,
   "neo-revelation":   V_NORMAL,
@@ -94,7 +91,6 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   "coffre-des-dragons":          V_NORMAL,
   "promos-heartgold-soulsilver": V_NORMAL,
   "promos-diamant-et-perle":     V_NORMAL,
-  "promos-nintendo":             V_NORMAL,
   "promos-wizards":              V_NORMAL,
 };
 
