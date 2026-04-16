@@ -135,7 +135,7 @@ const SERIES_DATA = [
   { blocSlug: "ex", name: "Légendes Oubliées", abbreviation: "EX05", slug: "legendes-oubliees", releaseDate: new Date("2004-06-12"), order: 11 },
   { blocSlug: "ex", name: "Tempête de Sable", abbreviation: "EX04", slug: "tempete-de-sable", releaseDate: new Date("2004-03-18"), order: 12 },
   { blocSlug: "ex", name: "Dragon", abbreviation: "EX03", slug: "dragon-ex", releaseDate: new Date("2003-11-24"), order: 13 },
-  { blocSlug: "ex", name: "Groudon vs Kyogre", abbreviation: "EX02", slug: "groudon-vs-kyogre", releaseDate: new Date("2003-09-17"), order: 14 },
+  { blocSlug: "ex", name: "Team Magma vs Team Aqua", abbreviation: "EX02", slug: "team-magma-vs-team-aqua", releaseDate: new Date("2003-09-17"), order: 11 },
   { blocSlug: "ex", name: "Rubis & Saphir", abbreviation: "EX01", slug: "rubis-et-saphir", releaseDate: new Date("2003-06-18"), order: 15 },
   // WOTC
   { blocSlug: "wotc", name: "Aquapolis", abbreviation: "WOTC-AQ", slug: "aquapolis", releaseDate: new Date("2003-01-15"), order: 0 },

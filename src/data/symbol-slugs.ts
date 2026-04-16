@@ -57,7 +57,7 @@ export const SYMBOL_SLUGS: ReadonlySet<string> = new Set([
   'generations',
   'glaciation-plasma',
   'grands-envols',
-  'groudon-vs-kyogre',
+  'team-magma-vs-team-aqua',
   'gym-challenge',
   'gym-heroes',
   'harmonie-des-esprits',

@@ -140,14 +140,6 @@ const NOIR_BLANC_SERIES: SerieStatic[] = [
 ];
 
 // ==========================================================================
-// L'Appel des Légendes (Call of Legends)
-// ==========================================================================
-
-const APPEL_DES_LEGENDES_SERIES: SerieStatic[] = [
-  { name: "L'Appel des Légendes", nameEn: 'Call of Legends', slug: 'appel-des-legendes', abbreviation: 'CL', blocSlug: 'appel-des-legendes', imageUrl: '/images/series/appel-des-legendes.png', releaseDate: '2011-03-26', order: 0 },
-];
-
-// ==========================================================================
 // HeartGold SoulSilver (HGSS)
 // ==========================================================================
 
@@ -156,6 +148,7 @@ const HGSS_SERIES: SerieStatic[] = [
   { name: 'Indomptable', nameEn: 'Undaunted', slug: 'indomptable', abbreviation: 'HGSS03', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/indomptable.png', releaseDate: '2010-08-18', order: 1 },
   { name: 'Déchaînement', nameEn: 'Unleashed', slug: 'dechainement', abbreviation: 'HGSS02', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/dechainement.png', releaseDate: '2010-05-26', order: 2 },
   { name: 'HeartGold SoulSilver', nameEn: 'HeartGold SoulSilver', slug: 'heartgold-soulsilver-base', abbreviation: 'HGSS01', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/heartgold-soulsilver-base.png', releaseDate: '2010-02-10', order: 3 },
+  { name: "L'Appel des Légendes", nameEn: 'Call of Legends', slug: 'appel-des-legendes', abbreviation: 'CL', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/appel-des-legendes.png', releaseDate: '2011-03-26', order: 4 },
   { name: 'Promos HeartGold SoulSilver', nameEn: 'HeartGold SoulSilver Promos', slug: 'promos-heartgold-soulsilver', abbreviation: 'HGSSP', blocSlug: 'heartgold-soulsilver', imageUrl: '/images/series/promos_heartgold_soulsilver.webp', releaseDate: null, order: 20 },
 ];
 
@@ -191,19 +184,19 @@ const DIAMANT_PERLE_SERIES: SerieStatic[] = [
 
 const EX_SERIES: SerieStatic[] = [
   { name: 'Gardiens du Pouvoir', nameEn: 'Power Keepers', slug: 'gardiens-du-pouvoir', abbreviation: 'EX16', blocSlug: 'ex', imageUrl: '/images/series/gardiens-du-pouvoir.png', releaseDate: '2006-11-08', order: 0 },
-  { name: 'Créateurs de Légendes', nameEn: 'Legend Maker', slug: 'createurs-de-legendes', abbreviation: 'EX15', blocSlug: 'ex', imageUrl: '/images/series/createurs-de-legendes.png', releaseDate: '2006-08-30', order: 1 },
+  { name: 'Gardiens de Cristal', nameEn: 'Crystal Guardians', slug: 'gardiens-de-cristal', abbreviation: 'EX11', blocSlug: 'ex', imageUrl: '/images/series/gardiens-de-cristal.png', releaseDate: '2005-08-31', order: 1 },
   { name: 'Fantômes Holon', nameEn: 'Holon Phantoms', slug: 'fantomes-holon', abbreviation: 'EX14', blocSlug: 'ex', imageUrl: '/images/series/fantomes-holon.png', releaseDate: '2006-05-10', order: 2 },
-  { name: 'Espèces Delta', nameEn: 'Delta Species', slug: 'especes-delta', abbreviation: 'EX13', blocSlug: 'ex', imageUrl: '/images/series/especes-delta.png', releaseDate: '2006-02-08', order: 3 },
-  { name: 'Forces Cachées', nameEn: 'Unseen Forces', slug: 'forces-cachees', abbreviation: 'EX12', blocSlug: 'ex', imageUrl: '/images/series/forces-cachees.png', releaseDate: '2005-11-09', order: 4 },
-  { name: 'Gardiens de Cristal', nameEn: 'Crystal Guardians', slug: 'gardiens-de-cristal', abbreviation: 'EX11', blocSlug: 'ex', imageUrl: '/images/series/gardiens-de-cristal.png', releaseDate: '2005-08-31', order: 5 },
-  { name: 'Tempête de Sable', nameEn: 'Sandstorm', slug: 'tempete-de-sable', abbreviation: 'EX10', blocSlug: 'ex', imageUrl: '/images/series/tempete-de-sable.png', releaseDate: '2005-05-18', order: 6 },
-  { name: 'Émeraude', nameEn: 'Emerald', slug: 'emeraude', abbreviation: 'EX09', blocSlug: 'ex', imageUrl: '/images/series/emeraude.png', releaseDate: '2005-05-09', order: 7 },
-  { name: 'Deoxys', nameEn: 'Deoxys', slug: 'deoxys', abbreviation: 'EX08', blocSlug: 'ex', imageUrl: '/images/series/deoxys.png', releaseDate: '2005-02-09', order: 8 },
-  { name: 'Team Rocket Returns', nameEn: 'Team Rocket Returns', slug: 'team-rocket-returns', abbreviation: 'EX07', blocSlug: 'ex', imageUrl: '/images/series/team-rocket-returns.png', releaseDate: '2004-11-08', order: 9 },
-  { name: 'Fire Red & Leaf Green', nameEn: 'FireRed & LeafGreen', slug: 'fire-red-leaf-green', abbreviation: 'EX06', blocSlug: 'ex', imageUrl: '/images/series/fire-red-leaf-green.png', releaseDate: '2004-08-30', order: 10 },
-  { name: 'Légendes Oubliées', nameEn: 'Hidden Legends', slug: 'legendes-oubliees', abbreviation: 'EX05', blocSlug: 'ex', imageUrl: '/images/series/legendes-oubliees.png', releaseDate: '2004-06-12', order: 11 },
+  { name: 'Créateurs de Légendes', nameEn: 'Legend Maker', slug: 'createurs-de-legendes', abbreviation: 'EX15', blocSlug: 'ex', imageUrl: '/images/series/createurs-de-legendes.png', releaseDate: '2006-08-30', order: 3 },
+  { name: 'Espèces Delta', nameEn: 'Delta Species', slug: 'especes-delta', abbreviation: 'EX13', blocSlug: 'ex', imageUrl: '/images/series/especes-delta.png', releaseDate: '2006-02-08', order: 4 },
+  { name: 'Forces Cachées', nameEn: 'Unseen Forces', slug: 'forces-cachees', abbreviation: 'EX12', blocSlug: 'ex', imageUrl: '/images/series/forces-cachees.png', releaseDate: '2005-11-09', order: 5 },
+  { name: 'Émeraude', nameEn: 'Emerald', slug: 'emeraude', abbreviation: 'EX09', blocSlug: 'ex', imageUrl: '/images/series/emeraude.png', releaseDate: '2005-05-09', order: 6 },
+  { name: 'Deoxys', nameEn: 'Deoxys', slug: 'deoxys', abbreviation: 'EX08', blocSlug: 'ex', imageUrl: '/images/series/deoxys.png', releaseDate: '2005-02-09', order: 7 },
+  { name: 'Team Rocket Returns', nameEn: 'Team Rocket Returns', slug: 'team-rocket-returns', abbreviation: 'EX07', blocSlug: 'ex', imageUrl: '/images/series/team-rocket-returns.png', releaseDate: '2004-11-08', order: 8 },
+  { name: 'Fire Red & Leaf Green', nameEn: 'FireRed & LeafGreen', slug: 'fire-red-leaf-green', abbreviation: 'EX06', blocSlug: 'ex', imageUrl: '/images/series/fire-red-leaf-green.png', releaseDate: '2004-08-30', order: 9 },
+  { name: 'Légendes Oubliées', nameEn: 'Hidden Legends', slug: 'legendes-oubliees', abbreviation: 'EX05', blocSlug: 'ex', imageUrl: '/images/series/legendes-oubliees.png', releaseDate: '2004-06-12', order: 10 },
+  { name: 'Team Magma vs Team Aqua', nameEn: 'Team Magma vs Team Aqua', slug: 'team-magma-vs-team-aqua', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/groudon-vs-kyogre.png', releaseDate: '2003-09-17', order: 11 },
   { name: 'Dragon', nameEn: 'Dragon', slug: 'dragon-ex', abbreviation: 'EX03', blocSlug: 'ex', imageUrl: '/images/series/dragon-ex.png', releaseDate: '2003-11-24', order: 12 },
-  { name: 'Groudon vs Kyogre', nameEn: 'Magma vs Aqua', slug: 'groudon-vs-kyogre', abbreviation: 'EX02', blocSlug: 'ex', imageUrl: '/images/series/groudon-vs-kyogre.png', releaseDate: '2003-09-17', order: 13 },
+  { name: 'Tempête de Sable', nameEn: 'Sandstorm', slug: 'tempete-de-sable', abbreviation: 'EX10', blocSlug: 'ex', imageUrl: '/images/series/tempete-de-sable.png', releaseDate: '2005-05-18', order: 13 },
   { name: 'Rubis & Saphir', nameEn: 'Ruby & Sapphire', slug: 'rubis-et-saphir', abbreviation: 'EX01', blocSlug: 'ex', imageUrl: '/images/series/rubis-et-saphir.png', releaseDate: '2003-06-18', order: 14 },
   { name: 'Promos Nintendo', nameEn: 'Nintendo Promos', slug: 'promos-nintendo', abbreviation: 'NP', blocSlug: 'ex', imageUrl: '/images/series/promos-nintendo.webp', releaseDate: null, order: 20 },
 ];
@@ -242,7 +235,6 @@ export const SERIES: SerieStatic[] = [
   ...SOLEIL_LUNE_SERIES,
   ...XY_SERIES,
   ...NOIR_BLANC_SERIES,
-  ...APPEL_DES_LEGENDES_SERIES,
   ...HGSS_SERIES,
   ...PLATINE_SERIES,
   ...DIAMANT_PERLE_SERIES,
@@ -257,7 +249,6 @@ export {
   SOLEIL_LUNE_SERIES,
   XY_SERIES,
   NOIR_BLANC_SERIES,
-  APPEL_DES_LEGENDES_SERIES,
   HGSS_SERIES,
   PLATINE_SERIES,
   DIAMANT_PERLE_SERIES,

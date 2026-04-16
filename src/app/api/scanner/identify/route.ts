@@ -135,7 +135,7 @@ const PRINTED_CODE_TO_SLUG: Record<string, string> = {
   "dp7": "tempete-dp",
   // ── EX ─────────────────────────────────────────────────────────────────────
   "ex1": "rubis-et-saphir",      "ex2": "tempete-de-sable",
-  "ex3": "dragon-ex",            "ex4": "groudon-vs-kyogre",
+  "ex3": "dragon-ex",            "ex4": "team-magma-vs-team-aqua",
   "ex5": "legendes-oubliees",    "ex6": "fire-red-leaf-green",
   "ex7": "team-rocket-returns",  "ex8": "deoxys",
   "ex9": "emeraude",             "ex10": "forces-cachees",

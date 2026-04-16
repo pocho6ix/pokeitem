@@ -72,17 +72,6 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 5,
   },
   {
-    name: "L'Appel des Légendes",
-    nameEn: 'Call of Legends',
-    slug: 'appel-des-legendes',
-    abbreviation: 'CL',
-    logoUrl: null,
-    imageUrl: '/images/blocs/appel-des-legendes.png',
-    startDate: '2011-03-01',
-    endDate: '2011-03-30',
-    order: 6,
-  },
-  {
     name: 'HeartGold SoulSilver',
     nameEn: 'HeartGold SoulSilver',
     slug: 'heartgold-soulsilver',
@@ -90,8 +79,8 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     logoUrl: null,
     imageUrl: '/images/blocs/heartgold-soulsilver.png',
     startDate: '2010-02-01',
-    endDate: '2010-11-30',
-    order: 7,
+    endDate: '2011-06-30',
+    order: 6,
   },
   {
     name: 'Platine',
@@ -102,7 +91,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/platine.png',
     startDate: '2009-02-01',
     endDate: '2009-11-30',
-    order: 8,
+    order: 7,
   },
   {
     name: 'Diamant & Perle',
@@ -113,7 +102,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/diamant-perle.png',
     startDate: '2007-05-01',
     endDate: '2009-02-01',
-    order: 9,
+    order: 8,
   },
   {
     name: 'EX',
@@ -124,7 +113,7 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/ex.png',
     startDate: '2003-06-01',
     endDate: '2006-11-30',
-    order: 10,
+    order: 9,
   },
   {
     name: 'Wizards of the Coast',
@@ -135,6 +124,6 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     imageUrl: '/images/blocs/wotc.png',
     startDate: '1999-01-01',
     endDate: '2003-06-01',
-    order: 11,
+    order: 10,
   },
 ];
