@@ -56,7 +56,7 @@ export function PortfolioTiles() {
           accentColor="#60A5FA"
           count={stats?.doublesCount}
           countLabel="doublons"
-          value={null}
+          value={stats?.doublesValue ?? null}
           onPress={() => router.push("/portfolio/doubles")}
         />
         <CollectionTile

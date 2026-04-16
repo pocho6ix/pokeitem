@@ -66,6 +66,11 @@ export async function GET(req: Request) {
     const cardCount = userCards.reduce((sum, uc) => sum + uc.quantity, 0);
     const doublesCount = userCards.filter((uc) => uc.quantity > 1).length;
 
+    // Value of extra copies (doubles = quantity - 1 for each card with qty > 1)
+    const doublesValue = userCards
+      .filter((uc) => uc.quantity > 1)
+      .reduce((sum, uc) => sum + getPriceForVersion(uc.card, uc.version) * (uc.quantity - 1), 0);
+
     const totalValue = itemsValue + cardsValue;
     const totalInvestedAll = totalInvested + cardsInvested;
 
@@ -114,6 +119,7 @@ export async function GET(req: Request) {
       cardCount,
       doublesCount,
       cardValue: Math.round(cardsValue * 100) / 100,
+      doublesValue: Math.round(doublesValue * 100) / 100,
     });
   } catch (error) {
     console.error("Error fetching portfolio stats:", error);
