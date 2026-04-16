@@ -89,7 +89,7 @@ interface MatchBlockProps {
   match: MatchData;
   profile: Props["profile"];
   sections: Props["sections"];
-  toast: (msg: string, type?: string) => void;
+  toast: (message: string, variant?: "success" | "error" | "info") => void;
 }
 
 function MatchBlock({ match, profile, sections, toast }: MatchBlockProps) {
