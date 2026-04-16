@@ -77,7 +77,7 @@ export function CollectionTile({
       <div
         className={cn(
           "w-10 h-10 shrink-0 rounded-xl flex items-center justify-center overflow-hidden",
-          imageUrl ? "btn-gold" : ""
+          imageUrl ? "bg-white" : ""
         )}
         style={imageUrl ? undefined : { backgroundColor: `${accentColor}1a` }}
       >
