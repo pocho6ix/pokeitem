@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ReadOnlyCardGrid } from "@/components/cards/ReadOnlyCardGrid";
+import { ProfileCardSection } from "@/components/cards/ProfileCardSection";
 import { shareProfile } from "@/lib/share/shareProfile";
 import { useToast } from "@/components/ui/Toast";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
@@ -299,15 +300,15 @@ export function PublicProfileClient({
         </div>
       )}
 
-      {/* Card grids */}
+      {/* Card sections — grouped by série + rarity filter */}
       {activeTab === "cards" && (
-        <ReadOnlyCardGrid cards={cardsFlat} visitorWishlistIds={visitorSet} />
+        <ProfileCardSection cards={cardsFlat} visitorWishlistIds={visitorSet} />
       )}
       {activeTab === "doubles" && (
-        <ReadOnlyCardGrid cards={doublesFlat} visitorWishlistIds={visitorSet} />
+        <ProfileCardSection cards={doublesFlat} visitorWishlistIds={visitorSet} />
       )}
       {activeTab === "wishlist" && (
-        <ReadOnlyCardGrid cards={wishlistCards} visitorWishlistIds={visitorSet} />
+        <ProfileCardSection cards={wishlistCards} visitorWishlistIds={visitorSet} />
       )}
 
       {/* Match detail modal */}
