@@ -10,7 +10,7 @@ interface ItemsHeaderProps {
   perfPct: number;
 }
 
-export function ItemsHeader({ count, totalInvested, perfPct }: ItemsHeaderProps) {
+export function ItemsHeader({ count, totalInvested, totalValue, perfPct }: ItemsHeaderProps) {
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
@@ -22,6 +22,8 @@ export function ItemsHeader({ count, totalInvested, perfPct }: ItemsHeaderProps)
             </span>
             <span className="text-[var(--text-tertiary)]">·</span>
             <CollectionValue value={totalInvested} className="inline" /> investis
+            <span className="text-[var(--text-tertiary)]">·</span>
+            <CollectionValue value={totalValue} className="inline font-medium text-[var(--text-primary)]" /> actuels
             <span className="text-[var(--text-tertiary)]">·</span>
             <PerfBadge value={perfPct} />
           </p>

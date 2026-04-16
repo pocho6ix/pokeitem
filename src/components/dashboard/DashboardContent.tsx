@@ -364,32 +364,6 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         compact={compact}
       />
 
-      {/* Distribution + Top Performers */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Top Performers */}
-        {topPerformers.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Performers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y divide-[var(--border-default)]">
-                {topPerformers.map((item, i) => (
-                  <TopPerformerRow
-                    key={i}
-                    rank={i + 1}
-                    name={item.name}
-                    purchasePrice={item.purchasePrice}
-                    currentPrice={item.currentPrice}
-                    pl={item.pl}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
       {/* Update Price Modal */}
       {pricingItem && (
         <UpdatePriceModal
