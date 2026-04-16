@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
+import { SYMBOL_SLUGS } from "@/data/symbol-slugs";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import {
@@ -146,7 +147,17 @@ export default async function BlocPage({ params }: BlocPageProps) {
                     <h2 className="font-semibold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors">
                       {serie.name}
                     </h2>
-                    <Badge variant="default">{serie.abbreviation}</Badge>
+                    {SYMBOL_SLUGS.has(serie.slug) ? (
+                      <Image
+                        src={`/images/symbols/${serie.slug}.png`}
+                        alt={`Symbole ${serie.name}`}
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 object-contain"
+                      />
+                    ) : (
+                      <Badge variant="default">{serie.abbreviation}</Badge>
+                    )}
                   </div>
                   <p className="text-sm text-[var(--text-secondary)]">
                     {serie.releaseDate ? <>Sortie le{" "}{new Date(serie.releaseDate).toLocaleDateString("fr-FR", {
