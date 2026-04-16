@@ -13,6 +13,7 @@ interface StatsData {
   cardValue?: number | null;
   doublesValue?: number | null;
   totalValue?: number;
+  wishlistCount?: number;
 }
 
 export function PortfolioTiles() {
@@ -70,14 +71,14 @@ export function PortfolioTiles() {
           onPress={() => router.push("/portfolio/items")}
         />
         <CollectionTile
-          title="Liste de souhait"
+          title="Liste de souhaits"
           icon={Star}
           imageUrl="/images/tiles/liste-de-souhait.png"
           accentColor="#C084FC"
-          count={0}
-          countLabel=""
-          comingSoon
-          teaserText="Suivez les cartes que vous voulez acquérir"
+          count={stats?.wishlistCount ?? 0}
+          countLabel="cartes"
+          value={null}
+          onPress={() => router.push("/portfolio/souhaits")}
         />
       </div>
     </div>

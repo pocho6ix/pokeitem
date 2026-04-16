@@ -66,6 +66,9 @@ export async function GET(req: Request) {
     const cardCount = userCards.reduce((sum, uc) => sum + uc.quantity, 0);
     const doublesCount = userCards.filter((uc) => uc.quantity > 1).length;
 
+    // Wishlist count
+    const wishlistCount = await prisma.cardWishlistItem.count({ where: { userId } });
+
     // Value of extra copies (doubles = quantity - 1 for each card with qty > 1)
     const doublesValue = userCards
       .filter((uc) => uc.quantity > 1)
@@ -120,6 +123,7 @@ export async function GET(req: Request) {
       doublesCount,
       cardValue: Math.round(cardsValue * 100) / 100,
       doublesValue: Math.round(doublesValue * 100) / 100,
+      wishlistCount,
     });
   } catch (error) {
     console.error("Error fetching portfolio stats:", error);
