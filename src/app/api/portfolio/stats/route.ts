@@ -62,6 +62,10 @@ export async function GET(req: Request) {
       0
     );
 
+    // Card counts
+    const cardCount = userCards.reduce((sum, uc) => sum + uc.quantity, 0);
+    const doublesCount = userCards.filter((uc) => uc.quantity > 1).length;
+
     const totalValue = itemsValue + cardsValue;
     const totalInvestedAll = totalInvested + cardsInvested;
 
@@ -107,6 +111,9 @@ export async function GET(req: Request) {
       profitLossPercent: Math.round(profitLossPercent * 100) / 100,
       distributionByType,
       topPerformers,
+      cardCount,
+      doublesCount,
+      cardValue: Math.round(cardsValue * 100) / 100,
     });
   } catch (error) {
     console.error("Error fetching portfolio stats:", error);
