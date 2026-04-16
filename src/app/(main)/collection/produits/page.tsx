@@ -45,7 +45,11 @@ const GRADIENT_PALETTES = [
   "from-sky-500/20 to-indigo-500/20",
 ];
 
+const EXCLUDED_BLOCS = new Set(["collection-mcdo", "pokemon-organized-play"]);
+
 export default function CollectionProduitsPage() {
+  const visibleBlocs = BLOCS.filter((b) => !EXCLUDED_BLOCS.has(b.slug));
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -65,7 +69,7 @@ export default function CollectionProduitsPage() {
       />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {BLOCS.map((bloc, index) => {
+        {visibleBlocs.map((bloc, index) => {
           const seriesCount = getSeriesCount(bloc.slug);
           const gradient =
             GRADIENT_PALETTES[index % GRADIENT_PALETTES.length];
