@@ -9,6 +9,7 @@ import { isSpecialCard } from "@/lib/pokemon/card-variants";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
 import type { CardRarity } from "@/types/card";
+import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -149,6 +150,11 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
   const [isOwned, setIsOwned] = useState(false);
   const [removeSuccess, setRemoveSuccess] = useState(false);
 
+  // Wishlist state — read from the global store so changes elsewhere stay in sync
+  const isInWishlist = useIsInWishlist(cardId);
+  const wishlistRemove = useWishlistStore((s) => s.remove);
+  const [wishlistRemoveSuccess, setWishlistRemoveSuccess] = useState(false);
+
   // Hide reverse toggle when the card can't have a reverse variant
   // OR when there's simply no reverse price data available.
   const canHaveReverse =
@@ -252,11 +258,34 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
         if (!res.ok) throw new Error();
         setAddSuccess(true);
         setIsOwned(true);
+        // Auto-remove from wishlist on "Je l'ai" — owning it means you no
+        // longer need to want it. Silent best-effort; store is single source
+        // of truth so the UI updates immediately.
+        if (useWishlistStore.getState().ids.has(card.id)) {
+          wishlistRemove(card.id);
+          fetch(`/api/wishlist/cards/${card.id}`, { method: "DELETE" }).catch(() => {});
+        }
         setTimeout(() => { setShowAddSheet(false); setAddSuccess(false); }, 1200);
       } catch {
         // silent — user can retry
       }
     });
+  }
+
+  async function handleRemoveFromWishlist() {
+    if (!card) return;
+    // Optimistic: flip the store + UI flag immediately, roll back on failure.
+    wishlistRemove(card.id);
+    setWishlistRemoveSuccess(true);
+    try {
+      const res = await fetch(`/api/wishlist/cards/${card.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setTimeout(() => setWishlistRemoveSuccess(false), 1500);
+    } catch {
+      // rollback
+      useWishlistStore.getState().add(card.id);
+      setWishlistRemoveSuccess(false);
+    }
   }
 
   async function handleRemoveFromCollection() {
@@ -440,6 +469,15 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-60 active:scale-[0.98] transition-all"
             >
               {removeSuccess ? "✓ Retiré" : "Retirer de ma collection"}
+            </button>
+          )}
+          {isInWishlist && (
+            <button
+              onClick={handleRemoveFromWishlist}
+              disabled={wishlistRemoveSuccess}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl border border-purple-500/30 bg-purple-500/10 py-2.5 text-sm font-semibold text-purple-400 hover:bg-purple-500/20 disabled:opacity-60 active:scale-[0.98] transition-all"
+            >
+              {wishlistRemoveSuccess ? "✓ Retiré" : "Retirer de ma liste de souhaits"}
             </button>
           )}
         </div>

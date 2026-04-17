@@ -37,6 +37,16 @@ export function PortfolioTiles() {
       .catch(() => {});
   }, []);
 
+  // Next.js preserves scroll position across client-side navigations. When the
+  // user taps "Classeur" from the mobile nav, they expect to land at the top of
+  // the page — specifically on the tiles, which are the primary affordance.
+  // Force a reset on mount for the root page only.
+  useEffect(() => {
+    if (!isSubPage && typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [isSubPage]);
+
   if (isSubPage) return null;
 
   return (

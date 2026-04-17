@@ -3,11 +3,13 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Check, Heart, Plus, Eye } from "lucide-react";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useToast } from "@/components/ui/Toast";
-import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
+import { CardDetailModal } from "@/components/cards/CardDetailModal";
 import { getDisplayPrice } from "@/lib/display-price";
-import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS } from "@/types/card";
+import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS, CardCondition } from "@/types/card";
+import { CardVersion } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -92,6 +94,15 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
   const [collapsedSeries, setCollapsedSeries] = useState<Set<string>>(new Set());
   const [activeRarity, setActiveRarity] = useState<string | null>(null);
 
+  // Detail modal — opened via the dedicated "Voir les détails" action in the
+  // bulk bar (appears when exactly one card is selected).
+  const [detailCardId, setDetailCardId] = useState<string | null>(null);
+
+  // Selection is always-on on this page: every tap toggles the cardId in
+  // `selected`. The bulk-action bar mounts as soon as at least one is picked.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkPending, setBulkPending] = useState(false);
+
   // ── Stats ──────────────────────────────────────────────────────────────────
 
   const totalValue = useMemo(
@@ -114,7 +125,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     return m;
   }, [items]);
 
-  // Premier blocSlug par rareté (pour l'image)
   const rarityBlocMap = useMemo(() => {
     const m = new Map<string, string>();
     for (const wi of items) {
@@ -159,8 +169,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
   // ── Grouped by serie ──────────────────────────────────────────────────────
 
   const groupedBySerie = useMemo(() => {
-    // Pour la vue "par série" on repart toujours des items bruts (filtrés par rareté/search)
-    // et on trie les cartes par numéro à l'intérieur de chaque extension
     const baseList = (() => {
       let list = [...items];
       if (activeRarity) list = list.filter((wi) => wi.card.rarity === activeRarity);
@@ -182,19 +190,42 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
       if (!map.has(sid)) map.set(sid, { serie: wi.card.serie, items: [] });
       map.get(sid)!.items.push(wi);
     }
-    // Trier les cartes par numéro dans chaque extension
     for (const group of map.values()) {
       group.items.sort((a, b) =>
         a.card.number.localeCompare(b.card.number, undefined, { numeric: true })
       );
     }
-    // Trier les extensions : la plus récemment ajoutée en premier
     return [...map.values()].sort((a, b) => {
       const latestA = Math.max(...a.items.map((wi) => new Date(wi.addedAt).getTime()));
       const latestB = Math.max(...b.items.map((wi) => new Date(wi.addedAt).getTime()));
       return latestB - latestA;
     });
   }, [items, activeRarity, search]);
+
+  // ── Selection helpers ─────────────────────────────────────────────────────
+
+  function toggleSelect(cardId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  function handleCardTap(wi: WishlistItem) {
+    toggleSelect(wi.card.id);
+  }
+
+  function openDetailsForSelected() {
+    if (selected.size !== 1) return;
+    const id = selected.values().next().value;
+    if (id) setDetailCardId(id);
+  }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -227,6 +258,84 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     }
   }
 
+  /**
+   * Bulk remove selected cards from the wishlist. One API call per card (the
+   * existing endpoint is per-id); fast enough for typical selections and we
+   * roll back individually on failure.
+   */
+  async function handleBulkRemove() {
+    if (selected.size === 0) return;
+    setBulkPending(true);
+    const ids = Array.from(selected);
+    const removed = items.filter((wi) => ids.includes(wi.card.id));
+
+    setItems((prev) => prev.filter((wi) => !ids.includes(wi.card.id)));
+    for (const id of ids) remove(id);
+
+    try {
+      await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/wishlist/cards/${id}`, { method: "DELETE" }).then((r) => {
+            if (!r.ok) throw new Error();
+          }),
+        ),
+      );
+      toast(`${ids.length} carte${ids.length > 1 ? "s retirées" : " retirée"} 💔`, "info");
+      clearSelection();
+    } catch {
+      setItems((prev) => [...removed, ...prev]);
+      for (const id of ids) add(id);
+      toast("Erreur, réessaie", "error");
+    } finally {
+      setBulkPending(false);
+    }
+  }
+
+  /**
+   * "Je l'ai" bulk action: add each selected card to the collection (Near Mint,
+   * Normal, FR, qty 1, current displayed price) and remove from wishlist on
+   * success. Uses the existing /api/cards/collection batch endpoint.
+   */
+  async function handleBulkOwn() {
+    if (selected.size === 0) return;
+    setBulkPending(true);
+    const ids = Array.from(selected);
+    const removed = items.filter((wi) => ids.includes(wi.card.id));
+
+    try {
+      const res = await fetch("/api/cards/collection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cards: ids.map((id) => ({
+            cardId:    id,
+            quantity:  1,
+            condition: CardCondition.NEAR_MINT,
+            language:  "FR",
+            version:   CardVersion.NORMAL,
+            foil:      false,
+            priceMode: "current",
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error();
+
+      // Remove from wishlist in parallel (best-effort — collection add succeeded).
+      setItems((prev) => prev.filter((wi) => !ids.includes(wi.card.id)));
+      for (const id of ids) remove(id);
+      Promise.all(ids.map((id) => fetch(`/api/wishlist/cards/${id}`, { method: "DELETE" }))).catch(() => {});
+
+      toast(`${ids.length} carte${ids.length > 1 ? "s ajoutées" : " ajoutée"} à ta collection ✨`, "success");
+      clearSelection();
+    } catch {
+      toast("Erreur, réessaie", "error");
+      // Keep items in place — user can retry or deselect.
+      void removed; // unused but captured for potential rollback extension
+    } finally {
+      setBulkPending(false);
+    }
+  }
+
   function toggleCollapse(serieId: string) {
     setCollapsedSeries((prev) => {
       const next = new Set(prev);
@@ -250,7 +359,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        {/* Watermark heart */}
         <svg width="120" height="120" viewBox="0 0 24 24" fill="#A855F7" opacity="0.15" className="mb-6">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
@@ -307,7 +415,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
 
       {/* ── Controls ──────────────────────────────────────────────── */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        {/* Search */}
         <div className="relative flex-1 min-w-[180px] max-w-xs">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
@@ -319,7 +426,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
           />
         </div>
 
-        {/* Sort */}
         <button
           onClick={() => setShowSortModal(true)}
           className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -328,7 +434,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
           {SORT_LABELS[sortKey]}
         </button>
 
-        {/* Grid size */}
         <div className="ml-auto flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-1">
           {(["small", "medium", "large"] as GridSize[]).map((s) => {
             const labels = { small: "Petit", medium: "Moyen", large: "Grand" };
@@ -353,7 +458,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
       {/* ── Rarity chips ──────────────────────────────────────────── */}
       {rarities.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
-          {/* "Toutes" chip — texte uniquement */}
           <button
             onClick={() => setActiveRarity(null)}
             className={cn(
@@ -366,7 +470,6 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
             Toutes ({items.length})
           </button>
 
-          {/* Chips par rareté — image + count */}
           {rarities.map(({ rarity, count }) => {
             const blocSlug = rarityBlocMap.get(rarity) ?? "";
             const isActive = activeRarity === rarity;
@@ -405,7 +508,12 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
 
       {/* ── Grid / grouped ────────────────────────────────────────── */}
       {tab === "all" ? (
-        <CardGrid items={filtered} gridSize={gridSize} onRemove={handleRemove} />
+        <CardGrid
+          items={filtered}
+          gridSize={gridSize}
+          selected={selected}
+          onTap={handleCardTap}
+        />
       ) : (
         <div className="space-y-6">
           {groupedBySerie.map(({ serie, items: serieItems }) => {
@@ -428,7 +536,12 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
                   </svg>
                 </button>
                 {!collapsed && (
-                  <CardGrid items={serieItems} gridSize={gridSize} onRemove={handleRemove} />
+                  <CardGrid
+                    items={serieItems}
+                    gridSize={gridSize}
+                    selected={selected}
+                    onTap={handleCardTap}
+                  />
                 )}
               </div>
             );
@@ -466,6 +579,74 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
           </div>
         </div>
       )}
+
+      {/* ── Card detail modal — opened on single tap when NOT in selection ─── */}
+      {detailCardId && (
+        <CardDetailModal
+          cardId={detailCardId}
+          onClose={() => {
+            // Also prune the local list if the card is no longer wishlisted
+            // (user removed it from inside the modal).
+            const stillWished = useWishlistStore.getState().ids.has(detailCardId);
+            if (!stillWished) {
+              setItems((prev) => prev.filter((wi) => wi.card.id !== detailCardId));
+            }
+            setDetailCardId(null);
+          }}
+        />
+      )}
+
+      {/* ── Bulk action bar (sticky bottom) ──────────────────────────── */}
+      {selected.size > 0 && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-default)] bg-[var(--bg-card)]/95 backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/50"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--text-primary)]">
+              {selected.size} sélectionnée{selected.size > 1 ? "s" : ""}
+            </span>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs font-medium text-[var(--text-tertiary)] underline-offset-2 hover:text-[var(--text-secondary)] hover:underline"
+            >
+              Désélectionner
+            </button>
+            <div className="ml-auto flex flex-wrap justify-end gap-2">
+              {/* Details button — only when exactly one card is picked */}
+              {selected.size === 1 && (
+                <button
+                  type="button"
+                  onClick={openDetailsForSelected}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
+                >
+                  <Eye className="h-4 w-4" />
+                  Voir les détails
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={bulkPending}
+                onClick={handleBulkRemove}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-2 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-500/20 disabled:opacity-60"
+              >
+                <Heart className="h-4 w-4" />
+                Retirer
+              </button>
+              <button
+                type="button"
+                disabled={bulkPending}
+                onClick={handleBulkOwn}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-4 py-2 text-sm font-semibold text-[#2A1A06] shadow-md shadow-[#E7BA76]/30 transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                <Plus className="h-4 w-4" />
+                Je l&apos;ai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -475,11 +656,13 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
 function CardGrid({
   items,
   gridSize,
-  onRemove,
+  selected,
+  onTap,
 }: {
   items: WishlistItem[];
   gridSize: GridSize;
-  onRemove: (wi: WishlistItem) => void;
+  selected: Set<string>;
+  onTap: (wi: WishlistItem) => void;
 }) {
   if (items.length === 0) {
     return (
@@ -492,7 +675,12 @@ function CardGrid({
   return (
     <div className={GRID_CLASS[gridSize]}>
       {items.map((wi) => (
-        <CardVignette key={wi.wishlistId} wi={wi} onRemove={onRemove} />
+        <CardVignette
+          key={wi.wishlistId}
+          wi={wi}
+          isSelected={selected.has(wi.card.id)}
+          onTap={onTap}
+        />
       ))}
     </div>
   );
@@ -500,20 +688,43 @@ function CardGrid({
 
 // ── CardVignette sub-component ────────────────────────────────────────────────
 
+/**
+ * A single tappable wishlist card. Selection is always-on: each tap toggles
+ * inclusion in the parent's `selected` set. The parent renders the bulk
+ * action bar that reacts to that set. We intentionally don't paint a heart
+ * badge on the card — being on this page already means it's wishlisted.
+ */
 function CardVignette({
   wi,
-  onRemove,
+  isSelected,
+  onTap,
 }: {
   wi: WishlistItem;
-  onRemove: (wi: WishlistItem) => void;
+  isSelected: boolean;
+  onTap: (wi: WishlistItem) => void;
 }) {
   const { card } = wi;
   const price = getDisplayPrice(card);
   const blocSlug = card.serie.bloc.slug;
 
   return (
-    <div className="group relative flex flex-col">
-      <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all group-hover:-translate-y-0.5 group-hover:shadow-md">
+    <button
+      type="button"
+      onClick={() => onTap(wi)}
+      className={cn(
+        "group relative flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-lg",
+        isSelected && "ring-2 ring-purple-500",
+      )}
+      aria-pressed={isSelected}
+      aria-label={`${card.name} — ${card.number} (${isSelected ? "sélectionnée, toucher pour désélectionner" : "toucher pour sélectionner"})`}
+    >
+      <div
+        className={cn(
+          "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all",
+          !isSelected && "group-hover:-translate-y-0.5 group-hover:shadow-md",
+          isSelected && "scale-[0.97]",
+        )}
+      >
         {card.imageUrl ? (
           <Image
             src={card.imageUrl}
@@ -530,14 +741,14 @@ function CardVignette({
           </div>
         )}
 
-        {/* Wishlist heart — top left — filled violet, tap to remove */}
-        <WishlistHeartButton
-          cardId={card.id}
-          size="sm"
-          className="absolute top-1 left-1 z-10"
-        />
+        {/* Selection indicator — only shown when picked */}
+        {isSelected && (
+          <div className="absolute top-1 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 shadow-md">
+            <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+          </div>
+        )}
 
-        {/* Number + rarity badge — bottom left */}
+        {/* Number + rarity — bottom left */}
         <div className="absolute bottom-1 left-1 flex items-center gap-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
           <span>{card.number}</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -563,12 +774,11 @@ function CardVignette({
         )}
       </div>
 
-      {/* Card name below */}
       <div className="mt-1 px-0.5">
         <p className="truncate text-[10px] font-medium leading-tight text-[var(--text-secondary)]">
           {card.name}
         </p>
       </div>
-    </div>
+    </button>
   );
 }
