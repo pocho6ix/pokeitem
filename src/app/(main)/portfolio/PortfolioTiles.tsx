@@ -107,8 +107,8 @@ export function PortfolioTiles() {
             <ArrowLeftRight className="h-5 w-5 text-[#E7BA76]" />
           </div>
           <div>
-            <p className="font-semibold text-[var(--text-primary)]">Trouver des échanges</p>
-            <p className="text-xs text-[var(--text-secondary)]">Compare tes doubles avec d&apos;autres dresseurs</p>
+            <p className="font-semibold text-[var(--text-primary)]">Chercher un échange</p>
+            <p className="text-xs text-[var(--text-secondary)]">Trouve un dresseur et vois ce que vous pouvez faire</p>
           </div>
         </div>
         {isPro ? (
