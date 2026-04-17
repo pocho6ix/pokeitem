@@ -62,8 +62,6 @@ model User {
   feedbacks         Feedback[]
   dailyQuestClaims  DailyQuestClaim[]
   classeurShare     ClasseurShare?
-  tradeRequestsOut  TradeRequest[]     @relation("TradeRequestFrom")
-  tradeRequestsIn   TradeRequest[]     @relation("TradeRequestTo")
 
   @@map("users")
 }
@@ -661,44 +659,3 @@ model ClasseurShare {
 }
 
 
-// ─── TRADE REQUESTS ──────────────────────────────────────────────────────────
-// Outgoing demandes between two users. The cards_given / cards_received
-// arrays are the canonical snapshot of what the sender picked — never
-// mutated server-side after creation. Values are snapshotted too so that a
-// later CM price change doesn't rewrite the deal that both parties agreed on.
-
-model TradeRequest {
-  id                    String                     @id @default(cuid())
-  fromUserId            String
-  toUserId              String
-  cardsGivenIds         String[]
-  cardsReceivedIds      String[]
-  givenValueCents       Int
-  receivedValueCents    Int
-  compensationCents     Int                        // magnitude, always >= 0
-  compensationDirection TradeCompensationDirection
-  status                TradeRequestStatus         @default(PENDING)
-  message               String?                    @db.Text
-  createdAt             DateTime                   @default(now())
-  respondedAt           DateTime?
-
-  fromUser User @relation("TradeRequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser   User @relation("TradeRequestTo",   fields: [toUserId],   references: [id], onDelete: Cascade)
-
-  @@index([fromUserId, status])
-  @@index([toUserId,   status])
-  @@map("trade_requests")
-}
-
-enum TradeRequestStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  CANCELED
-}
-
-enum TradeCompensationDirection {
-  NONE
-  FROM_TO_TO   // sender pays recipient
-  TO_TO_FROM   // recipient pays sender
-}
