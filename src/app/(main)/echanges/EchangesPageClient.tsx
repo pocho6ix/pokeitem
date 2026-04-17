@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeftRight, ArrowRight, Search, Heart, Copy, Send } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { SuggestedUsers } from "@/components/trade/SuggestedUsers";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,14 @@ export function EchangesPageClient({
           <p className="mt-3 text-center text-xs text-red-400">{error}</p>
         )}
 
-        {emptyState && <EmptyState hasActiveShare={hasActiveShare} />}
+        {emptyState && (
+          <>
+            {/* Suggested dresseurs — visible only when the search box is idle.
+                Auto-hides when the caller types ≥ 2 chars. */}
+            <SuggestedUsers />
+            <EmptyState hasActiveShare={hasActiveShare} />
+          </>
+        )}
       </div>
     </div>
   );
