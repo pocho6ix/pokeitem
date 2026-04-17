@@ -53,9 +53,13 @@ const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   // These sets predate the Reverse mechanic — Normale + Holo only.
   // Expédition, Aquapolis, Skyridge (e-Card) DO have Reverse → wotc bloc default applies.
   "set-de-base":      V_NORMAL,
+  "set-de-base-1ed":  V_NORMAL, // ED1 variant — same pre-Reverse era
   "jungle":           V_NORMAL,
+  "jungle-1ed":       V_NORMAL,
   "fossile":          V_NORMAL,
+  "fossile-1ed":      V_NORMAL,
   "team-rocket":      V_NORMAL,
+  "team-rocket-1ed":  V_NORMAL,
   "neo-genesis":      V_NORMAL,
   "neo-discovery":    V_NORMAL,
   "neo-revelation":   V_NORMAL,
