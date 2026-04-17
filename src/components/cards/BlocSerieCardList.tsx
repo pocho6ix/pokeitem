@@ -12,9 +12,16 @@ interface BlocSerieCardListProps {
   blocs: BlocCardProgress[];
   /** Base URL prefix — "/collection/cartes" or "/portfolio/cartes" */
   baseUrl: string;
+  /**
+   * Show the per-serie market value chip next to the progress count.
+   * Relevant on /portfolio/cartes (Classeur) where the viewer sees their
+   * own holdings; hidden on /collection/cartes which is catalogue-only.
+   * Defaults to true to preserve legacy call sites.
+   */
+  showMarketValue?: boolean;
 }
 
-export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
+export function BlocSerieCardList({ blocs, baseUrl, showMarketValue = true }: BlocSerieCardListProps) {
   return (
     <div className="space-y-10">
       {blocs.map((bloc) => (
@@ -79,7 +86,7 @@ export function BlocSerieCardList({ blocs, baseUrl }: BlocSerieCardListProps) {
                         <span className="font-data text-xs text-[var(--text-secondary)]">
                           {serie.ownedCards}/{serie.totalCards || "?"}&nbsp;·&nbsp;{pct}%
                         </span>
-                        {serie.marketValue > 0 && (
+                        {showMarketValue && serie.marketValue > 0 && (
                           <CollectionValue
                             value={serie.marketValue}
                             className="font-data text-xs font-semibold text-emerald-400"

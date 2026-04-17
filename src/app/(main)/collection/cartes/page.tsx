@@ -137,10 +137,12 @@ export default async function CollectionCartesPage() {
       />
 
       <div className="my-4 max-w-xl">
-        <HeroSearchBar ownedOnly />
+        {/* Catalogue-wide search (all cards). The /portfolio equivalent
+            passes ownedOnly so the user can search their own collection. */}
+        <HeroSearchBar />
       </div>
 
-      <BlocSerieCardList blocs={blocs} baseUrl="/collection/cartes" />
+      <BlocSerieCardList blocs={blocs} baseUrl="/collection/cartes" showMarketValue={false} />
     </div>
   );
 }
