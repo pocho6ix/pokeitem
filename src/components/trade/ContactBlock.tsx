@@ -1,6 +1,7 @@
 "use client";
 
-import { Copy, Mail, AtSign, MessageSquare } from "lucide-react";
+import Image from "next/image";
+import { Copy, Mail, AtSign } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export interface ContactBlockProps {
@@ -44,7 +45,13 @@ export function ContactBlock({ displayName, discord, email, twitter }: ContactBl
             }}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
           >
-            <MessageSquare className="h-4 w-4 text-[#5865F2]" />
+            <Image
+              src="/discord_logo.png"
+              alt="Discord"
+              width={20}
+              height={20}
+              className="h-5 w-5 shrink-0 object-contain"
+            />
             <span className="flex-1">
               <span className="font-semibold">Discord</span>
               <span className="ml-2 font-data text-xs text-[var(--text-secondary)]">{discord}</span>
