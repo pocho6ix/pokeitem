@@ -212,6 +212,17 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Fossile', nameEn: 'Fossil', slug: 'fossile', abbreviation: 'WOTC-FO', blocSlug: 'wotc', imageUrl: '/images/series/fossile.png', releaseDate: '1999-10-08', order: 7 },
   { name: 'Jungle', nameEn: 'Jungle', slug: 'jungle', abbreviation: 'WOTC-JU', blocSlug: 'wotc', imageUrl: '/images/series/jungle.png', releaseDate: '1999-06-16', order: 8 },
   { name: 'Set de base', nameEn: 'Base Set', slug: 'set-de-base', abbreviation: 'WOTC-BS', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base.png', releaseDate: '1999-01-09', order: 9 },
+
+  // ── Édition 1 (Wizards FR "1re Édition") ───────────────────────────────
+  // Same card lists as the Unlimited series above. Each Card row is marked
+  // isFirstEdition=true by the seeder so the UI overlays an "Édition 1"
+  // medallion on the artwork. Release dates are the confirmed French 1st
+  // Edition launches (Wizards FR opened with Set de Base in Oct 1999).
+  { name: 'Set de base Édition 1',  nameEn: 'Base Set 1st Edition',  slug: 'set-de-base-1ed', abbreviation: 'WOTC-BS-1ED', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base-1ed.png', releaseDate: '1999-10-17', order: 10 },
+  { name: 'Jungle Édition 1',       nameEn: 'Jungle 1st Edition',    slug: 'jungle-1ed',      abbreviation: 'WOTC-JU-1ED', blocSlug: 'wotc', imageUrl: '/images/series/jungle-1ed.png',      releaseDate: '2000-01-17', order: 11 },
+  { name: 'Fossile Édition 1',      nameEn: 'Fossil 1st Edition',    slug: 'fossile-1ed',     abbreviation: 'WOTC-FO-1ED', blocSlug: 'wotc', imageUrl: '/images/series/fossile-1ed.png',     releaseDate: '2000-03-20', order: 12 },
+  { name: 'Team Rocket Édition 1',  nameEn: 'Team Rocket 1st Edition', slug: 'team-rocket-1ed', abbreviation: 'WOTC-TR-1ED', blocSlug: 'wotc', imageUrl: '/images/series/team-rocket-1ed.png', releaseDate: '2000-11-10', order: 13 },
+
   { name: 'Promos Wizards', nameEn: 'Wizards Black Star Promos', slug: 'promos-wizards', abbreviation: 'WP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
 
