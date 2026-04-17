@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Copy, Mail, AtSign } from "lucide-react";
+import { Copy, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export interface ContactBlockProps {
@@ -78,7 +78,7 @@ export function ContactBlock({ displayName, discord, email, twitter }: ContactBl
             rel="noopener noreferrer"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
           >
-            <AtSign className="h-4 w-4 text-[#1DA1F2]" />
+            <Image src="/x_logo.png" alt="" width={16} height={16} className="h-4 w-4 object-contain" />
             <span className="flex-1">
               <span className="font-semibold">Twitter</span>
               <span className="ml-2 font-data text-xs text-[var(--text-secondary)]">

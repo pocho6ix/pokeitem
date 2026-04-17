@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { X, Copy, Mail, AtSign } from "lucide-react";
+import { X, Copy, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import {
   generateProposalMessage,
@@ -237,7 +237,7 @@ export function TradeProposalSheet({
                     key="twitter"
                     primary={primary}
                     onClick={handleTwitter}
-                    leading={<AtSign className="h-5 w-5 shrink-0 text-[#1DA1F2]" />}
+                    leading={<Image src="/x_logo.png" alt="" width={20} height={20} className="h-5 w-5 shrink-0 object-contain" />}
                     title="Copier pour Twitter / X"
                     subtitle={c.value.startsWith("@") ? c.value : `@${c.value}`}
                     trailing={<Copy className="h-4 w-4 opacity-70" />}
