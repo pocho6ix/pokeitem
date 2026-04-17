@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,12 +11,12 @@ import { getDefaultAvatar } from "@/lib/defaultAvatar";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface SearchResult {
-  slug:          string;
-  displayName:   string;
-  avatarUrl:     string | null;
-  cardsCount:    number;
-  doublesCount:  number;
-  wishlistCount: number;
+  slug:         string;
+  displayName:  string;
+  avatarUrl:    string | null;
+  cardsCount:   number;
+  /** |my wishlist ∩ their doubles| — the count that actually matters. */
+  matchsCount:  number;
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -159,10 +159,7 @@ export function EchangesPageClient({
 
 function ResultCard({ result }: { result: SearchResult }) {
   const avatar = result.avatarUrl ?? getDefaultAvatar(result.displayName);
-  const stats = useMemo(
-    () => `${result.cardsCount} cartes · ${result.doublesCount} doubles · ${result.wishlistCount} ♡`,
-    [result],
-  );
+  const hasMatchs = result.matchsCount > 0;
   return (
     <Link
       href={`/u/${result.slug}`}
@@ -179,7 +176,17 @@ function ResultCard({ result }: { result: SearchResult }) {
         <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
           {result.displayName}
         </p>
-        <p className="mt-0.5 truncate text-[11px] text-[var(--text-tertiary)]">{stats}</p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] text-[var(--text-tertiary)]">
+          <span>{result.cardsCount} cartes</span>
+          <span>·</span>
+          {hasMatchs ? (
+            <span className="font-semibold text-[#E7BA76]">
+              {result.matchsCount} match{result.matchsCount > 1 ? "s" : ""}
+            </span>
+          ) : (
+            <span className="text-[var(--text-tertiary)]/70">Aucun match</span>
+          )}
+        </p>
       </div>
       <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-3 py-1.5 text-xs font-semibold text-[#2A1A06]">
         Voir
