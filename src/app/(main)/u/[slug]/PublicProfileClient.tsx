@@ -6,13 +6,15 @@ import { ArrowLeft, Share2 } from "lucide-react";
 import { shareProfile } from "@/lib/share/shareProfile";
 import { useToast } from "@/components/ui/Toast";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { TradeCalculator } from "@/components/trade/TradeCalculator";
+import { ContactBlock } from "@/components/trade/ContactBlock";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Phase 0 stub — the rich cards / doubles / wishlist / match UI has been
-// removed together with the pre-computed matchmaking system. Phase 4 of the
-// rewrite (`feat/trade-calculator`) will replace this skeleton with the new
-// calculator tabs (🛒 Acheter / 💰 Vendre / 🔄 Échange) fed by the dedicated
-// `/api/users/:slug/trade-calculator` endpoint.
+// Public profile for a ClasseurShare owner. Identity + stats + (for logged-in
+// visitors) the trade calculator with three tabs — Acheter / Vendre / Échange.
+// The calculator mounts as a client-side fetch to
+// `GET /api/users/:slug/trade-calculator` and never runs for the owner or for
+// unauthenticated viewers.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface PublicProfileClientProps {
@@ -92,39 +94,90 @@ export function PublicProfileClient({ user, stats, viewer }: PublicProfileClient
         </div>
       </div>
 
-      {/* Placeholder for the new calculator — wired in phase 4 */}
-      <div className="mt-6 rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-card)]/50 p-8 text-center">
+      <div className="mt-6">
         {viewer.isOwner ? (
-          <>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">
-              C&apos;est ton profil public.
-            </p>
-            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Voilà ce que les autres dresseurs verront quand ils ouvriront ton lien.
-            </p>
-          </>
+          <OwnerView slug={user.slug} contact={user.contact} displayName={user.displayName} />
         ) : !viewer.isAuthenticated ? (
-          <>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">
-              Connecte-toi pour voir ce que tu peux échanger avec {user.displayName}
-            </p>
-            <Link
-              href="/connexion"
-              className="mt-3 inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-5 py-2 text-sm font-semibold text-[#2A1A06]"
-            >
-              Se connecter
-            </Link>
-          </>
+          <GuestView displayName={user.displayName} contact={user.contact} />
         ) : (
-          <>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">Calculateur d&apos;échange</p>
-            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-              Disponible très bientôt — il affichera ce que tu peux acheter, vendre
-              ou échanger avec {user.displayName}.
-            </p>
-          </>
+          <TradeCalculator
+            slug={user.slug}
+            displayName={user.displayName}
+            contact={user.contact}
+          />
         )}
       </div>
     </div>
+  );
+}
+
+// ── Sub-views ────────────────────────────────────────────────────────────────
+
+function OwnerView({
+  slug, displayName, contact,
+}: {
+  slug: string;
+  displayName: string;
+  contact: PublicProfileClientProps["user"]["contact"];
+}) {
+  return (
+    <>
+      <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-card)]/50 p-6 text-center">
+        <p className="text-sm font-semibold text-[var(--text-primary)]">
+          C&apos;est ton profil public.
+        </p>
+        <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+          Voilà ce que les autres dresseurs verront quand ils ouvriront ton lien.
+        </p>
+        <Link
+          href="/profil/partage"
+          className="mt-4 inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-4 py-2 text-xs font-semibold text-[#2A1A06]"
+        >
+          Partager mon classeur
+        </Link>
+        <p className="mt-3 font-data text-[10px] text-[var(--text-tertiary)]">
+          /u/{slug}
+        </p>
+      </div>
+      <div className="mt-6">
+        <ContactBlock
+          displayName={displayName}
+          discord={contact.discord}
+          email={contact.email}
+          twitter={contact.twitter}
+        />
+      </div>
+    </>
+  );
+}
+
+function GuestView({
+  displayName, contact,
+}: {
+  displayName: string;
+  contact: PublicProfileClientProps["user"]["contact"];
+}) {
+  return (
+    <>
+      <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-center">
+        <p className="text-sm font-semibold text-[var(--text-primary)]">
+          Connecte-toi pour voir ce que tu peux échanger avec {displayName}
+        </p>
+        <Link
+          href="/connexion"
+          className="mt-3 inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-5 py-2 text-sm font-semibold text-[#2A1A06]"
+        >
+          Se connecter
+        </Link>
+      </div>
+      <div className="mt-6">
+        <ContactBlock
+          displayName={displayName}
+          discord={contact.discord}
+          email={contact.email}
+          twitter={contact.twitter}
+        />
+      </div>
+    </>
   );
 }
