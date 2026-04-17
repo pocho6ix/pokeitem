@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ShoppingCart, HandCoins, ArrowLeftRight, Info, Send, Check } from "lucide-react";
+import { ShoppingCart, HandCoins, ArrowLeftRight, Info, Check } from "lucide-react";
 import { CardDetailModal } from "@/components/cards/CardDetailModal";
-import { useToast } from "@/components/ui/Toast";
 import { ContactBlock } from "./ContactBlock";
-import { TradeConfirmModal } from "./TradeConfirmModal";
+import { TradeProposalButton } from "./TradeProposalButton";
+import { TradeProposalSheet } from "./TradeProposalSheet";
 
 // ─── Types (mirror /api/users/:slug/trade-calculator) ────────────────────────
 
@@ -117,21 +117,47 @@ export interface TradeCalculatorProps {
 
 export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorProps) {
   const router      = useRouter();
-  const { toast }   = useToast();
   const [data,    setData]    = useState<CalculatorPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error,   setError]   = useState<string | null>(null);
   const [tab,     setTab]     = useState<TabKey>("buy");
   const [detailCardId, setDetailCardId] = useState<string | null>(null);
 
-  // Manual selection — Sets of cardIds selected in each side of the trade.
-  // Default is "everything", mirroring the automatic deal the backend
-  // proposes. We populate them once the calculator payload arrives.
+  // Manual selection on the Trade tab — Sets of cardIds selected in each
+  // side. Default is "everything", mirroring the automatic deal the backend
+  // proposes. Hydrated once the calculator payload arrives.
   const [giveSelected,    setGiveSelected]    = useState<Set<string>>(new Set());
   const [receiveSelected, setReceiveSelected] = useState<Set<string>>(new Set());
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [sending,     setSending]     = useState(false);
+  // Proposal sheet state — opened from the sticky CTA, closed on Escape,
+  // swipe-down, contact-channel click, or tab change (the message no
+  // longer matches if the user pivoted).
+  const [proposalOpen, setProposalOpen] = useState(false);
+
+  // Caller's own share info (for the proposal message signature). Fetched
+  // once; no-op if the user hasn't set up sharing yet.
+  const [myProfile, setMyProfile] = useState<{ displayName: string; slug: string | null; shareActive: boolean }>({
+    displayName: "Un dresseur",
+    slug:        null,
+    shareActive: false,
+  });
+
+  // Lazy-fetch my own share info for the proposal signature. If the call
+  // fails or I don't have a share, the sheet falls back to "activate sharing"
+  // text so the message is never broken.
+  useEffect(() => {
+    fetch("/api/share/settings")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) return;
+        setMyProfile({
+          displayName: data.displayName ?? "Un dresseur",
+          slug:        data.slug ?? null,
+          shareActive: !!data.isActive,
+        });
+      })
+      .catch(() => { /* silent — signature degrades gracefully */ });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,6 +194,10 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
   const buyCount  = data?.canBuy.count  ?? 0;
   const sellCount = data?.canSell.count ?? 0;
 
+  // Close the proposal sheet if the user pivots between tabs — the message
+  // currently on screen no longer matches the new context.
+  useEffect(() => { setProposalOpen(false); }, [tab]);
+
   // ── Live re-computation from the selection (Trade tab only) ──────────
   const liveTrade = useMemo(() => {
     if (!data) return null;
@@ -176,8 +206,6 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
     const summary = recomputeTradeSummary(iGive, iReceive);
     return { iGive, iReceive, ...summary };
   }, [data, giveSelected, receiveSelected]);
-
-  const canSend = !!liveTrade && liveTrade.iGive.length > 0 && liveTrade.iReceive.length > 0;
 
   // ── Handlers ─────────────────────────────────────────────────────────
   function toggleGive(cardId: string) {
@@ -201,33 +229,6 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
   function setAllReceive(on: boolean) {
     if (!data) return;
     setReceiveSelected(on ? new Set(data.trade.iReceive.cards.map((c) => c.cardId)) : new Set());
-  }
-
-  async function handleSendConfirmed() {
-    if (!data || !liveTrade) return;
-    setSending(true);
-    try {
-      const res = await fetch("/api/trade-requests", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          toSlug:           slug,
-          cardsGivenIds:    liveTrade.iGive.map((c) => c.cardId),
-          cardsReceivedIds: liveTrade.iReceive.map((c) => c.cardId),
-          givenValueCents:    liveTrade.giveCents,
-          receivedValueCents: liveTrade.receiveCents,
-        }),
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? "Erreur serveur");
-      toast(`Demande envoyée à ${displayName} ✉️`, "success");
-      setConfirmOpen(false);
-      router.push("/echanges/envoyees");
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Erreur, réessaye", "error");
-    } finally {
-      setSending(false);
-    }
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -320,51 +321,42 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
         />
       </div>
 
-      {/* Sticky send bar — only visible when the Trade tab is active */}
-      {tab === "trade" && tradePossible && liveTrade && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-default)] bg-[var(--bg-card)]/95 backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/50"
-          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-        >
-          <div className="mx-auto flex max-w-3xl items-center gap-3">
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-xs text-[var(--text-tertiary)]">
-                {liveTrade.iGive.length} ↔ {liveTrade.iReceive.length}
-              </span>
-              <span className="truncate text-sm font-semibold text-[var(--text-primary)]">
-                {liveTrade.direction === "none"
-                  ? "Échange équilibré"
-                  : liveTrade.direction === "them_to_me"
-                    ? `${displayName} te verse ${formatEur(Math.abs(liveTrade.deltaCents))}`
-                    : `Tu verses ${formatEur(Math.abs(liveTrade.deltaCents))}`}
-              </span>
-            </div>
-            <button
-              type="button"
-              disabled={!canSend}
-              onClick={() => setConfirmOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-4 py-2.5 text-sm font-semibold text-[#2A1A06] shadow-md shadow-[#E7BA76]/30 transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Send className="h-4 w-4" />
-              Envoyer la demande
-            </button>
-          </div>
-        </div>
+      {/* Sticky CTA — visible on every tab, label adapts to context */}
+      {data && (
+        <TradeProposalButton
+          activeTab={tab}
+          canBuyCount={buyCount}
+          canSellCount={sellCount}
+          tradePossible={tradePossible}
+          hasContact={Boolean(contact.discord || contact.email || contact.twitter)}
+          onClick={() => setProposalOpen(true)}
+        />
       )}
 
-      {/* Confirmation modal */}
-      {confirmOpen && liveTrade && (
-        <TradeConfirmModal
-          displayName={displayName}
-          iGive={liveTrade.iGive}
-          iReceive={liveTrade.iReceive}
-          giveCents={liveTrade.giveCents}
-          receiveCents={liveTrade.receiveCents}
-          deltaCents={liveTrade.deltaCents}
-          direction={liveTrade.direction}
-          sending={sending}
-          onCancel={() => setConfirmOpen(false)}
-          onConfirm={handleSendConfirmed}
+      {/* Proposal sheet — renders the pre-formatted message + contact rows */}
+      {data && liveTrade && (
+        <TradeProposalSheet
+          isOpen={proposalOpen}
+          onClose={() => setProposalOpen(false)}
+          type={tab}
+          context={{
+            canBuy:  { cards: data.canBuy.cards,  totalValueCents: data.canBuy.totalValueCents,  count: data.canBuy.count },
+            canSell: { cards: data.canSell.cards, totalValueCents: data.canSell.totalValueCents, count: data.canSell.count },
+            trade: {
+              possible:            tradePossible,
+              iGive:               { cards: liveTrade.iGive,    totalValueCents: liveTrade.giveCents },
+              iReceive:            { cards: liveTrade.iReceive, totalValueCents: liveTrade.receiveCents },
+              complementCents:     Math.abs(liveTrade.deltaCents),
+              complementDirection: liveTrade.direction,
+            },
+          }}
+          target={{
+            displayName,
+            discord: contact.discord,
+            email:   contact.email,
+            twitter: contact.twitter,
+          }}
+          myProfile={myProfile}
         />
       )}
 
