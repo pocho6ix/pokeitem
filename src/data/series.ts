@@ -213,15 +213,21 @@ const WOTC_SERIES: SerieStatic[] = [
   { name: 'Jungle', nameEn: 'Jungle', slug: 'jungle', abbreviation: 'WOTC-JU', blocSlug: 'wotc', imageUrl: '/images/series/jungle.png', releaseDate: '1999-06-16', order: 8 },
   { name: 'Set de base', nameEn: 'Base Set', slug: 'set-de-base', abbreviation: 'WOTC-BS', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base.png', releaseDate: '1999-01-09', order: 9 },
 
-  // ── Édition 1 (Wizards FR "1re Édition") ───────────────────────────────
+  // ── ED1 (Wizards FR "1re Édition") ─────────────────────────────────────
   // Same card lists as the Unlimited series above. Each Card row is marked
   // isFirstEdition=true by the seeder so the UI overlays an "Édition 1"
-  // medallion on the artwork. Release dates are the confirmed French 1st
-  // Edition launches (Wizards FR opened with Set de Base in Oct 1999).
-  { name: 'Set de base Édition 1',  nameEn: 'Base Set 1st Edition',  slug: 'set-de-base-1ed', abbreviation: 'WOTC-BS-1ED', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base-1ed.png', releaseDate: '1999-10-17', order: 10 },
-  { name: 'Jungle Édition 1',       nameEn: 'Jungle 1st Edition',    slug: 'jungle-1ed',      abbreviation: 'WOTC-JU-1ED', blocSlug: 'wotc', imageUrl: '/images/series/jungle-1ed.png',      releaseDate: '2000-01-17', order: 11 },
-  { name: 'Fossile Édition 1',      nameEn: 'Fossil 1st Edition',    slug: 'fossile-1ed',     abbreviation: 'WOTC-FO-1ED', blocSlug: 'wotc', imageUrl: '/images/series/fossile-1ed.png',     releaseDate: '2000-03-20', order: 12 },
-  { name: 'Team Rocket Édition 1',  nameEn: 'Team Rocket 1st Edition', slug: 'team-rocket-1ed', abbreviation: 'WOTC-TR-1ED', blocSlug: 'wotc', imageUrl: '/images/series/team-rocket-1ed.png', releaseDate: '2000-11-10', order: 13 },
+  // medallion on the artwork.
+  //
+  // Release dates: set deliberately 1 day BEFORE their Unlimited twin so the
+  // collection sort (date DESC → newer first, order ASC as tiebreaker)
+  // places Unlimited ABOVE ED1 in the list, matching user preference. The
+  // real French 1re Édition launches are earlier than the Unlimited reprints
+  // (Set de Base 1ED = Oct 1999, Unlimited = 2000), but that detail is not
+  // visible in the UI — only ordering is.
+  { name: 'Set de Base ED1',  nameEn: 'Base Set 1st Edition',  slug: 'set-de-base-1ed', abbreviation: 'WOTC-BS-1ED', blocSlug: 'wotc', imageUrl: '/images/series/set-de-base-1ed.png', releaseDate: '1999-01-08', order: 10 },
+  { name: 'Jungle ED1',       nameEn: 'Jungle 1st Edition',    slug: 'jungle-1ed',      abbreviation: 'WOTC-JU-1ED', blocSlug: 'wotc', imageUrl: '/images/series/jungle-1ed.png',      releaseDate: '1999-06-15', order: 11 },
+  { name: 'Fossile ED1',      nameEn: 'Fossil 1st Edition',    slug: 'fossile-1ed',     abbreviation: 'WOTC-FO-1ED', blocSlug: 'wotc', imageUrl: '/images/series/fossile-1ed.png',     releaseDate: '1999-10-07', order: 12 },
+  { name: 'Team Rocket ED1',  nameEn: 'Team Rocket 1st Edition', slug: 'team-rocket-1ed', abbreviation: 'WOTC-TR-1ED', blocSlug: 'wotc', imageUrl: '/images/series/team-rocket-1ed.png', releaseDate: '2000-04-23', order: 13 },
 
   { name: 'Promos Wizards', nameEn: 'Wizards Black Star Promos', slug: 'promos-wizards', abbreviation: 'WP', blocSlug: 'wotc', imageUrl: '/images/series/promos_wizards_of_the_coast.webp', releaseDate: null, order: 20 },
 ];
