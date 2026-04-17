@@ -406,12 +406,12 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-md overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
+                  className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
                   title="Voir sur Cardmarket"
                 >
-                  <span className="bg-white px-1.5 py-0.5 flex items-center">
+                  <span className="bg-white px-2.5 py-1.5 flex items-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/cardmarket.png" alt="Cardmarket" className="h-3.5 w-auto object-contain" />
+                    <img src="/cardmarket.png" alt="Cardmarket" className="h-5 w-auto object-contain" />
                   </span>
                 </a>
               )}
