@@ -16,73 +16,100 @@ import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { HomeCardPreview } from "@/components/cards/HomeCardPreview";
 import { QuestsBlock } from "@/components/quests/QuestsBlock";
 import { getPriceForVersion } from "@/lib/display-price";
+import { resolveItemPrice } from "@/lib/portfolio/resolveItemPrice";
 
 
 async function getTopCards(userId: string) {
-  const userCards = await prisma.userCard.findMany({
-    where: { userId },
-    select: {
-      version: true,
-      card: {
-        select: {
-          id: true,
-          name: true,
-          number: true,
-          imageUrl: true,
-          price: true,
-          priceFr: true,
-          priceReverse: true,
-          serie: { select: { slug: true } },
+  try {
+    const userCards = await prisma.userCard.findMany({
+      where: { userId },
+      select: {
+        version: true,
+        card: {
+          select: {
+            id: true,
+            name: true,
+            number: true,
+            imageUrl: true,
+            price: true,
+            priceFr: true,
+            priceReverse: true,
+            serie: { select: { slug: true } },
+          },
         },
       },
-    },
-  });
+    });
 
-  return userCards
-    .map((uc) => ({
-      cardId:   uc.card.id,
-      name:     uc.card.name,
-      number:   uc.card.number,
-      imageUrl: uc.card.imageUrl,
-      version:  uc.version,
-      serieSlug: uc.card.serie.slug,
-      price:    getPriceForVersion(uc.card, uc.version),
-    }))
-    .filter((c) => c.price > 0 && c.imageUrl)
-    .sort((a, b) => b.price - a.price)
-    .slice(0, 6);
+    return userCards
+      .map((uc) => ({
+        cardId:   uc.card.id,
+        name:     uc.card.name,
+        number:   uc.card.number,
+        imageUrl: uc.card.imageUrl,
+        version:  uc.version,
+        serieSlug: uc.card.serie.slug,
+        price:    getPriceForVersion(uc.card, uc.version),
+      }))
+      .filter((c) => c.price > 0 && c.imageUrl)
+      .sort((a, b) => b.price - a.price)
+      .slice(0, 6);
+  } catch (err) {
+    console.error("getTopCards failed:", err);
+    return [];
+  }
 }
 
 async function getFirstCardDate(userId: string): Promise<Date | null> {
-  const first = await prisma.userCard.findFirst({
-    where: { userId },
-    orderBy: { createdAt: "asc" },
-    select: { createdAt: true },
-  });
-  return first?.createdAt ?? null;
+  try {
+    const first = await prisma.userCard.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    });
+    return first?.createdAt ?? null;
+  } catch (err) {
+    console.error("getFirstCardDate failed:", err);
+    return null;
+  }
 }
 
+/**
+ * Compute the current collection market value. Never throws: if the database
+ * hiccups (Neon cold-start, transient P1001), we degrade to zeros so the home
+ * dashboard still renders. The daily cron / next page load corrects the
+ * figures — better than a full 500 for the user.
+ */
 async function getCollectionValue(userId: string) {
-  // Cards market value
-  const userCards = await prisma.userCard.findMany({
-    where: { userId },
-    select: { quantity: true, version: true, card: { select: { price: true, priceFr: true, priceReverse: true } } },
-  });
-  const cardsValue = userCards.reduce((sum, uc) => {
-    return sum + getPriceForVersion(uc.card, uc.version) * uc.quantity;
-  }, 0);
+  try {
+    const [userCards, portfolioItems] = await Promise.all([
+      prisma.userCard.findMany({
+        where: { userId },
+        select: { quantity: true, version: true, card: { select: { price: true, priceFr: true, priceReverse: true } } },
+      }),
+      prisma.portfolioItem.findMany({
+        where: { userId },
+        select: {
+          quantity:     true,
+          currentPrice: true,
+          item: { select: { retailPrice: true } },
+        },
+      }),
+    ]);
 
-  // Sealed items market value
-  const portfolioItems = await prisma.portfolioItem.findMany({
-    where: { userId },
-    select: { quantity: true, item: { select: { currentPrice: true, priceTrend: true } } },
-  });
-  const sealedValue = portfolioItems.reduce((sum, pi) => {
-    const price = pi.item.currentPrice ?? pi.item.priceTrend ?? 0;
-    return sum + price * pi.quantity;
-  }, 0);
+    const cardsValue = userCards.reduce(
+      (sum, uc) => sum + getPriceForVersion(uc.card, uc.version) * uc.quantity,
+      0,
+    );
+    const sealedValue = portfolioItems.reduce(
+      (sum, pi) => sum + resolveItemPrice(pi.currentPrice, pi.item.retailPrice) * pi.quantity,
+      0,
+    );
 
-  return { cardsValue, sealedValue, total: cardsValue + sealedValue };
+    return { cardsValue, sealedValue, total: cardsValue + sealedValue };
+  } catch (err) {
+    console.error("getCollectionValue failed, returning zeros:", err);
+    return { cardsValue: 0, sealedValue: 0, total: 0 };
+  }
 }
 
 export default async function HomePage() {

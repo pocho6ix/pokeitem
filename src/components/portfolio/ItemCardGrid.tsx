@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { ItemImage } from "@/components/shared/ItemImage";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { ItemBadge } from "./ItemBadge";
@@ -11,7 +12,10 @@ interface ItemCardGridProps {
 
 export function ItemCardGrid({ row }: ItemCardGridProps) {
   return (
-    <div className="rounded-2xl bg-[var(--bg-card)] overflow-hidden border border-[var(--border-default)] transition-all duration-[120ms] hover:bg-[var(--bg-card-hover)] hover:shadow-md active:scale-[0.99] cursor-pointer">
+    <Link
+      href={`/portfolio/items/${row.id}`}
+      className="rounded-2xl bg-[var(--bg-card)] overflow-hidden border border-[var(--border-default)] transition-all duration-[120ms] hover:bg-[var(--bg-card-hover)] hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7BA76] focus-visible:ring-offset-2"
+    >
       {/* Image area — 4:3 ratio */}
       <div className="bg-white h-32 flex items-center justify-center p-2">
         <ItemImage
@@ -40,6 +44,6 @@ export function ItemCardGrid({ row }: ItemCardGridProps) {
           <PerfBadge value={row.pnlPercent} />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

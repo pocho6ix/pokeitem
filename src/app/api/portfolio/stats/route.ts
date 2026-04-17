@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPriceForVersion } from "@/lib/display-price";
+import { resolveItemPrice } from "@/lib/portfolio/resolveItemPrice";
 
 export async function GET(req: Request) {
   try {
@@ -21,21 +22,28 @@ export async function GET(req: Request) {
         id: true,
         quantity: true,
         purchasePrice: true,
+        currentPrice: true,
         item: {
           select: {
             id: true,
             name: true,
             type: true,
-            currentPrice: true,
+            retailPrice: true,
           },
         },
       },
     });
 
+    // Resolve each row's unit price once — uses the owner's personal valuation
+    // falling back to retailPrice.
+    const resolvedUnitPrice = portfolioItems.map((pi) =>
+      resolveItemPrice(pi.currentPrice, pi.item.retailPrice),
+    );
+
     const totalItems = portfolioItems.reduce((sum, pi) => sum + pi.quantity, 0);
 
     const itemsValue = portfolioItems.reduce(
-      (sum, pi) => sum + (pi.item.currentPrice ?? 0) * pi.quantity,
+      (sum, pi, i) => sum + resolvedUnitPrice[i] * pi.quantity,
       0
     );
 
@@ -83,29 +91,31 @@ export async function GET(req: Request) {
 
     // Distribution by type
     const distributionMap = new Map<string, { count: number; value: number }>();
-    for (const pi of portfolioItems) {
+    portfolioItems.forEach((pi, i) => {
       const type = pi.item.type;
       const existing = distributionMap.get(type) ?? { count: 0, value: 0 };
       existing.count += pi.quantity;
-      existing.value += (pi.item.currentPrice ?? 0) * pi.quantity;
+      existing.value += resolvedUnitPrice[i] * pi.quantity;
       distributionMap.set(type, existing);
-    }
+    });
     const distributionByType = Array.from(distributionMap.entries()).map(
       ([type, data]) => ({ type, ...data })
     );
 
-    // Top performers by ROI
+    // Top performers by ROI — only include rows that have both a purchase
+    // price and a non-zero current price (either user-set or retail fallback).
     const topPerformers = portfolioItems
-      .filter((pi) => pi.purchasePrice && pi.purchasePrice > 0 && pi.item.currentPrice)
-      .map((pi) => ({
+      .map((pi, i) => ({ pi, unitPrice: resolvedUnitPrice[i] }))
+      .filter(({ pi, unitPrice }) => pi.purchasePrice && pi.purchasePrice > 0 && unitPrice > 0)
+      .map(({ pi, unitPrice }) => ({
         id: pi.id,
         itemId: pi.item.id,
         name: pi.item.name,
         type: pi.item.type,
         purchasePrice: pi.purchasePrice!,
-        currentPrice: pi.item.currentPrice!,
+        currentPrice: unitPrice,
         roi:
-          ((pi.item.currentPrice! - pi.purchasePrice!) / pi.purchasePrice!) *
+          ((unitPrice - pi.purchasePrice!) / pi.purchasePrice!) *
           100,
       }))
       .sort((a, b) => b.roi - a.roi)

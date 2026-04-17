@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { SERIES } from "@/data/series";
 import { BLOCS } from "@/data/blocs";
 import { checkFeature } from "@/lib/subscription";
+import { resolveItemPrice } from "@/lib/portfolio/resolveItemPrice";
 
 export async function GET() {
   try {
@@ -18,13 +19,15 @@ export async function GET() {
     const portfolioItems = await prisma.portfolioItem.findMany({
       where: { userId },
       select: {
-        id:            true,
-        quantity:      true,
-        purchasePrice: true,
-        purchaseDate:  true,
-        condition:     true,
-        notes:         true,
-        createdAt:     true,
+        id:                    true,
+        quantity:              true,
+        purchasePrice:         true,
+        currentPrice:          true,
+        currentPriceUpdatedAt: true,
+        purchaseDate:          true,
+        condition:             true,
+        notes:                 true,
+        createdAt:             true,
         item: {
           select: {
             id:             true,
@@ -32,8 +35,6 @@ export async function GET() {
             slug:           true,
             type:           true,
             imageUrl:       true,
-            currentPrice:   true,
-            priceTrend:     true,
             retailPrice:    true,
             language:       true,
             cardmarketUrl:  true,
@@ -54,15 +55,19 @@ export async function GET() {
     });
 
     const items = portfolioItems.map((pi) => {
-      const currentPrice = pi.item.currentPrice ?? pi.item.priceTrend ?? 0;
       const purchasePrice = pi.purchasePrice ?? 0;
+      // Unit current price = user's personal valuation → retailPrice → 0.
+      const currentPrice = resolveItemPrice(pi.currentPrice, pi.item.retailPrice);
       const currentValue = currentPrice * pi.quantity;
       const pnl = currentValue - purchasePrice;
       const pnlPercent = purchasePrice > 0 ? (pnl / purchasePrice) * 100 : 0;
 
       return {
         id: pi.id,
-        item: pi.item,
+        // Per-user values exposed at top level (never coming from shared Item)
+        currentPrice: pi.currentPrice,
+        currentPriceUpdatedAt: pi.currentPriceUpdatedAt,
+        item: { ...pi.item, currentPrice: null }, // legacy shape — field intentionally blank
         quantity: pi.quantity,
         purchasePrice,
         purchasePricePerUnit: pi.quantity > 0 ? purchasePrice / pi.quantity : 0,

@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Home, Package, ScanLine, BookOpen, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -16,7 +18,18 @@ const MOBILE_NAV_ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { status } = useSession();
   const { isPro } = useSubscription();
+
+  // The server always renders null (no session context on SSR) — to keep the
+  // client's first paint identical and avoid a hydration mismatch, we also
+  // return null until after mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  // Hide the mobile nav for guests — no reason to surface gated tabs before
+  // they sign in.
+  if (!mounted || status !== "authenticated") return null;
 
   return (
     /* Outer shell — leaves room for the iPhone home indicator */

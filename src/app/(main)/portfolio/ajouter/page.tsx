@@ -21,13 +21,13 @@ export default function AjouterPage() {
       </div>
 
       <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8 text-center shadow-[var(--shadow-card)]">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] shadow-md shadow-[#E7BA76]/30">
           <svg
-            className="h-8 w-8 text-blue-600 dark:text-blue-400"
+            className="h-8 w-8 text-[#2A1A06]"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            strokeWidth={1.5}
+            strokeWidth={2}
             stroke="currentColor"
           >
             <path
@@ -45,8 +45,8 @@ export default function AjouterPage() {
           que vous souhaitez ajouter a votre collection.
         </p>
         <Link
-          href="/collection"
-          className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          href="/collection/produits"
+          className="mt-6 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-6 text-sm font-semibold text-[#2A1A06] shadow-md shadow-[#E7BA76]/30 transition-opacity hover:opacity-90"
         >
           Voir le catalogue
         </Link>

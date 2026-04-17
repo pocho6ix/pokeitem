@@ -15,7 +15,6 @@ interface PortfolioItemsSectionProps {
   items: PortfolioItemData[];
   summary: PortfolioSummary;
   loading?: boolean;
-  onUpdatePrice: (item: PortfolioItemData["item"]) => void;
   onDelete: (id: string) => void;
   deletingId: string | null;
 }
@@ -24,7 +23,6 @@ export function PortfolioItemsSection({
   items,
   summary,
   loading,
-  onUpdatePrice,
   onDelete,
   deletingId,
 }: PortfolioItemsSectionProps) {
@@ -165,7 +163,6 @@ export function PortfolioItemsSection({
               key={row.id}
               row={row}
               onDelete={onDelete}
-              onRefresh={onUpdatePrice}
               isDeleting={deletingId === row.id}
             />
           ))}

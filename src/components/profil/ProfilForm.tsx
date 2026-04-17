@@ -278,8 +278,8 @@ export function ProfilForm() {
         <h2 className="mb-4 text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
           Informations
           {isPro && (
-            <span className="px-2 py-0.5 rounded-full bg-[#E7BA76]/10 text-[#E7BA76] text-xs font-semibold">
-              ★ Pro
+            <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] text-[#2A1A06] text-xs font-semibold shadow-sm shadow-[#E7BA76]/30">
+              ★ Premium
             </span>
           )}
           {isPro && isTrialing && trialEndsAt && (

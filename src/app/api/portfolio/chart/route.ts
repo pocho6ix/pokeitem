@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         purchasePrice: true,
         quantity: true,
+        currentPrice: true, // user's personal "now" value
         item: {
           select: {
-            currentPrice: true,
-            priceTrend: true,
+            retailPrice: true,
             prices: {
               where: { date: { gte: startDate } },
               orderBy: { date: "asc" },
@@ -99,8 +99,12 @@ export async function GET(request: NextRequest) {
             .filter((ph) => new Date(ph.date) <= currentDate)
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
+          // Resolution order on each chart tick:
+          //   1. The historical price at that date from PriceHistory (if any)
+          //   2. The owner's current personal valuation
+          //   3. The retail price (MSRP)
           const price =
-            priceAtDate?.price ?? pi.item.currentPrice ?? pi.item.priceTrend ?? 0;
+            priceAtDate?.price ?? pi.currentPrice ?? pi.item.retailPrice ?? 0;
           totalValue += price * pi.quantity;
         }
       }

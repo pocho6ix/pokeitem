@@ -15,7 +15,6 @@ import {
   Wallet,
   Search,
 } from "lucide-react";
-import { UpdatePriceModal } from "@/components/portfolio/UpdatePriceModal";
 import { PortfolioItemsSection } from "@/components/portfolio/PortfolioItemsSection";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { CollectionValue } from "@/components/collection/CollectionValue";
@@ -188,7 +187,8 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>("7J");
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [pricingItem, setPricingItem] = useState<PortfolioItemData["item"] | null>(null);
+  // Inline price editing was replaced by the `/portfolio/items/[id]` detail
+  // route — no more cross-user clobbering via the shared Item row.
 
   const fetchPortfolio = useCallback(async () => {
     try {
@@ -364,25 +364,10 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
         compact={compact}
       />
 
-      {/* Update Price Modal */}
-      {pricingItem && (
-        <UpdatePriceModal
-          item={pricingItem}
-          isOpen={!!pricingItem}
-          onClose={() => setPricingItem(null)}
-          onSuccess={() => {
-            setPricingItem(null);
-            fetchPortfolio();
-            fetchChart(period);
-          }}
-        />
-      )}
-
       {/* Items section — redesigned with search, filter, sort, and view toggle */}
       <PortfolioItemsSection
         items={items}
         summary={summary}
-        onUpdatePrice={(item) => setPricingItem(item)}
         onDelete={handleDelete}
         deletingId={deleting}
       />
