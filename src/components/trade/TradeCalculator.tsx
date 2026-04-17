@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ShoppingCart, HandCoins, ArrowLeftRight, Info, Check } from "lucide-react";
 import { CardDetailModal } from "@/components/cards/CardDetailModal";
@@ -134,27 +135,27 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
   // longer matches if the user pivoted).
   const [proposalOpen, setProposalOpen] = useState(false);
 
-  // Caller's own share info (for the proposal message signature). Fetched
-  // once; no-op if the user hasn't set up sharing yet.
-  const [myProfile, setMyProfile] = useState<{ displayName: string; slug: string | null; shareActive: boolean }>({
-    displayName: "Un dresseur",
-    slug:        null,
+  // Caller's own share info (for the proposal message signature). Name
+  // comes from the session; slug + share status from /api/share/settings.
+  const { data: session } = useSession();
+  const sessionName = (session?.user?.name ?? "Un dresseur") as string;
+  const [myShare, setMyShare] = useState<{ slug: string | null; shareActive: boolean }>({
+    slug: null,
     shareActive: false,
   });
+  const myProfile = useMemo(
+    () => ({ displayName: sessionName, slug: myShare.slug, shareActive: myShare.shareActive }),
+    [sessionName, myShare],
+  );
 
-  // Lazy-fetch my own share info for the proposal signature. If the call
-  // fails or I don't have a share, the sheet falls back to "activate sharing"
-  // text so the message is never broken.
+  // Lazy-fetch my own share info for the proposal signature. Missing share
+  // → shareActive:false → sheet uses the "activate sharing" fallback text.
   useEffect(() => {
     fetch("/api/share/settings")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
-        setMyProfile({
-          displayName: data.displayName ?? "Un dresseur",
-          slug:        data.slug ?? null,
-          shareActive: !!data.isActive,
-        });
+        setMyShare({ slug: data.slug ?? null, shareActive: !!data.isActive });
       })
       .catch(() => { /* silent — signature degrades gracefully */ });
   }, []);
