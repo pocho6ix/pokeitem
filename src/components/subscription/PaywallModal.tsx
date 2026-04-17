@@ -39,7 +39,7 @@ const PRO_BENEFITS = [
   'Items scellés illimités',
   'Scans illimités',
   'Valeur totale & statistiques avancées',
-  "Matchmaking d'échanges entre dresseurs",
+  "Calculateur d'échanges entre dresseurs",
 ]
 
 interface PaywallModalProps {

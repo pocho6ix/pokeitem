@@ -18,7 +18,7 @@ const PRO_FEATURES = [
   'Valeur totale de la collection',
   "Graphique d'évolution du classeur",
   'Statistiques avancées & P&L',
-  'Matchmaking d\'échanges entre dresseurs',
+  "Calculateur d'échanges entre dresseurs",
   'Toutes les fonctionnalités Free',
 ]
 

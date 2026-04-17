@@ -62,8 +62,6 @@ model User {
   feedbacks         Feedback[]
   dailyQuestClaims  DailyQuestClaim[]
   classeurShare     ClasseurShare?
-  tradeMatchesA     TradeMatch[]       @relation("TradeMatchA")
-  tradeMatchesB     TradeMatch[]       @relation("TradeMatchB")
 
   @@map("users")
 }
@@ -655,22 +653,3 @@ model ClasseurShare {
   @@map("classeur_shares")
 }
 
-model TradeMatch {
-  id              String   @id @default(cuid())
-  userAId         String
-  userBId         String
-  aGivesCardIds   String[]
-  bGivesCardIds   String[]
-  aValueCents     Int
-  bValueCents     Int
-  balanceScore    Float
-  computedAt      DateTime @default(now())
-
-  userA User @relation("TradeMatchA", fields: [userAId], references: [id], onDelete: Cascade)
-  userB User @relation("TradeMatchB", fields: [userBId], references: [id], onDelete: Cascade)
-
-  @@unique([userAId, userBId])
-  @@index([userAId, balanceScore(sort: Desc)])
-  @@index([userBId, balanceScore(sort: Desc)])
-  @@map("trade_matches")
-}
