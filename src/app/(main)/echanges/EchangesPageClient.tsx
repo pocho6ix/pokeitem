@@ -242,7 +242,7 @@ function EmptyState({ hasActiveShare }: { hasActiveShare: boolean }) {
           <Heart className="h-4 w-4 shrink-0 text-[#E7BA76]" />
           <p className="text-left text-xs text-[var(--text-secondary)]">
             Pour qu&apos;on te trouve aussi,{" "}
-            <Link href="/profil/partage" className="font-semibold text-[#E7BA76] hover:underline">
+            <Link href="/settings/sharing" className="font-semibold text-[#E7BA76] hover:underline">
               active le partage de ton classeur
             </Link>
             .

@@ -130,7 +130,7 @@ function OwnerView({
           Voilà ce que les autres dresseurs verront quand ils ouvriront ton lien.
         </p>
         <Link
-          href="/profil/partage"
+          href="/settings/sharing"
           className="mt-4 inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-4 py-2 text-xs font-semibold text-[#2A1A06]"
         >
           Partager mon classeur
