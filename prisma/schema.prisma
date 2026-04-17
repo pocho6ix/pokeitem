@@ -367,6 +367,11 @@ model Card {
   trainerType    String?
   energyType     String?
   isSpecial    Boolean   @default(false)
+  // WOTC-era "1re Édition" variants. Cards minted as 1st Edition carry the
+  // circular "Édition 1" stamp under the artwork. The UI overlays that stamp
+  // on the rendered image (v1 — real scraped 1ED/Unlimited images will ship
+  // in a follow-up, at which point the overlay can be retired).
+  isFirstEdition Boolean @default(false)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
