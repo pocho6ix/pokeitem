@@ -276,40 +276,66 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
         />
       </div>
 
-      <div className="mt-4 pb-24">{/* pb-24 = reserve space for sticky send bar on trade tab */}
-        {tab === "buy"   && (
-          <BuySellPane
-            kind="buy"
-            section={data.canBuy}
-            displayName={displayName}
-            hiddenSections={data.hiddenSections}
-            onOpenDetail={setDetailCardId}
-          />
-        )}
-        {tab === "sell"  && (
-          <BuySellPane
-            kind="sell"
-            section={data.canSell}
-            displayName={displayName}
-            hiddenSections={data.hiddenSections}
-            onOpenDetail={setDetailCardId}
-          />
-        )}
-        {tab === "trade" && tradePossible && data && liveTrade && (
-          <TradePane
-            allGive={data.trade.iGive.cards}
-            allReceive={data.trade.iReceive.cards}
-            giveSelected={giveSelected}
-            receiveSelected={receiveSelected}
-            onToggleGive={toggleGive}
-            onToggleReceive={toggleReceive}
-            onSetAllGive={setAllGive}
-            onSetAllReceive={setAllReceive}
-            onOpenDetail={setDetailCardId}
-            liveTrade={liveTrade}
-            displayName={displayName}
-          />
-        )}
+      <div className="mt-4">
+        {/* Inline proposal CTA — passed as a slot so each pane inserts it
+            between its summary/balance block and the card lists. Keeps the
+            button close to the value it summarises and removes the prior
+            fixed-bottom bar fighting with the mobile nav. */}
+        {(() => {
+          const cta = (
+            <TradeProposalButton
+              activeTab={tab}
+              canBuyCount={buyCount}
+              canSellCount={sellCount}
+              tradePossible={tradePossible}
+              hasContact={Boolean(contact.discord || contact.email || contact.twitter)}
+              onClick={() => setProposalOpen(true)}
+            />
+          );
+          if (tab === "buy") {
+            return (
+              <BuySellPane
+                kind="buy"
+                section={data.canBuy}
+                displayName={displayName}
+                hiddenSections={data.hiddenSections}
+                onOpenDetail={setDetailCardId}
+                ctaSlot={cta}
+              />
+            );
+          }
+          if (tab === "sell") {
+            return (
+              <BuySellPane
+                kind="sell"
+                section={data.canSell}
+                displayName={displayName}
+                hiddenSections={data.hiddenSections}
+                onOpenDetail={setDetailCardId}
+                ctaSlot={cta}
+              />
+            );
+          }
+          if (tradePossible && liveTrade) {
+            return (
+              <TradePane
+                allGive={data.trade.iGive.cards}
+                allReceive={data.trade.iReceive.cards}
+                giveSelected={giveSelected}
+                receiveSelected={receiveSelected}
+                onToggleGive={toggleGive}
+                onToggleReceive={toggleReceive}
+                onSetAllGive={setAllGive}
+                onSetAllReceive={setAllReceive}
+                onOpenDetail={setDetailCardId}
+                liveTrade={liveTrade}
+                displayName={displayName}
+                ctaSlot={cta}
+              />
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* Contact — pinned below the calculator, always visible */}
@@ -321,18 +347,6 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
           twitter={contact.twitter}
         />
       </div>
-
-      {/* Sticky CTA — visible on every tab, label adapts to context */}
-      {data && (
-        <TradeProposalButton
-          activeTab={tab}
-          canBuyCount={buyCount}
-          canSellCount={sellCount}
-          tradePossible={tradePossible}
-          hasContact={Boolean(contact.discord || contact.email || contact.twitter)}
-          onClick={() => setProposalOpen(true)}
-        />
-      )}
 
       {/* Proposal sheet — renders the pre-formatted message + contact rows */}
       {data && liveTrade && (
@@ -417,13 +431,14 @@ function TabButton({
 // ─── Buy / Sell pane (read-only) ─────────────────────────────────────────────
 
 function BuySellPane({
-  kind, section, displayName, hiddenSections, onOpenDetail,
+  kind, section, displayName, hiddenSections, onOpenDetail, ctaSlot,
 }: {
   kind: "buy" | "sell";
   section: Section;
   displayName: string;
   hiddenSections: string[];
   onOpenDetail: (cardId: string) => void;
+  ctaSlot: React.ReactNode;
 }) {
   if (kind === "buy" && (hiddenSections.includes("cards") && hiddenSections.includes("doubles"))) {
     return <EmptyNote>{displayName} n&apos;a pas partagé sa collection.</EmptyNote>;
@@ -452,6 +467,9 @@ function BuySellPane({
       </div>
 
       {missingPrice && <MissingPriceHint />}
+
+      {/* Primary CTA — between the summary and the card list */}
+      <div className="mb-4">{ctaSlot}</div>
 
       <div className="space-y-4">
         {groups.map((g) => (
@@ -485,6 +503,7 @@ function TradePane({
   onSetAllGive, onSetAllReceive,
   onOpenDetail,
   liveTrade, displayName,
+  ctaSlot,
 }: {
   allGive:     CardPayload[];
   allReceive:  CardPayload[];
@@ -505,6 +524,7 @@ function TradePane({
     balancePercent: number;
   };
   displayName: string;
+  ctaSlot: React.ReactNode;
 }) {
   const complementAbs = Math.abs(liveTrade.deltaCents);
   const isBalanced    = liveTrade.direction === "none";
@@ -547,6 +567,9 @@ function TradePane({
       </div>
 
       {missingPrice && <div className="mt-3"><MissingPriceHint /></div>}
+
+      {/* Primary CTA — static, between the balance block and the card lists */}
+      <div className="mt-4">{ctaSlot}</div>
 
       {/* Selectable lists */}
       <div className="mt-4 space-y-6">

@@ -3,10 +3,14 @@
 import { ShoppingCart, HandCoins, ArrowLeftRight } from "lucide-react";
 
 /**
- * Sticky bottom CTA that opens the proposal sheet. Its label and icon track
- * the active tab (Acheter / Vendre / Échange), and it dims to "disabled"
- * when the corresponding section is empty or the target has no contact
- * channel (with a tooltip explaining why).
+ * Inline CTA that opens the proposal sheet. Rendered *inside* the active
+ * pane (between the summary header and the card lists) rather than as a
+ * floating sticky bar — keeps it close to the value it summarises and
+ * avoids fighting for viewport space with the bottom nav.
+ *
+ * Uses the shared `.btn-gold` class (globals.css) so the gradient matches
+ * every other primary CTA in the app ("Partager le lien", "Ajouter à ma
+ * collection", etc.).
  */
 export interface TradeProposalButtonProps {
   activeTab: "buy" | "sell" | "trade";
@@ -35,21 +39,16 @@ export function TradeProposalButton({
       : undefined;
 
   return (
-    <div
-      className="pointer-events-none fixed bottom-16 left-0 right-0 z-40 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/90 to-transparent px-4 pb-3 pt-8 md:bottom-0"
-      style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      title={title}
+      className="btn-gold flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold text-black disabled:cursor-not-allowed disabled:opacity-40"
     >
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onClick}
-        title={title}
-        className="pointer-events-auto flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#F2D58A] via-[#E7BA76] to-[#C99A4F] px-4 text-base font-semibold text-[#2A1A06] shadow-lg shadow-[#E7BA76]/30 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 animate-in slide-in-from-bottom-2 duration-200"
-      >
-        <spec.Icon className="h-5 w-5" />
-        {spec.label}
-      </button>
-    </div>
+      <spec.Icon className="h-5 w-5" />
+      {spec.label}
+    </button>
   );
 }
 
