@@ -52,15 +52,16 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       include: {
         card: {
           select: {
-            id:           true,
-            number:       true,
-            name:         true,
-            rarity:       true,
-            imageUrl:     true,
-            price:        true,
-            priceFr:      true,
-            priceReverse: true,
-            isSpecial:    true,
+            id:             true,
+            number:         true,
+            name:           true,
+            rarity:         true,
+            imageUrl:       true,
+            price:          true,
+            priceFr:        true,
+            priceReverse:   true,
+            isSpecial:      true,
+            isFirstEdition: true,
           },
         },
       },
@@ -86,9 +87,10 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       name:       uc.card.name,
       rarity:     uc.card.rarity as CardRarity,
       imageUrl:   uc.card.imageUrl,
-      price:      price ?? null,
+      price:          price ?? null,
       isFrenchPrice,
-      isSpecial:  uc.card.isSpecial,
+      isSpecial:      uc.card.isSpecial,
+      isFirstEdition: uc.card.isFirstEdition ?? false,
     };
   });
 
@@ -97,13 +99,14 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
     const price    = c.priceFr ?? c.price ?? null;
     const isFrenchPrice = c.priceFr != null;
     return {
-      cardId:       c.id,
-      number:       c.number,
-      name:         c.name,
-      rarity:       c.rarity as CardRarity,
-      imageUrl:     c.imageUrl ?? null,
-      isSpecial:    c.isSpecial,
-      price:        price ?? null,
+      cardId:         c.id,
+      number:         c.number,
+      name:           c.name,
+      rarity:         c.rarity as CardRarity,
+      imageUrl:       c.imageUrl ?? null,
+      isSpecial:      c.isSpecial,
+      isFirstEdition: c.isFirstEdition ?? false,
+      price:          price ?? null,
       isFrenchPrice,
     };
   });

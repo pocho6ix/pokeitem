@@ -7,6 +7,7 @@ import { Trash2, X, CheckSquare, ArrowUpDown, Search } from "lucide-react";
 import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition, getCardRarityImage } from "@/types/card";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
+import { FirstEditionStamp } from "./FirstEditionStamp";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -26,6 +27,7 @@ export interface ClasseurCard {
   price: number | null;
   isFrenchPrice?: boolean; // true when `price` is the cheapest FR NM listing
   isSpecial?: boolean;
+  isFirstEdition?: boolean;
 }
 
 // ── Missing card (not owned, from the full series catalog) ──────────────────
@@ -36,6 +38,7 @@ export interface MissingCard {
   rarity: CardRarity;
   imageUrl: string | null;
   isSpecial: boolean;
+  isFirstEdition?: boolean;
   price: number | null;     // NORMAL market price
   isFrenchPrice: boolean;
 }
@@ -83,6 +86,7 @@ interface GroupedCard {
   rarity: CardRarity;
   imageUrl: string | null;
   isSpecial: boolean;
+  isFirstEdition?: boolean;
   ownedVersions: CardVersion[];
   versionQty: Map<CardVersion, number>;
   displayPrice: number | null;
@@ -229,6 +233,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
         rarity: base.rarity,
         imageUrl: base.imageUrl,
         isSpecial: base.isSpecial ?? false,
+        isFirstEdition: base.isFirstEdition ?? false,
         ownedVersions,
         versionQty: qtyMap,
         displayPrice: displayEntry.price,
@@ -553,6 +558,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{grp.number}</div>
                       )}
+                      {grp.isFirstEdition && <FirstEditionStamp size="sm" />}
 
                       {/* Version badges — hidden for special cards (single version only) */}
                       {grp.ownedVersions.length > 0 && !grp.isSpecial && (
@@ -680,6 +686,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{c.number}</div>
                       )}
+                      {c.isFirstEdition && <FirstEditionStamp size="sm" className="opacity-60" />}
                       {/* Missing-version badges — only show the versions NOT yet owned
                           (so a partially-owned card surfaces what's still needed) */}
                       {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (() => {

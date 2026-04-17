@@ -10,6 +10,7 @@ import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
 import type { CardRarity } from "@/types/card";
 import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
+import { FirstEditionStamp } from "./FirstEditionStamp";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -87,6 +88,7 @@ interface CardDetail {
   priceFr: number | null;
   priceReverse: number | null;
   isSpecial: boolean;
+  isFirstEdition?: boolean;
   priceUpdatedAt: string | null;
   cardmarketId: string | null;
   cardmarketUrl: string | null;  // e.g. "Mega-Evolution/Bulbasaur-V2-MEG133"
@@ -357,6 +359,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               {card?.number ?? "…"}
             </div>
           )}
+          {card?.isFirstEdition && <FirstEditionStamp size="sm" />}
         </div>
 
         {/* Card info */}
