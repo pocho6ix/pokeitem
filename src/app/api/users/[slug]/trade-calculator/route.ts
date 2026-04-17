@@ -222,9 +222,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
   const receiveValue = canBuyTotal;
   const deltaCents   = giveValue - receiveValue;
 
+  // deltaCents = giveValue - receiveValue.
+  // Positive delta → I'm giving MORE value than I'm receiving, so THEY owe
+  // me the difference. Negative delta → the reverse: I owe them.
+  // Tolerance ±100 cents avoids labelling a 0.50 € rounding noise as "unbalanced".
   let direction: "me_to_them" | "them_to_me" | "none";
-  if (deltaCents > 100)       direction = "me_to_them"; // I'm over-giving >1€
-  else if (deltaCents < -100) direction = "them_to_me"; // They're over-giving >1€
+  if (deltaCents > 100)       direction = "them_to_me"; // They owe me
+  else if (deltaCents < -100) direction = "me_to_them"; // I owe them
   else                        direction = "none";
 
   const highest = Math.max(giveValue, receiveValue);

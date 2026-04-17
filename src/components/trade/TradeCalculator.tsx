@@ -339,7 +339,7 @@ function TradePane({
     ? "Échange parfaitement équilibré !"
     : trade.complementDirection === "them_to_me"
       ? `${displayName} peut te verser un complément de ${formatEur(complementAbs)}`
-      : `Tu peux demander un complément de ${formatEur(complementAbs)} à ${displayName}`;
+      : `Tu peux verser un complément de ${formatEur(complementAbs)} à ${displayName}`;
 
   const missingPrice =
     trade.iGive.cards.some((c) => c.valueCents === 0) ||
