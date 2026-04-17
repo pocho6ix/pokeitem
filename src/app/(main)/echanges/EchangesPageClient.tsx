@@ -8,6 +8,7 @@ import { ArrowLeftRight, ArrowRight, Search, Heart, Copy, Send } from "lucide-re
 import { useDebounce } from "@/hooks/useDebounce";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { SuggestedUsers } from "@/components/trade/SuggestedUsers";
+import { SharingToggle } from "@/components/trade/SharingToggle";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,11 @@ export function EchangesPageClient({
           Trouve un dresseur et vois ce que vous pouvez échanger
         </p>
       </div>
+
+      {/* Public / private toggle — lets users flip their own visibility
+          without leaving the page. Always visible, also shown while a
+          search is in progress. */}
+      <SharingToggle />
 
       {/* Search bar */}
       <div className="relative">
