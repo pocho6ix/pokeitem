@@ -8,7 +8,9 @@
  *   avg7  → 7-day average     (→ inserted as "today - 7 days",  only if window empty)
  *   avg30 → 30-day average    (→ inserted as "today - 30 days", only if window empty)
  *
- * Also updates Card.price / Card.priceFr / Card.priceReverse with the latest values.
+ * History-only: does NOT touch Card.price / Card.priceFr / Card.priceReverse.
+ * Those live fields are owned by the daily Cardmarket FR NM scraper — this
+ * backfill is purely for filling gaps in CardPriceHistory.
  *
  * Rules:
  *  - Existing history points are NEVER overwritten (upsert with update: {})
@@ -130,12 +132,10 @@ async function main() {
   const DELAY_MS = 150   // ms between waves
 
   let totalInserted = 0
-  let totalUpdatedCards = 0
   let totalSkippedNoPricing = 0
 
   for (const [setId, cards] of setGroups) {
     let setInserted = 0
-    let setUpdated = 0
 
     for (let i = 0; i < cards.length; i += BATCH) {
       const batch = cards.slice(i, i + BATCH)
@@ -213,38 +213,23 @@ async function main() {
             })
           }
           setInserted += points.length
-
-          // ── Update Card live prices ───────────────────────────────────────
-          const cardUpdate: Record<string, unknown> = {}
-          if (trend !== null)     cardUpdate.price      = trend
-          if (trend !== null)     cardUpdate.priceFr    = trend
-          if (trendHolo !== null) cardUpdate.priceReverse = trendHolo
-
-          if (Object.keys(cardUpdate).length > 0) {
-            await prisma.card.update({
-              where: { id: card.id },
-              data:  cardUpdate,
-            })
-            setUpdated++
-          }
+          // Card.price / priceFr / priceReverse are intentionally NOT updated
+          // here — they belong to the daily Cardmarket FR NM scraper.
         } else {
           // dry-run: just count
           setInserted += 3
-          if (trend !== null) setUpdated++
         }
       }))
 
       await new Promise(r => setTimeout(r, DELAY_MS))
     }
 
-    console.log(`  ${setId.padEnd(12)} → ${cards.length} cartes · ${setInserted} points insérés · ${setUpdated} prix mis à jour`)
-    totalInserted    += setInserted
-    totalUpdatedCards += setUpdated
+    console.log(`  ${setId.padEnd(12)} → ${cards.length} cartes · ${setInserted} points insérés`)
+    totalInserted += setInserted
   }
 
   console.log(`\n${"─".repeat(50)}`)
   console.log(`✅ Total: ${totalInserted} points historique insérés`)
-  console.log(`   Cartes mises à jour: ${totalUpdatedCards}`)
   console.log(`   Sans prix TCGdex:    ${totalSkippedNoPricing}`)
   if (DRY_RUN) console.log("   (dry-run — nothing written)")
 

@@ -68,11 +68,14 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "private, max-age=300, stale-while-revalidate=60" },
         ],
       },
-      // Historique de prix — cache 1h (mis à jour toutes les 6h par le cron)
+      // Historique de prix — cache court (60s) pour que les corrections
+      // de prix (backfills, scraper quotidien) deviennent visibles vite.
+      // stale-while-revalidate=300 garde un cache serveur de 5 min pour
+      // amortir les pics de trafic tout en ravitaillant en arrière-plan.
       {
         source: "/api/cards/:cardId/price-history",
         headers: [
-          { key: "Cache-Control", value: "private, max-age=3600, stale-while-revalidate=300" },
+          { key: "Cache-Control", value: "private, max-age=60, stale-while-revalidate=300" },
         ],
       },
       // Catalogue items publics — cache 5 min (mis à jour par le scraper toutes les 6h)
