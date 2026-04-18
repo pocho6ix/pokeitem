@@ -45,6 +45,7 @@ export interface BlocGroup {
 
 const VERSION_BADGE_IMG: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             '/badge_normale.png',
+  [CardVersion.FIRST_EDITION]:      '/images/badges/first-edition.png',
   [CardVersion.REVERSE]:            '/badge_reverse.png',
   [CardVersion.REVERSE_POKEBALL]:   '/badge_pokeball.png',
   [CardVersion.REVERSE_MASTERBALL]: '/badge_masterball.png',

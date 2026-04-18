@@ -4,8 +4,10 @@
 // Rules derived from Pokémon TCG print history (French market):
 //
 //  WOTC era
-//  • Set de Base → Neo Destiny  (pre-Reverse)   → Normale + Holo only
-//  • Expédition, Aquapolis, Skyridge (e-Card)    → Normale + Reverse (first sets with Reverse)
+//  • Set de Base, Jungle, Fossile, Team Rocket
+//      → Normale/Holo + Édition 1  (1ère édition = variante avec le stamp)
+//  • Neo Genesis → Neo Destiny                 → Normale + Holo only
+//  • Expédition, Aquapolis, Skyridge (e-Card)  → Normale + Reverse
 //
 //  EX → EB blocs                                 → Normale + Reverse
 //
@@ -18,26 +20,52 @@
 //  • Héros Transcendants (ME2.5), Équilibre Parfait (ME03) → + Reverse Poké Ball
 // ---------------------------------------------------------------------------
 
+import type { CardRarity } from "@/types/card";
+
 export enum CardVersion {
-  NORMAL            = "NORMAL",
-  REVERSE           = "REVERSE",
-  REVERSE_POKEBALL  = "REVERSE_POKEBALL",
+  NORMAL             = "NORMAL",
+  REVERSE            = "REVERSE",
+  REVERSE_POKEBALL   = "REVERSE_POKEBALL",
   REVERSE_MASTERBALL = "REVERSE_MASTERBALL",
+  // WOTC 4 base sets only — physical 1st Edition stamp variant.
+  FIRST_EDITION      = "FIRST_EDITION",
 }
 
+/**
+ * Generic labels, used when the display context doesn't know the card rarity.
+ * For the 4 WOTC base sets, `getVersionLabel(version, rarity)` below provides
+ * a rarity-aware label ("Holo" instead of "Normale" on HOLO_RARE cards).
+ */
 export const CARD_VERSION_LABELS: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "Normale",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Reverse (Pokéball)",
   [CardVersion.REVERSE_MASTERBALL]: "Reverse (Masterball)",
+  [CardVersion.FIRST_EDITION]:      "Édition 1",
 };
 
 export const VERSION_SORT_ORDER: Record<CardVersion, number> = {
   [CardVersion.NORMAL]:             0,
-  [CardVersion.REVERSE]:            1,
-  [CardVersion.REVERSE_POKEBALL]:   2,
-  [CardVersion.REVERSE_MASTERBALL]: 3,
+  [CardVersion.FIRST_EDITION]:      1,  // ED1 sits right next to its Normale/Holo counterpart
+  [CardVersion.REVERSE]:            2,
+  [CardVersion.REVERSE_POKEBALL]:   3,
+  [CardVersion.REVERSE_MASTERBALL]: 4,
 };
+
+// ── Rarity-aware label helper ────────────────────────────────────────────────
+
+/**
+ * Rarity-aware label used in UI pickers and displays.
+ * For the 4 WOTC base sets:
+ *   - NORMAL on a HOLO_RARE card → "Holo"  (the card itself is holographic)
+ *   - NORMAL on any other rarity → "Normale"
+ *   - FIRST_EDITION               → "Édition 1"
+ * All other versions fall back to CARD_VERSION_LABELS.
+ */
+export function getVersionLabel(version: CardVersion, rarity?: CardRarity | string | null): string {
+  if (version === CardVersion.NORMAL && rarity === "HOLO_RARE") return "Holo";
+  return CARD_VERSION_LABELS[version];
+}
 
 // ── Shorthand version sets ───────────────────────────────────────────────────
 
@@ -45,21 +73,19 @@ const V_NORMAL     = [CardVersion.NORMAL] as const;
 const V_REVERSE    = [CardVersion.NORMAL, CardVersion.REVERSE] as const;
 const V_POKEBALL   = [CardVersion.NORMAL, CardVersion.REVERSE, CardVersion.REVERSE_POKEBALL] as const;
 const V_MASTERBALL = [CardVersion.NORMAL, CardVersion.REVERSE, CardVersion.REVERSE_POKEBALL, CardVersion.REVERSE_MASTERBALL] as const;
+// WOTC base sets — Normale/Holo + Édition 1 (physical stamp variant).
+const V_WOTC_BASE  = [CardVersion.NORMAL, CardVersion.FIRST_EDITION] as const;
 
 // ── Per-serie overrides (most specific, checked first) ───────────────────────
 
 const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   // ── WOTC — pre-Reverse era (Set de Base → Neo Destiny) ──────────────────
-  // These sets predate the Reverse mechanic — Normale + Holo only.
+  // These sets predate the Reverse mechanic.
   // Expédition, Aquapolis, Skyridge (e-Card) DO have Reverse → wotc bloc default applies.
-  "set-de-base":      V_NORMAL,
-  "set-de-base-1ed":  V_NORMAL, // ED1 variant — same pre-Reverse era
-  "jungle":           V_NORMAL,
-  "jungle-1ed":       V_NORMAL,
-  "fossile":          V_NORMAL,
-  "fossile-1ed":      V_NORMAL,
-  "team-rocket":      V_NORMAL,
-  "team-rocket-1ed":  V_NORMAL,
+  "set-de-base":      V_WOTC_BASE,
+  "jungle":           V_WOTC_BASE,
+  "fossile":          V_WOTC_BASE,
+  "team-rocket":      V_WOTC_BASE,
   "neo-genesis":      V_NORMAL,
   "neo-discovery":    V_NORMAL,
   "neo-revelation":   V_NORMAL,

@@ -68,19 +68,7 @@ export function BlocSerieCardList({ blocs, baseUrl, showMarketValue = true }: Bl
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="flex min-w-0 items-center gap-1.5 truncate text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
-                        {/* Strip the " ED1" suffix from the display name; the
-                            badge image below carries the same information
-                            with more visual weight. */}
-                        <span className="truncate">{serie.serieName.replace(/\s+ED1$/i, "")}</span>
-                        {serie.serieSlug.endsWith("-1ed") && (
-                          <Image
-                            src="/images/badges/edition-1.png"
-                            alt="Édition 1"
-                            width={20}
-                            height={20}
-                            className="h-5 w-auto shrink-0 object-contain"
-                          />
-                        )}
+                        <span className="truncate">{serie.serieName}</span>
                       </span>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="font-data text-xs text-[var(--text-secondary)]">

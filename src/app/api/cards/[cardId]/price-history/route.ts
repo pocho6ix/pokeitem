@@ -36,8 +36,8 @@ export async function GET(
         price: true,
         priceFr: true,
         priceReverse: true,
+        priceFirstEdition: true,
         isSpecial: true,
-        isFirstEdition: true,
         priceUpdatedAt: true,
         serie: {
           select: {
@@ -116,8 +116,8 @@ export async function GET(
         price: card.price,
         priceFr: card.priceFr,
         priceReverse: card.priceReverse,
+        priceFirstEdition: card.priceFirstEdition,
         isSpecial: card.isSpecial,
-        isFirstEdition: card.isFirstEdition,
         priceUpdatedAt: card.priceUpdatedAt,
         cardmarketId,
         cardmarketUrl,

@@ -45,3 +45,6 @@ next-env.d.ts
 # claude
 .claude/
 public/logo-long-light-backup.png
+
+# one-shot DB dumps (see scripts/delete-ed1-series.ts etc.)
+/backups/

@@ -28,6 +28,31 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.tcggo.com" },
     ],
   },
+  // Permanent redirects from the legacy ED1 series slugs (removed in favor
+  // of a CardVersion.FIRST_EDITION variant on the Unlimited twins). Bookmarks
+  // and external links still land on the right classeur / catalogue page.
+  async redirects() {
+    const ED1_PAIRS = [
+      ["set-de-base-1ed",   "set-de-base"],
+      ["jungle-1ed",        "jungle"],
+      ["fossile-1ed",       "fossile"],
+      ["team-rocket-1ed",   "team-rocket"],
+    ] as const;
+    const rules: { source: string; destination: string; permanent: true }[] = [];
+    for (const [from, to] of ED1_PAIRS) {
+      rules.push({
+        source:      `/collection/cartes/wotc/${from}`,
+        destination: `/collection/cartes/wotc/${to}`,
+        permanent:   true,
+      });
+      rules.push({
+        source:      `/portfolio/cartes/wotc/${from}`,
+        destination: `/portfolio/cartes/wotc/${to}`,
+        permanent:   true,
+      });
+    }
+    return rules;
+  },
   async headers() {
     return [
       // Security headers sur toutes les pages

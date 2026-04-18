@@ -15,6 +15,7 @@ export interface PriceFields {
   price?: number | null
   priceFr?: number | null
   priceReverse?: number | null
+  priceFirstEdition?: number | null
 }
 
 /**
@@ -41,10 +42,15 @@ export function isFrenchPrice(card: PriceFields): boolean {
  */
 export function getPriceForVersion(
   card: PriceFields,
-  version: CardVersion | "NORMAL" | "REVERSE" | "REVERSE_POKEBALL" | "REVERSE_MASTERBALL"
+  version: CardVersion | "NORMAL" | "REVERSE" | "REVERSE_POKEBALL" | "REVERSE_MASTERBALL" | "FIRST_EDITION"
 ): number {
   if (version === "NORMAL") {
     return card.priceFr ?? card.price ?? 0
+  }
+  if (version === "FIRST_EDITION") {
+    // ED1 has its own market pricing (Cardmarket ?isFirstEd=Y). Fall back
+    // cleanly when the scraper hasn't populated it yet.
+    return card.priceFirstEdition ?? card.priceFr ?? card.price ?? 0
   }
   // Reverse variants: no FR-specific field, prefer reverse trend, fallback to FR, then price
   return card.priceReverse ?? card.priceFr ?? card.price ?? 0

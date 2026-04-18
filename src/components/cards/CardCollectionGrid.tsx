@@ -218,6 +218,7 @@ const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
 
 const MODAL_VERSION_LABELS: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "Normale",
+  [CardVersion.FIRST_EDITION]:      "Édition 1",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
   [CardVersion.REVERSE_MASTERBALL]: "Masterball",
@@ -493,6 +494,7 @@ function AddToCollectionModal({
 // Badge image per version
 const VERSION_BADGE_IMG: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "/badge_normale.png",
+  [CardVersion.FIRST_EDITION]:      "/images/badges/first-edition.png",
   [CardVersion.REVERSE]:            "/badge_reverse.png",
   [CardVersion.REVERSE_POKEBALL]:   "/badge_pokeball.png",
   [CardVersion.REVERSE_MASTERBALL]: "/badge_masterball.png",

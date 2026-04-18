@@ -27,7 +27,6 @@ export interface ClasseurCard {
   price: number | null;
   isFrenchPrice?: boolean; // true when `price` is the cheapest FR NM listing
   isSpecial?: boolean;
-  isFirstEdition?: boolean;
 }
 
 // ── Missing card (not owned, from the full series catalog) ──────────────────
@@ -38,7 +37,6 @@ export interface MissingCard {
   rarity: CardRarity;
   imageUrl: string | null;
   isSpecial: boolean;
-  isFirstEdition?: boolean;
   price: number | null;     // NORMAL market price
   isFrenchPrice: boolean;
 }
@@ -46,6 +44,7 @@ export interface MissingCard {
 // ── Version badge images ────────────────────────────────────────────────────
 const VERSION_BADGE_IMG: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "/badge_normale.png",
+  [CardVersion.FIRST_EDITION]:      "/images/badges/first-edition.png",
   [CardVersion.REVERSE]:            "/badge_reverse.png",
   [CardVersion.REVERSE_POKEBALL]:   "/badge_pokeball.png",
   [CardVersion.REVERSE_MASTERBALL]: "/badge_masterball.png",
@@ -54,9 +53,10 @@ const VERSION_BADGE_IMG: Record<CardVersion, string> = {
 // ASC sort order (NORMALE first, MASTERBALL last)
 const VERSION_SORT_ORDER: Record<CardVersion, number> = {
   [CardVersion.NORMAL]:             0,
-  [CardVersion.REVERSE]:            1,
-  [CardVersion.REVERSE_POKEBALL]:   2,
-  [CardVersion.REVERSE_MASTERBALL]: 3,
+  [CardVersion.FIRST_EDITION]:      1,
+  [CardVersion.REVERSE]:            2,
+  [CardVersion.REVERSE_POKEBALL]:   3,
+  [CardVersion.REVERSE_MASTERBALL]: 4,
 };
 
 const BADGE_SIZE = 15;
@@ -86,7 +86,6 @@ interface GroupedCard {
   rarity: CardRarity;
   imageUrl: string | null;
   isSpecial: boolean;
-  isFirstEdition?: boolean;
   ownedVersions: CardVersion[];
   versionQty: Map<CardVersion, number>;
   displayPrice: number | null;
@@ -233,7 +232,6 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
         rarity: base.rarity,
         imageUrl: base.imageUrl,
         isSpecial: base.isSpecial ?? false,
-        isFirstEdition: base.isFirstEdition ?? false,
         ownedVersions,
         versionQty: qtyMap,
         displayPrice: displayEntry.price,
@@ -558,7 +556,9 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{grp.number}</div>
                       )}
-                      {grp.isFirstEdition && <FirstEditionStamp size="sm" />}
+                      {grp.ownedVersions.includes(CardVersion.FIRST_EDITION) && (
+                        <FirstEditionStamp size="sm" />
+                      )}
 
                       {/* Version badges — hidden for special cards (single version only) */}
                       {grp.ownedVersions.length > 0 && !grp.isSpecial && (
@@ -686,7 +686,6 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{c.number}</div>
                       )}
-                      {c.isFirstEdition && <FirstEditionStamp size="sm" className="opacity-60" />}
                       {/* Missing-version badges — only show the versions NOT yet owned
                           (so a partially-owned card surfaces what's still needed) */}
                       {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (() => {

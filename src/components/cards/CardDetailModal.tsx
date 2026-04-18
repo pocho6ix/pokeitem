@@ -6,7 +6,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES, getCardRarityImage } from "@/types/card";
 import { isSpecialCard } from "@/lib/pokemon/card-variants";
-import { CardVersion, getSerieVersions } from "@/data/card-versions";
+import { CardVersion, getSerieVersions, getVersionLabel } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
 import type { CardRarity } from "@/types/card";
 import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
@@ -29,11 +29,15 @@ const CONDITION_BADGES: { value: CardCondition; label: string; badge: string }[]
   { value: CardCondition.GRADED,       label: "Gradée",       badge: "badge_graded.png"       },
 ];
 const GRADE_VALUES = [5, 6, 7, 8, 9, 9.5, 10];
-const VERSION_LABELS: Record<CardVersion, string> = {
+// Shorter variant labels used specifically in the add-sheet picker (tighter
+// buttons). Rarity-aware overrides are applied via getVersionLabel() on
+// NORMAL for the 4 WOTC base sets (→ "Holo" on HOLO_RARE cards).
+const VERSION_LABELS_SHORT: Record<CardVersion, string> = {
   [CardVersion.NORMAL]:             "Normale",
   [CardVersion.REVERSE]:            "Reverse",
   [CardVersion.REVERSE_POKEBALL]:   "Pokéball",
   [CardVersion.REVERSE_MASTERBALL]: "Masterball",
+  [CardVersion.FIRST_EDITION]:      "Édition 1",
 };
 type PriceMode = "packed" | "current" | "manual";
 
@@ -87,8 +91,8 @@ interface CardDetail {
   price: number | null;
   priceFr: number | null;
   priceReverse: number | null;
+  priceFirstEdition: number | null;
   isSpecial: boolean;
-  isFirstEdition?: boolean;
   priceUpdatedAt: string | null;
   cardmarketId: string | null;
   cardmarketUrl: string | null;  // e.g. "Mega-Evolution/Bulbasaur-V2-MEG133"
@@ -234,7 +238,14 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
     ? getSerieVersions(serie.slug)
     : [CardVersion.NORMAL];
 
-  const currentPrice = card?.priceFr ?? card?.price ?? null;
+  // Price suggestion for the "Cote actuelle" button — depends on the selected
+  // version so that ED1 buyers see the (much higher) ED1 market price.
+  const currentPrice = (() => {
+    if (!card) return null;
+    if (addVersion === CardVersion.FIRST_EDITION) return card.priceFirstEdition ?? card.priceFr ?? card.price ?? null;
+    if (addVersion === CardVersion.REVERSE)       return card.priceReverse ?? card.price ?? null;
+    return card.priceFr ?? card.price ?? null;
+  })();
 
   async function handleAddToCollection() {
     if (!card) return;
@@ -359,7 +370,10 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               {card?.number ?? "…"}
             </div>
           )}
-          {card?.isFirstEdition && <FirstEditionStamp size="sm" />}
+          {/* ED1 stamp preview when the add-sheet is open on the ED1 version */}
+          {showAddSheet && addVersion === CardVersion.FIRST_EDITION && (
+            <FirstEditionStamp size="sm" />
+          )}
         </div>
 
         {/* Card info */}
@@ -581,6 +595,9 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           {card?.priceReverse != null && (
             <PriceRow label="Prix Reverse" value={card.priceReverse} />
           )}
+          {card?.priceFirstEdition != null && (
+            <PriceRow label="Prix Édition 1" value={card.priceFirstEdition} />
+          )}
           {card?.priceUpdatedAt && (
             <p className="text-[10px] text-[var(--text-tertiary)] pt-1">
               Dernière mise à jour : {new Date(card.priceUpdatedAt).toLocaleDateString("fr-FR")}
@@ -649,7 +666,11 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
                           : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70"
                       )}
                     >
-                      {VERSION_LABELS[v]}
+                      {/* Rarity-aware: on WOTC base sets NORMAL reads "Holo"
+                          for HOLO_RARE cards, "Normale" otherwise. */}
+                      {v === CardVersion.NORMAL
+                        ? getVersionLabel(v, card?.rarity)
+                        : VERSION_LABELS_SHORT[v]}
                     </button>
                   ))}
                 </div>

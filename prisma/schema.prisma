@@ -360,6 +360,11 @@ model Card {
   priceFr        Float?
   priceFrUpdatedAt DateTime?
   priceUpdatedAt DateTime?
+  // 1st Edition price (only populated for the 4 WOTC base sets:
+  // Set de Base, Jungle, Fossile, Team Rocket). Fetched from Cardmarket
+  // with the ?isFirstEd=Y filter.
+  priceFirstEdition          Float?
+  priceFirstEditionUpdatedAt DateTime?
   types          String[]
   category       String?
   trainerType    String?
@@ -472,6 +477,10 @@ enum CardVersion {
   REVERSE
   REVERSE_POKEBALL
   REVERSE_MASTERBALL
+  // WOTC-era 1st Edition variant (stamp printed on the card).
+  // Only applies to the 4 WOTC base sets: Set de Base, Jungle, Fossile,
+  // Team Rocket. Distinct print run with its own Cardmarket pricing.
+  FIRST_EDITION
 }
 
 enum DoubleAvailability {

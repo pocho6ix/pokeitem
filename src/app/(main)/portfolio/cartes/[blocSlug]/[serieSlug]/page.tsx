@@ -52,16 +52,16 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       include: {
         card: {
           select: {
-            id:             true,
-            number:         true,
-            name:           true,
-            rarity:         true,
-            imageUrl:       true,
-            price:          true,
-            priceFr:        true,
-            priceReverse:   true,
-            isSpecial:      true,
-            isFirstEdition: true,
+            id:                true,
+            number:            true,
+            name:              true,
+            rarity:            true,
+            imageUrl:          true,
+            price:             true,
+            priceFr:           true,
+            priceReverse:      true,
+            priceFirstEdition: true,
+            isSpecial:         true,
           },
         },
       },
@@ -90,7 +90,6 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       price:          price ?? null,
       isFrenchPrice,
       isSpecial:      uc.card.isSpecial,
-      isFirstEdition: uc.card.isFirstEdition ?? false,
     };
   });
 
@@ -105,7 +104,6 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
       rarity:         c.rarity as CardRarity,
       imageUrl:       c.imageUrl ?? null,
       isSpecial:      c.isSpecial,
-      isFirstEdition: c.isFirstEdition ?? false,
       price:          price ?? null,
       isFrenchPrice,
     };

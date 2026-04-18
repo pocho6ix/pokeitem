@@ -3,9 +3,10 @@
 import Image from "next/image";
 
 /**
- * "EDITION 1" medallion overlaid on the card artwork for every card with
- * `isFirstEdition: true`. Mirrors the circular stamp physically printed in
- * the bottom-left of the stat bar on genuine 1st-Edition WOTC cards.
+ * "EDITION 1" medallion overlaid on the card artwork whenever the user's
+ * active version is `CardVersion.FIRST_EDITION` (4 WOTC base sets only).
+ * Mirrors the circular stamp physically printed in the bottom-left of the
+ * stat bar on genuine 1st-Edition WOTC cards.
  *
  * Positioned at bottom-[38%] left-[7%], which places it just below the
  * illustration box — matching where the real stamp sits on the printed card.
