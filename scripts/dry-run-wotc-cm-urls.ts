@@ -77,6 +77,27 @@ function buildUrl(serieSlug: string, number: string, enName: string): string | n
   return `${cfg.episode}/${enName}-${cfg.v}-${cfg.code}${num}${cfg.suffix}`;
 }
 
+// ── Aquapolis a/b dual-artwork commons (4 paires, 8 cartes) ─────────────────
+// Pattern distinct : PAS de V{n}, la lettre reste dans le code (AQ50a, AQ50b…),
+// nom EN non récupérable depuis la DB (pas d'URL actuelle) donc hardcodé ici.
+// Confirmé manuellement sur Cardmarket.
+const AQUAPOLIS_AB_NAMES: Record<string, string> = {
+  "Akwakwak":  "Golduck",
+  "Soporifik": "Drowzee",
+  "M.Mime":    "Mr-Mime",
+  "Porygon":   "Porygon",
+};
+
+function isAbVariant(number: string): boolean {
+  return /^\d+[a-z]$/.test(number);
+}
+function buildAbUrl(serieSlug: string, number: string, nameFr: string): string | null {
+  if (serieSlug !== "aquapolis") return null;
+  const enName = AQUAPOLIS_AB_NAMES[nameFr];
+  if (!enName) return null;
+  return `Aquapolis/${enName}-AQ${number}?language=2`;
+}
+
 // ── Main ────────────────────────────────────────────────────────────────────
 async function main() {
   const cards = await prisma.card.findMany({
@@ -106,9 +127,12 @@ async function main() {
   };
   const rows: Row[] = [];
 
-  // Pass 1 : non-H
-  // Pass 2 : Aquapolis H-variants (ont besoin des URLs pass 1)
-  const regulars = cards.filter((c) => !/^H\d+/i.test(c.number));
+  // Trois types de cartes :
+  //   - a/b-variants : Aquapolis commons à double artwork (numéro = "50a"…)
+  //   - H-variants   : Aquapolis "reverse holo" (numéro = "H01"…) → pass 2, dépend des URLs pass 1
+  //   - regular      : tout le reste → pass 1
+  const regulars  = cards.filter((c) => !/^H\d+/i.test(c.number) && !isAbVariant(c.number));
+  const abVariants = cards.filter((c) => isAbVariant(c.number));
   const hVariants = cards.filter((c) => /^H\d+/i.test(c.number));
 
   // Index par (serie, nameFR) pour name-match des H-variants → URL proposée
@@ -141,6 +165,24 @@ async function main() {
       current: c.cardmarketUrl, proposed, status,
     });
     baseByName.set(`${c.serie.slug}::${c.name}`, proposed!);
+  }
+
+  // Pass 1b : a/b-variants (pattern propre, nom EN hardcodé)
+  for (const c of abVariants) {
+    const proposed = buildAbUrl(c.serie.slug, c.number, c.name);
+    if (!proposed) {
+      rows.push({
+        serieSlug: c.serie.slug, number: c.number, name: c.name,
+        current: c.cardmarketUrl, proposed: null, status: "no-en-name",
+        note: "a/b variant : nom EN non mappé (ajoute-le dans AQUAPOLIS_AB_NAMES)",
+      });
+      continue;
+    }
+    const status = proposed === c.cardmarketUrl ? "unchanged" : "changed";
+    rows.push({
+      serieSlug: c.serie.slug, number: c.number, name: c.name,
+      current: c.cardmarketUrl, proposed, status,
+    });
   }
 
   // Pass 2 : H-variants → réutiliser l'URL base puis ajouter &isReverseHolo=Y
