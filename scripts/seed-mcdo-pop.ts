@@ -81,15 +81,15 @@ const MCDO_SETS: SetDef[] = [
 ]
 
 const POP_SETS: SetDef[] = [
-  { tcgdexId: "pop9", slug: "pop-9", name: "POP Série 9", nameEn: "POP Series 9", abbreviation: "POP9", blocSlug: "pokemon-organized-play", releaseDate: "2009-03-01", order: 0 },
-  { tcgdexId: "pop8", tcgdexIdEn: "pop8", slug: "pop-8", name: "POP Série 8", nameEn: "POP Series 8", abbreviation: "POP8", blocSlug: "pokemon-organized-play", releaseDate: "2008-09-01", order: 1 },
-  { tcgdexId: "pop7", slug: "pop-7", name: "POP Série 7", nameEn: "POP Series 7", abbreviation: "POP7", blocSlug: "pokemon-organized-play", releaseDate: "2008-03-01", order: 2 },
-  { tcgdexId: "pop6", tcgdexIdEn: "pop6", slug: "pop-6", name: "POP Série 6", nameEn: "POP Series 6", abbreviation: "POP6", blocSlug: "pokemon-organized-play", releaseDate: "2007-09-01", order: 3 },
-  { tcgdexId: "pop5", tcgdexIdEn: "pop5", slug: "pop-5", name: "POP Série 5", nameEn: "POP Series 5", abbreviation: "POP5", blocSlug: "pokemon-organized-play", releaseDate: "2007-03-01", order: 4 },
-  { tcgdexId: "pop4", slug: "pop-4", name: "POP Série 4", nameEn: "POP Series 4", abbreviation: "POP4", blocSlug: "pokemon-organized-play", releaseDate: "2006-08-01", order: 5 },
-  { tcgdexId: "pop3", slug: "pop-3", name: "POP Série 3", nameEn: "POP Series 3", abbreviation: "POP3", blocSlug: "pokemon-organized-play", releaseDate: "2006-04-01", order: 6 },
-  { tcgdexId: "pop2", slug: "pop-2", name: "POP Série 2", nameEn: "POP Series 2", abbreviation: "POP2", blocSlug: "pokemon-organized-play", releaseDate: "2005-08-01", order: 7 },
-  { tcgdexId: "pop1", slug: "pop-1", name: "POP Série 1", nameEn: "POP Series 1", abbreviation: "POP1", blocSlug: "pokemon-organized-play", releaseDate: "2004-09-01", order: 8 },
+  { tcgdexId: "pop9", slug: "pop-9", name: "POP 9", nameEn: "POP 9", abbreviation: "POP9", blocSlug: "pokemon-organized-play", releaseDate: "2009-03-01", order: 0 },
+  { tcgdexId: "pop8", tcgdexIdEn: "pop8", slug: "pop-8", name: "POP 8", nameEn: "POP 8", abbreviation: "POP8", blocSlug: "pokemon-organized-play", releaseDate: "2008-09-01", order: 1 },
+  { tcgdexId: "pop7", slug: "pop-7", name: "POP 7", nameEn: "POP 7", abbreviation: "POP7", blocSlug: "pokemon-organized-play", releaseDate: "2008-03-01", order: 2 },
+  { tcgdexId: "pop6", tcgdexIdEn: "pop6", slug: "pop-6", name: "POP 6", nameEn: "POP 6", abbreviation: "POP6", blocSlug: "pokemon-organized-play", releaseDate: "2007-09-01", order: 3 },
+  { tcgdexId: "pop5", tcgdexIdEn: "pop5", slug: "pop-5", name: "POP 5", nameEn: "POP 5", abbreviation: "POP5", blocSlug: "pokemon-organized-play", releaseDate: "2007-03-01", order: 4 },
+  { tcgdexId: "pop4", slug: "pop-4", name: "POP 4", nameEn: "POP 4", abbreviation: "POP4", blocSlug: "pokemon-organized-play", releaseDate: "2006-08-01", order: 5 },
+  { tcgdexId: "pop3", slug: "pop-3", name: "POP 3", nameEn: "POP 3", abbreviation: "POP3", blocSlug: "pokemon-organized-play", releaseDate: "2006-04-01", order: 6 },
+  { tcgdexId: "pop2", slug: "pop-2", name: "POP 2", nameEn: "POP 2", abbreviation: "POP2", blocSlug: "pokemon-organized-play", releaseDate: "2005-08-01", order: 7 },
+  { tcgdexId: "pop1", slug: "pop-1", name: "POP 1", nameEn: "POP 1", abbreviation: "POP1", blocSlug: "pokemon-organized-play", releaseDate: "2004-09-01", order: 8 },
 ]
 
 // ─── TCGdex helpers ───────────────────────────────────────────────────────────

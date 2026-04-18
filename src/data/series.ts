@@ -247,11 +247,11 @@ const MCDO_SERIES: SerieStatic[] = [
 // ==========================================================================
 
 const POP_SERIES: SerieStatic[] = [
-  { name: 'POP Série 9', nameEn: 'POP Series 9', slug: 'pop-9', abbreviation: 'POP9', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-9.webp', releaseDate: '2009-03-01', order: 0 },
-  { name: 'POP Série 4', nameEn: 'POP Series 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 2 },
-  { name: 'POP Série 3', nameEn: 'POP Series 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 3 },
-  { name: 'POP Série 2', nameEn: 'POP Series 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 4 },
-  { name: 'POP Série 1', nameEn: 'POP Series 1', slug: 'pop-1', abbreviation: 'POP1', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-1.webp', releaseDate: '2004-09-01', order: 5 },
+  { name: 'POP 9', nameEn: 'POP 9', slug: 'pop-9', abbreviation: 'POP9', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-9.webp', releaseDate: '2009-03-01', order: 0 },
+  { name: 'POP 4', nameEn: 'POP 4', slug: 'pop-4', abbreviation: 'POP4', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-4.webp', releaseDate: '2006-08-01', order: 2 },
+  { name: 'POP 3', nameEn: 'POP 3', slug: 'pop-3', abbreviation: 'POP3', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-3.webp', releaseDate: '2006-04-01', order: 3 },
+  { name: 'POP 2', nameEn: 'POP 2', slug: 'pop-2', abbreviation: 'POP2', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-2.webp', releaseDate: '2005-08-01', order: 4 },
+  { name: 'POP 1', nameEn: 'POP 1', slug: 'pop-1', abbreviation: 'POP1', blocSlug: 'pokemon-organized-play', imageUrl: '/images/series/pop-1.webp', releaseDate: '2004-09-01', order: 5 },
 ];
 
 // ---------------------------------------------------------------------------
