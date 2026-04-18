@@ -28,6 +28,7 @@ export interface ProfileCardItem {
 
 const VERSION_BADGE_IMG: Record<string, string> = {
   NORMAL:             "/badge_normale.png",
+  FIRST_EDITION:      "/images/badges/first-edition.png",
   REVERSE:            "/badge_reverse.png",
   REVERSE_POKEBALL:   "/badge_pokeball.png",
   REVERSE_MASTERBALL: "/badge_masterball.png",

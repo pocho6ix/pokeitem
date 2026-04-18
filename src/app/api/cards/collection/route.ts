@@ -8,7 +8,7 @@ import { checkProgressiveQuests } from "@/lib/points";
 
 // ─── Validation schemas ───────────────────────────────────────────────────────
 
-const CardVersionEnum = z.enum(["NORMAL", "REVERSE", "REVERSE_POKEBALL", "REVERSE_MASTERBALL"]);
+const CardVersionEnum = z.enum(["NORMAL", "FIRST_EDITION", "REVERSE", "REVERSE_POKEBALL", "REVERSE_MASTERBALL"]);
 
 const UpsertCardSchema = z.object({
   cardId:        z.string().min(1),
