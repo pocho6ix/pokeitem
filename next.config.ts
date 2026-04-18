@@ -19,13 +19,13 @@ const nextConfig: NextConfig = {
     // Cache images optimisées 7 jours côté CDN (elles ne changent jamais)
     minimumCacheTTL: 604800,
     remotePatterns: [
+      // Toutes les images de cartes Pokémon sont mirrorées sur Vercel Blob
+      // (clé SEO-friendly `cards/{serie}/{name}-{num}-{serie}-pokeitem.webp`).
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      // Cardmarket : images des produits scellés (boosters, ETB, displays…).
+      // Ces items ne sont pas mirrorés — ils viennent de l'API Cardmarket.
       { protocol: "https", hostname: "product-images.s3.cardmarket.com" },
       { protocol: "https", hostname: "*.cardmarket.com" },
-      { protocol: "https", hostname: "www.pokecardex.com" },
-      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
-      { protocol: "https", hostname: "assets.tcgdex.net" },
-      { protocol: "https", hostname: "images.pokemontcg.io" },
-      { protocol: "https", hostname: "images.tcggo.com" },
     ],
   },
   // Permanent redirects from the legacy ED1 series slugs (removed in favor

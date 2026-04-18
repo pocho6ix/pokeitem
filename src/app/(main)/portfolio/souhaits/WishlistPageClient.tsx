@@ -11,6 +11,7 @@ import { getDisplayPrice, isFrenchPrice } from "@/lib/display-price";
 import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS, CardCondition } from "@/types/card";
 import { CardVersion } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -729,7 +730,7 @@ function CardVignette({
         {card.imageUrl ? (
           <Image
             src={card.imageUrl}
-            alt={`${card.name} — ${card.number}`}
+            alt={getCardImageAlt(card, card.serie)}
             fill
             sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
             className="object-cover"

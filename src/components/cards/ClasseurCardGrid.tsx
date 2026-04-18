@@ -7,6 +7,7 @@ import { Trash2, X, CheckSquare, ArrowUpDown, Search } from "lucide-react";
 import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity, CardCondition, getCardRarityImage } from "@/types/card";
 import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 
 const CardDetailModal = lazy(() =>
@@ -112,9 +113,10 @@ interface Props {
   allCards?: MissingCard[]; // full serie catalog for computing missing
   blocSlug: string;
   serieSlug: string;
+  serieName: string;
 }
 
-export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props) {
+export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug, serieName }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -550,7 +552,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                     )}>
                       {grp.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={grp.imageUrl} alt={grp.name}
+                        <img src={grp.imageUrl} alt={getCardImageAlt(grp, serieName)}
                           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-200 ${!editMode ? "group-hover:scale-105" : ""}`}
                         />
                       ) : (
@@ -687,7 +689,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                     <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                       {c.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.imageUrl} alt={c.name}
+                        <img src={c.imageUrl} alt={getCardImageAlt(c, serieName)}
                           className="absolute inset-0 h-full w-full object-cover opacity-40 group-hover:opacity-55 transition-opacity duration-200"
                         />
                       ) : (

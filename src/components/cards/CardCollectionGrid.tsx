@@ -20,6 +20,7 @@ import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 
 const CardDetailModal = lazy(() =>
@@ -59,6 +60,7 @@ export interface OwnedEntry {
 interface Props {
   cards: CardRow[];
   serieSlug: string;
+  serieName: string;
   blocSlug: string;
   initialOwned: OwnedEntry[];
   isAuthenticated: boolean;
@@ -543,7 +545,7 @@ function getMissingVersions(card: CardRow, owned: OwnedVersionMap, serieVersions
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function CardCollectionGrid({
-  cards, serieSlug, blocSlug, initialOwned, isAuthenticated,
+  cards, serieSlug, serieName, blocSlug, initialOwned, isAuthenticated,
 }: Props) {
 
   // ── Resolve available versions for this serie ────────────────────────────
@@ -1126,7 +1128,7 @@ export function CardCollectionGrid({
                   isSelected && "ring-2 ring-green-400 ring-offset-1"
                 )}>
                   {card.imageUrl ? (
-                    <Image src={card.imageUrl} alt={`${card.name} — ${card.number}`} fill
+                    <Image src={card.imageUrl} alt={getCardImageAlt(card, serieName)} fill
                       sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 12.5vw"
                       className={cn("object-cover", showReverse && !card.isSpecial && "holo-img")}
                       loading="lazy" />

@@ -8,6 +8,7 @@ import { CARD_RARITY_LABELS, CARD_RARITY_SYMBOL, CardRarity } from "@/types/card
 import { CARD_VERSION_LABELS, CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
 import { RemoveCardButton } from "@/components/cards/RemoveCardButton";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import { ExternalLink } from "lucide-react";
 
 interface PageProps {
@@ -56,11 +57,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { cardId } = await params;
   const card = await prisma.card.findUnique({
     where: { id: cardId },
-    select: { name: true, serie: { select: { name: true } } },
+    select: { name: true, number: true, serie: { select: { name: true } } },
   });
-  if (!card) return { title: "Carte introuvable | PokeItem" };
+  if (!card) return { title: "Carte introuvable" };
+  const title = `${card.name} ${card.number} — ${card.serie.name}`;
+  const description = `Découvrez la carte Pokémon ${card.name} (${card.serie.name} n°${card.number}) : prix Cardmarket en temps réel, rareté, versions et détails sur PokeItem.`;
   return {
-    title: `${card.name} — ${card.serie.name} | PokeItem`,
+    title,
+    description,
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -143,7 +149,7 @@ export default async function CardDetailPage({ params }: PageProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={card.imageUrl}
-            alt={card.name}
+            alt={getCardImageAlt(card, card.serie)}
             className="w-64 sm:w-72 rounded-xl shadow-2xl"
           />
         </div>

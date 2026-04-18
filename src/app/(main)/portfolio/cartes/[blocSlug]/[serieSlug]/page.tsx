@@ -26,9 +26,11 @@ export const revalidate = 0; // dynamic — owned data is per-user
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serieSlug } = await params;
   const serie = SERIES.find((s) => s.slug === serieSlug);
-  if (!serie) return { title: "Série introuvable | PokeItem" };
+  if (!serie) return { title: "Série introuvable" };
   return {
-    title: `Mon Classeur — ${serie.name}`,
+    title: `Classeur — ${serie.name}`,
+    description: `Votre classeur virtuel Pokémon TCG pour l'extension ${serie.name} : progression, cartes possédées, doublons et cartes manquantes avec leur cote Cardmarket.`,
+    robots: { index: false, follow: true },
   };
 }
 
@@ -207,6 +209,7 @@ export default async function ClasseurExtensionPage({ params }: PageProps) {
         allCards={allCards.length > 0 ? allCards : undefined}
         blocSlug={blocSlug}
         serieSlug={serieSlug}
+        serieName={serieStatic.name}
       />
     </div>
   );

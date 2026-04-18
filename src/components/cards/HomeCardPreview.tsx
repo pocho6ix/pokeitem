@@ -1,6 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useState } from "react";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -33,7 +34,7 @@ export function HomeCardPreview({ cards }: Props) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={card.imageUrl}
-                alt={card.name}
+                alt={getCardImageAlt(card)}
                 className="w-full h-auto block group-hover:scale-105 transition-transform duration-200"
               />
               {/* Price badge */}

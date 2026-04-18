@@ -33,10 +33,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serieSlug } = await params;
   const serie = SERIES.find((s) => s.slug === serieSlug);
-  if (!serie) return { title: "Série introuvable | PokeItem" };
+  if (!serie) return { title: "Série introuvable" };
   return {
-    title: `Cartes ${serie.name} | Collection PokeItem`,
-    description: `Consultez et gérez vos cartes de l'extension ${serie.name} sur PokeItem.`,
+    title: `Cartes ${serie.name}`,
+    description: `Toutes les cartes Pokémon TCG de l'extension ${serie.name} : liste complète, prix Cardmarket, raretés et images HD. Gérez votre collection sur PokeItem.`,
   };
 }
 
@@ -214,6 +214,7 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
         <CardCollectionGrid
           cards={cards}
           serieSlug={serieSlug}
+          serieName={serieStatic.name}
           blocSlug={blocSlug}
           initialOwned={initialOwned}
           isAuthenticated={!!userId}

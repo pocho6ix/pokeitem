@@ -10,6 +10,7 @@ import { CardVersion, getSerieVersions, getVersionLabel } from "@/data/card-vers
 import { SERIES } from "@/data/series";
 import type { CardRarity } from "@/types/card";
 import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -386,7 +387,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           {card?.imageUrl ? (
             <Image
               src={card.imageUrl}
-              alt={card.name}
+              alt={getCardImageAlt(card, serie)}
               fill
               sizes="112px"
               className="object-cover"

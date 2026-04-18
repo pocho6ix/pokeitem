@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { ShoppingCart, HandCoins, ArrowLeftRight, Info, Check } from "lucide-react";
 import { CardDetailModal } from "@/components/cards/CardDetailModal";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import { ContactBlock } from "./ContactBlock";
 import { TradeProposalButton } from "./TradeProposalButton";
 import { TradeProposalSheet } from "./TradeProposalSheet";
@@ -673,7 +674,7 @@ function CardTile({
           {card.imageUrl ? (
             <Image
               src={card.imageUrl}
-              alt={`${card.name} — ${card.number}`}
+              alt={getCardImageAlt(card, card.setName)}
               fill
               sizes="(max-width: 640px) 33vw, 20vw"
               className="object-cover"

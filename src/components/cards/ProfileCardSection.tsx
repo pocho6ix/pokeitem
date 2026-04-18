@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS } from "@/types/card";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -298,7 +299,7 @@ function CardTile({ card, inVisitorWishlist }: { card: ProfileCardItem; inVisito
         {card.imageUrl ? (
           <Image
             src={card.imageUrl}
-            alt={`${card.name} — ${card.number}`}
+            alt={getCardImageAlt(card, card.serie)}
             fill
             sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
             className="object-cover"

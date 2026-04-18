@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { Search, X } from "lucide-react";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 
 const CardDetailModal = lazy(() =>
   import("@/components/cards/CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -162,7 +163,7 @@ export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {
                   <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded-md bg-[var(--bg-subtle)]">
                     {card.imageUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={card.imageUrl} alt="" className="h-full w-full object-cover" />
+                      <img src={card.imageUrl} alt={getCardImageAlt(card, card.serie)} className="h-full w-full object-cover" />
                     )}
                     {card.qty != null && card.qty > 1 && (
                       <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4A853] px-1 text-[9px] font-bold text-black leading-none">

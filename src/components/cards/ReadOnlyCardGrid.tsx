@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { getCardRarityImage, CardRarity } from "@/types/card";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 
 interface CardItem {
   id: string;
@@ -55,7 +56,7 @@ export function ReadOnlyCardGrid({ cards, visitorWishlistIds, gridSize = "medium
               {card.imageUrl ? (
                 <Image
                   src={card.imageUrl}
-                  alt={`${card.name} — ${card.number}`}
+                  alt={getCardImageAlt(card, card.serie)}
                   fill
                   sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
                   className="object-cover"

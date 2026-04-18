@@ -15,6 +15,7 @@ import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { getCardImageAlt } from "@/lib/seo/card-image";
 import type { CardCandidate, IdentifyResponse } from "@/app/api/scanner/identify/route";
 
 const CardDetailModal = lazy(() =>
@@ -59,7 +60,7 @@ function CardThumb({ imageUrl, name, size = 56 }: { imageUrl: string | null; nam
     return (
       <div className="shrink-0 rounded-lg overflow-hidden bg-white/5" style={{ width: size, height: Math.round(size * 1.4) }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+        <img src={imageUrl} alt={getCardImageAlt({ name })} className="w-full h-full object-cover" />
       </div>
     );
   }
@@ -605,7 +606,7 @@ export function CardScanner() {
         <div className="flex flex-1 flex-col overflow-y-auto">
           <div className="flex justify-center py-6">
             {selectedCard.card.imageUrl ? (
-              <Image src={selectedCard.card.imageUrl} alt={selectedCard.card.name} width={160} height={224} className="rounded-xl shadow-2xl shadow-black/60 object-contain" />
+              <Image src={selectedCard.card.imageUrl} alt={getCardImageAlt(selectedCard.card, selectedCard.serie)} width={160} height={224} className="rounded-xl shadow-2xl shadow-black/60 object-contain" />
             ) : (
               <div className="flex h-56 w-40 items-center justify-center rounded-xl bg-white/5">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-10 w-10 text-white/20"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="12" cy="10" r="3"/></svg>

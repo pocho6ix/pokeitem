@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CardVersion } from '@/data/card-versions'
 import { CollectionValue } from '@/components/collection/CollectionValue'
+import { getCardImageAlt } from '@/lib/seo/card-image'
 
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
@@ -248,7 +249,7 @@ export function DoublesGrid({
                             {card.cardImageUrl ? (
                               <Image
                                 src={card.cardImageUrl}
-                                alt={`${card.cardName} — ${card.cardNumber}`}
+                                alt={getCardImageAlt({ name: card.cardName, number: card.cardNumber }, card.serieName)}
                                 fill
                                 sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 12.5vw"
                                 className="object-cover"

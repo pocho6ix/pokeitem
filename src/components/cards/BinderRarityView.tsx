@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, lazy, Suspense, memo } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
+import { getCardImageAlt } from '@/lib/seo/card-image'
 import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
 
 const DARK_ICON_OVERLAY = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE, CardRarity.HOLO_RARE])
@@ -51,7 +52,7 @@ const CardCell = memo(function CardCell({ card, onCardClick }: { card: RarityCar
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={card.imageUrl}
-            alt={card.name}
+            alt={getCardImageAlt(card)}
             className="h-full w-full object-cover"
             loading="lazy"
           />

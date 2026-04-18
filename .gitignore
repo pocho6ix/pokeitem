@@ -51,3 +51,8 @@ public/logo-long-light-backup.png
 
 # dry-run outputs (ephemeral, reproducible via the dry-run scripts)
 /.dry-run-*.json
+.env*.local
+
+# mirror artifacts (progress + full-run log from scripts/mirror-card-images-to-blob.ts)
+/.mirror-*.log
+/.mirror-progress.json
