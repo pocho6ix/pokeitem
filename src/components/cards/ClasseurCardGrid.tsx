@@ -542,12 +542,12 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
               {groupedCards.map((grp) => {
                 const isSelected = selected.has(grp.cardId);
                 const cardContent = (
-                  <div className={`rounded-xl border bg-[var(--bg-card)] overflow-hidden transition-colors ${
-                    editMode
-                      ? isSelected ? "border-blue-500" : "border-[var(--border-default)]"
-                      : "border-[var(--border-default)] hover:border-[var(--border-focus)]"
-                  }`}>
-                    <div className="relative aspect-[2/3] bg-[var(--bg-subtle)]">
+                  <div className="group relative">
+                    <div className={cn(
+                      "relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all",
+                      !editMode && "hover:-translate-y-0.5 hover:shadow-md",
+                      editMode && isSelected && "ring-2 ring-blue-500 ring-offset-1",
+                    )}>
                       {grp.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={grp.imageUrl} alt={grp.name}
@@ -589,17 +589,15 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                         </div>
                       )}
                     </div>
-                    <div className="px-1.5 pb-2 pt-1">
-                      <p className="truncate text-center text-[10px] text-[var(--text-secondary)]">{grp.name}</p>
-                      <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
-                        {grp.displayPrice != null && grp.displayPrice > 0
-                          ? <span className="inline-flex items-center gap-0.5">
-                              {grp.displayIsFrenchPrice ? "🇫🇷 " : null}
-                              {formatEur(grp.displayPrice)}
-                            </span>
-                          : "—"}
-                      </p>
-                    </div>
+                    <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{grp.name}</p>
+                    <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+                      {grp.displayPrice != null && grp.displayPrice > 0
+                        ? <span className="inline-flex items-center gap-0.5">
+                            {grp.displayIsFrenchPrice ? "🇫🇷 " : null}
+                            {formatEur(grp.displayPrice)}
+                          </span>
+                        : "—"}
+                    </p>
                   </div>
                 );
 
@@ -676,8 +674,8 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                   onClick={() => setDetailCardId(c.cardId)}
                   className="group text-left"
                 >
-                  <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--border-focus)] transition-colors">
-                    <div className="relative aspect-[2/3] bg-[var(--bg-subtle)]">
+                  <div className="group relative">
+                    <div className="relative aspect-[2.5/3.5] overflow-hidden rounded-lg bg-[var(--bg-secondary)] shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                       {c.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={c.imageUrl} alt={c.name}
@@ -704,17 +702,15 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                       })()}
                       <NumberRarityBadge number={c.number} rarity={c.rarity} />
                     </div>
-                    <div className="px-1.5 pb-2 pt-1">
-                      <p className="truncate text-center text-[10px] text-[var(--text-secondary)]">{c.name}</p>
-                      <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
-                        {c.price != null && c.price > 0
-                          ? <span className="inline-flex items-center gap-0.5">
-                              {c.isFrenchPrice ? "🇫🇷 " : null}
-                              {formatEur(c.price)}
-                            </span>
-                          : "—"}
-                      </p>
-                    </div>
+                    <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{c.name}</p>
+                    <p className="truncate text-center text-[9px] text-[var(--text-tertiary)]">
+                      {c.price != null && c.price > 0
+                        ? <span className="inline-flex items-center gap-0.5">
+                            {c.isFrenchPrice ? "🇫🇷 " : null}
+                            {formatEur(c.price)}
+                          </span>
+                        : "—"}
+                    </p>
                   </div>
                 </button>
               ))}
