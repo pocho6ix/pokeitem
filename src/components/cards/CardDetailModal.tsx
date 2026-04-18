@@ -600,9 +600,9 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
               title="Voir sur Cardmarket"
             >
-              <span className="bg-white px-2 py-1 flex items-center">
+              <span className="bg-white px-2.5 py-1.5 flex items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/cardmarket.png" alt="Cardmarket" className="h-4 w-auto object-contain" />
+                <img src="/cardmarket.png" alt="Cardmarket" className="h-5 w-auto object-contain" />
               </span>
             </a>
           )}
@@ -613,7 +613,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           {card?.priceReverse != null && (
             <PriceRow label="Prix Reverse" value={card.priceReverse} />
           )}
-          {card?.priceFirstEdition != null && (
+          {availableVersions.includes(CardVersion.FIRST_EDITION) && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--text-secondary)] flex items-center gap-1.5">
                 Prix Édition 1
@@ -625,21 +625,21 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
                     className="inline-flex items-center rounded-md overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
                     title="Voir la version Édition 1 sur Cardmarket"
                   >
-                    <span className="bg-white px-1.5 py-0.5 flex items-center gap-1">
+                    <span className="bg-white px-2 py-1 flex items-center gap-1.5">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/cardmarket.png" alt="Cardmarket" className="h-3 w-auto object-contain" />
+                      <img src="/cardmarket.png" alt="Cardmarket" className="h-4 w-auto object-contain" />
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/images/badges/edition-1.png"
                         alt="Édition 1"
-                        className="h-4 w-auto object-contain"
+                        className="h-5 w-auto object-contain"
                       />
                     </span>
                   </a>
                 )}
               </span>
               <span className="text-sm font-semibold text-[var(--text-primary)]">
-                {formatEur(card.priceFirstEdition)}
+                {card?.priceFirstEdition != null ? formatEur(card.priceFirstEdition) : "—"}
               </span>
             </div>
           )}
