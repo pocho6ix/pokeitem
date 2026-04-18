@@ -20,6 +20,7 @@ import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 import { useWishlistStore } from "@/stores/wishlistStore";
+import { FirstEditionStamp } from "./FirstEditionStamp";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -36,6 +37,7 @@ export interface CardRow {
   price?: number | null;
   priceFr?: number | null;
   priceReverse?: number | null;
+  priceFirstEdition?: number | null;
   isSpecial?: boolean;
   types?: string[];
   category?: string | null;
@@ -560,6 +562,7 @@ export function CardCollectionGrid({
   const [sortOrder,        setSortOrder]        = useState<SortOrder>("asc");
   const [showTransparency, setShowTransparency] = useState(true);
   const [showReverse,      setShowReverse]      = useState(false);
+  const [showFirstEdition, setShowFirstEdition] = useState(false);
   const [activeModal,      setActiveModal]      = useState<ActiveModal>(null);
   const [isPending,        startTransition]     = useTransition();
   const [typeFilter,       setTypeFilter]       = useState<Set<string>>(new Set());
@@ -648,6 +651,8 @@ export function CardCollectionGrid({
     if (viewFilter === "missing") result = result.filter((c) => getMissingVersions(c, ownedMap, availableVersions).length > 0);
     // In reverse mode, hide single-version cards (special cards don't have reverse)
     if (showReverse) result = result.filter((c) => !c.isSpecial);
+    // In first-edition mode, hide single-version cards (ED1 doesn't exist for specials)
+    if (showFirstEdition) result = result.filter((c) => !c.isSpecial);
 
     return [...result].sort((a, b) => {
       let cmp = 0;
@@ -655,13 +660,21 @@ export function CardCollectionGrid({
       if (sortBy === "name")   cmp = a.name.localeCompare(b.name, "fr");
       if (sortBy === "rarity") cmp = CARD_RARITY_ORDER[a.rarity] - CARD_RARITY_ORDER[b.rarity];
       if (sortBy === "price") {
-        const pa = showReverse ? (a.priceReverse ?? 0) : (a.priceFr ?? a.price ?? 0);
-        const pb = showReverse ? (b.priceReverse ?? 0) : (b.priceFr ?? b.price ?? 0);
+        const pa = showFirstEdition
+          ? (a.priceFirstEdition ?? 0)
+          : showReverse
+            ? (a.priceReverse ?? 0)
+            : (a.priceFr ?? a.price ?? 0);
+        const pb = showFirstEdition
+          ? (b.priceFirstEdition ?? 0)
+          : showReverse
+            ? (b.priceReverse ?? 0)
+            : (b.priceFr ?? b.price ?? 0);
         cmp = pa - pb;
       }
       return sortOrder === "asc" ? cmp : -cmp;
     });
-  }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, showReverse, ownedMap, availableVersions]);
+  }, [cards, search, rarityFilter, typeFilter, viewFilter, sortBy, sortOrder, showReverse, showFirstEdition, ownedMap, availableVersions]);
 
   // "owned" = at least one version owned; "complete" = ALL versions owned
   const ownedCount   = useMemo(() => ownedMap.size, [ownedMap]);
@@ -940,7 +953,10 @@ export function CardCollectionGrid({
         </button>
         {mounted && availableVersions.includes(CardVersion.REVERSE) && (
           <button
-            onClick={() => setShowReverse((v) => !v)}
+            onClick={() => {
+              setShowReverse((v) => !v);
+              setShowFirstEdition(false);
+            }}
             className={cn(
               "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-colors",
               showReverse
@@ -949,6 +965,23 @@ export function CardCollectionGrid({
             )}
           >
             <img src="/reverse-badge.png" alt="Reverse" className="w-4 h-4 object-contain" /> Reverse
+          </button>
+        )}
+        {mounted && availableVersions.includes(CardVersion.FIRST_EDITION) && (
+          <button
+            onClick={() => {
+              setShowFirstEdition((v) => !v);
+              setShowReverse(false);
+            }}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-colors",
+              showFirstEdition
+                ? "border-[#E7BA76]/60 bg-[#E7BA76]/10 text-[#E7BA76]"
+                : "border-[var(--border-default)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[#E7BA76]/70 hover:text-[#E7BA76]"
+            )}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/badges/edition-1.png" alt="Édition 1" className="w-4 h-4 object-contain" /> Édition 1
           </button>
         )}
         {mounted && isAuthenticated && (
@@ -1123,24 +1156,42 @@ export function CardCollectionGrid({
                     <img src={getCardRarityImage(card.rarity, blocSlug)} alt="" className="h-3 w-auto object-contain" />
                   </div>
 
+                  {/* First-Edition stamp overlay — only when the user owns the
+                      FIRST_EDITION version. Acts as the single source of truth
+                      on the left side, so FIRST_EDITION is filtered out of the
+                      right-side version stack below whenever it's owned. */}
+                  {ownedCardMap?.has(CardVersion.FIRST_EDITION) && (
+                    <FirstEditionStamp size="sm" />
+                  )}
+
                   {/* Version badges — always shown on all cards, bottom right
                       Stacked bottom→top: normale, reverse, pokeball, masterball
                       Owned version = full opacity / not owned = dimmed (40%)
-                      If whole card is dim (not owned at all), parent opacity handles it */}
-                  {allVersions.length > 1 && (
-                    <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                      {/* DESC order so NORMALE renders last = visually at bottom */}
-                      {[...allVersions].reverse().map((v) => {
-                        const isVersionOwned = ownedCardMap?.has(v) ?? false;
-                        const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : 0;
-                        // Dim individually only when card IS owned but this specific version isn't
-                        const dimmed = isOwned && !isVersionOwned;
-                        return (
-                          <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} />
-                        );
-                      })}
-                    </div>
-                  )}
+                      If whole card is dim (not owned at all), parent opacity handles it.
+                      FIRST_EDITION is excluded from the stack when owned (the stamp
+                      already signals it); kept dimmed when not owned so the user
+                      still sees it as a version they could add. */}
+                  {(() => {
+                    const ownsFirstEdition = ownedCardMap?.has(CardVersion.FIRST_EDITION) ?? false;
+                    const stackVersions = ownsFirstEdition
+                      ? allVersions.filter((v) => v !== CardVersion.FIRST_EDITION)
+                      : allVersions;
+                    if (stackVersions.length <= 1) return null;
+                    return (
+                      <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
+                        {/* DESC order so NORMALE renders last = visually at bottom */}
+                        {[...stackVersions].reverse().map((v) => {
+                          const isVersionOwned = ownedCardMap?.has(v) ?? false;
+                          const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : 0;
+                          // Dim individually only when card IS owned but this specific version isn't
+                          const dimmed = isOwned && !isVersionOwned;
+                          return (
+                            <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} />
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
 
                   {/* Selection overlay */}
                   {isSelected && (
@@ -1155,15 +1206,19 @@ export function CardCollectionGrid({
                 {/* Card name + price */}
                 <p className="mt-1 truncate text-center text-[10px] text-[var(--text-secondary)]">{card.name}</p>
                 <p className="truncate text-center text-[9px] text-[var(--text-tertiary)] flex items-center justify-center gap-0.5">
-                  {showReverse && !card.isSpecial
-                    ? card.priceReverse != null
-                      ? <><img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain shrink-0" />{card.priceReverse.toFixed(2)}&nbsp;€</>
+                  {showFirstEdition && !card.isSpecial
+                    ? card.priceFirstEdition != null
+                      ? <><img src="/images/badges/edition-1.png" alt="ED1" className="w-3 h-3 object-contain shrink-0" />{card.priceFirstEdition.toFixed(2)}&nbsp;€</>
                       : "–\u00a0€"
-                    : card.priceFr != null
-                      ? <><span>🇫🇷</span>{card.priceFr.toFixed(2)}&nbsp;€</>
-                      : card.price != null
-                        ? `${card.price.toFixed(2)}\u00a0€`
-                        : "–\u00a0€"}
+                    : showReverse && !card.isSpecial
+                      ? card.priceReverse != null
+                        ? <><img src="/reverse-badge.png" alt="R" className="w-3 h-3 object-contain shrink-0" />{card.priceReverse.toFixed(2)}&nbsp;€</>
+                        : "–\u00a0€"
+                      : card.priceFr != null
+                        ? <><span>🇫🇷</span>{card.priceFr.toFixed(2)}&nbsp;€</>
+                        : card.price != null
+                          ? `${card.price.toFixed(2)}\u00a0€`
+                          : "–\u00a0€"}
                 </p>
               </div>
             );
