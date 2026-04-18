@@ -127,8 +127,8 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 10,
   },
   {
-    name: "Collection McDonald's",
-    nameEn: "McDonald's Collection",
+    name: "McDonald's",
+    nameEn: "McDonald's",
     slug: 'collection-mcdo',
     abbreviation: 'MC',
     logoUrl: null,

@@ -65,19 +65,19 @@ interface TcgSet {
 // ─── Bloc definitions ─────────────────────────────────────────────────────────
 
 const MCDO_SETS: SetDef[] = [
-  { tcgdexId: "2024sv",    slug: "promo-mcdo-2024", name: "Collection McDonald's 2024", nameEn: "McDonald's Collection 2024", abbreviation: "MC24", blocSlug: "collection-mcdo", releaseDate: "2024-12-04", order: 0  },
-  { tcgdexId: "2023sv",    slug: "promo-mcdo-2023", name: "Collection McDonald's 2023", nameEn: "McDonald's Collection 2023", abbreviation: "MC23", blocSlug: "collection-mcdo", releaseDate: "2023-08-01", order: 1  },
-  { tcgdexId: "2022swsh",  slug: "promo-mcdo-2022", name: "Collection McDonald's 2022", nameEn: "McDonald's Collection 2022", abbreviation: "MC22", blocSlug: "collection-mcdo", releaseDate: "2022-08-03", order: 2  },
-  { tcgdexId: "2021swsh",  slug: "promo-mcdo-2021", name: "Collection McDonald's 2021", nameEn: "McDonald's Collection 2021", abbreviation: "MC21", blocSlug: "collection-mcdo", releaseDate: "2021-02-09", order: 3  },
-  { tcgdexId: "2019sm-fr", slug: "promo-mcdo-2019", name: "Collection McDonald's 2019", nameEn: "McDonald's Collection 2019", abbreviation: "MC19", blocSlug: "collection-mcdo", releaseDate: "2019-10-30", order: 4  },
-  { tcgdexId: "2018sm-fr", slug: "promo-mcdo-2018", name: "Collection McDonald's 2018", nameEn: "McDonald's Collection 2018", abbreviation: "MC18", blocSlug: "collection-mcdo", releaseDate: "2018-06-13", order: 5  },
-  { tcgdexId: "2017sm",    slug: "promo-mcdo-2017", name: "Collection McDonald's 2017", nameEn: "McDonald's Collection 2017", abbreviation: "MC17", blocSlug: "collection-mcdo", releaseDate: "2017-08-03", order: 6  },
-  { tcgdexId: "2016xy",    slug: "promo-mcdo-2016", name: "Collection McDonald's 2016", nameEn: "McDonald's Collection 2016", abbreviation: "MC16", blocSlug: "collection-mcdo", releaseDate: "2016-08-20", order: 7  },
-  { tcgdexId: "2015xy",    slug: "promo-mcdo-2015", name: "Collection McDonald's 2015", nameEn: "McDonald's Collection 2015", abbreviation: "MC15", blocSlug: "collection-mcdo", releaseDate: "2015-11-27", order: 8  },
-  { tcgdexId: "2014xy",    slug: "promo-mcdo-2014", name: "Collection McDonald's 2014", nameEn: "McDonald's Collection 2014", abbreviation: "MC14", blocSlug: "collection-mcdo", releaseDate: "2014-05-23", order: 9  },
-  { tcgdexId: "2013bw",    slug: "promo-mcdo-2013", name: "Collection McDonald's 2013", nameEn: "McDonald's Collection 2013", abbreviation: "MC13", blocSlug: "collection-mcdo", releaseDate: "2013-11-01", order: 10 },
-  { tcgdexId: "2012bw",    slug: "promo-mcdo-2012", name: "Collection McDonald's 2012", nameEn: "McDonald's Collection 2012", abbreviation: "MC12", blocSlug: "collection-mcdo", releaseDate: "2012-06-15", order: 11 },
-  { tcgdexId: "2011bw",    slug: "promo-mcdo-2011", name: "Collection McDonald's 2011", nameEn: "McDonald's Collection 2011", abbreviation: "MC11", blocSlug: "collection-mcdo", releaseDate: "2011-06-17", order: 12 },
+  { tcgdexId: "2024sv",    slug: "promo-mcdo-2024", name: "2024 Promo McDonald's", nameEn: "2024 McDonald's Collection", abbreviation: "MC24", blocSlug: "collection-mcdo", releaseDate: "2024-12-04", order: 0  },
+  { tcgdexId: "2023sv",    slug: "promo-mcdo-2023", name: "2023 Promo McDonald's", nameEn: "2023 McDonald's Collection", abbreviation: "MC23", blocSlug: "collection-mcdo", releaseDate: "2023-08-01", order: 1  },
+  { tcgdexId: "2022swsh",  slug: "promo-mcdo-2022", name: "2022 Promo McDonald's", nameEn: "2022 McDonald's Collection", abbreviation: "MC22", blocSlug: "collection-mcdo", releaseDate: "2022-08-03", order: 2  },
+  { tcgdexId: "2021swsh",  slug: "promo-mcdo-2021", name: "2021 Promo McDonald's", nameEn: "2021 McDonald's Collection", abbreviation: "MC21", blocSlug: "collection-mcdo", releaseDate: "2021-02-09", order: 3  },
+  { tcgdexId: "2019sm-fr", slug: "promo-mcdo-2019", name: "2019 Promo McDonald's", nameEn: "2019 McDonald's Collection", abbreviation: "MC19", blocSlug: "collection-mcdo", releaseDate: "2019-10-30", order: 4  },
+  { tcgdexId: "2018sm-fr", slug: "promo-mcdo-2018", name: "2018 Promo McDonald's", nameEn: "2018 McDonald's Collection", abbreviation: "MC18", blocSlug: "collection-mcdo", releaseDate: "2018-06-13", order: 5  },
+  { tcgdexId: "2017sm",    slug: "promo-mcdo-2017", name: "2017 Promo McDonald's", nameEn: "2017 McDonald's Collection", abbreviation: "MC17", blocSlug: "collection-mcdo", releaseDate: "2017-08-03", order: 6  },
+  { tcgdexId: "2016xy",    slug: "promo-mcdo-2016", name: "2016 Promo McDonald's", nameEn: "2016 McDonald's Collection", abbreviation: "MC16", blocSlug: "collection-mcdo", releaseDate: "2016-08-20", order: 7  },
+  { tcgdexId: "2015xy",    slug: "promo-mcdo-2015", name: "2015 Promo McDonald's", nameEn: "2015 McDonald's Collection", abbreviation: "MC15", blocSlug: "collection-mcdo", releaseDate: "2015-11-27", order: 8  },
+  { tcgdexId: "2014xy",    slug: "promo-mcdo-2014", name: "2014 Promo McDonald's", nameEn: "2014 McDonald's Collection", abbreviation: "MC14", blocSlug: "collection-mcdo", releaseDate: "2014-05-23", order: 9  },
+  { tcgdexId: "2013bw",    slug: "promo-mcdo-2013", name: "2013 Promo McDonald's", nameEn: "2013 McDonald's Collection", abbreviation: "MC13", blocSlug: "collection-mcdo", releaseDate: "2013-11-01", order: 10 },
+  { tcgdexId: "2012bw",    slug: "promo-mcdo-2012", name: "2012 Promo McDonald's", nameEn: "2012 McDonald's Collection", abbreviation: "MC12", blocSlug: "collection-mcdo", releaseDate: "2012-06-15", order: 11 },
+  { tcgdexId: "2011bw",    slug: "promo-mcdo-2011", name: "2011 Promo McDonald's", nameEn: "2011 McDonald's Collection", abbreviation: "MC11", blocSlug: "collection-mcdo", releaseDate: "2011-06-17", order: 12 },
 ]
 
 const POP_SETS: SetDef[] = [
@@ -111,8 +111,8 @@ async function fetchTcgSet(id: string, lang: "fr" | "en" = "fr"): Promise<TcgSet
 const BLOCS_DEF = [
   {
     slug: "collection-mcdo",
-    name: "Collection McDonald's",
-    nameEn: "McDonald's Collection",
+    name: "McDonald's",
+    nameEn: "McDonald's",
     abbreviation: "MC",
     startDate: new Date("2011-06-01"),
     endDate: null as Date | null,

@@ -60,7 +60,7 @@ const PROMO_SERIE_SLUGS = new Set([
   "promos-noir-et-blanc",      "coffre-des-dragons",
   "promos-heartgold-soulsilver", "promos-diamant-et-perle",
   "promos-wizards",
-  // Collection McDonald's
+  // McDonald's
   "promo-mcdo-2024", "promo-mcdo-2023", "promo-mcdo-2022", "promo-mcdo-2021",
   "promo-mcdo-2019", "promo-mcdo-2018", "promo-mcdo-2017", "promo-mcdo-2016",
   "promo-mcdo-2015", "promo-mcdo-2014", "promo-mcdo-2013", "promo-mcdo-2012",
