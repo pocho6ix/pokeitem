@@ -18,7 +18,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "Quelles cartes et quelles extensions sont supportées ?",
-    a: "PokéItem couvre l'intégralité des cartes Pokémon éditées en français, des premières séries Wizards of the Coast jusqu'aux dernières sorties comme Méga-Évolution. Chaque nouvelle extension est ajoutée dès sa sortie officielle, avec numéros, raretés et versions (Normale, Reverse, Holo).",
+    a: "PokéItem couvre l'intégralité des cartes Pokémon éditées en français, des premières séries Wizards jusqu'aux dernières sorties comme Méga-Évolution. Chaque nouvelle extension est ajoutée dès sa sortie officielle, avec numéros, raretés et versions (Normale, Reverse, Holo).",
   },
   {
     q: "Puis-je suivre aussi mes items scellés (boosters, displays, ETBs) ?",

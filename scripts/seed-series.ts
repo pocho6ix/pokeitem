@@ -32,7 +32,7 @@ const BLOCS_DATA = [
   { name: "Platine", nameEn: "Platinum", slug: "platine", abbreviation: "PL", logoUrl: null, imageUrl: "/images/blocs/platine.png", startDate: "2009-02-01", endDate: "2009-11-01", order: 8 },
   { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", logoUrl: null, imageUrl: "/images/blocs/diamant-perle.png", startDate: "2007-05-01", endDate: "2009-02-01", order: 9 },
   { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", logoUrl: null, imageUrl: "/images/blocs/ex.png", startDate: "2003-06-01", endDate: "2006-11-01", order: 10 },
-  { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 11 },
+  { name: "Wizards", nameEn: "Wizards", slug: "wotc", abbreviation: "WOTC", logoUrl: null, imageUrl: "/images/blocs/wotc.png", startDate: "1999-01-01", endDate: "2003-06-01", order: 11 },
 ];
 
 // ─── Séries ─────────────────────────────────────────────────────────────────

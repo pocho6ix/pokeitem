@@ -13,7 +13,7 @@ const BLOCS_DATA = [
   { name: "Platine", nameEn: "Platinum", slug: "platine", abbreviation: "PL", startDate: new Date("2009-02-11"), endDate: new Date("2009-11-01"), order: 7 },
   { name: "Diamant & Perle", nameEn: "Diamond & Pearl", slug: "diamant-perle", abbreviation: "DP", startDate: new Date("2007-05-01"), endDate: new Date("2009-02-01"), order: 8 },
   { name: "EX", nameEn: "EX", slug: "ex", abbreviation: "EX", startDate: new Date("2003-06-01"), endDate: new Date("2006-11-01"), order: 9 },
-  { name: "Wizards of the Coast", nameEn: "Wizards of the Coast", slug: "wotc", abbreviation: "WOTC", startDate: new Date("1999-01-09"), endDate: new Date("2003-06-01"), order: 10 },
+  { name: "Wizards", nameEn: "Wizards", slug: "wotc", abbreviation: "WOTC", startDate: new Date("1999-01-09"), endDate: new Date("2003-06-01"), order: 10 },
 ];
 
 const SERIES_DATA = [

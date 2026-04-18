@@ -116,8 +116,8 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 9,
   },
   {
-    name: 'Wizards of the Coast',
-    nameEn: 'Wizards of the Coast',
+    name: 'Wizards',
+    nameEn: 'Wizards',
     slug: 'wotc',
     abbreviation: 'WOTC',
     logoUrl: null,
