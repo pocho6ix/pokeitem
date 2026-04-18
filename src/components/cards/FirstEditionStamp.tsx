@@ -3,16 +3,14 @@
 import Image from "next/image";
 
 /**
- * Overlay badge stamped on top of the card artwork when the row carries
- * `isFirstEdition: true`. Shipped as a v1 workaround — TCGdex (our image
- * CDN) doesn't serve 1ED and Unlimited as separate products, so instead
- * of sourcing two distinct images per card we mark the 1ED variants
- * visually with this medallion.
+ * "EDITION 1" medallion overlaid on the card artwork for every card with
+ * `isFirstEdition: true`. Mirrors the circular stamp physically printed in
+ * the bottom-left of the stat bar on genuine 1st-Edition WOTC cards.
  *
- * Positioned absolutely in the bottom-left corner, roughly where the real
- * "Édition 1" stamp appears on the printed card. The size scales with the
- * tile via the `size` prop so thumbnails stay legible and big modal views
- * show a proportional medallion.
+ * Positioned at bottom-[38%] left-[7%], which places it just below the
+ * illustration box — matching where the real stamp sits on the printed card.
+ * The `size` prop scales the medallion so it stays proportional across
+ * thumbnail tiles and larger modal views.
  */
 export function FirstEditionStamp({
   size = "md",
@@ -26,9 +24,9 @@ export function FirstEditionStamp({
   // the image corner.
   const DIM: Record<typeof size, string> = {
     xs: "h-4  w-4",
-    sm: "h-5  w-5",
-    md: "h-7  w-7",
-    lg: "h-10 w-10",
+    sm: "h-6  w-6",
+    md: "h-8  w-8",
+    lg: "h-12 w-12",
   };
   return (
     <Image
@@ -36,7 +34,7 @@ export function FirstEditionStamp({
       alt="Édition 1"
       width={80}
       height={80}
-      className={`pointer-events-none absolute bottom-[8%] left-[6%] ${DIM[size]} object-contain drop-shadow-[0_0_4px_rgba(0,0,0,0.6)] ${className}`}
+      className={`pointer-events-none absolute bottom-[38%] left-[7%] ${DIM[size]} object-contain drop-shadow-[0_0_3px_rgba(255,255,255,0.7)] ${className}`}
     />
   );
 }
