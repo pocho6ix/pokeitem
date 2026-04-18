@@ -560,14 +560,23 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug }: Props
                         <FirstEditionStamp size="sm" />
                       )}
 
-                      {/* Version badges — hidden for special cards (single version only) */}
-                      {grp.ownedVersions.length > 0 && !grp.isSpecial && (
-                        <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                          {[...grp.ownedVersions].reverse().map((v) => (
-                            <VersionBadgeIcon key={v} version={v} qty={grp.versionQty.get(v)} />
-                          ))}
-                        </div>
-                      )}
+                      {/* Version badges — hidden for special cards (single version only).
+                          FIRST_EDITION is already signalled by the stamp on the left
+                          side of the card, so it's excluded from the right-side stack. */}
+                      {(() => {
+                        if (grp.isSpecial) return null;
+                        const stackVersions = grp.ownedVersions.filter(
+                          (v) => v !== CardVersion.FIRST_EDITION,
+                        );
+                        if (stackVersions.length === 0) return null;
+                        return (
+                          <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
+                            {[...stackVersions].reverse().map((v) => (
+                              <VersionBadgeIcon key={v} version={v} qty={grp.versionQty.get(v)} />
+                            ))}
+                          </div>
+                        );
+                      })()}
 
                       {/* Condition badge — top-right */}
                       {grp.displayCondition === CardCondition.GRADED ? (

@@ -10,8 +10,8 @@ import Image from "next/image";
  *
  * Positioned at bottom-[38%] left-[7%], which places it just below the
  * illustration box — matching where the real stamp sits on the printed card.
- * The `size` prop scales the medallion so it stays proportional across
- * thumbnail tiles and larger modal views.
+ * Wrapped in a white disc so it pops against the dark card artwork; the
+ * `size` prop scales the medallion across thumbnail tiles and modal views.
  */
 export function FirstEditionStamp({
   size = "md",
@@ -20,22 +20,24 @@ export function FirstEditionStamp({
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) {
-  // Tailwind class bundle per preset. Kept tight so it can't fight with the
-  // card's own aspect ratio — the medallion is always a circle anchored to
-  // the image corner.
-  const DIM: Record<typeof size, string> = {
-    xs: "h-4  w-4",
-    sm: "h-6  w-6",
-    md: "h-8  w-8",
-    lg: "h-12 w-12",
+  // Outer disc: total footprint on the card (slightly smaller than before).
+  const DISC: Record<typeof size, string> = {
+    xs: "h-3.5 w-3.5",
+    sm: "h-5   w-5",
+    md: "h-7   w-7",
+    lg: "h-10  w-10",
   };
   return (
-    <Image
-      src="/images/badges/first-edition.png"
-      alt="Édition 1"
-      width={80}
-      height={80}
-      className={`pointer-events-none absolute bottom-[38%] left-[7%] ${DIM[size]} object-contain drop-shadow-[0_0_3px_rgba(255,255,255,0.7)] ${className}`}
-    />
+    <div
+      className={`pointer-events-none absolute bottom-[38%] left-[7%] flex items-center justify-center rounded-full bg-white shadow-[0_0_3px_rgba(0,0,0,0.35)] ${DISC[size]} ${className}`}
+    >
+      <Image
+        src="/images/badges/edition-1.png"
+        alt="Édition 1"
+        width={80}
+        height={80}
+        className="h-[85%] w-[85%] object-contain"
+      />
+    </div>
   );
 }
