@@ -153,7 +153,6 @@ const SERIE_TO_TCGPLAYER: Record<string, string[]> = {
   "team-rocket": ["Team Rocket"],
   "gym-heroes": ["Gym Heroes"],
   "gym-challenge": ["Gym Challenge"],
-  "skyridge": ["Skyridge"],
   "aquapolis": ["Aquapolis"],
   "expedition": ["Expedition Base Set"],
 };

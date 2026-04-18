@@ -143,7 +143,6 @@ const SLUG_TO_PTCG: Record<string, string> = {
   "gym-challenge":               "gym2",
   "expedition":                  "ecard1",
   "aquapolis":                   "ecard2",
-  "skyridge":                    "ecard3",
 };
 
 // ---------------------------------------------------------------------------

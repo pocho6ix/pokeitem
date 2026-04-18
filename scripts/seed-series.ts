@@ -160,7 +160,6 @@ const SERIES_DATA = [
   { name: "Rubis & Saphir", nameEn: "Ruby & Sapphire", slug: "rubis-et-saphir", abbreviation: "EX01", blocSlug: "ex", imageUrl: "/images/series/rubis-et-saphir.png", releaseDate: "2003-06-18", order: 14 },
   // Wizards of the Coast
   { name: "Aquapolis", nameEn: "Aquapolis", slug: "aquapolis", abbreviation: "WOTC-AQ", blocSlug: "wotc", imageUrl: "/images/series/aquapolis.png", releaseDate: "2003-01-15", order: 0 },
-  { name: "Skyridge", nameEn: "Skyridge", slug: "skyridge", abbreviation: "WOTC-SK", blocSlug: "wotc", imageUrl: "/images/series/skyridge.png", releaseDate: "2003-05-12", order: 1 },
   { name: "Expédition", nameEn: "Expedition", slug: "expedition", abbreviation: "WOTC-EX", blocSlug: "wotc", imageUrl: "/images/series/expedition.png", releaseDate: "2002-09-15", order: 2 },
   { name: "Legendary Collection", nameEn: "Legendary Collection", slug: "legendary-collection", abbreviation: "WOTC-LC", blocSlug: "wotc", imageUrl: "/images/series/legendary-collection.png", releaseDate: "2002-05-24", order: 3 },
   { name: "Neo Destiny", nameEn: "Neo Destiny", slug: "neo-destiny", abbreviation: "WOTC-N4", blocSlug: "wotc", imageUrl: "/images/series/neo-destiny.png", releaseDate: "2002-02-28", order: 4 },

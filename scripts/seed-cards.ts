@@ -150,7 +150,7 @@ const TCGDEX_MAPPING: Record<string, string> = {
 
   // ── Wizards of the Coast ──────────────────────────────────────────────────
   // TCGdex FR uniquement disponible pour : base1-base5, ecard1-ecard2, neo1-neo4
-  // gym1/gym2 (Gym Heroes/Challenge), base4 (Base Set 2), ecard3 (Skyridge),
+  // gym1/gym2 (Gym Heroes/Challenge), base4 (Base Set 2),
   // base6 (Legendary Collection) → absents de TCGdex FR
   base1: "set-de-base",
   base2: "jungle",
@@ -170,7 +170,6 @@ const PTCG_ONLY_MAPPING: Record<string, string> = {
   // → géré via script scripts/fix-base-set-2-images.ts
   "gym1":   "gym-heroes",
   "gym2":   "gym-challenge",
-  "ecard3": "skyridge",
   "base6":  "legendary-collection",
   "ex7":    "team-rocket-returns",
   "basep":  "promos-wizards",

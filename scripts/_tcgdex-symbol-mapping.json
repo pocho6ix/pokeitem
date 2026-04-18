@@ -1599,19 +1599,6 @@
     "symbolUrl": "https://assets.tcgdex.net/univ/ecard/ecard2/symbol.png"
   },
   {
-    "serieSlug": "skyridge",
-    "serieName": "Skyridge",
-    "serieNameEn": "Skyridge",
-    "serieBlocSlug": "wotc",
-    "serieReleaseDate": "2003-12-17",
-    "tcgdexSetId": "ecard3",
-    "tcgdexSetName": "Skyridge",
-    "tcgdexReleaseDate": null,
-    "tcgdexParent": null,
-    "confidence": "exact-en",
-    "symbolUrl": "https://assets.tcgdex.net/univ/ecard/ecard3/symbol.png"
-  },
-  {
     "serieSlug": "expedition",
     "serieName": "Expédition",
     "serieNameEn": "Expedition",

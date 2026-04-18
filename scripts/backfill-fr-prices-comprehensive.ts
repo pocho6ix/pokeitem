@@ -146,7 +146,6 @@ const SLUG_TO_EPISODES: Record<string, number[]> = {
   "gym-heroes":           [165],         // Gym Heroes
   "gym-challenge":        [164],         // Gym Challenge
   "team-rocket":          [166],         // Team Rocket
-  "skyridge":             [154],         // Skyridge
   "aquapolis":            [155],         // Aquapolis
   "expedition":           [157],         // Expedition Base Set
 }

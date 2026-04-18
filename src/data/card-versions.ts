@@ -7,7 +7,7 @@
 //  • Set de Base, Jungle, Fossile, Team Rocket
 //      → Normale/Holo + Édition 1  (1ère édition = variante avec le stamp)
 //  • Neo Genesis → Neo Destiny                 → Normale + Holo only
-//  • Expédition, Aquapolis, Skyridge (e-Card)  → Normale + Reverse
+//  • Expédition, Aquapolis (e-Card)           → Normale + Reverse
 //
 //  EX → EB blocs                                 → Normale + Reverse
 //
@@ -81,7 +81,7 @@ const V_WOTC_BASE  = [CardVersion.NORMAL, CardVersion.FIRST_EDITION] as const;
 const SERIE_VERSION_MAP: Record<string, readonly CardVersion[]> = {
   // ── WOTC — pre-Reverse era (Set de Base → Neo Destiny) ──────────────────
   // These sets predate the Reverse mechanic.
-  // Expédition, Aquapolis, Skyridge (e-Card) DO have Reverse → wotc bloc default applies.
+  // Expédition, Aquapolis (e-Card) DO have Reverse → wotc bloc default applies.
   "set-de-base":      V_WOTC_BASE,
   "jungle":           V_WOTC_BASE,
   "fossile":          V_WOTC_BASE,
@@ -137,7 +137,7 @@ const BLOC_DEFAULT_VERSIONS: Record<string, readonly CardVersion[]> = {
   "platine":                  V_REVERSE,
   "diamant-perle":            V_REVERSE,
   "ex":                       V_REVERSE,
-  "wotc":                     V_REVERSE, // Expédition, Aquapolis, Skyridge have Reverse
+  "wotc":                     V_REVERSE, // Expédition, Aquapolis have Reverse
   // ── Promos hors-série — pas de Reverse ─────────────────────────────────
   "collection-mcdo":          V_NORMAL,  // McDonald's promos — version unique
   "pokemon-organized-play":   V_NORMAL,  // POP sets — version unique

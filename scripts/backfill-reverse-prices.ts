@@ -140,7 +140,7 @@ const SLUG_TO_TCGDEX: Record<string, string> = {
   "gardiens-de-cristal":       "ex14",
   "gardiens-du-pouvoir":       "ex16",
 
-  // ── Wizards of the Coast (seuls Expédition/Aquapolis/Skyridge ont des Reverse)
+  // ── Wizards of the Coast (seuls Expédition/Aquapolis ont des Reverse)
   "expedition":                "ecard1",
   "aquapolis":                 "ecard2",
 }
