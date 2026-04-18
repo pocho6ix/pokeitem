@@ -253,7 +253,8 @@ const MCDO_SERIES: SerieStatic[] = [
 ];
 
 // ==========================================================================
-// Pokémon Organized Play (POP)
+// Ligue Pokémon — historiquement "Pokémon Organized Play" (POP)
+// Slug conservé (pokemon-organized-play) pour ne pas casser les URLs.
 // ==========================================================================
 
 const POP_SERIES: SerieStatic[] = [

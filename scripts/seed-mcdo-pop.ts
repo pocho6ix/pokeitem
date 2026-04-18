@@ -120,8 +120,8 @@ const BLOCS_DEF = [
   },
   {
     slug: "pokemon-organized-play",
-    name: "Pokémon Organized Play",
-    nameEn: "Pokémon Organized Play",
+    name: "Ligue Pokémon",
+    nameEn: "Pokémon League",
     abbreviation: "POP",
     startDate: new Date("2004-09-01"),
     endDate: new Date("2009-03-01"),

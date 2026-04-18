@@ -138,8 +138,8 @@ export const BLOCS: Omit<Bloc, 'id' | 'series'>[] = [
     order: 11,
   },
   {
-    name: 'Pokémon Organized Play',
-    nameEn: 'Pokémon Organized Play',
+    name: 'Ligue Pokémon',
+    nameEn: 'Pokémon League',
     slug: 'pokemon-organized-play',
     abbreviation: 'POP',
     logoUrl: null,
