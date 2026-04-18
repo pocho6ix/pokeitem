@@ -7,7 +7,7 @@ import { Check, Heart, Plus, Eye } from "lucide-react";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useToast } from "@/components/ui/Toast";
 import { CardDetailModal } from "@/components/cards/CardDetailModal";
-import { getDisplayPrice } from "@/lib/display-price";
+import { getDisplayPrice, isFrenchPrice } from "@/lib/display-price";
 import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS, CardCondition } from "@/types/card";
 import { CardVersion } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
@@ -705,6 +705,7 @@ function CardVignette({
 }) {
   const { card } = wi;
   const price = getDisplayPrice(card);
+  const isFr = isFrenchPrice(card);
   const blocSlug = card.serie.bloc.slug;
 
   return (
@@ -766,10 +767,12 @@ function CardVignette({
           />
         </div>
 
-        {/* Price — bottom right */}
+        {/* Price — bottom right. Prefixed with 🇫🇷 when the value is the
+            cheapest French NM listing (same convention as Collection/Classeur). */}
         {price != null && price > 0 && (
-          <div className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
-            {price.toFixed(2).replace(".", ",")} €
+          <div className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded bg-black/60 px-1 py-0.5 text-[9px] font-bold leading-none text-white">
+            {isFr && <span aria-hidden>🇫🇷</span>}
+            <span>{price.toFixed(2).replace(".", ",")} €</span>
           </div>
         )}
       </div>
