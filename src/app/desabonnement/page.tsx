@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Désabonnement | PokeItem",
-  robots: { index: false },
+  title: "Désabonnement",
+  description: "Désabonnez-vous des communications email de PokeItem en un clic.",
+  robots: { index: false, follow: false },
 };
 
 interface PageProps {

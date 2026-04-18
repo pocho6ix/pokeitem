@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Page introuvable | PokeItem",
-  description: "La page que vous cherchez n'existe pas ou a été déplacée.",
+  title: "Page introuvable",
+  description:
+    "La page que vous cherchez n'existe pas ou a été déplacée. Retournez à l'accueil ou explorez votre collection Pokémon TCG sur PokeItem.",
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {

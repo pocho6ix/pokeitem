@@ -20,8 +20,12 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serieSlug } = await params;
   const serie = SERIES.find((s) => s.slug === serieSlug);
-  if (!serie) return { title: "Série introuvable | PokeItem" };
-  return { title: `Doublons — ${serie.name} | PokeItem` };
+  if (!serie) return { title: "Série introuvable" };
+  return {
+    title: `Doublons — ${serie.name}`,
+    description: `Vos cartes en doublon pour l'extension ${serie.name} : quantités, versions et cote Cardmarket pour chaque carte, idéal pour préparer vos échanges.`,
+    robots: { index: false, follow: true },
+  };
 }
 
 export default async function DoublesSerieDetailPage({ params }: PageProps) {

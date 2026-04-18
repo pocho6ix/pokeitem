@@ -8,10 +8,10 @@ const BASE_URL = "https://app.pokeitem.fr";
 // ---------------------------------------------------------------------------
 
 export function generateItemMetadata(item: Item): Metadata {
-  const title = `${item.name} — Prix et infos | PokeItem`;
+  const title = `${item.name} — Prix et cote`;
   const description = item.description
     ? item.description.slice(0, 155)
-    : `D\u00e9couvrez ${item.name} : prix actuel, historique et infos d\u00e9taill\u00e9es sur PokeItem.`;
+    : `${item.name} Pok\u00e9mon TCG : prix Cardmarket actuel, historique de cote, description, images et d\u00e9tails du produit scell\u00e9 sur PokeItem.`;
 
   return {
     title,
@@ -40,8 +40,8 @@ export function generateItemMetadata(item: Item): Metadata {
 // ---------------------------------------------------------------------------
 
 export function generateSerieMetadata(serie: Serie, bloc: Bloc): Metadata {
-  const title = `${serie.name} — ${bloc.name} | PokeItem`;
-  const description = `Tous les produits scell\u00e9s de la s\u00e9rie ${serie.name} (${bloc.name}) : prix, disponibilit\u00e9 et d\u00e9tails sur PokeItem.`;
+  const title = `${serie.name} — ${bloc.name}`;
+  const description = `Tous les produits scell\u00e9s Pok\u00e9mon TCG de l'extension ${serie.name} (${bloc.name}) : Booster Boxes, ETB, coffrets et displays avec prix Cardmarket actuels.`;
 
   return {
     title,
@@ -70,8 +70,8 @@ export function generateSerieMetadata(serie: Serie, bloc: Bloc): Metadata {
 // ---------------------------------------------------------------------------
 
 export function generateBlocMetadata(bloc: Bloc): Metadata {
-  const title = `${bloc.name} — Toutes les s\u00e9ries | PokeItem`;
-  const description = `Explorez toutes les s\u00e9ries du bloc ${bloc.name} (${bloc.nameEn}) sur PokeItem : produits scell\u00e9s, prix et historique.`;
+  const title = `${bloc.name} — Toutes les extensions`;
+  const description = `Explorez toutes les extensions Pok\u00e9mon TCG du bloc ${bloc.name} (${bloc.nameEn}) : produits scell\u00e9s, Booster Boxes, ETB, prix Cardmarket et historique.`;
 
   return {
     title,
@@ -100,7 +100,7 @@ export function generateBlocMetadata(bloc: Bloc): Metadata {
 // ---------------------------------------------------------------------------
 
 export function generateBlogMetadata(post: BlogPost): Metadata {
-  const title = post.metaTitle ?? `${post.title} — Blog PokeItem`;
+  const title = post.metaTitle ?? `${post.title} — Blog`;
   const description =
     post.metaDescription ?? post.excerpt.slice(0, 155);
 

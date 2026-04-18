@@ -6,8 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { WishlistPageClient } from "./WishlistPageClient";
 
 export const metadata: Metadata = {
-  title: "Liste de souhaits | PokeItem",
-  description: "Cartes Pokémon que vous souhaitez acquérir.",
+  title: "Liste de souhaits",
+  description:
+    "Votre wishlist de cartes Pokémon TCG : suivez les cartes que vous souhaitez acquérir, consultez leur prix Cardmarket actuel et comparez-les facilement.",
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 0;

@@ -13,8 +13,9 @@ import { getSerieVersions } from "@/data/card-versions";
 import type { BlocCardProgress } from "@/types/card";
 
 export const metadata: Metadata = {
-  title: "Collection Cartes Pokémon TCG | PokeItem",
-  description: "Explorez toutes les cartes Pokémon TCG par série et extension.",
+  title: "Collection cartes Pokémon TCG",
+  description:
+    "Explorez toutes les cartes Pokémon TCG par série et extension : catalogue complet avec prix Cardmarket, raretés, images HD et détails pour chaque carte.",
 };
 
 export const revalidate = 0; // dynamic — owned data is per-user

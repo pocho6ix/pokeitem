@@ -16,8 +16,10 @@ import {
 } from "@/components/cards/BlocSerieDoublesList";
 
 export const metadata: Metadata = {
-  title: "Doubles — Mon Classeur | PokeItem",
-  description: "Consultez vos cartes en doublon (quantité > 1) dans votre collection.",
+  title: "Doublons — Mon classeur",
+  description:
+    "Retrouvez toutes les cartes en doublon (quantité > 1) de votre classeur Pokémon TCG, classées par série, avec leur cote Cardmarket pour faciliter vos échanges.",
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 0;

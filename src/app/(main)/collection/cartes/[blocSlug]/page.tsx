@@ -30,10 +30,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: BlocPageProps): Promise<Metadata> {
   const { blocSlug } = await params;
   const bloc = findBloc(blocSlug);
-  if (!bloc) return { title: "Série introuvable | PokeItem" };
+  if (!bloc) return { title: "Série introuvable" };
 
-  const title = `${bloc.name} — Toutes les extensions de cartes | PokeItem`;
-  const description = `Explorez toutes les extensions de cartes de la série ${bloc.name} (${bloc.nameEn}) sur PokeItem.`;
+  const title = `Cartes ${bloc.name} — Toutes les extensions`;
+  const description = `Explorez toutes les extensions de cartes Pokémon TCG du bloc ${bloc.name} (${bloc.nameEn}) : catalogue complet, prix Cardmarket, raretés et images HD.`;
 
   return {
     title,

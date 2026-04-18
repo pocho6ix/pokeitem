@@ -61,10 +61,10 @@ export async function generateMetadata({ params }: SeriePageProps): Promise<Meta
   const { blocSlug, serieSlug } = await params;
   const bloc = findBloc(blocSlug);
   const serie = findSerie(blocSlug, serieSlug);
-  if (!bloc || !serie) return { title: "Extension introuvable | PokeItem" };
+  if (!bloc || !serie) return { title: "Extension introuvable" };
 
-  const title = `${serie.name} — ${bloc.name} | PokeItem`;
-  const description = `Tous les produits scellés de l'extension ${serie.name} (${serie.abbreviation}) de la série ${bloc.name}. Prix, disponibilité et détails sur PokeItem.`;
+  const title = `${serie.name} — ${bloc.name}`;
+  const description = `Tous les produits scellés Pokémon TCG de l'extension ${serie.name} (${serie.abbreviation}) : Booster Boxes, ETB, coffrets avec prix Cardmarket actuels.`;
 
   return {
     title,

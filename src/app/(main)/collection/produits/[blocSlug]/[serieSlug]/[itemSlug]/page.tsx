@@ -20,10 +20,10 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   const { blocSlug, serieSlug, itemSlug } = await params;
   const bloc = findBloc(blocSlug);
   const serie = findSerie(blocSlug, serieSlug);
-  if (!bloc || !serie) return { title: "Item introuvable | PokeItem" };
+  if (!bloc || !serie) return { title: "Produit introuvable" };
   return {
-    title: `${itemSlug} | ${serie.name} | PokeItem`,
-    description: `Détail de l'item ${itemSlug} de l'extension ${serie.name}.`,
+    title: `${itemSlug} — ${serie.name}`,
+    description: `${itemSlug} (${serie.name}, ${bloc.name}) : prix Cardmarket actuel, historique de cote, description et détails du produit scellé Pokémon TCG sur PokeItem.`,
   };
 }
 

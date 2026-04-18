@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Ajouter un item | Ma Collection | PokeItem",
+  title: "Ajouter un produit scellé",
   description:
-    "Ajoutez un nouvel item a votre collection de produits Pokemon scelles.",
+    "Ajoutez un nouveau produit scellé Pokémon TCG à votre classeur : sélectionnez l'item dans le catalogue, renseignez prix d'achat et quantité en quelques clics.",
+  robots: { index: false, follow: true },
 };
 
 export default function AjouterPage() {

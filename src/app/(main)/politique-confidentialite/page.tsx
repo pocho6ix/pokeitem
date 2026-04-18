@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — PokeItem",
-  description: "Politique de confidentialité et traitement des données personnelles sur PokeItem.",
+  title: "Politique de confidentialité",
+  description:
+    "Politique de confidentialité PokeItem : données collectées, finalités du traitement, vos droits RGPD, cookies et gestion des informations personnelles.",
 };
 
 export default function PolitiqueConfidentialitePage() {

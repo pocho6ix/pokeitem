@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { ProfilForm } from "@/components/profil/ProfilForm";
 
 export const metadata: Metadata = {
-  title: "Mon profil | PokeItem",
-  description: "Gérez votre profil et vos préférences PokeItem.",
+  title: "Mon profil",
+  description:
+    "Gérez votre profil PokeItem : informations personnelles, préférences d'affichage, paramètres de collection, notifications et abonnement Pro.",
+  robots: { index: false, follow: true },
 };
 
 export default function ProfilPage() {

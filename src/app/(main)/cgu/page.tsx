@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation — PokeItem",
-  description: "Conditions générales d'utilisation de PokeItem, la plateforme de gestion de collection Pokémon TCG.",
+  title: "Conditions générales d'utilisation",
+  description:
+    "Conditions générales d'utilisation de PokeItem : règles d'usage de la plateforme, droits et obligations des utilisateurs et fonctionnement du service.",
 };
 
 export default function CguPage() {

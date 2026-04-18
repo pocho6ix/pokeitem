@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/Card";
 import { TabNav } from "@/components/ui/TabNav";
 
 export const metadata: Metadata = {
-  title: "Collection Produits Scellés Pokémon TCG | PokeItem",
+  title: "Collection produits scellés Pokémon TCG",
   description:
-    "Explorez tous les items scellés Pokémon TCG par série et extension.",
+    "Parcourez tous les produits scellés Pokémon TCG par série et extension : Booster Boxes, ETB, coffrets, blisters, tins et displays avec leur cote actuelle.",
 };
 
 function formatPeriod(startDate: string, endDate: string | null): string {

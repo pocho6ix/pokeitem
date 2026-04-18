@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Statistiques | Ma Collection | PokeItem",
+  title: "Statistiques de ma collection",
   description:
-    "Statistiques detaillees de votre collection de produits Pokemon scelles.",
+    "Analyse détaillée de votre collection Pokémon TCG : valeur totale, gains et pertes, évolution dans le temps, répartition par série et par type de produit.",
+  robots: { index: false, follow: true },
 };
 
 export default function StatistiquesPage() {

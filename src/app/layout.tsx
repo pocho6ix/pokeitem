@@ -21,18 +21,20 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
+    default: "PokeItem — Gérez votre collection Pokémon TCG",
     template: "%s | PokeItem",
   },
   description:
-    "PokeItem est la plateforme de référence pour gérer, valoriser et suivre votre portfolio d'items scellés Pokémon TCG. Booster Boxes, ETB, coffrets et plus.",
+    "Gérez et valorisez votre collection Pokémon TCG : cartes, Booster Boxes, ETB, coffrets. Cote Cardmarket en temps réel, classeur virtuel, wishlist et stats.",
   keywords: [
     "pokémon tcg",
     "collection pokémon",
-    "items scellés pokémon",
+    "classeur pokémon",
+    "cartes pokémon",
+    "prix cardmarket",
     "booster box pokémon",
     "etb pokémon",
-    "investir pokémon",
+    "wishlist pokémon",
     "pokeitem",
     "portfolio pokémon",
   ],
@@ -46,9 +48,9 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     url: "https://app.pokeitem.fr",
     siteName: "PokeItem",
-    title: "PokeItem — Gérez votre portfolio d'items Pokémon TCG",
+    title: "PokeItem — Gérez votre collection Pokémon TCG",
     description:
-      "La plateforme de référence pour gérer et valoriser votre portfolio d'items scellés Pokémon TCG.",
+      "Gérez et valorisez votre collection Pokémon TCG : cartes, Booster Boxes, ETB, coffrets. Cote Cardmarket en temps réel, classeur virtuel, wishlist et stats.",
     images: [
       {
         url: "https://app.pokeitem.fr/og-image.jpg",
@@ -60,8 +62,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PokeItem",
-    description: "Gérez votre portfolio d'items scellés Pokémon TCG.",
+    title: "PokeItem — Gérez votre collection Pokémon TCG",
+    description:
+      "Gérez et valorisez votre collection Pokémon TCG : cartes, Booster Boxes, ETB, coffrets. Cote Cardmarket en temps réel, classeur virtuel et wishlist.",
     images: ["https://app.pokeitem.fr/og-image.jpg"],
   },
   robots: { index: true, follow: true },

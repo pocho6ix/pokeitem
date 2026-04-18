@@ -3,7 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { CardScanner } from "@/components/scanner/CardScanner";
 
-export const metadata: Metadata = { title: "Scanner — PokeItem" };
+export const metadata: Metadata = {
+  title: "Scanner de cartes Pokémon TCG",
+  description:
+    "Scannez vos cartes Pokémon TCG avec l'appareil photo pour les ajouter en un clin d'œil à votre classeur virtuel PokeItem. Reconnaissance automatique rapide.",
+};
 
 export default async function ScannerPage() {
   const session = await getServerSession(authOptions);

@@ -467,7 +467,7 @@ const equilibreParfait: BlogPostData = {
   category: "actualite",
   published: true,
   publishedAt: "2026-03-15",
-  metaTitle: "Équilibre Parfait ME03 : Analyse, Prix & Investissement | PokeItem",
+  metaTitle: "Équilibre Parfait ME03 : Analyse, Prix & Investissement",
   metaDescription:
     "Tout savoir sur l'extension Équilibre Parfait (ME03) : liste des produits, prix CardMarket et potentiel d'investissement.",
   keywords: ["Équilibre Parfait", "ME03", "Méga-Évolution", "Pokémon TCG"],
@@ -613,7 +613,7 @@ const top10Rentables: BlogPostData = {
   category: "top",
   published: true,
   publishedAt: "2026-03-10",
-  metaTitle: "Top 10 Produits Scellés Pokémon Rentables 2025 | PokeItem",
+  metaTitle: "Top 10 Produits Scellés Pokémon Rentables 2025",
   metaDescription:
     "Les 10 produits scellés Pokémon TCG les plus rentables de 2025 : displays, ETB et coffrets qui ont explosé en valeur.",
   keywords: ["produits scellés rentables", "investissement Pokémon", "top Pokémon TCG"],
@@ -758,7 +758,7 @@ const investirETB: BlogPostData = {
   category: "investissement",
   published: true,
   publishedAt: "2026-03-05",
-  metaTitle: "Investir dans les ETB Pokémon : Stratégie & Conseils | PokeItem",
+  metaTitle: "Investir dans les ETB Pokémon : Stratégie & Conseils",
   metaDescription:
     "Les Coffrets Dresseur d'Élite (ETB) Pokémon sont-ils un bon investissement ? Analyse des rendements et stratégie d'achat.",
   keywords: ["ETB Pokémon", "investissement ETB", "Coffret Dresseur d'Élite"],
@@ -954,7 +954,7 @@ const calendrierSorties: BlogPostData = {
   category: "actualite",
   published: true,
   publishedAt: "2026-02-28",
-  metaTitle: "Calendrier Sorties Pokémon TCG 2026 : Dates & Extensions | PokeItem",
+  metaTitle: "Calendrier Sorties Pokémon TCG 2026 : Dates & Extensions",
   metaDescription:
     "Toutes les dates de sortie confirmées des extensions Pokémon TCG en 2026 : Méga-Évolution, Écarlate & Violet et plus.",
   keywords: ["sorties Pokémon TCG 2026", "calendrier Pokémon", "nouvelles extensions"],
@@ -1077,7 +1077,7 @@ const repererFaux: BlogPostData = {
   category: "guide",
   published: true,
   publishedAt: "2026-02-20",
-  metaTitle: "Repérer les Faux Produits Scellés Pokémon : Guide Anti-Contrefaçon | PokeItem",
+  metaTitle: "Repérer les Faux Produits Scellés Pokémon : Guide Anti-Contrefaçon",
   metaDescription:
     "Apprenez à repérer les contrefaçons de produits scellés Pokémon TCG. Guide complet pour protéger votre collection.",
   keywords: ["faux Pokémon", "contrefaçon Pokémon TCG", "identifier faux produits scellés"],

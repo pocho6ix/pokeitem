@@ -12,8 +12,10 @@ import { getSerieVersions } from "@/data/card-versions";
 import type { BlocCardProgress } from "@/types/card";
 
 export const metadata: Metadata = {
-  title: "Cartes — Mon Classeur | PokeItem",
-  description: "Consultez et gérez votre collection de cartes Pokémon TCG par série.",
+  title: "Classeur — Mes cartes",
+  description:
+    "Consultez et gérez votre classeur virtuel de cartes Pokémon TCG par série : progression, valeur, doublons et cartes manquantes avec leur cote Cardmarket.",
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 0; // dynamic — owned data is per-user

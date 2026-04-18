@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mentions légales — PokeItem",
-  description: "Mentions légales de PokeItem, plateforme de gestion de collection d'items scellés Pokémon TCG.",
+  title: "Mentions légales",
+  description:
+    "Mentions légales de PokeItem : identification de l'éditeur, hébergement du site, propriété intellectuelle et conditions d'utilisation de la plateforme.",
 };
 
 export default function MentionsLegalesPage() {
