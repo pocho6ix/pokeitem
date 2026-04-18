@@ -16,6 +16,32 @@ function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+/**
+ * Build the absolute Cardmarket URL for a card.
+ *
+ * - Prefers the slug-based `cardmarketUrl` (e.g. "Base-Set/Charizard-V1-BS4?language=2&isFirstEd=N")
+ *   and falls back to `?idProduct={cardmarketId}` when no slug is available.
+ * - When `opts.firstEdition` is true and the slug carries `isFirstEd=N`,
+ *   that flag is swapped to `=Y` so the link lands on the 1st Edition
+ *   variant's page on Cardmarket. For sets that don't expose the flag
+ *   (Expedition, Aquapolis, …) the swap is a no-op.
+ */
+function buildCardmarketUrl(
+  card: { cardmarketUrl: string | null; cardmarketId: string | null },
+  opts?: { firstEdition?: boolean },
+): string | null {
+  if (card.cardmarketUrl) {
+    const path = opts?.firstEdition
+      ? card.cardmarketUrl.replace(/([?&])isFirstEd=N(\b)/, "$1isFirstEd=Y$2")
+      : card.cardmarketUrl;
+    return `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${path}`;
+  }
+  if (card.cardmarketId) {
+    return `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`;
+  }
+  return null;
+}
+
 // ─── Add-to-collection constants ─────────────────────────────────────────────
 
 const CONDITION_BADGES: { value: CardCondition; label: string; badge: string }[] = [
@@ -414,13 +440,9 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
               </p>
 
               {/* Cardmarket link */}
-              {(card?.cardmarketUrl || card?.cardmarketId) && (
+              {card && buildCardmarketUrl(card) && (
                 <a
-                  href={
-                    card.cardmarketUrl
-                      ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}`
-                      : `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
-                  }
+                  href={buildCardmarketUrl(card)!}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
@@ -570,13 +592,9 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           <h3 className="text-sm font-semibold text-[var(--text-primary)]">
             Prix du marché
           </h3>
-          {(card?.cardmarketUrl || card?.cardmarketId) && (
+          {card && buildCardmarketUrl(card) && (
             <a
-              href={
-                card.cardmarketUrl
-                  ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}`
-                  : `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
-              }
+              href={buildCardmarketUrl(card)!}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
@@ -596,7 +614,34 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
             <PriceRow label="Prix Reverse" value={card.priceReverse} />
           )}
           {card?.priceFirstEdition != null && (
-            <PriceRow label="Prix Édition 1" value={card.priceFirstEdition} />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--text-secondary)] flex items-center gap-1.5">
+                Prix Édition 1
+                {card && buildCardmarketUrl(card, { firstEdition: true }) && (
+                  <a
+                    href={buildCardmarketUrl(card, { firstEdition: true })!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-md overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
+                    title="Voir la version Édition 1 sur Cardmarket"
+                  >
+                    <span className="bg-white px-1.5 py-0.5 flex items-center gap-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/cardmarket.png" alt="Cardmarket" className="h-3 w-auto object-contain" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/images/badges/edition-1.png"
+                        alt="Édition 1"
+                        className="h-4 w-auto object-contain"
+                      />
+                    </span>
+                  </a>
+                )}
+              </span>
+              <span className="text-sm font-semibold text-[var(--text-primary)]">
+                {formatEur(card.priceFirstEdition)}
+              </span>
+            </div>
           )}
           {card?.priceUpdatedAt && (
             <p className="text-[10px] text-[var(--text-tertiary)] pt-1">
