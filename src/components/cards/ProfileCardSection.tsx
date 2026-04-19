@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS } from "@/types/card";
 import { getCardImageAlt } from "@/lib/seo/card-image";
+import { CardVersion } from "@/data/card-versions";
+import { VariantPokeball, cardVersionToVariantType, VARIANT_LABELS } from "./VariantStack";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,14 +28,6 @@ export interface ProfileCardItem {
     bloc: { slug: string };
   };
 }
-
-const VERSION_BADGE_IMG: Record<string, string> = {
-  NORMAL:             "/badge_normale.png",
-  FIRST_EDITION:      "/images/badges/first-edition.png",
-  REVERSE:            "/badge_reverse.png",
-  REVERSE_POKEBALL:   "/badge_pokeball.png",
-  REVERSE_MASTERBALL: "/badge_masterball.png",
-};
 
 interface Props {
   cards: ProfileCardItem[];
@@ -340,15 +334,22 @@ function CardTile({ card, inVisitorWishlist }: { card: ProfileCardItem; inVisito
               ×{card.quantity}
             </div>
           )}
-          {/* Version badge */}
-          {card.version && card.version !== "NORMAL" && VERSION_BADGE_IMG[card.version] && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={VERSION_BADGE_IMG[card.version]}
-              alt={card.version}
-              className="h-4 w-4 rounded-full object-cover bg-black/50"
-            />
-          )}
+          {/* Version badge — SVG Pokéball (non-NORMAL variants seulement).
+              FIRST_EDITION est signalée via le stamp gauche de la carte, donc
+              cardVersionToVariantType renvoie null et on ne rend rien ici. */}
+          {card.version && card.version !== "NORMAL" && (() => {
+            const variant = cardVersionToVariantType(card.version as CardVersion);
+            if (!variant) return null;
+            return (
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-black/50"
+                aria-label={VARIANT_LABELS[variant]}
+                title={VARIANT_LABELS[variant]}
+              >
+                <VariantPokeball variant={variant} owned size={16} />
+              </span>
+            );
+          })()}
           {/* Price — shown only if no quantity badge */}
           {(card.quantity == null || card.quantity <= 1) && displayPrice != null && displayPrice > 0 && (
             <div className="rounded bg-black/50 px-1 py-0.5 text-[9px] font-bold leading-none text-white">

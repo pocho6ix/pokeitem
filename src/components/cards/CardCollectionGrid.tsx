@@ -12,7 +12,7 @@ import {
   CARD_CONDITION_LABELS,
   CARD_LANGUAGES,
 } from "@/types/card";
-import { CardVersion, getSerieVersions, VERSION_SORT_ORDER } from "@/data/card-versions";
+import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { SERIES } from "@/data/series";
 import { POKEMON_TYPES, POKEMON_TYPE_MAP, type TypeConfig } from "@/lib/pokemon-types";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -22,6 +22,7 @@ import { WishlistHeartButton } from "@/components/wishlist/WishlistHeartButton";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
+import { VariantStack, cardVersionToVariantType, type VariantType } from "./VariantStack";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -493,42 +494,7 @@ function AddToCollectionModal({
   );
 }
 
-// ─── Version badge helper ─────────────────────────────────────────────────────
-
-// Badge image per version
-const VERSION_BADGE_IMG: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "/badge_normale.png",
-  [CardVersion.FIRST_EDITION]:      "/images/badges/first-edition.png",
-  [CardVersion.REVERSE]:            "/badge_reverse.png",
-  [CardVersion.REVERSE_POKEBALL]:   "/badge_pokeball.png",
-  [CardVersion.REVERSE_MASTERBALL]: "/badge_masterball.png",
-};
-
-const BADGE_SIZE = 15; // px — round badge
-
-/** Renders a single version badge as a round image inside a dark pill.
- *  dimmed = version not owned (but card owned in another version) → 40% opacity
- *  qty > 1 → "×2" label after the badge */
-function VersionBadgeIcon({
-  version, qty = 0, dimmed = false,
-}: {
-  version: CardVersion; qty?: number; dimmed?: boolean;
-}) {
-  const showQty = qty > 1;
-  return (
-    <div className={`flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 ${showQty ? "pr-1" : "pr-0.5"} py-0.5${dimmed ? " opacity-40" : ""}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={VERSION_BADGE_IMG[version]}
-        alt=""
-        className="h-4 w-4 shrink-0 rounded-full object-cover"
-      />
-      {showQty && (
-        <span className="text-[8px] font-bold leading-none text-white">×{qty}</span>
-      )}
-    </div>
-  );
-}
+// ─── Version helpers ──────────────────────────────────────────────────────────
 
 /** Versions applicable for a card (special = NORMAL only) */
 function getCardVersions(card: CardRow, serieVersions: CardVersion[]): CardVersion[] {
@@ -1166,35 +1132,28 @@ export function CardCollectionGrid({
                     <FirstEditionStamp size="sm" />
                   )}
 
-                  {/* Version badges — bottom right, stacked bottom→top
-                      (normale, reverse, pokeball, masterball).
-                      Owned version = full opacity / missing version = dimmed (40%).
+                  {/* Stack de Pokéballs en bas-droite — une Pokéball color-
+                      codée par variante applicable (Normale/Reverse/Pokéball/
+                      Masterball). Pleine couleur si possédée, grisée sinon.
+                      Un pill `×N` s'affiche quand qty ≥ 2.
 
-                      Hidden entirely when the user owns 0 copies of the card :
-                      the bottom-right stack is meant to surface *which variants
-                      are missing from an already-started collection*, not to
-                      promote untouched cards.
+                      FIRST_EDITION est signalé par le stamp rond gauche
+                      (source de vérité unique) et n'apparaît pas dans le
+                      stack — `cardVersionToVariantType(FIRST_EDITION)` = null.
 
-                      FIRST_EDITION is never included in this stack. On the 4
-                      WOTC ED1 extensions, ownership is signalled by the left-
-                      side FirstEditionStamp (single source of truth) ; on all
-                      other sets the variant doesn't exist in `allVersions`. */}
+                      Cartes avec 1 seule variante applicable (special/promos
+                      sans reverse) : le composant retourne null de lui-même. */}
                   {(() => {
-                    if (!isOwned) return null;
-                    const stackVersions = allVersions.filter((v) => v !== CardVersion.FIRST_EDITION);
-                    if (stackVersions.length <= 1) return null;
-                    return (
-                      <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                        {/* DESC order so NORMALE renders last = visually at bottom */}
-                        {[...stackVersions].reverse().map((v) => {
-                          const isVersionOwned = ownedCardMap?.has(v) ?? false;
-                          const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : 0;
-                          return (
-                            <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={!isVersionOwned} />
-                          );
-                        })}
-                      </div>
-                    );
+                    const available: VariantType[] = [];
+                    const counts: Partial<Record<VariantType, number>> = {};
+                    for (const v of allVersions) {
+                      const vt = cardVersionToVariantType(v);
+                      if (!vt) continue;
+                      available.push(vt);
+                      counts[vt] = ownedCardMap?.get(v)?.quantity ?? 0;
+                    }
+                    if (available.length <= 1) return null;
+                    return <VariantStack available={available} counts={counts} />;
                   })()}
 
                   {/* Selection overlay */}

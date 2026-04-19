@@ -9,6 +9,7 @@ import { CardVersion, getSerieVersions } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
+import { VariantStack, cardVersionToVariantType, type VariantType } from "./VariantStack";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -42,15 +43,6 @@ export interface MissingCard {
   isFrenchPrice: boolean;
 }
 
-// ── Version badge images ────────────────────────────────────────────────────
-const VERSION_BADGE_IMG: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             "/badge_normale.png",
-  [CardVersion.FIRST_EDITION]:      "/images/badges/first-edition.png",
-  [CardVersion.REVERSE]:            "/badge_reverse.png",
-  [CardVersion.REVERSE_POKEBALL]:   "/badge_pokeball.png",
-  [CardVersion.REVERSE_MASTERBALL]: "/badge_masterball.png",
-};
-
 // ASC sort order (NORMALE first, MASTERBALL last)
 const VERSION_SORT_ORDER: Record<CardVersion, number> = {
   [CardVersion.NORMAL]:             0,
@@ -59,25 +51,6 @@ const VERSION_SORT_ORDER: Record<CardVersion, number> = {
   [CardVersion.REVERSE_POKEBALL]:   3,
   [CardVersion.REVERSE_MASTERBALL]: 4,
 };
-
-const BADGE_SIZE = 15;
-
-function VersionBadgeIcon({ version, qty }: { version: CardVersion; qty?: number }) {
-  const showQty = qty != null && qty > 1;
-  return (
-    <div className={`flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 ${showQty ? "pr-1" : "pr-0.5"} py-0.5`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={VERSION_BADGE_IMG[version]}
-        alt=""
-        className="h-4 w-4 shrink-0 rounded-full object-cover"
-      />
-      {showQty && (
-        <span className="text-[8px] font-bold leading-none text-white">×{qty}</span>
-      )}
-    </div>
-  );
-}
 
 // ── Grouped owned card (one tile per unique cardId) ─────────────────────────
 interface GroupedCard {
@@ -166,6 +139,19 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug, serieNa
     for (const c of cards) {
       if (!m.has(c.cardId)) m.set(c.cardId, new Set());
       m.get(c.cardId)!.add(c.version);
+    }
+    return m;
+  }, [cards]);
+
+  // ── Owned counts per (cardId, version) — utilisé par la vue "Manquantes"
+  // pour afficher `×N` sur les variantes déjà possédées d'une carte
+  // partiellement complétée.
+  const versionCountsByCardId = useMemo(() => {
+    const m = new Map<string, Map<CardVersion, number>>();
+    for (const c of cards) {
+      if (!m.has(c.cardId)) m.set(c.cardId, new Map());
+      const inner = m.get(c.cardId)!;
+      inner.set(c.version, (inner.get(c.version) ?? 0) + 1);
     }
     return m;
   }, [cards]);
@@ -562,22 +548,24 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug, serieNa
                         <FirstEditionStamp size="sm" />
                       )}
 
-                      {/* Version badges — hidden for special cards (single version only).
-                          FIRST_EDITION is already signalled by the stamp on the left
-                          side of the card, so it's excluded from the right-side stack. */}
+                      {/* Stack de Pokéballs en bas-droite — toutes les variantes
+                          applicables à la série, colorées si possédées, grisées
+                          sinon. FIRST_EDITION est signalée via le stamp gauche
+                          (cardVersionToVariantType renvoie null). Les cartes
+                          spéciales n'ont qu'une seule variante applicable, donc
+                          le composant retourne null de lui-même. */}
                       {(() => {
                         if (grp.isSpecial) return null;
-                        const stackVersions = grp.ownedVersions.filter(
-                          (v) => v !== CardVersion.FIRST_EDITION,
-                        );
-                        if (stackVersions.length === 0) return null;
-                        return (
-                          <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                            {[...stackVersions].reverse().map((v) => (
-                              <VersionBadgeIcon key={v} version={v} qty={grp.versionQty.get(v)} />
-                            ))}
-                          </div>
-                        );
+                        const available: VariantType[] = [];
+                        const counts: Partial<Record<VariantType, number>> = {};
+                        for (const v of serieVersions) {
+                          const vt = cardVersionToVariantType(v);
+                          if (!vt) continue;
+                          available.push(vt);
+                          counts[vt] = grp.versionQty.get(v) ?? 0;
+                        }
+                        if (available.length <= 1) return null;
+                        return <VariantStack available={available} counts={counts} />;
                       })()}
 
                       {/* Condition badge — top-right */}
@@ -695,21 +683,24 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug, serieNa
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-xs">{c.number}</div>
                       )}
-                      {/* Missing-version badges — only show the versions NOT yet owned
-                          (so a partially-owned card surfaces what's still needed) */}
-                      {!c.isSpecial && ownedVersionsByCardId.has(c.cardId) && (() => {
-                        const owned = ownedVersionsByCardId.get(c.cardId)!;
-                        const missing = serieVersions.filter((v) => !owned.has(v));
-                        if (missing.length === 0) return null;
-                        return (
-                          <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
-                            {missing.map((v) => (
-                              <div key={v} className="opacity-60">
-                                <VersionBadgeIcon version={v} />
-                              </div>
-                            ))}
-                          </div>
-                        );
+                      {/* Stack de Pokéballs — même logique que la vue
+                          "Possédées" : toutes les variantes applicables à la
+                          série sont affichées, grisées si non possédées et
+                          colorées si possédées (cas d'une carte partiellement
+                          possédée). */}
+                      {(() => {
+                        if (c.isSpecial) return null;
+                        const ownedCounts = versionCountsByCardId.get(c.cardId);
+                        const available: VariantType[] = [];
+                        const counts: Partial<Record<VariantType, number>> = {};
+                        for (const v of serieVersions) {
+                          const vt = cardVersionToVariantType(v);
+                          if (!vt) continue;
+                          available.push(vt);
+                          counts[vt] = ownedCounts?.get(v) ?? 0;
+                        }
+                        if (available.length <= 1) return null;
+                        return <VariantStack available={available} counts={counts} />;
                       })()}
                       <NumberRarityBadge number={c.number} rarity={c.rarity} />
                     </div>

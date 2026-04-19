@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { CardVersion } from '@/data/card-versions'
 import { CollectionValue } from '@/components/collection/CollectionValue'
 import { getCardImageAlt } from '@/lib/seo/card-image'
+import { VariantPokeball, cardVersionToVariantType, VARIANT_LABELS } from './VariantStack'
 
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
@@ -44,25 +45,22 @@ export interface BlocGroup {
 
 // ─── Version badge ────────────────────────────────────────────────────────────
 
-const VERSION_BADGE_IMG: Record<CardVersion, string> = {
-  [CardVersion.NORMAL]:             '/badge_normale.png',
-  [CardVersion.FIRST_EDITION]:      '/images/badges/first-edition.png',
-  [CardVersion.REVERSE]:            '/badge_reverse.png',
-  [CardVersion.REVERSE_POKEBALL]:   '/badge_pokeball.png',
-  [CardVersion.REVERSE_MASTERBALL]: '/badge_masterball.png',
-}
-
+/**
+ * Dans la vue Doublons chaque tile représente UN exemplaire d'une variante
+ * précise — donc pas de stack, juste la Pokéball de la variante + ×N.
+ * FIRST_EDITION n'a pas de Pokéball (cardVersionToVariantType renvoie null) :
+ * on retombe sur un simple pill `×N` sans icône.
+ */
 function VersionCountBadge({ version, quantity }: { version: CardVersion; quantity: number }) {
+  const variant = cardVersionToVariantType(version)
   return (
-    <div className="flex items-center gap-0.5 rounded-full bg-black/60 pl-0.5 pr-1 py-0.5">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={VERSION_BADGE_IMG[version]}
-        alt=""
-        className="h-4 w-4 rounded-full object-cover shrink-0"
-      />
-      <span className="text-[8px] font-bold leading-none text-white">×{quantity}</span>
-    </div>
+    <span
+      className="flex items-center gap-1 rounded bg-black/75 px-1 py-px text-[9px] font-medium leading-none tracking-wide text-white whitespace-nowrap"
+      aria-label={variant ? `${VARIANT_LABELS[variant]} ×${quantity}` : `×${quantity}`}
+    >
+      ×{quantity >= 100 ? '99+' : quantity}
+      {variant && <VariantPokeball variant={variant} owned size={14} />}
+    </span>
   )
 }
 
