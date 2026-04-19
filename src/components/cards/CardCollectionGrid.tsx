@@ -1166,18 +1166,22 @@ export function CardCollectionGrid({
                     <FirstEditionStamp size="sm" />
                   )}
 
-                  {/* Version badges — always shown on all cards, bottom right
-                      Stacked bottom→top: normale, reverse, pokeball, masterball
-                      Owned version = full opacity / not owned = dimmed (40%)
-                      If whole card is dim (not owned at all), parent opacity handles it.
-                      FIRST_EDITION is excluded from the stack when owned (the stamp
-                      already signals it); kept dimmed when not owned so the user
-                      still sees it as a version they could add. */}
+                  {/* Version badges — bottom right, stacked bottom→top
+                      (normale, reverse, pokeball, masterball).
+                      Owned version = full opacity / missing version = dimmed (40%).
+
+                      Hidden entirely when the user owns 0 copies of the card :
+                      the bottom-right stack is meant to surface *which variants
+                      are missing from an already-started collection*, not to
+                      promote untouched cards.
+
+                      FIRST_EDITION is never included in this stack. On the 4
+                      WOTC ED1 extensions, ownership is signalled by the left-
+                      side FirstEditionStamp (single source of truth) ; on all
+                      other sets the variant doesn't exist in `allVersions`. */}
                   {(() => {
-                    const ownsFirstEdition = ownedCardMap?.has(CardVersion.FIRST_EDITION) ?? false;
-                    const stackVersions = ownsFirstEdition
-                      ? allVersions.filter((v) => v !== CardVersion.FIRST_EDITION)
-                      : allVersions;
+                    if (!isOwned) return null;
+                    const stackVersions = allVersions.filter((v) => v !== CardVersion.FIRST_EDITION);
                     if (stackVersions.length <= 1) return null;
                     return (
                       <div className="absolute bottom-1 right-1 flex flex-col items-end gap-0.5">
@@ -1185,10 +1189,8 @@ export function CardCollectionGrid({
                         {[...stackVersions].reverse().map((v) => {
                           const isVersionOwned = ownedCardMap?.has(v) ?? false;
                           const qty = isVersionOwned ? ownedCardMap!.get(v)!.quantity : 0;
-                          // Dim individually only when card IS owned but this specific version isn't
-                          const dimmed = isOwned && !isVersionOwned;
                           return (
-                            <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={dimmed} />
+                            <VersionBadgeIcon key={v} version={v} qty={qty} dimmed={!isVersionOwned} />
                           );
                         })}
                       </div>
