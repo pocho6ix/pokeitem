@@ -8,10 +8,12 @@ import Image from "next/image";
  * Mirrors the circular stamp physically printed in the bottom-left of the
  * stat bar on genuine 1st-Edition WOTC cards.
  *
- * Positioned at bottom-[38%] left-[7%], which places it just below the
+ * Positioned at bottom-[38%] left-[4%], which places it just below the
  * illustration box — matching where the real stamp sits on the printed card.
- * Wrapped in a white disc so it pops against the dark card artwork; the
- * `size` prop scales the medallion across thumbnail tiles and modal views.
+ * Wrapped in a thin white ring so it pops against the dark card artwork; the
+ * inner logo occupies 94% of the disc (minimal padding), leaving just enough
+ * white to read as a distinct stamp. The `size` prop scales the medallion
+ * across thumbnail tiles and modal views.
  */
 export function FirstEditionStamp({
   size = "md",
@@ -29,14 +31,14 @@ export function FirstEditionStamp({
   };
   return (
     <div
-      className={`pointer-events-none absolute bottom-[38%] left-[7%] flex items-center justify-center rounded-full bg-white shadow-[0_0_3px_rgba(0,0,0,0.35)] ${DISC[size]} ${className}`}
+      className={`pointer-events-none absolute bottom-[38%] left-[4%] flex items-center justify-center rounded-full bg-white shadow-[0_0_3px_rgba(0,0,0,0.35)] ${DISC[size]} ${className}`}
     >
       <Image
         src="/images/badges/edition-1.png"
         alt="Édition 1"
         width={80}
         height={80}
-        className="h-[85%] w-[85%] object-contain"
+        className="h-[94%] w-[94%] object-contain"
       />
     </div>
   );
