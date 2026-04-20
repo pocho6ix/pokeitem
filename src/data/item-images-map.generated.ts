@@ -34,7 +34,7 @@ export const ITEM_IMAGES_BY_SERIE: Record<string, readonly string[]> = {
   "eclipse-cosmique": ["BOOSTER", "BOOSTER_BOX", "BOX_SET", "BUNDLE", "ETB", "THEME_DECK", "TRAINER_KIT", "TRIPACK"],
   "emeraude": ["BOOSTER", "BOOSTER_BOX", "THEME_DECK"],
   "epee-et-bouclier": ["BOOSTER", "BOOSTER_BOX", "BOX_SET", "BUNDLE", "ETB", "THEME_DECK", "TIN", "TRAINER_KIT", "TRIPACK"],
-  "equilibre-parfait": ["BOOSTER", "BOOSTER_BOX", "BUNDLE", "ETB", "TRAINER_KIT", "TRIPACK", "UPC"],
+  "equilibre-parfait": ["BOOSTER", "BOOSTER_BOX", "BUNDLE", "ETB", "TRAINER_KIT", "TRIPACK"],
   "especes-delta": ["BOOSTER", "BOOSTER_BOX", "THEME_DECK"],
   "etincelles-deferlantes": ["BOOSTER", "BOOSTER_BOX", "BUNDLE", "ETB", "TRAINER_KIT", "TRIPACK"],
   "etincelles-xy": ["BOOSTER", "BOOSTER_BOX", "BUNDLE", "THEME_DECK", "TIN", "TRIPACK"],
