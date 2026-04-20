@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Plus } from "lucide-react";
 import { useHideValues } from "@/components/ui/HideValuesContext";
+import { fetchApi } from "@/lib/api";
 
 function fmt(n: number, decimals = 2) {
   return n.toLocaleString("fr-FR", {
@@ -182,7 +183,7 @@ export function CollectionHeroCard({ total, firstCardDate }: Props) {
   const { period, label } = getPeriodFromFirstCard(firstCardDate);
 
   useEffect(() => {
-    fetch(`/api/portfolio/chart?period=${period}`)
+    fetchApi(`/api/portfolio/chart?period=${period}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (!json?.data?.length) return;

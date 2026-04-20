@@ -101,7 +101,9 @@ interface PointsData {
 
 // ─── Fetcher ──────────────────────────────────────────────────────────────────
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+// Route through fetchApi so Capacitor hits the external backend (Railway)
+// instead of the non-existent capacitor://localhost/api/* origin.
+const fetcher = (url: string) => fetchApi(url).then(r => r.json())
 
 // ─── Share quest row (special — triggers image generation) ───────────────────
 

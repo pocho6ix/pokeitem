@@ -6,6 +6,7 @@ import { CONTEST_CONFIG } from '@/config/contest'
 import type { PointsLeaderboardEntry } from '@/lib/points'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
 import { useShareCard } from '@/hooks/useShareCard'
+import { fetchApi } from '@/lib/api'
 
 // ─── Contest countdown hook ───────────────────────────────────────────────────
 
@@ -111,7 +112,9 @@ function LeaderboardRow({ entry }: { entry: PointsLeaderboardEntry }) {
 
 // ─── Fetcher ──────────────────────────────────────────────────────────────────
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+// Route through fetchApi so Capacitor hits the external backend (Railway)
+// instead of the non-existent capacitor://localhost/api/* origin.
+const fetcher = (url: string) => fetchApi(url).then(r => r.json())
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -188,7 +191,7 @@ export function ReferralBlock() {
     const skip = (pageNum - 1) * PAGE_SIZE
     const params = new URLSearchParams({ skip: String(skip), take: String(PAGE_SIZE) })
     if (query) params.set('q', query)
-    const res = await fetch(`/api/leaderboard?${params}`)
+    const res = await fetchApi(`/api/leaderboard?${params}`)
     if (!res.ok) return
     const text = await res.text()
     if (!text) return

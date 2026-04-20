@@ -9,6 +9,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { SuggestedUsers } from "@/components/trade/SuggestedUsers";
 import { SharingToggle } from "@/components/trade/SharingToggle";
+import { fetchApi } from "@/lib/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ export function EchangesPageClient({
     setLoading(true);
     setError(null);
 
-    fetch(`/api/users/search?q=${encodeURIComponent(q)}`)
+    fetchApi(`/api/users/search?q=${encodeURIComponent(q)}`)
       .then((r) => r.json().then((j) => ({ ok: r.ok, status: r.status, body: j })))
       .then((res) => {
         if (cancelled) return;
