@@ -8,6 +8,7 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import { ITEM_TYPES } from "@/data/item-types";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
+import { ITEM_IMAGES_BY_SERIE } from "@/data/item-images-map.generated";
 import { Badge } from "@/components/ui/Badge";
 import { SYMBOL_SLUGS } from "@/data/symbol-slugs";
 import { SerieItemsGrid } from "@/components/collection/SerieItemsGrid";
@@ -146,7 +147,7 @@ export function SerieProduitsClient() {
           serieSlug={serieSlug!}
           serieAbbreviation={serieStatic.abbreviation ?? ""}
           dbItems={items}
-          availableImageTypes={[]}
+          availableImageTypes={[...(ITEM_IMAGES_BY_SERIE[serieSlug!] ?? [])]}
         />
       )}
     </div>

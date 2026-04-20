@@ -94,5 +94,10 @@ export NEXT_PUBLIC_API_BASE_URL="${NEXT_PUBLIC_API_BASE_URL:-https://api.pokeite
 echo "[capacitor] CAPACITOR_BUILD=$CAPACITOR_BUILD"
 echo "[capacitor] NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL"
 
+# Regenerate the static `public/images/items/` → ItemType map the mobile
+# SerieProduitsClient reads. Cheap and deterministic — runs every build
+# so adding a new product artwork automatically surfaces it on iOS.
+npx tsx scripts/generate-item-images-map.ts
+
 npx prisma generate
 npx next build

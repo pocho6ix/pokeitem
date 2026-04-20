@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "gen:item-images-map": "tsx scripts/generate-item-images-map.ts",
     "build:capacitor": "bash scripts/build-capacitor.sh",
     "cap:sync": "npm run build:capacitor && npx cap sync ios",
     "cap:open": "npx cap open ios",

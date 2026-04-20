@@ -10,7 +10,12 @@ const config: CapacitorConfig = {
     // wires this up to its own history stack — since Next.js client
     // navigation uses `history.pushState()`, the stack is already
     // populated correctly and the gesture "just works".
-    allowsBackForwardNavigationGestures: true,
+    //
+    // The option is read by Capacitor iOS at runtime (persisted into
+    // `capacitor.config.json` and applied to the WKWebView configuration
+    // in `CAPBridgeViewController`), but the 8.3.1 TS declarations
+    // haven't caught up yet — hence the cast.
+    ...({ allowsBackForwardNavigationGestures: true } as Record<string, unknown>),
   },
   server: {
     allowNavigation: [
