@@ -9,6 +9,27 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import type { BlocCardProgress } from "@/types/card";
 
+type CardsByRarityResponse = Array<{
+  rarityKey: string;
+  cardCount: number;
+  totalValue: number;
+  cards: Array<{
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    price: number;
+    serieName: string;
+  }>;
+}>;
+
+/**
+ * Mobile-only catalog listing. On the web build, `page.tsx` runs as an
+ * RSC and queries Prisma directly. Here we aggregate from the existing
+ * `/api/cards/cards-by-rarity` response (which includes `serieName` per
+ * owned card) so we can fill in `ownedCards` per serie. `totalCards` is
+ * only available server-side for now — displayed as "?" which the list
+ * component renders gracefully.
+ */
 export function CollectionCartesClient() {
   const [blocs, setBlocs] = useState<BlocCardProgress[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,50 +37,75 @@ export function CollectionCartesClient() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // ── Owned aggregation ────────────────────────────────────────
+      // Map<serieName, { ownedCards, marketValue }>. Using name (not slug)
+      // because cards-by-rarity only returns `serieName`.
+      const ownedBySerieName = new Map<
+        string,
+        { ownedCards: Set<string>; marketValue: number }
+      >();
       try {
-        // TODO(backend): expose a GET /api/binder/blocs-progress endpoint
-        // that returns the aggregated structure. For now, render the static
-        // catalogue (all series, zero owned) so the page renders on mobile.
-        if (cancelled) return;
+        const res = await fetchApi("/api/cards/cards-by-rarity");
+        if (res.ok) {
+          const sections: CardsByRarityResponse = await res.json();
+          for (const section of sections) {
+            for (const card of section.cards ?? []) {
+              const key = card.serieName;
+              if (!ownedBySerieName.has(key)) {
+                ownedBySerieName.set(key, { ownedCards: new Set(), marketValue: 0 });
+              }
+              const agg = ownedBySerieName.get(key)!;
+              agg.ownedCards.add(card.id);
+              agg.marketValue += card.price ?? 0;
+            }
+          }
+        }
+      } catch {
+        /* swallow — render static catalog on error */
+      }
 
-        const releaseDateBySlug = new Map(
-          SERIES.map((s) => [
-            s.slug,
-            s.releaseDate ? new Date(s.releaseDate).getTime() : 0,
-          ]),
-        );
-        const orderBySlug = new Map(SERIES.map((s) => [s.slug, s.order ?? 999]));
-        const imageUrlBySlug = new Map(SERIES.map((s) => [s.slug, s.imageUrl]));
+      if (cancelled) return;
 
-        const staticBlocs: BlocCardProgress[] = BLOCS.map((bloc) => {
-          const blocSeries = SERIES.filter((s) => s.blocSlug === bloc.slug);
-          const sorted = [...blocSeries].sort((a, b) => {
-            const da = releaseDateBySlug.get(a.slug) ?? 0;
-            const db = releaseDateBySlug.get(b.slug) ?? 0;
-            if (db !== da) return db - da;
-            return (orderBySlug.get(a.slug) ?? 999) - (orderBySlug.get(b.slug) ?? 999);
-          });
-          return {
-            blocSlug: bloc.slug,
-            blocName: bloc.name,
-            blocAbbreviation: bloc.abbreviation ?? null,
-            series: sorted.map((serie) => ({
+      // ── Build static catalog from BLOCS × SERIES, enriched with owned ──
+      const releaseDateBySlug = new Map(
+        SERIES.map((s) => [
+          s.slug,
+          s.releaseDate ? new Date(s.releaseDate).getTime() : 0,
+        ]),
+      );
+      const orderBySlug = new Map(SERIES.map((s) => [s.slug, s.order ?? 999]));
+      const imageUrlBySlug = new Map(SERIES.map((s) => [s.slug, s.imageUrl]));
+
+      const result: BlocCardProgress[] = BLOCS.map((bloc) => {
+        const blocSeries = SERIES.filter((s) => s.blocSlug === bloc.slug);
+        const sorted = [...blocSeries].sort((a, b) => {
+          const da = releaseDateBySlug.get(a.slug) ?? 0;
+          const db = releaseDateBySlug.get(b.slug) ?? 0;
+          if (db !== da) return db - da;
+          return (orderBySlug.get(a.slug) ?? 999) - (orderBySlug.get(b.slug) ?? 999);
+        });
+        return {
+          blocSlug: bloc.slug,
+          blocName: bloc.name,
+          blocAbbreviation: bloc.abbreviation ?? null,
+          series: sorted.map((serie) => {
+            const owned = ownedBySerieName.get(serie.name);
+            return {
               serieSlug: serie.slug,
               serieName: serie.name,
               serieAbbreviation: serie.abbreviation ?? null,
               serieImageUrl: imageUrlBySlug.get(serie.slug) ?? null,
-              totalCards: 0,
-              ownedCards: 0,
-              marketValue: 0,
+              totalCards: 0, // unknown client-side → rendered as "?"
+              ownedCards: owned?.ownedCards.size ?? 0,
+              marketValue: owned ? Math.round(owned.marketValue * 100) / 100 : 0,
               isComplete: false,
-            })),
-          };
-        });
+            };
+          }),
+        };
+      });
 
-        setBlocs(staticBlocs);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      setBlocs(result);
+      setLoading(false);
     })();
     return () => {
       cancelled = true;

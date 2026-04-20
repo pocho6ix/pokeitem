@@ -68,12 +68,29 @@ router.get("/collection", requireAuth, async (req: AuthRequest, res: Response) =
 });
 
 // ─── POST /api/cards/collection ───────────────────────────────
-// Enforces FREE-plan limit (500 cards) and triggers progressive quest checks
-// after each successful add. Mobile API is "one card per call" for simplicity.
+// Accepts BOTH shapes so we stay compatible with every caller:
+//  - Single card  (mobile "add one card" flow, original contract):
+//      { cardId, version, condition?, language?, foil?, purchasePrice?, gradeValue? }
+//  - Batch        (web ClasseurCardGrid "add-all-visible" button):
+//      { cards: [{ cardId, version, quantity?, ... }, ...] }
+// The batch form mirrors the Next.js route schema in the PWA so the client
+// doesn't need to know which backend it's talking to.
 router.post("/collection", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
+    const body = (req.body ?? {}) as Record<string, unknown>;
 
+    // Normalize to an array so the rest of the handler is shape-agnostic.
+    const batch: Array<Record<string, unknown>> = Array.isArray(body.cards)
+      ? (body.cards as Array<Record<string, unknown>>)
+      : [body];
+
+    if (batch.length === 0) {
+      return res.status(400).json({ error: "Aucune carte fournie" });
+    }
+
+    // Plan-limit check — single quota look-up covers the whole batch; if
+    // it fails we reject the whole request.
     const check = await checkFeature(userId, "ADD_CARD");
     if (!check.allowed) {
       return res.status(403).json({
@@ -84,38 +101,72 @@ router.post("/collection", requireAuth, async (req: AuthRequest, res: Response) 
       });
     }
 
-    const { cardId, version, condition, gradeValue, language, foil, purchasePrice } = req.body ?? {};
-    if (!cardId || !version) {
-      return res.status(400).json({ error: "cardId et version requis" });
+    const results: Array<{
+      cardId: string;
+      version: string;
+      record: { id: string; gradeValue: number | null } | null;
+      error?: string;
+    }> = [];
+
+    for (const entry of batch) {
+      const cardId = entry.cardId as string | undefined;
+      const version = entry.version as string | undefined;
+      if (!cardId || !version) {
+        results.push({ cardId: cardId ?? "", version: version ?? "", record: null, error: "cardId et version requis" });
+        continue;
+      }
+      const parsedVersion = parseVersion(version);
+      if (!parsedVersion) {
+        results.push({ cardId, version, record: null, error: "version invalide" });
+        continue;
+      }
+      const cardExists = await prisma.card.findUnique({
+        where: { id: cardId },
+        select: { id: true },
+      });
+      if (!cardExists) {
+        results.push({ cardId, version, record: null, error: "Carte introuvable" });
+        continue;
+      }
+
+      try {
+        const created = await prisma.userCard.create({
+          data: {
+            userId,
+            cardId,
+            version:       parsedVersion,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            condition:     ((entry.condition as any) ?? "NEAR_MINT"),
+            gradeValue:    (entry.gradeValue as number | null | undefined) ?? null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            language:      ((entry.language as any) ?? "FR"),
+            foil:          typeof entry.foil === "boolean" ? (entry.foil as boolean) : false,
+            purchasePrice: typeof entry.purchasePrice === "number" ? (entry.purchasePrice as number) : null,
+          },
+        });
+        results.push({
+          cardId,
+          version: parsedVersion,
+          record: { id: created.id, gradeValue: created.gradeValue ?? null },
+        });
+      } catch (err) {
+        console.error("cards/collection POST single error:", err);
+        results.push({ cardId, version: parsedVersion, record: null, error: "Insert failed" });
+      }
     }
 
-    const parsedVersion = parseVersion(version);
-    if (!parsedVersion) return res.status(400).json({ error: "version invalide" });
-
-    // Validate card exists
-    const cardExists = await prisma.card.findUnique({
-      where: { id: cardId },
-      select: { id: true },
-    });
-    if (!cardExists) return res.status(404).json({ error: "Carte introuvable" });
-
-    const created = await prisma.userCard.create({
-      data: {
-        userId,
-        cardId,
-        version:       parsedVersion,
-        condition:     condition ?? "NEAR_MINT",
-        gradeValue:    gradeValue ?? null,
-        language:      language   ?? "FR",
-        foil:          typeof foil === "boolean" ? foil : false,
-        purchasePrice: typeof purchasePrice === "number" ? purchasePrice : null,
-      },
-    });
-
-    // Fire-and-forget progressive quest update
+    // Fire-and-forget progressive quest update (runs once per batch)
     checkProgressiveQuests(userId).catch(() => {});
 
-    res.status(201).json({ card: created });
+    // Preserve the legacy `{ card }` shape when a single non-batch payload
+    // was posted, so existing mobile callers keep working unchanged.
+    if (!Array.isArray(body.cards)) {
+      const first = results[0];
+      if (first?.error) return res.status(400).json({ error: first.error });
+      return res.status(201).json({ card: first.record });
+    }
+
+    res.status(201).json({ results });
   } catch (error) {
     console.error("cards/collection POST error:", error);
     res.status(500).json({ error: "Erreur serveur" });

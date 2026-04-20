@@ -24,7 +24,11 @@ const GOLD_GRADIENT = "linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B
 export function PortfolioTiles() {
   const router = useRouter();
   const pathname = usePathname();
-  const isSubPage = pathname !== "/portfolio";
+  // Static export uses `trailingSlash: true`, so pathname arrives as
+  // "/portfolio/". Strip the tail before comparing so the root page
+  // renders correctly on both the web and iOS builds.
+  const normalized = pathname.replace(/\/$/, "") || "/";
+  const isSubPage = normalized !== "/portfolio";
   const { isPro } = useSubscription();
 
   const [stats, setStats] = useState<StatsData | null>(null);

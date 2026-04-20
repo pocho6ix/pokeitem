@@ -25,6 +25,24 @@ type TopCard = {
   price: number;
 };
 
+/**
+ * Shape of a card returned by /api/cards/cards-by-rarity. The backend sorts
+ * cards within each rarity by effective price DESC, so we can flatten and
+ * re-sort to find the globally most-expensive ones.
+ */
+type RarityCard = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  price: number;
+};
+
+type RaritySection = {
+  rarityKey: string;
+  totalValue: number;
+  cards: RarityCard[];
+};
+
 export default function HomePage() {
   const { status, user } = useAuth();
   const authed = status === "authenticated" && user;
@@ -38,8 +56,13 @@ export default function HomePage() {
     let cancelled = false;
     (async () => {
       try {
-        const [portfolioRes, collectionRes] = await Promise.all([
+        // Three independent fetches:
+        //  - /api/portfolio            → sealed-items value (summary.totalCurrentValue)
+        //  - /api/cards/cards-by-rarity → cards value (sum of totalValue) + top cards
+        //  - /api/cards/collection      → earliest createdAt for firstCardDate
+        const [portfolioRes, rarityRes, collectionRes] = await Promise.all([
           fetchApi("/api/portfolio"),
+          fetchApi("/api/cards/cards-by-rarity"),
           fetchApi("/api/cards/collection"),
         ]);
         if (cancelled) return;
@@ -51,22 +74,34 @@ export default function HomePage() {
         }
 
         let cardsValue = 0;
-        let earliest: string | null = null;
         const picks: TopCard[] = [];
+        if (rarityRes.ok) {
+          const sections: RaritySection[] = await rarityRes.json();
+          for (const s of sections) cardsValue += s.totalValue ?? 0;
+
+          // Flatten all cards and pick the 6 most expensive with an image.
+          const flat = sections.flatMap((s) => s.cards ?? []);
+          flat.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+          for (const c of flat) {
+            if (picks.length >= 6) break;
+            if (!c.imageUrl) continue;
+            if ((c.price ?? 0) <= 0) continue;
+            picks.push({
+              cardId: c.id,
+              name: c.name,
+              imageUrl: c.imageUrl,
+              price: c.price,
+            });
+          }
+        }
+
+        let earliest: string | null = null;
         if (collectionRes.ok) {
           const data = await collectionRes.json();
-          const cards: Array<{
-            cardId: string;
-            createdAt: string;
-            quantity: number;
-            version: string;
-          }> = data?.cards ?? [];
-          for (const c of cards) {
-            if (!earliest || c.createdAt < earliest) earliest = c.createdAt;
+          const rows: Array<{ createdAt: string }> = data?.cards ?? [];
+          for (const r of rows) {
+            if (!earliest || r.createdAt < earliest) earliest = r.createdAt;
           }
-          // Top cards / cardsValue require joined card price data which the
-          // current /api/cards/collection endpoint doesn't expose. Leave
-          // empty for now — the dashboard still renders gracefully.
         }
 
         if (cancelled) return;

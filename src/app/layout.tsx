@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import {
@@ -6,6 +6,16 @@ import {
   generateWebsiteJsonLd,
 } from "@/lib/seo/structured-data";
 import "./globals.css";
+
+// `viewport-fit=cover` lets the page draw under the iOS status bar &
+// home-indicator areas so we can opt back in via `env(safe-area-inset-*)`
+// in CSS. No visible effect on the Vercel web build.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0A0F1E",
+};
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -86,6 +96,29 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
       <body className={`${plusJakarta.variable} ${spaceGrotesk.variable} font-sans antialiased`} suppressHydrationWarning>
+        {/*
+          Pre-hydration theme lock for Capacitor native builds. `window.Capacitor`
+          is injected synchronously by the native shell before our bundle runs,
+          so this block flips the theme to dark BEFORE React first paints —
+          no flash of unstyled light mode.
+
+          On Vercel web, `window.Capacitor` is undefined so the script is a
+          no-op and next-themes behaves exactly as before.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try {
+              if (typeof window !== 'undefined' && window.Capacitor) {
+                window.localStorage.setItem('theme', 'dark');
+                document.documentElement.classList.remove('light');
+                document.documentElement.classList.add('dark');
+                // Adds a marker class used by globals.css to apply
+                // env(safe-area-inset-*) padding on iOS.
+                document.documentElement.classList.add('capacitor');
+              }
+            } catch (_) {}`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

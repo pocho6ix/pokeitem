@@ -9,6 +9,19 @@ import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
 import type { BlocCardProgress } from "@/types/card";
 
+type CardsByRarityResponse = Array<{
+  rarityKey: string;
+  cardCount: number;
+  totalValue: number;
+  cards: Array<{
+    id: string;
+    name: string;
+    imageUrl: string | null;
+    price: number;
+    serieName: string;
+  }>;
+}>;
+
 export function PortfolioCartesClient() {
   return (
     <Suspense fallback={null}>
@@ -26,56 +39,59 @@ function PortfolioCartesContent() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const ownedBySerieName = new Map<
+        string,
+        { ownedCards: Set<string>; marketValue: number }
+      >();
       try {
-        // Aggregate client-side from the user's raw card collection.
-        const res = await fetchApi("/api/cards/collection");
-        if (!res.ok) throw new Error(String(res.status));
-        const data = await res.json();
-        if (cancelled) return;
-
-        const cards: Array<{
-          cardId: string;
-          version: string;
-          quantity: number;
-        }> = data.cards ?? [];
-
-        // Build owned sets per serie — we don't have serieId on each row,
-        // so we can only count raw totals for now. A dedicated endpoint
-        // that returns joined card data will improve this.
-        const ownedCountByCardId = new Map<string, number>();
-        for (const uc of cards) {
-          ownedCountByCardId.set(
-            uc.cardId,
-            (ownedCountByCardId.get(uc.cardId) ?? 0) + 1,
-          );
+        const res = await fetchApi("/api/cards/cards-by-rarity");
+        if (res.ok) {
+          const sections: CardsByRarityResponse = await res.json();
+          for (const section of sections) {
+            for (const card of section.cards ?? []) {
+              const key = card.serieName;
+              if (!ownedBySerieName.has(key)) {
+                ownedBySerieName.set(key, { ownedCards: new Set(), marketValue: 0 });
+              }
+              const agg = ownedBySerieName.get(key)!;
+              agg.ownedCards.add(card.id);
+              agg.marketValue += card.price ?? 0;
+            }
+          }
         }
-
-        const imageUrlBySlug = new Map(
-          SERIES.map((s) => [s.slug, s.imageUrl]),
-        );
-
-        const progress: BlocCardProgress[] = BLOCS.map((bloc) => ({
-          blocSlug: bloc.slug,
-          blocName: bloc.name,
-          blocAbbreviation: bloc.abbreviation ?? null,
-          series: SERIES.filter((s) => s.blocSlug === bloc.slug).map((s) => ({
-            serieSlug: s.slug,
-            serieName: s.name,
-            serieAbbreviation: s.abbreviation ?? null,
-            serieImageUrl: imageUrlBySlug.get(s.slug) ?? null,
-            totalCards: 0,
-            ownedCards: 0,
-            marketValue: 0,
-            isComplete: false,
-          })),
-        }));
-
-        setBlocs(progress);
       } catch (err) {
         console.error("portfolio/cartes load failed:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
       }
+
+      if (cancelled) return;
+
+      const imageUrlBySlug = new Map(SERIES.map((s) => [s.slug, s.imageUrl]));
+
+      // On the classeur page we only keep series the user actually owns
+      // at least one card from — mirrors the web RSC behaviour.
+      const progress: BlocCardProgress[] = BLOCS.map((bloc) => ({
+        blocSlug: bloc.slug,
+        blocName: bloc.name,
+        blocAbbreviation: bloc.abbreviation ?? null,
+        series: SERIES.filter((s) => s.blocSlug === bloc.slug)
+          .map((s) => {
+            const owned = ownedBySerieName.get(s.name);
+            return {
+              serieSlug: s.slug,
+              serieName: s.name,
+              serieAbbreviation: s.abbreviation ?? null,
+              serieImageUrl: imageUrlBySlug.get(s.slug) ?? null,
+              totalCards: 0,
+              ownedCards: owned?.ownedCards.size ?? 0,
+              marketValue: owned ? Math.round(owned.marketValue * 100) / 100 : 0,
+              isComplete: false,
+            };
+          })
+          .filter((s) => s.ownedCards > 0),
+      })).filter((bloc) => bloc.series.length > 0);
+
+      setBlocs(progress);
+      setLoading(false);
     })();
     return () => {
       cancelled = true;

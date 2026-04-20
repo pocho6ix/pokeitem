@@ -10,7 +10,10 @@ import { usePathname } from "next/navigation";
  */
 export function PortfolioBackLink() {
   const pathname = usePathname();
-  if (pathname === "/portfolio") return null;
+  // Static export (`trailingSlash: true`) returns "/portfolio/" — normalize
+  // so the back link stays hidden on the root page in both builds.
+  const normalized = pathname.replace(/\/$/, "") || "/";
+  if (normalized === "/portfolio") return null;
 
   return (
     <Link

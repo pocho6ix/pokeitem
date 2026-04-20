@@ -70,6 +70,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── iOS safe-area handling ────────────────────────────────────────────── */
+/*
+ * `env(safe-area-inset-*)` returns 0 on desktop / non-notched browsers, so
+ * these rules are no-ops on Vercel web. On the iOS Capacitor build
+ * (viewport-fit=cover set in layout.tsx) they push the sticky header down
+ * past the status bar and add room below the floating bottom nav so it
+ * doesn't clash with the home indicator.
+ */
+html.capacitor body > div > header,
+html.capacitor body > header {
+  padding-top: env(safe-area-inset-top);
+}
+
+html.capacitor body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Also generic header targeting — any sticky/fixed top banner on a Capacitor
+ * build should respect the notch. This matches the MobileTopBar without
+ * needing changes in individual components. */
+@supports (padding: env(safe-area-inset-top)) {
+  html.capacitor header[class*="sticky"],
+  html.capacitor header[class*="fixed"] {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 /* Gold gradient button — shared across all CTA/action buttons */
 .btn-gold {
   background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);

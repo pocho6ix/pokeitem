@@ -1,10 +1,12 @@
 import { SerieCartesClient } from "./SerieCartesClient";
+import { SERIES } from "@/data/series";
 
-// A single placeholder params entry is required for Next's static export.
-// The `_` segment is just a stub file; the real URLs are resolved
-// client-side via `useParams` in `SerieCartesClient`.
+// Enumerate every bloc×serie combination from the static SERIES array so
+// each possible URL gets a pre-generated HTML file. Without this, clicking
+// a serie in the catalog 404s in the Capacitor WebView (static export has
+// no server to resolve runtime params).
 export function generateStaticParams() {
-  return [{ blocSlug: "_", serieSlug: "_" }];
+  return SERIES.map((s) => ({ blocSlug: s.blocSlug, serieSlug: s.slug }));
 }
 
 export const dynamicParams = false;
