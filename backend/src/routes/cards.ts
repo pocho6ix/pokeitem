@@ -348,4 +348,34 @@ router.get("/:cardId/price-history", async (req: Request, res: Response) => {
   }
 });
 
+// ─── GET /api/cards/:cardId ───────────────────────────────────
+// Full card detail — powers the iOS /carte/:cardId page. Must be
+// registered AFTER every collision-free more-specific route above
+// (`/search`, `/collection`, `/cards-by-rarity`, `/doubles`,
+// `/:cardId/owned`, `/:cardId/price-history`) so Express doesn't
+// swallow them as `cardId = "search"` etc.
+router.get("/:cardId", async (req: Request, res: Response) => {
+  try {
+    const { cardId } = req.params;
+
+    const card = await prisma.card.findUnique({
+      where: { id: cardId },
+      include: {
+        serie: {
+          include: { bloc: true },
+        },
+      },
+    });
+
+    if (!card) {
+      return res.status(404).json({ error: "Carte introuvable" });
+    }
+
+    res.json({ card });
+  } catch (error) {
+    console.error("cards/:cardId error:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 export default router;

@@ -95,6 +95,17 @@ app.use("/api/unsubscribe", unsubscribeRoutes);
 app.use("/api/u", publicRoutes);
 app.use("/api/users", usersRoutes);
 
+// ─── ALIASES ─────────────────────────────────────────────────
+// The Next.js PWA calls `GET /api/binder/cards-by-rarity` (its own
+// route is at `src/app/api/binder/cards-by-rarity/route.ts`). On this
+// backend the same data lives at `/api/cards/cards-by-rarity`. Rather
+// than force every client to know which flavour it's talking to, we
+// expose the legacy path here and forward to the real handler.
+app.use("/api/binder/cards-by-rarity", (req, _res, next) => {
+  req.url = "/cards-by-rarity" + (req.url === "/" ? "" : req.url);
+  cardsRoutes(req, _res, next);
+});
+
 // ─── HEALTH CHECK ────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
