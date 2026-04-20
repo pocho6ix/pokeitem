@@ -554,23 +554,103 @@ router.get("/:cardId/owned", requireAuth, async (req: AuthRequest, res: Response
 // Schema note: CardPriceHistory has no `version` / `currency` columns.
 // The per-version price lives on separate columns (`price`, `priceFr`,
 // `priceReverse`). Caller can pick the series they want client-side.
+//
+// Response shape matches the Next.js `/api/cards/[cardId]/price-history`
+// route: `{ card, serie, history }`. The mobile `CardDetailModal`
+// consumes all three — missing `card` was why the iOS detail sheet
+// rendered as "Chargement…" while the chart loaded fine.
 router.get("/:cardId/price-history", async (req: Request, res: Response) => {
   try {
     const { cardId } = req.params;
+    const period = (req.query.period as string) ?? "3m";
 
-    const history = await prisma.cardPriceHistory.findMany({
-      where:   { cardId },
+    const card = await prisma.card.findUnique({
+      where:  { id: cardId },
+      select: {
+        id:                 true,
+        name:               true,
+        number:             true,
+        rarity:             true,
+        imageUrl:           true,
+        price:              true,
+        priceFr:            true,
+        priceReverse:       true,
+        priceFirstEdition:  true,
+        isSpecial:          true,
+        priceUpdatedAt:     true,
+        cardmarketId:       true,
+        cardmarketUrl:      true,
+        serie: {
+          select: {
+            name:        true,
+            slug:        true,
+            releaseDate: true,
+            imageUrl:    true,
+          },
+        },
+      },
+    });
+
+    if (!card) {
+      return res.status(404).json({ error: "Carte introuvable" });
+    }
+
+    const now = new Date();
+    const startDate = (() => {
+      switch (period) {
+        case "1w":  return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        case "1m":  return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        case "3m":  return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+        case "6m":  return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+        case "1y":  return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        case "max": return card.serie.releaseDate ?? new Date(2020, 0, 1);
+        default:    return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+      }
+    })();
+
+    const dbHistory = await prisma.cardPriceHistory.findMany({
+      where:   { cardId, recordedAt: { gte: startDate } },
       orderBy: { recordedAt: "asc" },
       select:  {
         recordedAt:   true,
         price:        true,
         priceFr:      true,
         priceReverse: true,
-        source:       true,
       },
     });
 
-    res.json({ history });
+    const merged = new Map<string, { price: number | null; priceFr: number | null; priceReverse: number | null }>();
+    for (const h of dbHistory) {
+      const date = h.recordedAt.toISOString().slice(0, 10);
+      merged.set(date, {
+        price:        h.price,
+        priceFr:      h.priceFr      ?? null,
+        priceReverse: h.priceReverse ?? null,
+      });
+    }
+    const history = Array.from(merged.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, v]) => ({ date, ...v }));
+
+    res.json({
+      card: {
+        id:                 card.id,
+        name:               card.name,
+        number:             card.number,
+        rarity:             card.rarity,
+        imageUrl:           card.imageUrl,
+        price:              card.price,
+        priceFr:            card.priceFr,
+        priceReverse:       card.priceReverse,
+        priceFirstEdition:  card.priceFirstEdition,
+        isSpecial:          card.isSpecial,
+        priceUpdatedAt:     card.priceUpdatedAt,
+        cardmarketId:       card.cardmarketId,
+        cardmarketUrl:      card.cardmarketUrl,
+      },
+      serie: card.serie,
+      history,
+    });
   } catch (error) {
     console.error("cards/:id/price-history error:", error);
     res.status(500).json({ error: "Erreur serveur" });

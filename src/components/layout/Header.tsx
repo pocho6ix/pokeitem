@@ -247,15 +247,17 @@ export function Header() {
         Safe-area spacer for non-home mobile pages. The Header is hidden on
         those routes so the iOS status bar would otherwise overlap the
         page content (`viewport-fit: cover` draws edge-to-edge). This
-        transparent strip reserves exactly `env(safe-area-inset-top)` pixels
-        so the content starts below the notch. On desktop or on the home
-        page it's a no-op (height 0 / `md:hidden`).
+        opaque strip reserves exactly `env(safe-area-inset-top)` pixels.
+        `sticky top-0` keeps it pinned so scrolled content never draws
+        under the status bar — without it, filter bars / tabs end up
+        behind the notch once the user scrolls. On desktop or on the
+        home page it's a no-op (height 0 / `md:hidden`).
       */}
       {!isHome && (
         <div
           aria-hidden="true"
           style={{ height: "env(safe-area-inset-top)" }}
-          className="w-full shrink-0 bg-[var(--bg-primary)] md:hidden"
+          className="sticky top-0 z-40 w-full shrink-0 bg-[var(--bg-primary)] md:hidden"
         />
       )}
 
