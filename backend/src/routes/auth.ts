@@ -1,24 +1,38 @@
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomBytes } from "crypto";
 import { prisma } from "../lib/prisma";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  upsertBrevoContact,
+} from "../lib/email";
 import { AuthRequest, requireAuth } from "../middleware/auth";
 
 const router = Router();
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "";
 
 // ─── POST /api/auth/register ─────────────────────────────────
+// Mirrors PWA: creates user + VerificationToken (24h) + fires Brevo emails.
+// Referral rewards are granted on email verification (onReferralEmailVerified).
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { email, password, name, username, referralCode } = req.body;
+    const { name, email, password, username, subscribeNewsletter, referralCode } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email et mot de passe requis" });
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: "Pseudo, email et mot de passe requis" });
+    }
+
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ error: "Le mot de passe doit contenir au moins 8 caractères" });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(409).json({ error: "Cet email est déjà utilisé" });
+      return res.status(409).json({ error: "Un compte existe déjà avec cet email" });
     }
 
     if (username) {
@@ -28,26 +42,60 @@ router.post("/register", async (req: Request, res: Response) => {
       }
     }
 
+    const subscribed = subscribeNewsletter !== false;
     const passwordHash = await bcrypt.hash(password, 12);
+
+    // Resolve referrer from code (matches both referralCode and username ilike)
+    let referredById: string | undefined;
+    if (referralCode) {
+      const referrer = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { referralCode },
+            { username: { equals: referralCode, mode: "insensitive" } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (referrer) referredById = referrer.id;
+    }
 
     const user = await prisma.user.create({
       data: {
+        name,
         email,
         passwordHash,
-        name: name || username || null,
         username: username || null,
-        referredById: referralCode
-          ? (await prisma.user.findUnique({ where: { referralCode } }))?.id
-          : undefined,
+        subscribedNewsletter: subscribed,
+        ...(referredById ? { referredById } : {}),
       },
     });
 
-    // TODO: Send verification email via Brevo (copy from src/app/api/auth/register/route.ts)
-    // TODO: Add contact to Brevo list
-    // TODO: Grant referral points
+    // Generate verification token (24h)
+    const token = randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, token);
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError);
+    }
+
+    // Upsert Brevo CRM contact (fire-and-forget)
+    upsertBrevoContact(email, { name, subscribed }).catch((err) =>
+      console.error("[Brevo] register upsert failed:", err)
+    );
 
     res.status(201).json({
       success: true,
+      message: "Compte créé. Vérifiez votre email pour activer votre compte.",
       user: { id: user.id, email: user.email, name: user.name },
     });
   } catch (error) {
@@ -126,14 +174,21 @@ router.post("/verify", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Token invalide ou expiré" });
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { email: verificationToken.identifier },
       data: { emailVerified: new Date() },
+      select: { id: true, referredById: true, email: true, name: true },
     });
 
-    await prisma.verificationToken.delete({
-      where: { token },
-    });
+    await prisma.verificationToken.delete({ where: { token } });
+
+    // Trigger referral reward if applicable — lazy import avoids circular deps
+    if (user.referredById) {
+      const { onReferralEmailVerified } = await import("../lib/referral");
+      onReferralEmailVerified(user.id).catch((err) =>
+        console.error("[referral] onReferralEmailVerified failed:", err)
+      );
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -143,29 +198,42 @@ router.post("/verify", async (req: Request, res: Response) => {
 });
 
 // ─── POST /api/auth/forgot-password ──────────────────────────
+// Uses DB VerificationToken with identifier=`reset:${email}` (1h expiry)
+// to stay compatible with the PWA's reset flow & reset page URL.
 router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const { email } = req.body ?? {};
+    if (!email) return res.status(400).json({ error: "Email requis" });
 
-    if (!email) {
-      return res.status(400).json({ error: "Email requis" });
-    }
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, deletedAt: true, passwordHash: true },
+    });
 
-    const user = await prisma.user.findUnique({ where: { email } });
-
-    // Always return success to prevent email enumeration
-    if (!user) {
+    // Always return success to prevent enumeration
+    if (!user || user.deletedAt || !user.passwordHash) {
       return res.json({ success: true });
     }
 
-    // Generate reset token
-    const resetToken = jwt.sign(
-      { userId: user.id, type: "reset" },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // Invalidate any existing token for this user
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: `reset:${email}` },
+    });
 
-    // TODO: Send reset email via Brevo (copy logic from src/app/api/auth/forgot-password/route.ts)
+    const token = randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: {
+        identifier: `reset:${email}`,
+        token,
+        expires: new Date(Date.now() + 60 * 60 * 1000), // 1h
+      },
+    });
+
+    try {
+      await sendPasswordResetEmail(email, token);
+    } catch (err) {
+      console.error("Failed to send password reset email:", err);
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -177,33 +245,42 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 // ─── POST /api/auth/reset-password ───────────────────────────
 router.post("/reset-password", async (req: Request, res: Response) => {
   try {
-    const { token, password } = req.body;
+    const { token, password } = req.body ?? {};
 
     if (!token || !password) {
       return res.status(400).json({ error: "Token et mot de passe requis" });
     }
 
-    const payload = jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      type: string;
-    };
-
-    if (payload.type !== "reset") {
-      return res.status(400).json({ error: "Token invalide" });
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ error: "Le mot de passe doit contenir au moins 8 caractères" });
     }
 
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+    });
+
+    if (
+      !verificationToken ||
+      verificationToken.expires < new Date() ||
+      !verificationToken.identifier.startsWith("reset:")
+    ) {
+      return res.status(400).json({ error: "Token invalide ou expiré" });
+    }
+
+    const email = verificationToken.identifier.slice("reset:".length);
     const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.update({
-      where: { id: payload.userId },
+      where: { email },
       data: { passwordHash },
     });
 
+    await prisma.verificationToken.delete({ where: { token } });
+
     res.json({ success: true });
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(400).json({ error: "Token invalide ou expiré" });
-    }
     console.error("Reset password error:", error);
     res.status(500).json({ error: "Erreur lors de la réinitialisation" });
   }

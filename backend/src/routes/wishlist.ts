@@ -74,10 +74,41 @@ router.post("/cards", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── POST /api/wishlist/cards/bulk ────────────────────────────
-// TODO: Copy bulk-add logic from src/app/api/wishlist/cards/bulk/route.ts
-// (handles de-dupe, per-plan limits, etc.)
-router.post("/cards/bulk", requireAuth, async (_req: AuthRequest, res: Response) => {
-  res.status(501).json({ error: "Not implemented yet — logique à copier" });
+// Accepts `cardIds: string[]` (up to 500). Dedupes on the unique
+// (userId,cardId) constraint via createMany+skipDuplicates. Returns `added`.
+router.post("/cards/bulk", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { cardIds } = (req.body ?? {}) as { cardIds?: string[] };
+
+    if (!Array.isArray(cardIds) || cardIds.length === 0) {
+      return res.status(400).json({ error: "cardIds must be a non-empty array" });
+    }
+
+    const limited = cardIds.slice(0, 500);
+    const cards = await prisma.card.findMany({
+      where: { id: { in: limited } },
+      select: { id: true, serieId: true },
+    });
+
+    if (cards.length === 0) {
+      return res.json({ added: 0 });
+    }
+
+    const result = await prisma.cardWishlistItem.createMany({
+      data: cards.map((c) => ({
+        userId,
+        cardId: c.id,
+        setId: c.serieId,
+      })),
+      skipDuplicates: true,
+    });
+
+    res.json({ added: result.count });
+  } catch (error) {
+    console.error("wishlist/cards/bulk error:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 // ─── DELETE /api/wishlist/cards/:cardId ───────────────────────

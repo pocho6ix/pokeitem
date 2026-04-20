@@ -22,6 +22,12 @@ import marketRoutes from "./routes/market";
 import feedbackRoutes from "./routes/feedback";
 import webhooksRoutes from "./routes/webhooks";
 import profilRoutes from "./routes/profil";
+import avatarRoutes from "./routes/avatar";
+import betaRoutes from "./routes/beta";
+import pricesRoutes from "./routes/prices";
+import unsubscribeRoutes from "./routes/unsubscribe";
+import publicRoutes from "./routes/public";
+import usersRoutes from "./routes/users";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -82,6 +88,12 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/market", marketRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/profil", profilRoutes);
+app.use("/api/avatar", avatarRoutes);
+app.use("/api/beta", betaRoutes);
+app.use("/api/prices", pricesRoutes);
+app.use("/api/unsubscribe", unsubscribeRoutes);
+app.use("/api/u", publicRoutes);
+app.use("/api/users", usersRoutes);
 
 // ─── HEALTH CHECK ────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {

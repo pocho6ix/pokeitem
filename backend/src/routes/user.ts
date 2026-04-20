@@ -1,6 +1,9 @@
 import { Router, Response } from "express";
+import Stripe from "stripe";
 import { prisma } from "../lib/prisma";
 import { AuthRequest, requireAuth } from "../middleware/auth";
+import { QUEST_MAP } from "../lib/quests";
+import { completeQuest } from "../lib/points";
 
 const router = Router();
 
@@ -66,31 +69,36 @@ router.get("/points", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── POST /api/user/quests/:questId/complete ──────────────────
-// TODO: Validate quest conditions before granting reward (copy from
-// src/app/api/user/quests/[questId]/complete/route.ts).
+// Only "action" quests are manually completable. Progressive quests
+// (add_500_cards, collection_1000, three_extensions) are auto-completed
+// by checkProgressiveQuests() — this endpoint rejects them with 400.
 router.post("/quests/:questId/complete", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.userId!;
     const { questId } = req.params;
 
-    // Stub: mark quest complete without checking conditions.
-    const existing = await prisma.userQuest.findFirst({
-      where: { userId: req.userId!, questId },
-    });
+    const quest = QUEST_MAP[questId];
+    if (!quest || !quest.active) {
+      return res.status(404).json({ error: "Quest not found" });
+    }
+    if (quest.type !== "action") {
+      return res.status(400).json({ error: "Quête progressive — pas de validation manuelle" });
+    }
 
-    if (existing?.completedAt) {
+    const existing = await prisma.userQuest.findUnique({
+      where: { userId_questId: { userId, questId } },
+    });
+    if (existing?.completed) {
       return res.status(409).json({ error: "Quête déjà complétée" });
     }
 
-    const completion = existing
-      ? await prisma.userQuest.update({
-          where: { id: existing.id },
-          data:  { completed: true, completedAt: new Date() },
-        })
-      : await prisma.userQuest.create({
-          data: { userId: req.userId!, questId, completed: true, completedAt: new Date() },
-        });
-
-    res.json({ completion });
+    try {
+      const total = await completeQuest(userId, questId);
+      res.json({ success: true, totalPoints: total });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur";
+      res.status(400).json({ error: msg });
+    }
   } catch (error) {
     console.error("user/quests/:id/complete error:", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -98,15 +106,39 @@ router.post("/quests/:questId/complete", requireAuth, async (req: AuthRequest, r
 });
 
 // ─── DELETE /api/user/delete ──────────────────────────────────
-// Soft-delete only — a cron hard-deletes after the retention window.
-// TODO: Stripe cleanup (cancel subscription, delete customer) — copy from
-// src/app/api/user/delete/route.ts.
+// Soft-delete + cancel Stripe subscription at period end (if any).
 router.delete("/delete", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    await prisma.user.update({
-      where: { id: req.userId! },
-      data:  { deletedAt: new Date() },
+    const userId = req.userId!;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { stripeSubscriptionId: true, deletedAt: true },
     });
+
+    if (user?.deletedAt) {
+      return res.status(409).json({ error: "Compte déjà supprimé" });
+    }
+
+    if (user?.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+          apiVersion: "2026-03-25.dahlia" as Stripe.LatestApiVersion,
+        });
+        await stripe.subscriptions.update(user.stripeSubscriptionId, {
+          cancel_at_period_end: true,
+        });
+      } catch (err) {
+        console.error("[user/delete] stripe cancel failed:", err);
+        // Do not block the deletion if Stripe fails.
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { deletedAt: new Date() },
+    });
+
     res.json({ success: true });
   } catch (error) {
     console.error("user/delete error:", error);

@@ -1,19 +1,122 @@
 import { Router, Response } from "express";
+import { ItemType } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { AuthRequest, requireAuth } from "../middleware/auth";
+import { checkFeature } from "../lib/subscription";
+import { resolveItemPrice } from "../lib/portfolio/resolveItemPrice";
+import { getPriceForVersion } from "../lib/display-price";
+import { SERIES } from "../data/series";
+import { BLOCS } from "../data/blocs";
 
 const router = Router();
 
 // ─── GET /api/portfolio ───────────────────────────────────────
-// Returns all non-card items owned by the user.
+// Returns the full user portfolio + aggregated summary/topPerformers.
 router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const items = await prisma.portfolioItem.findMany({
-      where:   { userId: req.userId },
+    const userId = req.userId!;
+
+    const portfolioItems = await prisma.portfolioItem.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        quantity: true,
+        purchasePrice: true,
+        currentPrice: true,
+        currentPriceUpdatedAt: true,
+        purchaseDate: true,
+        condition: true,
+        notes: true,
+        createdAt: true,
+        item: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            type: true,
+            imageUrl: true,
+            retailPrice: true,
+            language: true,
+            cardmarketUrl: true,
+            serie: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                abbreviation: true,
+                imageUrl: true,
+                bloc: { select: { id: true, name: true, slug: true } },
+              },
+            },
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
-      include: { item: true },
     });
-    res.json({ items });
+
+    const items = portfolioItems.map((pi) => {
+      const purchasePrice = pi.purchasePrice ?? 0;
+      const currentPrice = resolveItemPrice(pi.currentPrice, pi.item.retailPrice);
+      const currentValue = currentPrice * pi.quantity;
+      const pnl = currentValue - purchasePrice;
+      const pnlPercent = purchasePrice > 0 ? (pnl / purchasePrice) * 100 : 0;
+
+      return {
+        id: pi.id,
+        currentPrice: pi.currentPrice,
+        currentPriceUpdatedAt: pi.currentPriceUpdatedAt,
+        item: { ...pi.item, currentPrice: null },
+        quantity: pi.quantity,
+        purchasePrice,
+        purchasePricePerUnit: pi.quantity > 0 ? purchasePrice / pi.quantity : 0,
+        purchaseDate: pi.purchaseDate,
+        condition: pi.condition,
+        currentValue,
+        currentValuePerUnit: currentPrice,
+        pnl,
+        pnlPercent,
+        notes: pi.notes,
+        createdAt: pi.createdAt,
+      };
+    });
+
+    const totalInvested = items.reduce((sum, i) => sum + i.purchasePrice, 0);
+    const totalCurrentValue = items.reduce((sum, i) => sum + i.currentValue, 0);
+    const totalPnl = totalCurrentValue - totalInvested;
+    const totalPnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+
+    const typeMap = new Map<string, number>();
+    for (const i of items) {
+      typeMap.set(i.item.type, (typeMap.get(i.item.type) ?? 0) + i.currentValue);
+    }
+    const totalValue = items.reduce((s, i) => s + i.currentValue, 0);
+    const distributionByType = Array.from(typeMap.entries()).map(([type, value]) => ({
+      name: type,
+      value: totalValue > 0 ? Math.round((value / totalValue) * 100) : 0,
+      type,
+    }));
+
+    const topPerformers = items
+      .filter((i) => i.purchasePrice > 0 && i.currentValuePerUnit > 0)
+      .map((i) => ({
+        name: i.item.name,
+        purchasePrice: i.purchasePricePerUnit,
+        currentPrice: i.currentValuePerUnit,
+        pl: i.pnlPercent,
+      }))
+      .sort((a, b) => b.pl - a.pl)
+      .slice(0, 5);
+
+    const summary = {
+      totalInvested: Math.round(totalInvested * 100) / 100,
+      totalCurrentValue: Math.round(totalCurrentValue * 100) / 100,
+      totalPnl: Math.round(totalPnl * 100) / 100,
+      totalPnlPercent: Math.round(totalPnlPercent * 100) / 100,
+      itemCount: items.reduce((sum, i) => sum + i.quantity, 0),
+      uniqueItemCount: items.length,
+    };
+
+    res.json({ items, summary, distributionByType, topPerformers });
   } catch (error) {
     console.error("portfolio GET error:", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -21,23 +124,118 @@ router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── POST /api/portfolio ──────────────────────────────────────
-// TODO: Check FREE plan limits (copy from src/app/api/portfolio/route.ts)
+// Enforces FREE plan 5-item limit. Auto-creates Serie/Bloc/Item from static
+// data if the caller only has the slug (e.g. mobile "new item" flow).
 router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { itemId, purchasePrice, purchaseDate, condition, quantity, notes } = req.body;
-    if (!itemId) return res.status(400).json({ error: "itemId requis" });
+    const userId = req.userId!;
+
+    const check = await checkFeature(userId, "ADD_SEALED_ITEM");
+    if (!check.allowed) {
+      return res.status(403).json({
+        error: "LIMIT_REACHED",
+        reason: check.reason,
+        limit: check.limit,
+        current: check.current,
+      });
+    }
+
+    const {
+      itemId,
+      quantity,
+      purchasePrice,
+      purchaseDate,
+      condition,
+      notes,
+      serieSlug,
+      itemType,
+      itemName,
+      retailPrice,
+    } = req.body ?? {};
+
+    if (quantity !== undefined && (typeof quantity !== "number" || quantity < 1)) {
+      return res.status(400).json({ error: "quantity doit être un nombre positif" });
+    }
+
+    let resolvedItemId: string | undefined = itemId;
+
+    // Auto-create path: serieSlug + itemType
+    if (!resolvedItemId && serieSlug && itemType) {
+      let serie = await prisma.serie.findFirst({ where: { slug: serieSlug } });
+
+      if (!serie) {
+        const staticSerie = SERIES.find((s) => s.slug === serieSlug);
+        if (!staticSerie) {
+          return res.status(400).json({ error: "Série introuvable dans les données statiques" });
+        }
+        const blocSlug = staticSerie.blocSlug;
+
+        let bloc = await prisma.bloc.findFirst({ where: { slug: blocSlug } });
+        if (!bloc) {
+          const staticBloc = BLOCS.find((b) => b.slug === blocSlug);
+          if (!staticBloc) {
+            return res.status(400).json({ error: "Bloc introuvable dans les données statiques" });
+          }
+          bloc = await prisma.bloc.create({
+            data: {
+              name: staticBloc.name,
+              slug: staticBloc.slug,
+              abbreviation: staticBloc.abbreviation ?? null,
+              order: staticBloc.order,
+            },
+          });
+        }
+
+        serie = await prisma.serie.create({
+          data: {
+            name: staticSerie.name,
+            slug: staticSerie.slug,
+            abbreviation: staticSerie.abbreviation ?? null,
+            blocId: bloc.id,
+          },
+        });
+      }
+
+      let item = await prisma.item.findFirst({
+        where: { serieId: serie.id, type: itemType as ItemType },
+      });
+
+      if (!item) {
+        const slug = `${serieSlug}-${String(itemType).toLowerCase().replace(/_/g, "-")}`;
+        item = await prisma.item.create({
+          data: {
+            serieId: serie.id,
+            name: itemName || `${serie.name} — ${itemType}`,
+            slug,
+            type: itemType as ItemType,
+            retailPrice: retailPrice ?? null,
+          },
+        });
+      }
+
+      resolvedItemId = item.id;
+    }
+
+    if (!resolvedItemId) {
+      return res.status(400).json({ error: "itemId ou serieSlug + itemType requis" });
+    }
+
+    const itemExists = await prisma.item.findUnique({ where: { id: resolvedItemId } });
+    if (!itemExists) return res.status(404).json({ error: "Item non trouvé" });
 
     const entry = await prisma.portfolioItem.create({
       data: {
-        userId:        req.userId!,
-        itemId,
-        purchasePrice: purchasePrice ?? null,
-        purchaseDate:  purchaseDate  ? new Date(purchaseDate) : new Date(),
-        condition:     condition     ?? "NEAR_MINT",
-        quantity:      quantity      ?? 1,
-        notes:         notes         ?? null,
+        userId,
+        itemId: resolvedItemId,
+        quantity: quantity ?? 1,
+        purchasePrice: purchasePrice ?? 0,
+        purchaseDate: purchaseDate ? new Date(purchaseDate) : new Date(),
+        condition: condition ?? "NEAR_MINT",
+        notes: notes ?? null,
       },
+      include: { item: true },
     });
+
     res.status(201).json({ entry });
   } catch (error) {
     console.error("portfolio POST error:", error);
@@ -101,27 +299,174 @@ router.get("/stats", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── GET /api/portfolio/chart ─────────────────────────────────
-// TODO: Copy chart aggregation logic from src/app/api/portfolio/chart/route.ts
-router.get("/chart", requireAuth, async (_req: AuthRequest, res: Response) => {
-  res.status(501).json({ error: "Not implemented yet — logique à copier" });
+// period: 7J | 1M | 3M | 6M | 1A | MAX. For 7J we sample every 6h, otherwise daily.
+router.get("/chart", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const period = (req.query.period as string) || "1M";
+    const serieSlug = (req.query.serie as string) || null;
+
+    const now = new Date();
+    const startDate = new Date();
+    switch (period) {
+      case "7J":  startDate.setDate(now.getDate() - 7); break;
+      case "1M":  startDate.setMonth(now.getMonth() - 1); break;
+      case "3M":  startDate.setMonth(now.getMonth() - 3); break;
+      case "6M":  startDate.setMonth(now.getMonth() - 6); break;
+      case "1A":  startDate.setFullYear(now.getFullYear() - 1); break;
+      case "MAX": startDate.setFullYear(2020); break;
+    }
+
+    const portfolioItems = await prisma.portfolioItem.findMany({
+      where: {
+        userId,
+        ...(serieSlug ? { item: { serie: { slug: serieSlug } } } : {}),
+      },
+      select: {
+        purchaseDate: true,
+        createdAt: true,
+        purchasePrice: true,
+        quantity: true,
+        currentPrice: true,
+        item: {
+          select: {
+            retailPrice: true,
+            prices: {
+              where: { date: { gte: startDate } },
+              orderBy: { date: "asc" },
+              select: { date: true, price: true },
+            },
+          },
+        },
+      },
+    });
+
+    const userCards = await prisma.userCard.findMany({
+      where: {
+        userId,
+        ...(serieSlug ? { card: { serie: { slug: serieSlug } } } : {}),
+      },
+      select: {
+        quantity: true,
+        version: true,
+        createdAt: true,
+        purchasePrice: true,
+        card: { select: { price: true, priceFr: true, priceReverse: true } },
+      },
+    });
+
+    const cardContribs = userCards.map((uc) => ({
+      addedAt: uc.createdAt,
+      value: getPriceForVersion(uc.card, uc.version) * uc.quantity,
+      invested: (uc.purchasePrice ?? 0) * uc.quantity,
+    }));
+
+    const data: Array<{ date: string; value: number; invested: number }> = [];
+    const cursor = new Date(startDate);
+
+    while (cursor <= now) {
+      const dateStr = cursor.toISOString().split("T")[0];
+      let totalValue = 0;
+      let totalInvested = 0;
+
+      for (const pi of portfolioItems) {
+        const purchaseDate = pi.purchaseDate ?? pi.createdAt;
+        if (purchaseDate <= cursor) {
+          totalInvested += pi.purchasePrice ?? 0;
+          const priceAtDate = pi.item.prices
+            .filter((ph) => new Date(ph.date) <= cursor)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+          const price = priceAtDate?.price ?? pi.currentPrice ?? pi.item.retailPrice ?? 0;
+          totalValue += price * pi.quantity;
+        }
+      }
+
+      for (const cc of cardContribs) {
+        if (cc.addedAt <= cursor) {
+          totalValue += cc.value;
+          totalInvested += cc.invested;
+        }
+      }
+
+      data.push({
+        date: dateStr,
+        value: Math.round(totalValue * 100) / 100,
+        invested: Math.round(totalInvested * 100) / 100,
+      });
+
+      if (period === "7J") {
+        cursor.setHours(cursor.getHours() + 6);
+      } else {
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+
+    const seriesWithCards = await prisma.serie.findMany({
+      where: {
+        OR: [
+          { cards: { some: { userCards: { some: { userId } } } } },
+          { items: { some: { portfolioItems: { some: { userId } } } } },
+        ],
+      },
+      select: { slug: true, name: true, abbreviation: true },
+      orderBy: { name: "asc" },
+    });
+
+    res.json({ data, series: seriesWithCards });
+  } catch (error) {
+    console.error("portfolio/chart error:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 // ─── GET /api/portfolio/rarities ──────────────────────────────
-// TODO: Copy rarity distribution aggregation from src/app/api/portfolio/rarities/route.ts
-router.get("/rarities", requireAuth, async (_req: AuthRequest, res: Response) => {
-  res.status(501).json({ error: "Not implemented yet — logique à copier" });
+// UserCard groupBy rarity with quantity-weighted valuation.
+router.get("/rarities", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    const rows = await prisma.userCard.findMany({
+      where: { userId },
+      select: {
+        quantity: true,
+        version: true,
+        card: { select: { rarity: true, price: true, priceFr: true, priceReverse: true } },
+      },
+    });
+
+    const map = new Map<string, { cardCount: number; totalValue: number }>();
+    for (const uc of rows) {
+      const key = uc.card.rarity;
+      if (!key) continue;
+      const price = getPriceForVersion(uc.card, uc.version);
+      const existing = map.get(key) ?? { cardCount: 0, totalValue: 0 };
+      existing.cardCount += uc.quantity;
+      existing.totalValue += price * uc.quantity;
+      map.set(key, existing);
+    }
+
+    const result = Array.from(map.entries()).map(([rarityKey, data]) => ({
+      rarityKey,
+      cardCount: data.cardCount,
+      totalValue: Math.round(data.totalValue * 100) / 100,
+    }));
+
+    res.json(result);
+  } catch (error) {
+    console.error("portfolio/rarities error:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
 });
 
 // ─── POST /api/portfolio/valuation ────────────────────────────
 router.post("/valuation", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    // Recompute the user's total portfolio value snapshot.
     const items = await prisma.portfolioItem.findMany({
-      where:   { userId: req.userId },
+      where: { userId: req.userId },
       include: { item: true },
     });
     const totalValue = items.reduce(
-      (acc, row) => acc + (row.item.currentPrice ?? 0) * row.quantity,
+      (acc, row) => acc + resolveItemPrice(row.currentPrice, row.item.retailPrice) * row.quantity,
       0
     );
     res.json({ totalValue, itemCount: items.length });

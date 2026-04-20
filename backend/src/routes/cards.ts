@@ -1,7 +1,10 @@
 import { Router, Request, Response } from "express";
-import { Prisma, CardVersion } from "@prisma/client";
+import { Prisma, CardVersion, CardRarity } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { AuthRequest, requireAuth } from "../middleware/auth";
+import { checkFeature } from "../lib/subscription";
+import { checkProgressiveQuests } from "../lib/points";
+import { getPriceForVersion } from "../lib/display-price";
 
 const router = Router();
 
@@ -65,25 +68,53 @@ router.get("/collection", requireAuth, async (req: AuthRequest, res: Response) =
 });
 
 // ─── POST /api/cards/collection ───────────────────────────────
-// TODO: Check FREE plan limits (copy logic from src/app/api/cards/collection/route.ts)
+// Enforces FREE-plan limit (500 cards) and triggers progressive quest checks
+// after each successful add. Mobile API is "one card per call" for simplicity.
 router.post("/collection", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { cardId, version, condition, gradeValue, language } = req.body;
-    if (!cardId || !version) return res.status(400).json({ error: "cardId et version requis" });
+    const userId = req.userId!;
+
+    const check = await checkFeature(userId, "ADD_CARD");
+    if (!check.allowed) {
+      return res.status(403).json({
+        error: "LIMIT_REACHED",
+        reason: check.reason,
+        limit: check.limit,
+        current: check.current,
+      });
+    }
+
+    const { cardId, version, condition, gradeValue, language, foil, purchasePrice } = req.body ?? {};
+    if (!cardId || !version) {
+      return res.status(400).json({ error: "cardId et version requis" });
+    }
 
     const parsedVersion = parseVersion(version);
     if (!parsedVersion) return res.status(400).json({ error: "version invalide" });
 
+    // Validate card exists
+    const cardExists = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { id: true },
+    });
+    if (!cardExists) return res.status(404).json({ error: "Carte introuvable" });
+
     const created = await prisma.userCard.create({
       data: {
-        userId:     req.userId!,
+        userId,
         cardId,
-        version:    parsedVersion,
-        condition:  condition ?? "NEAR_MINT",
-        gradeValue: gradeValue ?? null,
-        language:   language   ?? "FR",
+        version:       parsedVersion,
+        condition:     condition ?? "NEAR_MINT",
+        gradeValue:    gradeValue ?? null,
+        language:      language   ?? "FR",
+        foil:          typeof foil === "boolean" ? foil : false,
+        purchasePrice: typeof purchasePrice === "number" ? purchasePrice : null,
       },
     });
+
+    // Fire-and-forget progressive quest update
+    checkProgressiveQuests(userId).catch(() => {});
+
     res.status(201).json({ card: created });
   } catch (error) {
     console.error("cards/collection POST error:", error);
@@ -119,6 +150,91 @@ router.delete("/collection", requireAuth, async (req: AuthRequest, res: Response
     res.json({ success: true, deleted });
   } catch (error) {
     console.error("cards/collection DELETE error:", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// ─── GET /api/cards/cards-by-rarity ───────────────────────────
+// Groups the caller's collection by rarity. Per-card display price uses
+// `getPriceForVersion` (respects FIRST_EDITION / REVERSE variants). When
+// a cardId has multiple rows (different versions), we dedupe on display
+// keeping the highest effective price — but the rarity section's total
+// value still accounts for all copies × quantity.
+router.get("/cards-by-rarity", requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    const userCards = await prisma.userCard.findMany({
+      where:  { userId },
+      select: {
+        quantity: true,
+        version:  true,
+        card: {
+          select: {
+            id: true, name: true, number: true, rarity: true, imageUrl: true,
+            price: true, priceFr: true, priceReverse: true,
+            serie: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    interface RarityCard {
+      id: string;
+      name: string;
+      number: string;
+      rarity: CardRarity;
+      imageUrl: string | null;
+      price: number;
+      priceFr: number | null;
+      isFrenchPrice: boolean;
+      isReverse: boolean;
+      serieName: string;
+    }
+
+    const byRarity = new Map<CardRarity, { cards: Map<string, RarityCard>; totalValue: number }>();
+
+    for (const uc of userCards) {
+      const rarity = uc.card.rarity as CardRarity;
+      const effectivePrice = getPriceForVersion(uc.card, uc.version);
+      const isReverse = uc.version !== "NORMAL";
+      const isFrenchPrice = !isReverse && uc.card.priceFr != null;
+
+      if (!byRarity.has(rarity)) byRarity.set(rarity, { cards: new Map(), totalValue: 0 });
+      const group = byRarity.get(rarity)!;
+
+      group.totalValue += effectivePrice * uc.quantity;
+
+      const existing = group.cards.get(uc.card.id);
+      if (!existing || effectivePrice > existing.price) {
+        group.cards.set(uc.card.id, {
+          id:            uc.card.id,
+          name:          uc.card.name,
+          number:        uc.card.number,
+          rarity,
+          imageUrl:      uc.card.imageUrl,
+          price:         effectivePrice,
+          priceFr:       uc.card.priceFr ?? null,
+          isFrenchPrice,
+          isReverse,
+          serieName:     uc.card.serie.name,
+        });
+      }
+    }
+
+    const result = Array.from(byRarity.entries()).map(([rarityKey, { cards, totalValue }]) => {
+      const sortedCards = [...cards.values()].sort((a, b) => b.price - a.price);
+      return {
+        rarityKey,
+        cardCount:  sortedCards.length,
+        totalValue: Math.round(totalValue * 100) / 100,
+        cards:      sortedCards,
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("cards/cards-by-rarity error:", error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
