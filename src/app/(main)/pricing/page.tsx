@@ -1,6 +1,7 @@
 'use client'
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { fetchApi } from "@/lib/api";
 
 const FREE_FEATURES = [
   '500 cartes dans ta collection',
@@ -32,7 +33,7 @@ function PricingContent() {
 
   const handleSubscribe = async () => {
     setLoading(true)
-    const res = await fetch('/api/subscription/checkout', {
+    const res = await fetchApi('/api/subscription/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ period: billing }),

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, AlertTriangle, ExternalLink } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { fetchApi } from "@/lib/api";
 
 const SESSION_KEY = "betaBannerDismissed";
 
@@ -27,7 +28,7 @@ export function BetaBanner() {
   async function handleSubscribe() {
     setCheckoutState("loading");
     try {
-      const res = await fetch("/api/subscription/checkout", {
+      const res = await fetchApi("/api/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ period: "annual", betaDiscount: true }),

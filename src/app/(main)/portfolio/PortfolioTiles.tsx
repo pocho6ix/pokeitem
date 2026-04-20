@@ -6,6 +6,7 @@ import { BookOpen, Copy, Package, Star, ArrowLeftRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { CollectionTile } from "@/components/portfolio/CollectionTile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { fetchApi } from "@/lib/api";
 
 interface StatsData {
   totalItems: number;
@@ -29,7 +30,7 @@ export function PortfolioTiles() {
   const [stats, setStats] = useState<StatsData | null>(null);
 
   useEffect(() => {
-    fetch("/api/portfolio/stats")
+    fetchApi("/api/portfolio/stats")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: StatsData | null) => {
         if (data) setStats(data);

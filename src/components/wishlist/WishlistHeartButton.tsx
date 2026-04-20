@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { useIsInWishlist, useWishlistStore } from "@/stores/wishlistStore";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+import { fetchApi } from "@/lib/api";
 
 interface Props {
   cardId: string;
@@ -37,14 +38,14 @@ export function WishlistHeartButton({ cardId, size = "md", className }: Props) {
     if (isIn) {
       remove(cardId);
       try {
-        const res = await fetch(`/api/wishlist/cards/${cardId}`, { method: "DELETE" });
+        const res = await fetchApi(`/api/wishlist/cards/${cardId}`, { method: "DELETE" });
         if (!res.ok) throw new Error();
         toast("Retiré de ta liste 💔", "info", {
           action: {
             label: "Annuler",
             onClick: () => {
               add(cardId);
-              fetch("/api/wishlist/cards", {
+              fetchApi("/api/wishlist/cards", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ cardId }),
@@ -59,7 +60,7 @@ export function WishlistHeartButton({ cardId, size = "md", className }: Props) {
     } else {
       add(cardId);
       try {
-        const res = await fetch("/api/wishlist/cards", {
+        const res = await fetchApi("/api/wishlist/cards", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cardId }),
@@ -70,7 +71,7 @@ export function WishlistHeartButton({ cardId, size = "md", className }: Props) {
             label: "Annuler",
             onClick: () => {
               remove(cardId);
-              fetch(`/api/wishlist/cards/${cardId}`, { method: "DELETE" });
+              fetchApi(`/api/wishlist/cards/${cardId}`, { method: "DELETE" });
             },
           },
         });

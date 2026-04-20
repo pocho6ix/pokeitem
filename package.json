@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:capacitor": "bash scripts/build-capacitor.sh",
+    "cap:sync": "npm run build:capacitor && npx cap sync ios",
+    "cap:open": "npx cap open ios",
     "start": "next start",
     "lint": "eslint",
     "seed:series": "npx tsx scripts/seed-series.ts",
@@ -17,6 +20,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
     "@getbrevo/brevo": "^5.0.3",
     "@hookform/resolvers": "^5.2.2",
     "@next-auth/prisma-adapter": "^1.0.7",

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { fetchApi } from "@/lib/api";
 
 interface PortfolioItemAPI {
   id: string;
@@ -58,7 +59,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   fetchPortfolio: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/portfolio");
+      const res = await fetchApi("/api/portfolio");
       if (!res.ok) throw new Error(`Failed to fetch portfolio: ${res.status}`);
       const data = await res.json();
       set({ items: data.items, summary: data.summary, isLoading: false });
@@ -73,14 +74,14 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   addItem: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/portfolio", {
+      const res = await fetchApi("/api/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Failed to add item: ${res.status}`);
       // Refetch the full portfolio to get updated summary
-      const portfolioRes = await fetch("/api/portfolio");
+      const portfolioRes = await fetchApi("/api/portfolio");
       if (portfolioRes.ok) {
         const portfolioData = await portfolioRes.json();
         set({
@@ -100,7 +101,7 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   removeItem: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/portfolio/${id}`, {
+      const res = await fetchApi(`/api/portfolio/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`Failed to remove item: ${res.status}`);
@@ -119,14 +120,14 @@ export const usePortfolioStore = create<PortfolioState>((set) => ({
   updateItem: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`/api/portfolio/${id}`, {
+      const res = await fetchApi(`/api/portfolio/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error(`Failed to update item: ${res.status}`);
       // Refetch full portfolio
-      const portfolioRes = await fetch("/api/portfolio");
+      const portfolioRes = await fetchApi("/api/portfolio");
       if (portfolioRes.ok) {
         const portfolioData = await portfolioRes.json();
         set({

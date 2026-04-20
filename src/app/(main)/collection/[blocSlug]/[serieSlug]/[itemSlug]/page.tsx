@@ -1,10 +1,11 @@
-import { redirect } from "next/navigation";
+import { RedirectClient } from "./RedirectClient";
 
-interface Props {
-  params: Promise<{ blocSlug: string; serieSlug: string; itemSlug: string }>;
+export function generateStaticParams() {
+  return [];
 }
 
-export default async function Page({ params }: Props) {
-  const { blocSlug, serieSlug, itemSlug } = await params;
-  redirect(`/collection/produits/${blocSlug}/${serieSlug}/${itemSlug}`);
+export const dynamicParams = false;
+
+export default function Page() {
+  return <RedirectClient />;
 }

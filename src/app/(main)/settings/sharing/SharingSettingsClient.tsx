@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { shareProfile } from "@/lib/share/shareProfile";
+import { fetchApi } from "@/lib/api";
 
 interface ShareSettings {
   isActive: boolean;
@@ -38,7 +39,7 @@ export function SharingSettingsClient() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/share/settings")
+    fetchApi("/api/share/settings")
       .then((r) => r.ok ? r.json() : null)
       .then((data: ShareSettings | null) => {
         if (data) setSettings(data);
@@ -69,7 +70,7 @@ export function SharingSettingsClient() {
     setError(null);
     setSaving(true);
     try {
-      const res = await fetch("/api/share/settings", {
+      const res = await fetchApi("/api/share/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),

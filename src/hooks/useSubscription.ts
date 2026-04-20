@@ -1,6 +1,6 @@
 'use client'
 import useSWR from 'swr'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/lib/auth-context"
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { fetchApi } from "@/lib/api";
 
 /**
  * Compact public/private toggle for the caller's own ClasseurShare.
@@ -27,7 +28,7 @@ export function SharingToggle() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/share/settings")
+    fetchApi("/api/share/settings")
       .then((r) => r.json())
       .then((data: Settings) => {
         if (cancelled) return;
@@ -56,7 +57,7 @@ export function SharingToggle() {
     // Optimistic flip — roll back on failure
     setIsActive(next);
     try {
-      const res = await fetch("/api/share/settings", {
+      const res = await fetchApi("/api/share/settings", {
         method:  "PUT",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ ...settings, isActive: next }),

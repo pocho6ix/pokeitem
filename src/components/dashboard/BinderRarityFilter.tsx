@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { CARD_RARITY_IMAGE, CARD_RARITY_LABELS, CARD_RARITY_ORDER, CardRarity } from '@/types/card'
+import { fetchApi } from "@/lib/api";
 
 interface RarityData {
   rarityKey: string
@@ -24,7 +25,7 @@ export function BinderRarityFilter() {
   const [loading,  setLoading]  = useState(true)
 
   useEffect(() => {
-    fetch('/api/portfolio/rarities')
+    fetchApi('/api/portfolio/rarities')
       .then(r => r.ok ? r.json() : [])
       .then((data: RarityData[]) => {
         const sorted = [...data].sort(

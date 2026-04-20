@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { fetchApi } from "@/lib/api";
 
 const registerSchema = z
   .object({
@@ -68,7 +69,7 @@ export function InscriptionForm() {
     setError(null);
     try {
       const referralCode = searchParams.get('ref') ?? Cookies.get('referral_code') ?? undefined;
-      const res = await fetch("/api/auth/register", {
+      const res = await fetchApi("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

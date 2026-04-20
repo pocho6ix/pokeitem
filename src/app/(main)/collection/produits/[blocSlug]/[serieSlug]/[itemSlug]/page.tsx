@@ -8,6 +8,12 @@ interface ItemPageProps {
   params: Promise<{ blocSlug: string; serieSlug: string; itemSlug: string }>;
 }
 
+export function generateStaticParams() {
+  return [{ blocSlug: "_", serieSlug: "_", itemSlug: "_" }];
+}
+
+export const dynamicParams = false;
+
 function findBloc(slug: string) {
   return BLOCS.find((b) => b.slug === slug);
 }

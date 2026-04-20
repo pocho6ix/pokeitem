@@ -1,25 +1,29 @@
-import { Suspense } from "react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import { EchangesPageClient } from "./EchangesPageClient";
+import { fetchApi } from "@/lib/api";
 
-export default async function EchangesPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/connexion");
+export default function EchangesPage() {
+  const [hasActiveShare, setHasActiveShare] = useState(false);
 
-  const userId = (session.user as { id: string }).id;
-  // Only used for the empty-state hint ("to be findable too, activate sharing").
-  // A single boolean is enough; no full share row needed.
-  const share = await prisma.classeurShare.findUnique({
-    where:  { userId },
-    select: { isActive: true },
-  });
+  useEffect(() => {
+    let cancelled = false;
+    fetchApi("/api/share/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        setHasActiveShare(Boolean(data?.settings?.isActive));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <Suspense fallback={null}>
-      <EchangesPageClient hasActiveShare={share?.isActive ?? false} />
+      <EchangesPageClient hasActiveShare={hasActiveShare} />
     </Suspense>
   );
 }

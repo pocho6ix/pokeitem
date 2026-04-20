@@ -12,6 +12,7 @@ import type { CardRarity } from "@/types/card";
 import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
+import { fetchApi } from "@/lib/api";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -202,8 +203,8 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
       setError(false);
       try {
         const [priceRes, ownedRes] = await Promise.all([
-          fetch(`/api/cards/${cardId}/price-history?period=${p}`),
-          fetch(`/api/cards/${cardId}/owned`),
+          fetchApi(`/api/cards/${cardId}/price-history?period=${p}`),
+          fetchApi(`/api/cards/${cardId}/owned`),
         ]);
         if (!priceRes.ok) throw new Error(`HTTP ${priceRes.status}`);
         const data = await priceRes.json();
@@ -278,7 +279,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
     if (!card) return;
     startTransition(async () => {
       try {
-        const res = await fetch("/api/cards/collection", {
+        const res = await fetchApi("/api/cards/collection", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -303,7 +304,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
         // of truth so the UI updates immediately.
         if (useWishlistStore.getState().ids.has(card.id)) {
           wishlistRemove(card.id);
-          fetch(`/api/wishlist/cards/${card.id}`, { method: "DELETE" }).catch(() => {});
+          fetchApi(`/api/wishlist/cards/${card.id}`, { method: "DELETE" }).catch(() => {});
         }
         setTimeout(() => { setShowAddSheet(false); setAddSuccess(false); }, 1200);
       } catch {
@@ -318,7 +319,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
     wishlistRemove(card.id);
     setWishlistRemoveSuccess(true);
     try {
-      const res = await fetch(`/api/wishlist/cards/${card.id}`, { method: "DELETE" });
+      const res = await fetchApi(`/api/wishlist/cards/${card.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setTimeout(() => setWishlistRemoveSuccess(false), 1500);
     } catch {
@@ -332,7 +333,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
     if (!card) return;
     startTransition(async () => {
       try {
-        const res = await fetch("/api/cards/collection", {
+        const res = await fetchApi("/api/cards/collection", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ entries: [{ cardId: card.id }] }),

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Mail } from 'lucide-react'
+import { fetchApi } from "@/lib/api";
 
 export function SupportTab() {
   const [message, setMessage] = useState('')
@@ -14,7 +15,7 @@ export function SupportTab() {
     setSending(true)
     setError(null)
     try {
-      const res = await fetch('/api/feedback', {
+      const res = await fetchApi('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),

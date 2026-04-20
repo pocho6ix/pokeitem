@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { X, Minus, Plus } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { ItemImage } from "@/components/shared/ItemImage";
+import { fetchApi } from "@/lib/api";
 
 const TYPE_SLUG: Record<string, string> = {
   BOOSTER: "booster", DUOPACK: "duopack", BLISTER: "blister",
@@ -64,7 +65,7 @@ export function AddToPortfolioModal({
     setError("");
 
     try {
-      const res = await fetch("/api/portfolio", {
+      const res = await fetchApi("/api/portfolio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

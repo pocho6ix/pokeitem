@@ -2,7 +2,8 @@
 import { useState, useEffect, lazy, Suspense, memo } from 'react'
 import { CardRarity, CARD_RARITY_LABELS, CARD_RARITY_IMAGE } from '@/types/card'
 import { getCardImageAlt } from '@/lib/seo/card-image'
-import type { RaritySection, RarityCard } from '@/app/api/binder/cards-by-rarity/route'
+import type { RaritySection, RarityCard } from '@/types/binder'
+import { fetchApi } from "@/lib/api";
 
 const DARK_ICON_OVERLAY = new Set([CardRarity.COMMON, CardRarity.UNCOMMON, CardRarity.RARE, CardRarity.HOLO_RARE])
 
@@ -157,7 +158,7 @@ export function BinderRarityView() {
   const [detailCardId, setDetailCardId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/binder/cards-by-rarity')
+    fetchApi('/api/binder/cards-by-rarity')
       .then((r) => r.json())
       .then((data) => { setSections(data); setLoading(false) })
       .catch(() => setLoading(false))

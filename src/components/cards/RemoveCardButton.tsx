@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import type { CardVersion } from "@/data/card-versions";
+import { fetchApi } from "@/lib/api";
 
 interface RemoveCardButtonProps {
   cardId: string;
@@ -22,7 +23,7 @@ export function RemoveCardButton({ cardId, versions }: RemoveCardButtonProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/cards/collection", {
+      const res = await fetchApi("/api/cards/collection", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

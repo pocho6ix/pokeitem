@@ -16,7 +16,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { getCardImageAlt } from "@/lib/seo/card-image";
-import type { CardCandidate, IdentifyResponse } from "@/app/api/scanner/identify/route";
+import type { CardCandidate, IdentifyResponse } from "@/types/scanner";
+import { fetchApi } from "@/lib/api";
 
 const CardDetailModal = lazy(() =>
   import("@/components/cards/CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -308,7 +309,7 @@ export function CardScanner() {
 
   const identify = useCallback(async (dataUrl: string) => {
     try {
-      const res = await fetch("/api/scanner/identify", {
+      const res = await fetchApi("/api/scanner/identify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: dataUrl }),
@@ -379,7 +380,7 @@ export function CardScanner() {
   // ── Collection actions ────────────────────────────────────────────────────────
 
   const recordCorrection = useCallback((card: CardCandidate, source: ConfirmSource) => {
-    void fetch("/api/scanner/correction", {
+    void fetchApi("/api/scanner/correction", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -398,7 +399,7 @@ export function CardScanner() {
   const addFromPanel = useCallback(async (card: CardCandidate) => {
     setIsAdding(true);
     try {
-      const res = await fetch("/api/cards/collection", {
+      const res = await fetchApi("/api/cards/collection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -429,7 +430,7 @@ export function CardScanner() {
   const addFromConfirm = useCallback(async (card: CardCandidate, source: ConfirmSource) => {
     setIsAdding(true);
     try {
-      const res = await fetch("/api/cards/collection", {
+      const res = await fetchApi("/api/cards/collection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -466,7 +467,7 @@ export function CardScanner() {
     if (q.length < 2) { setSearchResults([]); return; }
     setSearchLoading(true);
     try {
-      const res = await fetch(`/api/scanner/search?q=${encodeURIComponent(q)}`);
+      const res = await fetchApi(`/api/scanner/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       setSearchResults(data.results ?? []);
     } catch {

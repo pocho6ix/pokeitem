@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, ArrowRight } from "lucide-react";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { fetchApi } from "@/lib/api";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,11 +44,11 @@ export function SuggestedUsers() {
     setLoading(true);
 
     Promise.all([
-      fetch("/api/users/suggested").then((r) => r.json().then((j) => ({ ok: r.ok, body: j }))),
+      fetchApi("/api/users/suggested").then((r) => r.json().then((j) => ({ ok: r.ok, body: j }))),
       // A cheap count probe — we only use the "is it zero" bit, so any tiny
       // endpoint hitting the wishlist would do. Keeping it local to this
       // component so the page doesn't need to prop-drill the flag.
-      fetch("/api/wishlist/cards/ids").then((r) => r.json().then((j) => ({ ok: r.ok, body: j }))).catch(() => ({ ok: false, body: null })),
+      fetchApi("/api/wishlist/cards/ids").then((r) => r.json().then((j) => ({ ok: r.ok, body: j }))).catch(() => ({ ok: false, body: null })),
     ])
       .then(([sRes, wRes]) => {
         if (cancelled) return;

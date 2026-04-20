@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import useSWR, { mutate } from 'swr'
+import { fetchApi } from "@/lib/api";
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
@@ -60,7 +61,7 @@ export function DailyLoginQuest() {
   async function handleClaim() {
     setClaiming(true)
     try {
-      const res = await fetch('/api/quests/daily-login/claim', { method: 'POST' })
+      const res = await fetchApi('/api/quests/daily-login/claim', { method: 'POST' })
       if (res.ok) {
         setJustClaimed(true)
         await mutate('/api/quests/daily-login/status')

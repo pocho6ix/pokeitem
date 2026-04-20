@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 import { VariantStack, cardVersionToVariantType, type VariantType } from "./VariantStack";
+import { fetchApi } from "@/lib/api";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -300,7 +301,7 @@ export function ClasseurCardGrid({ cards, allCards, blocSlug, serieSlug, serieNa
     if (toDelete.length === 0) return;
     setError(null);
     try {
-      const res = await fetch("/api/cards/collection", {
+      const res = await fetchApi("/api/cards/collection", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import Image from "next/image";
 import { ShoppingCart, HandCoins, ArrowLeftRight, Info, Check } from "lucide-react";
 import { CardDetailModal } from "@/components/cards/CardDetailModal";
@@ -10,6 +10,7 @@ import { getCardImageAlt } from "@/lib/seo/card-image";
 import { ContactBlock } from "./ContactBlock";
 import { TradeProposalButton } from "./TradeProposalButton";
 import { TradeProposalSheet } from "./TradeProposalSheet";
+import { fetchApi } from "@/lib/api";
 
 // ─── Types (mirror /api/users/:slug/trade-calculator) ────────────────────────
 
@@ -152,7 +153,7 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
   // Lazy-fetch my own share info for the proposal signature. Missing share
   // → shareActive:false → sheet uses the "activate sharing" fallback text.
   useEffect(() => {
-    fetch("/api/share/settings")
+    fetchApi("/api/share/settings")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
@@ -165,7 +166,7 @@ export function TradeCalculator({ slug, displayName, contact }: TradeCalculatorP
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch(`/api/users/${slug}/trade-calculator`)
+    fetchApi(`/api/users/${slug}/trade-calculator`)
       .then((r) => r.json().then((j) => ({ ok: r.ok, status: r.status, body: j })))
       .then((res) => {
         if (cancelled) return;

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { fetchApi } from "@/lib/api";
 
 interface WishlistStore {
   ids: Set<string>;
@@ -15,7 +16,7 @@ export const useWishlistStore = create<WishlistStore>((set, get) => ({
   hydrate: async () => {
     if (get().hydrated) return;
     try {
-      const res = await fetch("/api/wishlist/cards/ids");
+      const res = await fetchApi("/api/wishlist/cards/ids");
       if (res.ok) {
         const data = await res.json();
         set({ ids: new Set(data.ids ?? []), hydrated: true });

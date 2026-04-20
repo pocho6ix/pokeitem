@@ -1,7 +1,8 @@
 'use client'
 import { useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession } from "@/lib/auth-context"
 import Cookies from 'js-cookie'
+import { fetchApi } from "@/lib/api";
 
 export function useApplyReferral() {
   const { status } = useSession()
@@ -11,7 +12,7 @@ export function useApplyReferral() {
     const referralCode = Cookies.get('referral_code')
     if (!referralCode) return
 
-    fetch('/api/referral/apply', {
+    fetchApi('/api/referral/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ referralCode })

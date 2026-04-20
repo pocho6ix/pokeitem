@@ -5,6 +5,7 @@ import { Copy, Check, Download } from 'lucide-react'
 import { useShareCard } from '@/hooks/useShareCard'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
 import { DailyLoginQuest } from '@/components/quests/DailyLoginQuest'
+import { fetchApi } from "@/lib/api";
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -166,7 +167,7 @@ function ShareQuestRow({ quest, shareData, shareCardRef }: ShareQuestRowProps) {
   async function handleComplete() {
     setCompleting(true)
     try {
-      await fetch(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
+      await fetchApi(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)
@@ -234,7 +235,7 @@ function InstallPwaQuestRow({ quest }: { quest: QuestState }) {
     completedRef.current = true
     setCompleting(true)
     try {
-      await fetch('/api/user/quests/install_pwa/complete', { method: 'POST' })
+      await fetchApi('/api/user/quests/install_pwa/complete', { method: 'POST' })
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)
@@ -375,7 +376,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
   async function handleComplete() {
     setCompleting(true)
     try {
-      await fetch(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
+      await fetchApi(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)

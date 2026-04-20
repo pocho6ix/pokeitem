@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -20,6 +20,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { formatPriceChange } from "@/lib/utils";
 import type { PortfolioItemData, PortfolioSummary } from "@/types/portfolio";
+import { fetchApi } from "@/lib/api";
 
 // Recharts (~150 KB gzipped) — lazy-loaded so it never enters the initial bundle
 const DashboardChartsSection = dynamic(
@@ -192,7 +193,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
 
   const fetchPortfolio = useCallback(async () => {
     try {
-      const res = await fetch("/api/portfolio");
+      const res = await fetchApi("/api/portfolio");
       if (res.ok) {
         const data = await res.json();
         setItems(data.items);
@@ -209,7 +210,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
 
   const fetchChart = useCallback(async (p: string) => {
     try {
-      const res = await fetch(`/api/portfolio/chart?period=${p}`);
+      const res = await fetchApi(`/api/portfolio/chart?period=${p}`);
       if (res.ok) {
         const data = await res.json();
         setChartData(data.data);
@@ -237,7 +238,7 @@ export default function DashboardContent({ compact = false }: { compact?: boolea
     if (!confirm("Supprimer cet item du portfolio ?")) return;
     setDeleting(portfolioItemId);
     try {
-      const res = await fetch(`/api/portfolio/${portfolioItemId}`, {
+      const res = await fetchApi(`/api/portfolio/${portfolioItemId}`, {
         method: "DELETE",
       });
       if (res.ok) await fetchPortfolio();

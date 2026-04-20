@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { BackButton } from "@/components/ui/BackButton";
 import { BETA_VIDEO_ID, BETA_VIDEO_ENABLED } from "@/config/beta";
 import { CheckCircle2, Smartphone, Gift } from "lucide-react";
+import { fetchApi } from "@/lib/api";
 
 // ── Typings ──────────────────────────────────────────────────────────────────
 
@@ -221,7 +222,7 @@ export function BetaPageContent() {
     setActivating(true);
     setError(null);
     try {
-      const res = await fetch("/api/beta/activate", { method: "POST" });
+      const res = await fetchApi("/api/beta/activate", { method: "POST" });
       if (res.status === 409) {
         router.push("/portfolio");
         return;

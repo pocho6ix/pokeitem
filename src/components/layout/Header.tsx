@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Package, ScanLine, BookOpen, User, LogOut, ArrowLeftRight, Settings } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { CommandSearch } from "@/components/shared/CommandSearch";

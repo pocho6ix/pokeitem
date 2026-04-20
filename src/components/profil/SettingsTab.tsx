@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { signOut } from 'next-auth/react'
+import { signOut } from "@/lib/auth-context"
 import { useSubscription } from '@/hooks/useSubscription'
+import { fetchApi } from "@/lib/api";
 
 export function SettingsTab() {
   const { isPro, isTrialing, trialEndsAt } = useSubscription()
@@ -18,7 +19,7 @@ export function SettingsTab() {
 
   // Load current username
   useEffect(() => {
-    fetch('/api/user/me')
+    fetchApi('/api/user/me')
       .then(r => r.json())
       .then(d => {
         if (d.username) {
@@ -36,7 +37,7 @@ export function SettingsTab() {
     }
     setChecking(true)
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/user/username?check=${encodeURIComponent(username)}`)
+      const res = await fetchApi(`/api/user/username?check=${encodeURIComponent(username)}`)
       const data = await res.json()
       setAvailable(data.available)
       setChecking(false)
@@ -47,7 +48,7 @@ export function SettingsTab() {
   const handleSaveUsername = async () => {
     if (!username || username.length < 3) return
     setSaving(true)
-    const res = await fetch('/api/user/username', {
+    const res = await fetchApi('/api/user/username', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),
@@ -67,7 +68,7 @@ export function SettingsTab() {
   const handleCancel = async () => {
     if (!confirm("Confirmer la résiliation ? Votre accès Premium sera maintenu jusqu'à la fin de la période en cours.")) return
     setCanceling(true)
-    const res = await fetch('/api/subscription/cancel', { method: 'POST' })
+    const res = await fetchApi('/api/subscription/cancel', { method: 'POST' })
     const data = await res.json()
     setCanceling(false)
     if (res.ok) setCancelInfo(data)
@@ -77,7 +78,7 @@ export function SettingsTab() {
     setDeleteStep(2)
     setDeleteError('')
     try {
-      const res = await fetch('/api/user/delete', { method: 'POST' })
+      const res = await fetchApi('/api/user/delete', { method: 'POST' })
       if (!res.ok) {
         const data = await res.json()
         setDeleteError(data.error ?? 'Erreur lors de la suppression')

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { Card } from "@/components/ui/Card";
 import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";

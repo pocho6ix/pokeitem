@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ProButton } from "@/components/subscription/ProButton";
 import {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, Heart, Plus, Eye } from "lucide-react";
@@ -12,6 +12,7 @@ import { getCardRarityImage, CardRarity, CARD_RARITY_LABELS, CardCondition } fro
 import { CardVersion } from "@/data/card-versions";
 import { cn } from "@/lib/utils";
 import { getCardImageAlt } from "@/lib/seo/card-image";
+import { fetchApi } from "@/lib/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -81,12 +82,48 @@ function cardPrice(card: WishlistCard): number {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export function WishlistPageClient({ items: initialItems }: { items: WishlistItem[] }) {
+export function WishlistPageClient() {
   const router = useRouter();
   const { remove, add } = useWishlistStore();
   const { toast } = useToast();
 
-  const [items, setItems] = useState<WishlistItem[]>(initialItems);
+  const [items, setItems] = useState<WishlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetchApi("/api/wishlist/cards");
+        if (!res.ok) throw new Error(`wishlist fetch failed: ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+        const mapped: WishlistItem[] = (data.entries ?? []).map((wi: {
+          id: string;
+          addedAt: string;
+          priority: number;
+          maxPrice: number | null;
+          note: string | null;
+          card: WishlistCard & { rarity: string };
+        }) => ({
+          wishlistId: wi.id,
+          addedAt: typeof wi.addedAt === "string" ? wi.addedAt : new Date(wi.addedAt).toISOString(),
+          priority: wi.priority,
+          maxPrice: wi.maxPrice,
+          note: wi.note,
+          card: { ...wi.card, rarity: wi.card.rarity as string },
+        }));
+        setItems(mapped);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [tab, setTab] = useState<Tab>("by-serie");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [search, setSearch] = useState("");
@@ -236,7 +273,7 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     remove(wi.card.id);
 
     try {
-      const res = await fetch(`/api/wishlist/cards/${wi.card.id}`, { method: "DELETE" });
+      const res = await fetchApi(`/api/wishlist/cards/${wi.card.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       toast("Retiré de ta liste 💔", "info", {
         action: {
@@ -244,7 +281,7 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
           onClick: () => {
             setItems((prev) => [wi, ...prev]);
             add(wi.card.id);
-            fetch("/api/wishlist/cards", {
+            fetchApi("/api/wishlist/cards", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ cardId: wi.card.id }),
@@ -276,7 +313,7 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     try {
       await Promise.all(
         ids.map((id) =>
-          fetch(`/api/wishlist/cards/${id}`, { method: "DELETE" }).then((r) => {
+          fetchApi(`/api/wishlist/cards/${id}`, { method: "DELETE" }).then((r) => {
             if (!r.ok) throw new Error();
           }),
         ),
@@ -304,7 +341,7 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     const removed = items.filter((wi) => ids.includes(wi.card.id));
 
     try {
-      const res = await fetch("/api/cards/collection", {
+      const res = await fetchApi("/api/cards/collection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -324,7 +361,7 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
       // Remove from wishlist in parallel (best-effort — collection add succeeded).
       setItems((prev) => prev.filter((wi) => !ids.includes(wi.card.id)));
       for (const id of ids) remove(id);
-      Promise.all(ids.map((id) => fetch(`/api/wishlist/cards/${id}`, { method: "DELETE" }))).catch(() => {});
+      Promise.all(ids.map((id) => fetchApi(`/api/wishlist/cards/${id}`, { method: "DELETE" }))).catch(() => {});
 
       toast(`${ids.length} carte${ids.length > 1 ? "s ajoutées" : " ajoutée"} à ta collection ✨`, "success");
       clearSelection();
@@ -356,6 +393,14 @@ export function WishlistPageClient({ items: initialItems }: { items: WishlistIte
     "price-asc":  "Prix croissant",
     "rarity":     "Rareté",
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24 text-sm text-[var(--text-secondary)]">
+        Chargement…
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

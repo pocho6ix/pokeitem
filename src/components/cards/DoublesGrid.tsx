@@ -7,6 +7,7 @@ import { CardVersion } from '@/data/card-versions'
 import { CollectionValue } from '@/components/collection/CollectionValue'
 import { getCardImageAlt } from '@/lib/seo/card-image'
 import { VariantPokeball, cardVersionToVariantType, VARIANT_LABELS } from './VariantStack'
+import { fetchApi } from "@/lib/api";
 
 const CardDetailModal = lazy(() =>
   import('./CardDetailModal').then((m) => ({ default: m.CardDetailModal }))
@@ -142,7 +143,7 @@ export function DoublesGrid({
     setSelectMode(false)
 
     startTransition(async () => {
-      await fetch('/api/cards/collection', {
+      await fetchApi('/api/cards/collection', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entries: toDelete }),

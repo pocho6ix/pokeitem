@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
+import { fetchApi } from "@/lib/api";
 
 export function HeroCTAButtons() {
   const { data: session, status } = useSession();
@@ -25,7 +26,7 @@ export function HeroCTAButtons() {
     setActivating(true);
     setError(null);
     try {
-      const res = await fetch("/api/beta/activate", { method: "POST" });
+      const res = await fetchApi("/api/beta/activate", { method: "POST" });
       if (res.status === 409) {
         // Already used — refresh subscription state
         await refresh();

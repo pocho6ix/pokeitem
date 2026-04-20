@@ -23,6 +23,7 @@ import { useWishlistStore } from "@/stores/wishlistStore";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 import { VariantStack, cardVersionToVariantType, type VariantType } from "./VariantStack";
+import { fetchApi } from "@/lib/api";
 
 const CardDetailModal = lazy(() =>
   import("./CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -714,7 +715,7 @@ export function CardCollectionGrid({
 
       startTransition(async () => {
         try {
-          const res = await fetch("/api/cards/collection", {
+          const res = await fetchApi("/api/cards/collection", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -758,7 +759,7 @@ export function CardCollectionGrid({
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/cards/collection", {
+        const res = await fetchApi("/api/cards/collection", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ entries: Array.from(selectedIds).map((cardId) => ({ cardId })) }),
@@ -783,7 +784,7 @@ export function CardCollectionGrid({
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/cards/collection", {
+        const res = await fetchApi("/api/cards/collection", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cards: missing.map((c) => ({ cardId: c.id, quantity: 1, condition: "NEAR_MINT", language: "FR", version: "NORMAL", foil: false })) }),
@@ -803,7 +804,7 @@ export function CardCollectionGrid({
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/cards/collection", {
+        const res = await fetchApi("/api/cards/collection", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ entries: ownedCardIds.map((cardId) => ({ cardId })) }),
@@ -825,7 +826,7 @@ export function CardCollectionGrid({
     // Optimistic
     toAdd.forEach((c) => wishlistStore.add(c.id));
     try {
-      const res = await fetch("/api/wishlist/cards/bulk", {
+      const res = await fetchApi("/api/wishlist/cards/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cardIds: toAdd.map((c) => c.id) }),

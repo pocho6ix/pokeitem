@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { ProfileTabs } from "@/components/profil/ProfileTabs";
 import { UsageBars } from "@/components/subscription/UsageBars";
 import { useSubscription } from "@/hooks/useSubscription";
+import { fetchApi } from "@/lib/api";
 
 interface UserProfile {
   id: string;
@@ -33,7 +34,7 @@ export function ProfilForm() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/profil")
+    fetchApi("/api/profil")
       .then((r) => r.json())
       .then((data) => {
         if (data.error) return;
@@ -58,7 +59,7 @@ export function ProfilForm() {
     if (!user) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/profil", {
+      const res = await fetchApi("/api/profil", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim() }),
@@ -90,7 +91,7 @@ export function ProfilForm() {
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await fetch("/api/profil/avatar", {
+      const res = await fetchApi("/api/profil/avatar", {
         method: "POST",
         body: formData,
       });
@@ -120,7 +121,7 @@ export function ProfilForm() {
     if (!user?.hasImage) return;
     setUploading(true);
     try {
-      const res = await fetch("/api/profil/avatar", { method: "DELETE" });
+      const res = await fetchApi("/api/profil/avatar", { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) {
         showMessage("error", data.error ?? "Erreur lors de la suppression");

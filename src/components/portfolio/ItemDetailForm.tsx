@@ -8,6 +8,7 @@ import { ItemImage } from "@/components/shared/ItemImage";
 import { Badge } from "@/components/ui/Badge";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
+import { fetchApi } from "@/lib/api";
 
 const MAX_PRICE  = 1_000_000;
 const MAX_QTY    = 10_000;
@@ -116,7 +117,7 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/portfolio/${portfolioItem.id}`, {
+      const res = await fetchApi(`/api/portfolio/${portfolioItem.id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({
@@ -133,7 +134,7 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
       // was set to a meaningful number). Silently ignore failure — the primary
       // update already succeeded.
       if (current != null) {
-        fetch("/api/portfolio/valuation", {
+        fetchApi("/api/portfolio/valuation", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify({ itemId: item.id, price: current }),
@@ -152,7 +153,7 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
     setError(null);
     setDeleting(true);
     try {
-      const res = await fetch(`/api/portfolio/${portfolioItem.id}`, {
+      const res = await fetchApi(`/api/portfolio/${portfolioItem.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
