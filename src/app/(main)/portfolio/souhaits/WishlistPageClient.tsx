@@ -652,11 +652,15 @@ export function WishlistPageClient({
         />
       )}
 
-      {/* ── Bulk action bar (sticky bottom) ──────────────────────────── */}
+      {/* ── Bulk action bar (sticky bottom) ────────────────────────────
+          Sits ABOVE the MobileNav on mobile (`bottom-24` ≈ 6rem so the
+          action bar clears the 80-px floating pill + its safe-area
+          padding). On desktop (`md:`) the MobileNav is hidden — the
+          bulk bar snaps back to `bottom: 0`. */}
       {selected.size > 0 && (
         <div
-          className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-default)] bg-[var(--bg-card)]/95 backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/50"
-          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+          className="fixed bottom-24 left-0 right-0 z-40 border-t border-[var(--border-default)] bg-[var(--bg-card)]/95 backdrop-blur-xl px-4 py-3 shadow-2xl shadow-black/50 md:bottom-0"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
           <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
             <span className="text-sm font-semibold text-[var(--text-primary)]">
@@ -834,7 +838,7 @@ function CardVignette({
       </div>
 
       <div className="mt-1 px-0.5">
-        <p className="truncate text-[10px] font-medium leading-tight text-[var(--text-secondary)]">
+        <p className="truncate text-center text-[10px] font-medium leading-tight text-[var(--text-secondary)]">
           {card.name}
         </p>
       </div>
