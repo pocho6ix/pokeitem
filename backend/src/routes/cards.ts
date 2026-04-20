@@ -126,10 +126,24 @@ router.get("/search", async (req: Request & { userId?: string }, res: Response) 
       where.rarity = rarity as Prisma.EnumCardRarityFilter["equals"];
     }
 
+    // Ordering strategy:
+    //  - When `serieSlug` is set (serie detail grid) we want the natural
+    //    number order inside the extension, most recent extensions first.
+    //  - Otherwise (home search autocomplete) the user expects to see the
+    //    most expensive / valuable hits at the top, falling back to the
+    //    international price, then by serie release date for ties.
+    const orderBy: Prisma.CardOrderByWithRelationInput[] = hasSerieFilter
+      ? [{ serie: { releaseDate: "desc" } }, { number: "asc" }]
+      : [
+          { priceFr: { sort: "desc", nulls: "last" } },
+          { price:   { sort: "desc", nulls: "last" } },
+          { serie: { releaseDate: "desc" } },
+        ];
+
     const cards = await prisma.card.findMany({
       where,
       take,
-      orderBy: [{ serie: { releaseDate: "desc" } }, { number: "asc" }],
+      orderBy,
       select: cardSelect,
     });
 
