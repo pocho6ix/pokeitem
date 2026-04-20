@@ -129,20 +129,43 @@ export function Header() {
   // Header always solid on all pages
   const isTransparent = false;
 
+  // Strip the static-export trailing slash so `/` matches on every build.
+  const normalizedPath = pathname.replace(/\/$/, "") || "/";
+  const isHome = normalizedPath === "/";
+
   return (
     <>
       {/* ── Unified header shell ── */}
+      {/*
+        `paddingTop: env(safe-area-inset-top)` reserves space for the iOS
+        status bar when running inside the Capacitor WebView (the page
+        is drawn edge-to-edge because of `viewport-fit: cover`). On plain
+        browsers `env(safe-area-inset-top)` evaluates to 0, so web rendering
+        is unchanged. Inlined here (instead of CSS targeting
+        `html.capacitor header[class*="sticky"]`) so the padding is applied
+        on the very first paint, before any pre-hydration JS has had a
+        chance to run.
+
+        UX rule: the greeting / logo / avatar mobile top bar ONLY shows on
+        the home page; every other page relies on the MobileNav bottom bar
+        for navigation. On desktop the full-width nav bar stays on every
+        page. The outer `<header>` is therefore hidden on non-home routes
+        below the `md` breakpoint to avoid a dead status-bar strip. A
+        dedicated safe-area spacer (below) covers the notch area.
+      */}
       <header
+        style={isHome ? { paddingTop: "env(safe-area-inset-top)" } : undefined}
         className={cn(
           "sticky top-0 z-50 w-full transition-all duration-300",
+          !isHome && "max-md:hidden",
           isTransparent
             ? "border-b border-transparent bg-transparent"
             : "border-b border-[var(--border-default)] bg-[var(--bg-primary)]/80 backdrop-blur-xl"
         )}
       >
 
-        {/* Mobile top bar */}
-        <MobileTopBar />
+        {/* Mobile top bar — only on home */}
+        {isHome && <MobileTopBar />}
 
         {/* Desktop nav bar */}
         <div className="mx-auto hidden h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 md:flex">
@@ -219,6 +242,22 @@ export function Header() {
           </div>
         </div>
       </header>
+
+      {/*
+        Safe-area spacer for non-home mobile pages. The Header is hidden on
+        those routes so the iOS status bar would otherwise overlap the
+        page content (`viewport-fit: cover` draws edge-to-edge). This
+        transparent strip reserves exactly `env(safe-area-inset-top)` pixels
+        so the content starts below the notch. On desktop or on the home
+        page it's a no-op (height 0 / `md:hidden`).
+      */}
+      {!isHome && (
+        <div
+          aria-hidden="true"
+          style={{ height: "env(safe-area-inset-top)" }}
+          className="w-full shrink-0 bg-[var(--bg-primary)] md:hidden"
+        />
+      )}
 
       {/* Mobile slide-in menu */}
       <Sheet isOpen={mobileOpen} onClose={() => setMobileOpen(false)} title="Menu">
