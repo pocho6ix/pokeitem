@@ -22,13 +22,21 @@ type CardsByRarityResponse = Array<{
   }>;
 }>;
 
+type SeriesResponse = {
+  series: Array<{
+    slug: string;
+    name: string;
+    cardCount: number | null;
+  }>;
+};
+
 /**
- * Mobile-only catalog listing. On the web build, `page.tsx` runs as an
- * RSC and queries Prisma directly. Here we aggregate from the existing
- * `/api/cards/cards-by-rarity` response (which includes `serieName` per
- * owned card) so we can fill in `ownedCards` per serie. `totalCards` is
- * only available server-side for now — displayed as "?" which the list
- * component renders gracefully.
+ * Mobile-only catalog listing. The web build runs this page as a RSC
+ * and queries Prisma directly. Here we fan out to:
+ *   - GET /api/series                → total `cardCount` per serie
+ *   - GET /api/cards/cards-by-rarity → owned cards (grouped by
+ *                                      `serieName`) + market value
+ * then stitch the two together for the BlocSerieCardList.
  */
 export function CollectionCartesClient() {
   const [blocs, setBlocs] = useState<BlocCardProgress[]>([]);
@@ -37,17 +45,22 @@ export function CollectionCartesClient() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // ── Owned aggregation ────────────────────────────────────────
-      // Map<serieName, { ownedCards, marketValue }>. Using name (not slug)
-      // because cards-by-rarity only returns `serieName`.
+      // ── Owned aggregation (by serie name, as returned by the backend) ──
       const ownedBySerieName = new Map<
         string,
         { ownedCards: Set<string>; marketValue: number }
       >();
+      // ── Total card count per serie slug ───────────────────────────────
+      const totalBySlug = new Map<string, number>();
+
       try {
-        const res = await fetchApi("/api/cards/cards-by-rarity");
-        if (res.ok) {
-          const sections: CardsByRarityResponse = await res.json();
+        const [rarityRes, seriesRes] = await Promise.all([
+          fetchApi("/api/cards/cards-by-rarity"),
+          fetchApi("/api/series"),
+        ]);
+
+        if (rarityRes.ok) {
+          const sections: CardsByRarityResponse = await rarityRes.json();
           for (const section of sections) {
             for (const card of section.cards ?? []) {
               const key = card.serieName;
@@ -60,13 +73,19 @@ export function CollectionCartesClient() {
             }
           }
         }
+
+        if (seriesRes.ok) {
+          const data: SeriesResponse = await seriesRes.json();
+          for (const s of data.series ?? []) {
+            if (s.cardCount != null) totalBySlug.set(s.slug, s.cardCount);
+          }
+        }
       } catch {
-        /* swallow — render static catalog on error */
+        /* swallow — render catalog with "?" on error */
       }
 
       if (cancelled) return;
 
-      // ── Build static catalog from BLOCS × SERIES, enriched with owned ──
       const releaseDateBySlug = new Map(
         SERIES.map((s) => [
           s.slug,
@@ -90,15 +109,17 @@ export function CollectionCartesClient() {
           blocAbbreviation: bloc.abbreviation ?? null,
           series: sorted.map((serie) => {
             const owned = ownedBySerieName.get(serie.name);
+            const totalCards = totalBySlug.get(serie.slug) ?? 0;
+            const ownedCards = owned?.ownedCards.size ?? 0;
             return {
               serieSlug: serie.slug,
               serieName: serie.name,
               serieAbbreviation: serie.abbreviation ?? null,
               serieImageUrl: imageUrlBySlug.get(serie.slug) ?? null,
-              totalCards: 0, // unknown client-side → rendered as "?"
-              ownedCards: owned?.ownedCards.size ?? 0,
+              totalCards,
+              ownedCards,
               marketValue: owned ? Math.round(owned.marketValue * 100) / 100 : 0,
-              isComplete: false,
+              isComplete: totalCards > 0 && ownedCards >= totalCards,
             };
           }),
         };

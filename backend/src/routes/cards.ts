@@ -15,11 +15,20 @@ function parseVersion(value: unknown): CardVersion | undefined {
 }
 
 // ─── GET /api/cards/search ────────────────────────────────────
-// Public search endpoint — name/number/rarity filtering.
+// Public search endpoint — name / number / rarity filtering. When
+// `serieSlug` is provided the cap is raised to 1000 so the mobile
+// `SerieCartesClient` page can load the complete extension (some
+// serie go past 250 cards). Without a serie filter we keep the 100
+// cap for the home-search autocomplete.
 router.get("/search", async (req: Request, res: Response) => {
   try {
     const { q, serieSlug, blocSlug, rarity, limit } = req.query;
-    const take = Math.min(Number(limit) || 40, 100);
+    const requested = Number(limit);
+    const hasSerieFilter = typeof serieSlug === "string";
+    const take = Math.min(
+      Number.isFinite(requested) && requested > 0 ? requested : hasSerieFilter ? 1000 : 40,
+      hasSerieFilter ? 1000 : 100,
+    );
 
     const where: Prisma.CardWhereInput = {};
     if (typeof q === "string" && q.trim()) {
@@ -36,13 +45,40 @@ router.get("/search", async (req: Request, res: Response) => {
       where.rarity = rarity as Prisma.EnumCardRarityFilter["equals"];
     }
 
+    // Full card shape — the classeur / collection grids on mobile need
+    // every price variant, type / category / trainerType / energyType
+    // to render rarity + type filters correctly. Matches the fields
+    // the web RSC `/collection/cartes/[blocSlug]/[serieSlug]` page
+    // plucks via Prisma.
     const cards = await prisma.card.findMany({
       where,
       take,
       orderBy: [{ serie: { releaseDate: "desc" } }, { number: "asc" }],
       select: {
-        id: true, number: true, name: true, rarity: true, imageUrl: true,
-        serie: { select: { id: true, name: true, slug: true, bloc: { select: { slug: true } } } },
+        id:                true,
+        number:            true,
+        name:              true,
+        rarity:            true,
+        imageUrl:          true,
+        price:             true,
+        priceFr:           true,
+        priceReverse:      true,
+        priceFirstEdition: true,
+        isSpecial:         true,
+        types:             true,
+        category:          true,
+        trainerType:       true,
+        energyType:        true,
+        serie: {
+          select: {
+            id:           true,
+            name:         true,
+            slug:         true,
+            abbreviation: true,
+            cardCount:    true,
+            bloc: { select: { slug: true, name: true, abbreviation: true } },
+          },
+        },
       },
     });
 

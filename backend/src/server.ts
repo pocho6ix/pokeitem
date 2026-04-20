@@ -28,6 +28,7 @@ import pricesRoutes from "./routes/prices";
 import unsubscribeRoutes from "./routes/unsubscribe";
 import publicRoutes from "./routes/public";
 import usersRoutes from "./routes/users";
+import seriesRoutes from "./routes/series";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -94,6 +95,7 @@ app.use("/api/prices", pricesRoutes);
 app.use("/api/unsubscribe", unsubscribeRoutes);
 app.use("/api/u", publicRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/series", seriesRoutes);
 
 // ─── ALIASES ─────────────────────────────────────────────────
 // The Next.js PWA calls `GET /api/binder/cards-by-rarity` (its own

@@ -22,6 +22,14 @@ type CardsByRarityResponse = Array<{
   }>;
 }>;
 
+type SeriesResponse = {
+  series: Array<{
+    slug: string;
+    name: string;
+    cardCount: number | null;
+  }>;
+};
+
 export function PortfolioCartesClient() {
   return (
     <Suspense fallback={null}>
@@ -43,10 +51,16 @@ function PortfolioCartesContent() {
         string,
         { ownedCards: Set<string>; marketValue: number }
       >();
+      const totalBySlug = new Map<string, number>();
+
       try {
-        const res = await fetchApi("/api/cards/cards-by-rarity");
-        if (res.ok) {
-          const sections: CardsByRarityResponse = await res.json();
+        const [rarityRes, seriesRes] = await Promise.all([
+          fetchApi("/api/cards/cards-by-rarity"),
+          fetchApi("/api/series"),
+        ]);
+
+        if (rarityRes.ok) {
+          const sections: CardsByRarityResponse = await rarityRes.json();
           for (const section of sections) {
             for (const card of section.cards ?? []) {
               const key = card.serieName;
@@ -59,6 +73,13 @@ function PortfolioCartesContent() {
             }
           }
         }
+
+        if (seriesRes.ok) {
+          const data: SeriesResponse = await seriesRes.json();
+          for (const s of data.series ?? []) {
+            if (s.cardCount != null) totalBySlug.set(s.slug, s.cardCount);
+          }
+        }
       } catch (err) {
         console.error("portfolio/cartes load failed:", err);
       }
@@ -67,8 +88,8 @@ function PortfolioCartesContent() {
 
       const imageUrlBySlug = new Map(SERIES.map((s) => [s.slug, s.imageUrl]));
 
-      // On the classeur page we only keep series the user actually owns
-      // at least one card from — mirrors the web RSC behaviour.
+      // Classeur only keeps series the user actually owns at least one card
+      // from — mirrors the web RSC behaviour.
       const progress: BlocCardProgress[] = BLOCS.map((bloc) => ({
         blocSlug: bloc.slug,
         blocName: bloc.name,
@@ -76,15 +97,17 @@ function PortfolioCartesContent() {
         series: SERIES.filter((s) => s.blocSlug === bloc.slug)
           .map((s) => {
             const owned = ownedBySerieName.get(s.name);
+            const totalCards = totalBySlug.get(s.slug) ?? 0;
+            const ownedCards = owned?.ownedCards.size ?? 0;
             return {
               serieSlug: s.slug,
               serieName: s.name,
               serieAbbreviation: s.abbreviation ?? null,
               serieImageUrl: imageUrlBySlug.get(s.slug) ?? null,
-              totalCards: 0,
-              ownedCards: owned?.ownedCards.size ?? 0,
+              totalCards,
+              ownedCards,
               marketValue: owned ? Math.round(owned.marketValue * 100) / 100 : 0,
-              isComplete: false,
+              isComplete: totalCards > 0 && ownedCards >= totalCards,
             };
           })
           .filter((s) => s.ownedCards > 0),
