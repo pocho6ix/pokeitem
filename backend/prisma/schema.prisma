@@ -1,0 +1,670 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── AUTHENTIFICATION ────────────────────────────────────────
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  plan                 Plan      @default(FREE)
+  planExpiresAt        DateTime?
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  revenueCatId         String?   @unique
+  scanCount            Int       @default(0)
+  scanCountResetAt     DateTime  @default(now())
+
+  username               String?   @unique
+  trialEndsAt            DateTime?
+  betaTrialActivatedAt   DateTime?
+  deletedAt              DateTime?
+
+  subscribedNewsletter Boolean   @default(true)
+  unsubscribedAt       DateTime?
+
+  referralCode        String    @unique @default(cuid())
+  referredById        String?
+  referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals           User[]    @relation("Referrals")
+  referralRewardGiven Boolean   @default(false)
+  referralWeeksGiven  Int       @default(0)
+
+  accounts          Account[]
+  sessions          Session[]
+  portfolio         PortfolioItem[]
+  wishlist          WishlistItem[]
+  cardWishlist      CardWishlistItem[]
+  manualValuations  ManualValuation[]
+  userCards         UserCard[]
+  userCardDoubles   UserCardDouble[]
+  subscription      Subscription?
+  pointEvents       PointEvent[]
+  userQuests        UserQuest[]
+  userPoints        UserPoints?
+  feedbacks         Feedback[]
+  dailyQuestClaims  DailyQuestClaim[]
+  classeurShare     ClasseurShare?
+
+  @@map("users")
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  plan             Plan
+  source           String
+  status           String
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── CATALOGUE POKÉMON ───────────────────────────────────────
+
+model Bloc {
+  id           String    @id @default(cuid())
+  name         String
+  nameEn       String?
+  slug         String    @unique
+  abbreviation String?
+  logoUrl      String?
+  imageUrl     String?
+  startDate    DateTime?
+  endDate      DateTime?
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  series Serie[]
+
+  @@map("blocs")
+}
+
+model Serie {
+  id           String    @id @default(cuid())
+  blocId       String
+  name         String
+  nameEn       String?
+  slug         String    @unique
+  abbreviation String?
+  imageUrl     String?
+  bannerUrl    String?
+  releaseDate  DateTime?
+  cardCount    Int?
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bloc  Bloc   @relation(fields: [blocId], references: [id])
+  items Item[]
+  cards Card[]
+
+  @@map("series")
+}
+
+model Item {
+  id               String     @id @default(cuid())
+  serieId          String
+  name             String
+  slug             String     @unique
+  type             ItemType
+  description      String?    @db.Text
+  imageUrl         String?
+  images           String[]
+  ean              String?
+  releaseDate      DateTime?
+  retailPrice      Float?
+  currentPrice     Float?
+  priceUpdatedAt   DateTime?
+  boosterCount     Int?
+  promoCards       String[]
+  contents         String?    @db.Text
+  isExclusive      Boolean    @default(false)
+  exclusiveStore   String?
+  language         Language   @default(FR)
+  order            Int        @default(0)
+  cardmarketUrl    String?    @db.Text
+  cardmarketId     String?
+  priceFrom        Float?
+  priceTrend       Float?
+  availableSellers Int?
+  lastScrapedAt    DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  serie            Serie            @relation(fields: [serieId], references: [id])
+  prices           PriceHistory[]
+  portfolioItems   PortfolioItem[]
+  wishlistItems    WishlistItem[]
+  marketListings   MarketListing[]
+
+  @@index([type])
+  @@index([serieId])
+  @@map("items")
+}
+
+enum ItemType {
+  BOOSTER
+  DUOPACK
+  TRIPACK
+  BOOSTER_BOX
+  ETB
+  BOX_SET
+  UPC
+  TIN
+  MINI_TIN
+  POKEBALL_TIN
+  BLISTER
+  THEME_DECK
+  BUNDLE
+  TRAINER_KIT
+  OTHER
+}
+
+enum Language {
+  FR
+  EN
+  JP
+  DE
+  ES
+  IT
+  PT
+  KO
+  ZH
+}
+
+// ─── HISTORIQUE DES PRIX ─────────────────────────────────────
+
+model PriceHistory {
+  id        String   @id @default(cuid())
+  itemId    String
+  price     Float
+  priceFrom Float?
+  source    String   @default("cardmarket")
+  currency  String   @default("EUR")
+  date      DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, date])
+  @@map("price_history")
+}
+
+// ─── PORTFOLIO UTILISATEUR ───────────��──────────────────────
+
+model PortfolioItem {
+  id                    String        @id @default(cuid())
+  userId                String
+  itemId                String
+  quantity              Int           @default(1)
+  purchasePrice         Float?
+  // Per-user "current market value" the owner sets manually. There is NO reliable
+  // auto-scrape source for sealed items — each user estimates their own holding.
+  currentPrice          Float?
+  currentPriceUpdatedAt DateTime?
+  priceType             PriceType     @default(CUSTOM)
+  purchaseDate          DateTime?
+  condition             ItemCondition @default(SEALED)
+  notes                 String?       @db.Text
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item             Item              @relation(fields: [itemId], references: [id])
+
+  @@index([userId])
+  @@index([itemId])
+  @@map("portfolio_items")
+}
+
+enum PriceType {
+  RETAIL
+  CUSTOM
+}
+
+enum ItemCondition {
+  SEALED
+  OPENED
+  DAMAGED
+  GRADED
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  maxPrice  Float?
+  notify    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId])
+  @@map("wishlist_items")
+}
+
+// ─── MARKET (ANNONCES SCRAPPÉES) ─────────────────────────────
+
+model MarketListing {
+  id          String   @id @default(cuid())
+  itemId      String?
+  title       String
+  price       Float
+  currency    String   @default("EUR")
+  source      String
+  sourceUrl   String   @db.Text
+  imageUrl    String?
+  seller      String?
+  condition   String?
+  isAvailable Boolean  @default(true)
+  scrapedAt   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  item Item? @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+  @@index([source])
+  @@index([scrapedAt])
+  @@map("market_listings")
+}
+
+// ─── VALORISATIONS MANUELLES ─────────────────────────────────
+
+model ManualValuation {
+  id     String   @id @default(cuid())
+  userId String
+  itemId String
+  price  Float
+  date   DateTime @default(now())
+  note   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, itemId])
+  @@map("manual_valuations")
+}
+
+// ─── CARTES ──────────────────────────────────────────────────
+
+model Card {
+  id         String     @id @default(cuid())
+  serieId    String
+  number     String
+  name       String
+  rarity     CardRarity @default(COMMON)
+  imageUrl   String?
+  tcgdexId       String?
+  cardmarketId   String?
+  cardmarketUrl  String?   // e.g. "Mega-Evolution/Bulbasaur-V2-MEG133"
+  price          Float?
+  priceReverse   Float?
+  priceFr        Float?
+  priceFrUpdatedAt DateTime?
+  priceUpdatedAt DateTime?
+  // 1st Edition price (only populated for the 4 WOTC base sets:
+  // Set de Base, Jungle, Fossile, Team Rocket). Fetched from Cardmarket
+  // with the ?isFirstEd=Y filter.
+  priceFirstEdition          Float?
+  priceFirstEditionUpdatedAt DateTime?
+  types          String[]
+  category       String?
+  trainerType    String?
+  energyType     String?
+  isSpecial    Boolean   @default(false)
+  // WOTC-era "1re Édition" variants. Cards minted as 1st Edition carry the
+  // circular "Édition 1" stamp under the artwork. The UI overlays that stamp
+  // on the rendered image (v1 — real scraped 1ED/Unlimited images will ship
+  // in a follow-up, at which point the overlay can be retired).
+  isFirstEdition Boolean @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  serie             Serie              @relation(fields: [serieId], references: [id])
+  userCards         UserCard[]
+  userDoubles       UserCardDouble[]
+  priceHistory      CardPriceHistory[]
+  cardWishlistItems CardWishlistItem[]
+
+  @@unique([serieId, number])
+  @@index([serieId])
+  @@map("cards")
+}
+
+model CardPriceHistory {
+  id           String   @id @default(cuid())
+  cardId       String
+  price        Float
+  priceFr      Float?
+  priceReverse Float?
+  source       String   // "ptcgio" | "tcgdex" | "cardmarket-api" | "tcgdex-reverse"
+  recordedAt   DateTime
+  createdAt    DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([cardId, recordedAt])
+  @@index([cardId, recordedAt])
+  @@map("card_price_history")
+}
+
+enum CardRarity {
+  NO_RARITY
+  COMMON
+  UNCOMMON
+  RARE
+  HOLO_RARE
+  DOUBLE_RARE
+  NOIR_BLANC_RARE
+  ULTRA_RARE
+  ILLUSTRATION_RARE
+  SPECIAL_ILLUSTRATION_RARE
+  HYPER_RARE
+  MEGA_HYPER_RARE
+  MEGA_ATTAQUE_RARE
+  SECRET_RARE
+  ACE_SPEC_RARE
+  PROMO
+}
+
+model UserCard {
+  id            String        @id @default(cuid())
+  userId        String
+  cardId        String
+  quantity      Int           @default(1)
+  foil          Boolean       @default(false)
+  condition     CardCondition @default(NEAR_MINT)
+  language      Language      @default(FR)
+  version       CardVersion   @default(NORMAL)
+  purchasePrice Float?
+  gradeValue    Float?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId, version])
+  @@index([userId])
+  @@index([cardId])
+  @@index([userId, cardId])
+  @@map("user_cards")
+}
+
+model UserCardDouble {
+  id           String             @id @default(cuid())
+  userId       String
+  cardId       String
+  quantity     Int                @default(1)
+  condition    CardCondition      @default(NEAR_MINT)
+  language     Language           @default(FR)
+  version      CardVersion        @default(NORMAL)
+  availability DoubleAvailability @default(TRADE)
+  price        Float?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId, version])
+  @@index([userId])
+  @@index([cardId])
+  @@index([userId, cardId])
+  @@map("user_card_doubles")
+}
+
+enum CardVersion {
+  NORMAL
+  REVERSE
+  REVERSE_POKEBALL
+  REVERSE_MASTERBALL
+  // WOTC-era 1st Edition variant (stamp printed on the card).
+  // Only applies to the 4 WOTC base sets: Set de Base, Jungle, Fossile,
+  // Team Rocket. Distinct print run with its own Cardmarket pricing.
+  FIRST_EDITION
+}
+
+enum DoubleAvailability {
+  TRADE
+  SELL
+  BOTH
+}
+
+enum CardCondition {
+  MINT
+  NEAR_MINT
+  EXCELLENT
+  GOOD
+  LIGHT_PLAYED
+  PLAYED
+  POOR
+  GRADED
+}
+
+// ─── FEEDBACK UTILISATEUR ────────────────────────────────────
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("feedbacks")
+}
+
+// ─── SCANNER FEEDBACK ─────────────────────────────────────────
+
+model ScanCorrection {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  userId             String
+
+  aiTopCardId        String?
+  aiTopConfidence    Int?
+
+  userSelectedCardId String
+  selectionSource    String   // "auto" | "suggestion" | "search"
+
+  ocrName            String?
+  ocrNumber          String?
+  ocrSetCode         String?
+
+  @@index([userId])
+  @@index([userSelectedCardId])
+  @@map("scan_corrections")
+}
+
+// ─── BLOG ────────────────────────────────────────────────────
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String?   @db.Text
+  content         String    @db.Text
+  coverImage      String?
+  author          String    @default("PokeItem")
+  tags            String[]
+  category        String?
+  published       Boolean   @default(false)
+  publishedAt     DateTime?
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  keywords        String[]
+  readingTime     Int?
+  viewCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+  @@map("blog_posts")
+}
+
+// ─── GAMIFICATION ────────────────────────────────────────────
+
+model PointEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int
+  source    String   // "referral" | "quest" | "bonus"
+  questId   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, source])
+  @@map("point_events")
+}
+
+model UserQuest {
+  id          String    @id @default(cuid())
+  userId      String
+  questId     String
+  completed   Boolean   @default(false)
+  progress    Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questId])
+  @@index([userId])
+  @@map("user_quests")
+}
+
+model UserPoints {
+  userId    String   @id
+  total     Int      @default(0)
+  updatedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([total])
+  @@map("user_points")
+}
+
+model DailyQuestClaim {
+  id            String   @id @default(cuid())
+  userId        String
+  questId       String   @default("daily_login")
+  claimedAt     DateTime @default(now())
+  pointsAwarded Int      @default(250)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, questId])
+  @@map("daily_quest_claims")
+}
+
+// ─── LISTE DE SOUHAITS (CARTES) ──────────────────────────────
+
+model CardWishlistItem {
+  id       String   @id @default(cuid())
+  userId   String
+  cardId   String
+  setId    String
+  priority Int      @default(1)
+  maxPrice Float?
+  note     String?
+  addedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId])
+  @@index([userId, setId])
+  @@index([userId, addedAt(sort: Desc)])
+  @@map("card_wishlist_items")
+}
+
+// ─── PHASE 2 — SHARING & TRADE MATCHING ─────────────────────────────────────
+// These models prepare the ground for classeur sharing and trade suggestions.
+// Not exposed in UI yet.
+
+model ClasseurShare {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  slug           String   @unique
+  visibility     String   @default("private") // "private" | "link" | "public"
+  isActive       Boolean  @default(false)
+  shareCards     Boolean  @default(true)
+  shareDoubles   Boolean  @default(true)
+  shareItems     Boolean  @default(false)
+  shareWishlist  Boolean  @default(true)
+  contactDiscord String?
+  contactEmail   String?
+  contactTwitter String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("classeur_shares")
+}
+
+
