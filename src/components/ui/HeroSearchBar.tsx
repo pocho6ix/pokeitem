@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { Search, X } from "lucide-react";
 import { getCardImageAlt } from "@/lib/seo/card-image";
+import { fetchApi } from "@/lib/api";
 
 const CardDetailModal = lazy(() =>
   import("@/components/cards/CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -53,6 +54,15 @@ export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
+  // Response shapes: the web Next.js route returns `{ results }`, the
+  // Express backend (mobile) returns `{ cards }`. Normalize either.
+  function extractResults(json: unknown): CardResult[] {
+    if (!json || typeof json !== "object") return [];
+    const obj = json as Record<string, unknown>;
+    const rows = (obj.results as CardResult[]) ?? (obj.cards as CardResult[]) ?? [];
+    return Array.isArray(rows) ? rows : [];
+  }
+
   // Debounced search
   function handleChange(value: string) {
     setQuery(value);
@@ -65,9 +75,9 @@ export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {
     setLoading(true);
     timerRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/cards/search?q=${encodeURIComponent(value)}&limit=6${ownedOnly ? "&owned=true" : ""}`);
+        const res = await fetchApi(`/api/cards/search?q=${encodeURIComponent(value)}&limit=6${ownedOnly ? "&owned=true" : ""}`);
         const json = await res.json();
-        setResults(json.results ?? []);
+        setResults(extractResults(json));
         setOpen(true);
       } catch {
         setResults([]);
@@ -83,9 +93,9 @@ export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {
     if (timerRef.current) clearTimeout(timerRef.current);
     setLoading(true);
     try {
-      const res = await fetch(`/api/cards/search?q=${encodeURIComponent(query)}&limit=30${ownedOnly ? "&owned=true" : ""}`);
+      const res = await fetchApi(`/api/cards/search?q=${encodeURIComponent(query)}&limit=30${ownedOnly ? "&owned=true" : ""}`);
       const json = await res.json();
-      setResults(json.results ?? []);
+      setResults(extractResults(json));
       setOpen(true);
     } catch {
       setResults([]);
@@ -129,13 +139,24 @@ export function HeroSearchBar({ ownedOnly = false }: { ownedOnly?: boolean } = {
           <Search className="h-4 w-4 shrink-0 text-[#9CA3AF]" />
           <input
             ref={inputRef}
-            type="text"
+            type="search"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
             value={query}
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => results.length > 0 && setOpen(true)}
             placeholder={placeholder ? `Rechercher '${placeholder}'` : "Rechercher une carte…"}
-            className="flex-1 bg-transparent text-sm leading-none text-[var(--text-primary)] placeholder:text-[#9CA3AF] outline-none min-w-0"
+            // `fontSize: 16` prevents iOS Safari / WKWebView from auto-
+            // zooming the viewport on focus. Tailwind's `text-sm` (14px)
+            // triggered the zoom. Keep the visual size small by scaling
+            // the leading only on desktop where the rule is a no-op.
+            style={{ fontSize: 16 }}
+            className="flex-1 bg-transparent leading-none text-[var(--text-primary)] placeholder:text-[#9CA3AF] outline-none min-w-0"
           />
           {loading && (
             <div className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-[#9CA3AF] border-t-transparent" />

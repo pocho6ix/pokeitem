@@ -20,9 +20,18 @@ function parseVersion(value: unknown): CardVersion | undefined {
 // `SerieCartesClient` page can load the complete extension (some
 // serie go past 250 cards). Without a serie filter we keep the 100
 // cap for the home-search autocomplete.
-router.get("/search", async (req: Request, res: Response) => {
+//
+// When `owned=true` is passed the handler filters to cards the
+// authenticated user actually owns (UserCard rows) and attaches a
+// `qty` on each result. Mirrors the "ownedOnly" branch in the web
+// Next.js route.
+//
+// Response shape: `{ cards, results }` — both keys point to the same
+// array so either the web (`results`) or the mobile (`cards`) caller
+// works without adaptation.
+router.get("/search", async (req: Request & { userId?: string }, res: Response) => {
   try {
-    const { q, serieSlug, blocSlug, rarity, limit } = req.query;
+    const { q, serieSlug, blocSlug, rarity, limit, owned } = req.query;
     const requested = Number(limit);
     const hasSerieFilter = typeof serieSlug === "string";
     const take = Math.min(
@@ -30,6 +39,78 @@ router.get("/search", async (req: Request, res: Response) => {
       hasSerieFilter ? 1000 : 100,
     );
 
+    const cardSelect = {
+      id:                true,
+      number:            true,
+      name:              true,
+      rarity:            true,
+      imageUrl:          true,
+      price:             true,
+      priceFr:           true,
+      priceReverse:      true,
+      priceFirstEdition: true,
+      isSpecial:         true,
+      types:             true,
+      category:          true,
+      trainerType:       true,
+      energyType:        true,
+      serie: {
+        select: {
+          id:           true,
+          name:         true,
+          slug:         true,
+          abbreviation: true,
+          cardCount:    true,
+          bloc: { select: { slug: true, name: true, abbreviation: true } },
+        },
+      },
+    } satisfies Prisma.CardSelect;
+
+    // ── Owned-only mode: search only cards in the user's collection ──
+    if (owned === "true") {
+      const userId = (req as AuthRequest).userId;
+      if (!userId) {
+        return res.json({ cards: [], results: [] });
+      }
+      const userCards = await prisma.userCard.findMany({
+        where: {
+          userId,
+          card: {
+            ...(typeof q === "string" && q.trim()
+              ? {
+                  OR: [
+                    { name:   { contains: q, mode: "insensitive" } },
+                    { number: { contains: q, mode: "insensitive" } },
+                  ],
+                }
+              : {}),
+            ...(typeof serieSlug === "string" ? { serie: { slug: serieSlug } } : {}),
+            ...(typeof blocSlug  === "string" ? { serie: { bloc: { slug: blocSlug } } } : {}),
+            ...(typeof rarity    === "string" ? { rarity: rarity as Prisma.EnumCardRarityFilter["equals"] } : {}),
+          },
+        },
+        select: { cardId: true, card: { select: cardSelect } },
+        take: 200,
+      });
+      const grouped = new Map<string, { card: (typeof userCards)[number]["card"]; qty: number }>();
+      for (const uc of userCards) {
+        const existing = grouped.get(uc.cardId);
+        if (existing) existing.qty += 1;
+        else grouped.set(uc.cardId, { card: uc.card, qty: 1 });
+      }
+      const sorted = [...grouped.values()].sort((a, b) => {
+        const aImg = a.card.imageUrl ? 1 : 0;
+        const bImg = b.card.imageUrl ? 1 : 0;
+        if (aImg !== bImg) return bImg - aImg;
+        const ap = a.card.priceFr ?? a.card.price ?? 0;
+        const bp = b.card.priceFr ?? b.card.price ?? 0;
+        return bp - ap;
+      });
+      const ownedResults = sorted.slice(0, take).map(({ card, qty }) => ({ ...card, qty }));
+      return res.json({ cards: ownedResults, results: ownedResults });
+    }
+
+    // ── Default mode: search all cards ───────────────────────────────
     const where: Prisma.CardWhereInput = {};
     if (typeof q === "string" && q.trim()) {
       where.OR = [
@@ -45,44 +126,14 @@ router.get("/search", async (req: Request, res: Response) => {
       where.rarity = rarity as Prisma.EnumCardRarityFilter["equals"];
     }
 
-    // Full card shape — the classeur / collection grids on mobile need
-    // every price variant, type / category / trainerType / energyType
-    // to render rarity + type filters correctly. Matches the fields
-    // the web RSC `/collection/cartes/[blocSlug]/[serieSlug]` page
-    // plucks via Prisma.
     const cards = await prisma.card.findMany({
       where,
       take,
       orderBy: [{ serie: { releaseDate: "desc" } }, { number: "asc" }],
-      select: {
-        id:                true,
-        number:            true,
-        name:              true,
-        rarity:            true,
-        imageUrl:          true,
-        price:             true,
-        priceFr:           true,
-        priceReverse:      true,
-        priceFirstEdition: true,
-        isSpecial:         true,
-        types:             true,
-        category:          true,
-        trainerType:       true,
-        energyType:        true,
-        serie: {
-          select: {
-            id:           true,
-            name:         true,
-            slug:         true,
-            abbreviation: true,
-            cardCount:    true,
-            bloc: { select: { slug: true, name: true, abbreviation: true } },
-          },
-        },
-      },
+      select: cardSelect,
     });
 
-    res.json({ cards });
+    res.json({ cards, results: cards });
   } catch (error) {
     console.error("cards/search error:", error);
     res.status(500).json({ error: "Erreur lors de la recherche" });
