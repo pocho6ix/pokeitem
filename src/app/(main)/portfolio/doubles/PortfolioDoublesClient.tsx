@@ -9,6 +9,14 @@ import {
 } from "@/components/cards/BlocSerieDoublesList";
 import { fetchApi } from "@/lib/api";
 
+type DoublesResponse = {
+  blocs: DoublesBloc[];
+  totalDistinct: number;
+  totalSeries: number;
+  totalExtraCopies: number;
+  totalExtraValue: number;
+};
+
 export function PortfolioDoublesClient() {
   const [blocs, setBlocs] = useState<DoublesBloc[]>([]);
   const [totalDistinct, setTotalDistinct] = useState(0);
@@ -23,22 +31,13 @@ export function PortfolioDoublesClient() {
       try {
         const res = await fetchApi("/api/cards/doubles");
         if (!res.ok) throw new Error(String(res.status));
-        const data = await res.json();
+        const data: DoublesResponse = await res.json();
         if (cancelled) return;
-
-        const rows: Array<{
-          cardId: string;
-          version: string;
-          _count: { _all: number };
-        }> = data.doubles ?? [];
-        // TODO(backend): return joined card data (serie/bloc/price) so we
-        // can render the per-serie breakdown + value. For now, surface the
-        // raw totals so the page still loads.
-        setTotalDistinct(rows.length);
-        setTotalSeries(0);
-        setTotalExtraCopies(rows.reduce((sum, r) => sum + (r._count._all - 1), 0));
-        setTotalExtraValue(0);
-        setBlocs([]);
+        setBlocs(data.blocs ?? []);
+        setTotalDistinct(data.totalDistinct ?? 0);
+        setTotalSeries(data.totalSeries ?? 0);
+        setTotalExtraCopies(data.totalExtraCopies ?? 0);
+        setTotalExtraValue(data.totalExtraValue ?? 0);
       } catch (err) {
         console.error("portfolio/doubles load failed:", err);
       } finally {

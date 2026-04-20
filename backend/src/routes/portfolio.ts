@@ -285,13 +285,149 @@ router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── GET /api/portfolio/stats ─────────────────────────────────
+// Rich summary consumed by `PortfolioTiles` (home classeur) and
+// `PortfolioMiniStats` (KPI strip). Mirrors the shape of the web
+// Next.js route at `src/app/api/portfolio/stats/route.ts` so the
+// same UI runs in both builds without client-side adaptation.
 router.get("/stats", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const [itemCount, cardCount] = await Promise.all([
-      prisma.portfolioItem.count({ where: { userId: req.userId! } }),
-      prisma.userCard.count({ where: { userId: req.userId! } }),
-    ]);
-    res.json({ itemCount, cardCount });
+    const userId = req.userId!;
+    const rarity = (req.query.rarity as string | undefined) ?? null;
+
+    // Sealed items are excluded when a rarity filter is active.
+    const portfolioItems = rarity
+      ? []
+      : await prisma.portfolioItem.findMany({
+          where: { userId },
+          select: {
+            id: true,
+            quantity: true,
+            purchasePrice: true,
+            currentPrice: true,
+            item: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+                retailPrice: true,
+              },
+            },
+          },
+        });
+
+    const resolvedUnitPrice = portfolioItems.map((pi) =>
+      resolveItemPrice(pi.currentPrice, pi.item.retailPrice),
+    );
+
+    const totalItems = portfolioItems.reduce((sum, pi) => sum + pi.quantity, 0);
+    const itemsValue = portfolioItems.reduce(
+      (sum, pi, i) => sum + resolvedUnitPrice[i] * pi.quantity,
+      0,
+    );
+    const itemsInvested = portfolioItems.reduce(
+      (sum, pi) => sum + (pi.purchasePrice ?? 0) * pi.quantity,
+      0,
+    );
+
+    // Cards
+    const userCards = await prisma.userCard.findMany({
+      where: {
+        userId,
+        ...(rarity ? { card: { rarity: rarity as never } } : {}),
+      },
+      select: {
+        quantity: true,
+        version: true,
+        purchasePrice: true,
+        card: {
+          select: {
+            price: true,
+            priceFr: true,
+            priceReverse: true,
+          },
+        },
+      },
+    });
+
+    const cardsValue = userCards.reduce(
+      (sum, uc) => sum + getPriceForVersion(uc.card, uc.version) * uc.quantity,
+      0,
+    );
+    const cardsInvested = userCards.reduce(
+      (sum, uc) => sum + (uc.purchasePrice ?? 0) * uc.quantity,
+      0,
+    );
+
+    const cardCount = userCards.reduce((sum, uc) => sum + uc.quantity, 0);
+    const doublesCount = userCards.filter((uc) => uc.quantity > 1).length;
+    const doublesValue = userCards
+      .filter((uc) => uc.quantity > 1)
+      .reduce(
+        (sum, uc) =>
+          sum + getPriceForVersion(uc.card, uc.version) * (uc.quantity - 1),
+        0,
+      );
+
+    const wishlistCount = await prisma.cardWishlistItem.count({
+      where: { userId },
+    });
+
+    const totalValue = itemsValue + cardsValue;
+    const totalInvested = itemsInvested + cardsInvested;
+    const profitLoss = totalValue - totalInvested;
+    const profitLossPercent =
+      totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+
+    // Distribution by sealed-item type (web parity)
+    const distributionMap = new Map<string, { count: number; value: number }>();
+    portfolioItems.forEach((pi, i) => {
+      const type = pi.item.type;
+      const existing = distributionMap.get(type) ?? { count: 0, value: 0 };
+      existing.count += pi.quantity;
+      existing.value += resolvedUnitPrice[i] * pi.quantity;
+      distributionMap.set(type, existing);
+    });
+    const distributionByType = Array.from(distributionMap.entries()).map(
+      ([type, data]) => ({ type, ...data }),
+    );
+
+    // Top performers by ROI
+    const topPerformers = portfolioItems
+      .map((pi, i) => ({ pi, unitPrice: resolvedUnitPrice[i] }))
+      .filter(
+        ({ pi, unitPrice }) =>
+          pi.purchasePrice && pi.purchasePrice > 0 && unitPrice > 0,
+      )
+      .map(({ pi, unitPrice }) => ({
+        id: pi.id,
+        itemId: pi.item.id,
+        name: pi.item.name,
+        type: pi.item.type,
+        purchasePrice: pi.purchasePrice!,
+        currentPrice: unitPrice,
+        roi: ((unitPrice - pi.purchasePrice!) / pi.purchasePrice!) * 100,
+      }))
+      .sort((a, b) => b.roi - a.roi)
+      .slice(0, 10);
+
+    res.json({
+      // Legacy flat counts — kept for backward compat with the old simple shape
+      itemCount: totalItems,
+      cardCount,
+      // Rich shape expected by the PortfolioTiles / PortfolioMiniStats UI
+      totalItems,
+      totalValue: Math.round(totalValue * 100) / 100,
+      itemsValue: Math.round(itemsValue * 100) / 100,
+      totalInvested: Math.round(totalInvested * 100) / 100,
+      profitLoss: Math.round(profitLoss * 100) / 100,
+      profitLossPercent: Math.round(profitLossPercent * 100) / 100,
+      distributionByType,
+      topPerformers,
+      doublesCount,
+      cardValue: Math.round(cardsValue * 100) / 100,
+      doublesValue: Math.round(doublesValue * 100) / 100,
+      wishlistCount,
+    });
   } catch (error) {
     console.error("portfolio/stats error:", error);
     res.status(500).json({ error: "Erreur serveur" });

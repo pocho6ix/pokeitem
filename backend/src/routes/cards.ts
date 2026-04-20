@@ -291,15 +291,143 @@ router.get("/cards-by-rarity", requireAuth, async (req: AuthRequest, res: Respon
 });
 
 // ─── GET /api/cards/doubles ───────────────────────────────────
+// Returns the aggregated bloc/serie breakdown consumed by the mobile
+// `/portfolio/doubles` page — mirrors the web RSC that does the same
+// aggregation server-side with Prisma.
+//
+// Previous shape (`{ doubles: Array<groupBy row> }`) was broken: it
+// grouped by (cardId, version) and filtered on _count > 1, which is
+// always 0 because (userId, cardId, version) is unique in UserCard.
+// Doubles are tracked via `UserCard.quantity > 1`.
 router.get("/doubles", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const grouped = await prisma.userCard.groupBy({
-      by: ["cardId", "version"],
-      where:  { userId: req.userId! },
-      _count: { _all: true },
-      having: { cardId: { _count: { gt: 1 } } },
+    const userId = req.userId!;
+
+    const doubles = await prisma.userCard.findMany({
+      where: { userId, quantity: { gt: 1 } },
+      select: {
+        quantity: true,
+        version: true,
+        card: {
+          select: {
+            price: true,
+            priceFr: true,
+            priceReverse: true,
+            serie: {
+              select: {
+                slug: true,
+                name: true,
+                abbreviation: true,
+                imageUrl: true,
+                bloc: {
+                  select: {
+                    slug: true,
+                    name: true,
+                    abbreviation: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
-    res.json({ doubles: grouped });
+
+    interface SerieAgg {
+      bloc: { slug: string; name: string; abbreviation: string | null };
+      serie: {
+        slug: string;
+        name: string;
+        abbreviation: string | null;
+        imageUrl: string | null;
+      };
+      distinctDoubles: number;
+      extraCopies: number;
+      extraValue: number;
+    }
+    const bySerie = new Map<string, SerieAgg>();
+
+    let globalExtraCopies = 0;
+    let globalExtraValue = 0;
+
+    for (const uc of doubles) {
+      const extras = uc.quantity - 1;
+      const unit = getPriceForVersion(uc.card, uc.version);
+      const extraVal = unit * extras;
+
+      globalExtraCopies += extras;
+      globalExtraValue += extraVal;
+
+      const key = uc.card.serie.slug;
+      const agg = bySerie.get(key) ?? {
+        bloc: {
+          slug: uc.card.serie.bloc.slug,
+          name: uc.card.serie.bloc.name,
+          abbreviation: uc.card.serie.bloc.abbreviation ?? null,
+        },
+        serie: {
+          slug: uc.card.serie.slug,
+          name: uc.card.serie.name,
+          abbreviation: uc.card.serie.abbreviation ?? null,
+          imageUrl: uc.card.serie.imageUrl ?? null,
+        },
+        distinctDoubles: 0,
+        extraCopies: 0,
+        extraValue: 0,
+      };
+      agg.distinctDoubles += 1;
+      agg.extraCopies += extras;
+      agg.extraValue += extraVal;
+      bySerie.set(key, agg);
+    }
+
+    // Group by bloc preserving the order of insertion (mirrors web RSC
+    // which iterates over the static `BLOCS` list — close enough here).
+    const blocMap = new Map<
+      string,
+      {
+        blocSlug: string;
+        blocName: string;
+        blocAbbreviation: string | null;
+        series: Array<{
+          serieSlug: string;
+          serieName: string;
+          serieAbbreviation: string | null;
+          serieImageUrl: string | null;
+          distinctDoubles: number;
+          extraCopies: number;
+          extraValue: number;
+        }>;
+      }
+    >();
+    for (const agg of bySerie.values()) {
+      const bk = agg.bloc.slug;
+      if (!blocMap.has(bk)) {
+        blocMap.set(bk, {
+          blocSlug: agg.bloc.slug,
+          blocName: agg.bloc.name,
+          blocAbbreviation: agg.bloc.abbreviation,
+          series: [],
+        });
+      }
+      blocMap.get(bk)!.series.push({
+        serieSlug: agg.serie.slug,
+        serieName: agg.serie.name,
+        serieAbbreviation: agg.serie.abbreviation,
+        serieImageUrl: agg.serie.imageUrl,
+        distinctDoubles: agg.distinctDoubles,
+        extraCopies: agg.extraCopies,
+        extraValue: Math.round(agg.extraValue * 100) / 100,
+      });
+    }
+
+    res.json({
+      blocs: Array.from(blocMap.values()),
+      totalDistinct: doubles.length,
+      totalSeries: bySerie.size,
+      totalExtraCopies: globalExtraCopies,
+      totalExtraValue: Math.round(globalExtraValue * 100) / 100,
+    });
   } catch (error) {
     console.error("cards/doubles error:", error);
     res.status(500).json({ error: "Erreur serveur" });
