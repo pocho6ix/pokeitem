@@ -1,6 +1,22 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const TOKEN_STORAGE_KEY = "pokeitem_auth_token";
 
+/**
+ * True when the runtime is the Capacitor native shell. Also true in any
+ * build where `NEXT_PUBLIC_API_BASE_URL` was set (i.e. the static export
+ * build targeting the standalone backend).
+ *
+ * On plain web (Vercel / `next dev`) this is always `false`, and `fetchApi`
+ * degrades to a pass-through `fetch()` so we don't change any request
+ * semantics that might affect the existing PWA.
+ */
+function isExternalApiMode(): boolean {
+  if (API_BASE_URL) return true;
+  if (typeof window === "undefined") return false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return Boolean((window as any).Capacitor);
+}
+
 export function apiUrl(path: string): string {
   if (!path.startsWith("/")) path = "/" + path;
   if (!API_BASE_URL) return path;
@@ -26,10 +42,24 @@ export function setAuthToken(token: string | null): void {
   }
 }
 
+/**
+ * `fetchApi` behaves like `fetch` but rewrites `/api/…` paths to the
+ * external API base URL on Capacitor/mobile, and forwards the Bearer
+ * token from localStorage. On plain web it's a pass-through — same
+ * URL, same cookie-based credentials — so existing PWA behavior is
+ * unchanged.
+ */
 export async function fetchApi(
   path: string,
   options: RequestInit = {},
 ): Promise<Response> {
+  // Web / same-origin: identical to native fetch() — do NOT mutate
+  // headers, credentials, or the URL. This keeps the NextAuth cookie
+  // flow and every /api/* contract unchanged on Vercel.
+  if (!isExternalApiMode()) {
+    return fetch(path, options);
+  }
+
   const url = path.startsWith("http") ? path : apiUrl(path);
   const headers = new Headers(options.headers);
 
@@ -38,10 +68,9 @@ export async function fetchApi(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const shouldSendCookies = !API_BASE_URL;
   return fetch(url, {
     ...options,
     headers,
-    credentials: options.credentials ?? (shouldSendCookies ? "same-origin" : "include"),
+    credentials: options.credentials ?? "include",
   });
 }

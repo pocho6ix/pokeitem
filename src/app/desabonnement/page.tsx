@@ -1,16 +1,24 @@
-"use client";
-
-import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
-function Content() {
-  const searchParams = useSearchParams();
-  const success = searchParams.get("status") === "success";
+export const metadata: Metadata = {
+  title: "Désabonnement",
+  description: "Désabonnez-vous des communications email de PokeItem en un clic.",
+  robots: { index: false, follow: false },
+};
+
+interface PageProps {
+  searchParams: Promise<{ status?: string }>;
+}
+
+export default async function DesabonnementPage({ searchParams }: PageProps) {
+  const { status } = await searchParams;
+  const success = status === "success";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] px-4">
       <div className="w-full max-w-md rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-8 text-center shadow-xl">
+
         {success ? (
           <>
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10">
@@ -56,13 +64,5 @@ function Content() {
         </Link>
       </div>
     </div>
-  );
-}
-
-export default function DesabonnementPage() {
-  return (
-    <Suspense fallback={null}>
-      <Content />
-    </Suspense>
   );
 }

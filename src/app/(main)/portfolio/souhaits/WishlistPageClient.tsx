@@ -82,15 +82,25 @@ function cardPrice(card: WishlistCard): number {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export function WishlistPageClient() {
+/**
+ * Accepts an optional `items` prop so the web build (server-rendered, RSC
+ * provides the pre-fetched wishlist) and the Capacitor build (no SSR;
+ * hydrate from `/api/wishlist/cards`) can both share this component.
+ */
+export function WishlistPageClient({
+  items: initialItems,
+}: {
+  items?: WishlistItem[];
+} = {}) {
   const router = useRouter();
   const { remove, add } = useWishlistStore();
   const { toast } = useToast();
 
-  const [items, setItems] = useState<WishlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<WishlistItem[]>(initialItems ?? []);
+  const [loading, setLoading] = useState(initialItems == null);
 
   useEffect(() => {
+    if (initialItems) return; // Server-rendered list already provided.
     let cancelled = false;
     (async () => {
       try {
@@ -123,7 +133,7 @@ export function WishlistPageClient() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialItems]);
   const [tab, setTab] = useState<Tab>("by-serie");
   const [gridSize, setGridSize] = useState<GridSize>("medium");
   const [search, setSearch] = useState("");

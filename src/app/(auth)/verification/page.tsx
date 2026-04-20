@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetchApi } from "@/lib/api";
+import { signIn } from "next-auth/react";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -11,7 +11,7 @@ function VerificationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "signing-in" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -21,13 +21,9 @@ function VerificationContent() {
       return;
     }
 
-    fetchApi(`/api/auth/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
+    fetch(`/api/auth/verify?token=${token}`)
       .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
+        const data = await res.json();
         if (!res.ok) {
           setStatus("error");
           setErrorMessage(
@@ -37,7 +33,20 @@ function VerificationContent() {
           );
           return;
         }
-        setStatus("success");
+
+        // Auto-login with the one-time token
+        setStatus("signing-in");
+        const result = await signIn("credentials", {
+          autoLoginToken: data.autoLoginToken,
+          redirect: false,
+        });
+
+        if (result?.ok) {
+          router.replace("/");
+        } else {
+          // Fallback: verification worked but auto-login failed — send to login page
+          setStatus("success");
+        }
       })
       .catch(() => {
         setStatus("error");
@@ -47,7 +56,7 @@ function VerificationContent() {
 
   return (
     <>
-      {status === "loading" && (
+      {(status === "loading" || status === "signing-in") && (
         <>
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
             <svg className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none">
@@ -56,7 +65,7 @@ function VerificationContent() {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-[var(--text-primary)]">
-            Vérification en cours...
+            {status === "signing-in" ? "Connexion en cours..." : "Vérification en cours..."}
           </h2>
         </>
       )}

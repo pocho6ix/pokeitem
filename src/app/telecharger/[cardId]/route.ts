@@ -2,16 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildCardBlobKey } from "@/lib/seo/card-image";
 
-// With `output: 'export'`, Next needs `generateStaticParams` on dynamic
-// route handlers. Returning `[]` means no routes get pre-generated at
-// build time — the route is only usable on the Vercel web deployment
-// (where we keep SSR on).
-export function generateStaticParams() {
-  return [{ cardId: "_" }];
-}
-
-export const dynamicParams = false;
-
 /**
  * GET /telecharger/{cardId}
  *
