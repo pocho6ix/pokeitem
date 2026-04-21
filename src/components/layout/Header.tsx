@@ -7,6 +7,7 @@ import { Home, Package, ScanLine, BookOpen, User, LogOut, ArrowLeftRight, Settin
 import { useSession, signOut } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { getDefaultAvatar } from "@/lib/defaultAvatar";
+import { apiUrl } from "@/lib/api";
 import { CommandSearch } from "@/components/shared/CommandSearch";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
@@ -38,7 +39,11 @@ function getAvatarSrc(
   hasAvatar: boolean | undefined,
 ): string | null {
   if (!userId) return null;
-  if (hasAvatar) return `/api/avatar/${userId}`;
+  // apiUrl() keeps the path relative on web (/api/avatar/...) so NextAuth's
+  // same-origin cookie flow is unchanged, and rewrites it to the absolute
+  // api.pokeitem.fr URL on Capacitor where <img src> can't reach the
+  // static bundle's `capacitor://localhost` scheme.
+  if (hasAvatar) return apiUrl(`/api/avatar/${userId}`);
   return getDefaultAvatar(userId);
 }
 

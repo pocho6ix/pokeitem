@@ -1,8 +1,9 @@
 'use client'
 import useSWR from 'swr'
 import { useSession } from "@/lib/auth-context"
+import { fetchApi } from "@/lib/api"
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+const fetcher = (url: string) => fetchApi(url).then(r => r.json())
 
 export function useSubscription() {
   const { data: session } = useSession()

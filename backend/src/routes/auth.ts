@@ -287,7 +287,10 @@ router.post("/reset-password", async (req: Request, res: Response) => {
 });
 
 // ─── GET /api/auth/me ────────────────────────────────────────
-// Quick session check for mobile — returns current user or 401
+// Quick session check for mobile — returns current user or 401.
+// Exposes `hasAvatar: boolean` (not the raw image blob URL) so the iOS
+// client doesn't end up with a JWT containing base64 image data — and
+// so MobileTopBar's avatar flag is populated correctly after refresh.
 router.get("/me", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
@@ -311,7 +314,8 @@ router.get("/me", requireAuth, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "Utilisateur non trouvé" });
     }
 
-    res.json({ user });
+    const { image, ...rest } = user;
+    res.json({ user: { ...rest, hasAvatar: !!image } });
   } catch (error) {
     console.error("Auth me error:", error);
     res.status(500).json({ error: "Erreur serveur" });

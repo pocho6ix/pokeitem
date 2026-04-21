@@ -7,7 +7,7 @@ import { getDefaultAvatar } from "@/lib/defaultAvatar";
 import { ProfileTabs } from "@/components/profil/ProfileTabs";
 import { UsageBars } from "@/components/subscription/UsageBars";
 import { useSubscription } from "@/hooks/useSubscription";
-import { fetchApi } from "@/lib/api";
+import { fetchApi, apiUrl } from "@/lib/api";
 
 interface UserProfile {
   id: string;
@@ -157,11 +157,13 @@ export function ProfilForm() {
 
   const hasChanged = name.trim() !== (user.name ?? "");
 
-  // Avatar: use previewUrl during upload, then /api/avatar/[id] once saved, else default Pokémon
+  // Avatar: use previewUrl during upload, then /api/avatar/[id] once saved, else default Pokémon.
+  // apiUrl() rewrites the path to the absolute api.pokeitem.fr URL on Capacitor
+  // (where <img src> can't reach the static bundle's capacitor://localhost origin).
   const avatarSrc = previewUrl
     ? previewUrl
     : user.hasImage
-    ? `/api/avatar/${user.id}?t=${avatarTs}`
+    ? apiUrl(`/api/avatar/${user.id}?t=${avatarTs}`)
     : getDefaultAvatar(user.id);
 
   return (
