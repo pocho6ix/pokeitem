@@ -4,15 +4,15 @@ import { forwardRef, useEffect, useState } from 'react'
 import { CONTEST_CONFIG } from '@/config/contest'
 
 interface LeaderboardShareCardProps {
-  rank: number | null
-  totalParticipants: number
-  username: string
-  avatarUrl: string | null
-  totalPoints: number
-  cardCount: number
-  referralCount: number
-  questsCompleted: number
-  questsTotal: number
+  rank: number | null | undefined
+  totalParticipants: number | null | undefined
+  username: string | null | undefined
+  avatarUrl: string | null | undefined
+  totalPoints: number | null | undefined
+  cardCount: number | null | undefined
+  referralCount: number | null | undefined
+  questsCompleted: number | null | undefined
+  questsTotal: number | null | undefined
 }
 
 // ─── Medal circle ─────────────────────────────────────────────────────────────
@@ -54,10 +54,18 @@ function Medal({ rank }: { rank: number }) {
 
 export const LeaderboardShareCard = forwardRef<HTMLDivElement, LeaderboardShareCardProps>(
   function LeaderboardShareCard(props, ref) {
-    const {
-      rank, totalParticipants, username, avatarUrl, totalPoints,
-      cardCount, referralCount, questsCompleted, questsTotal,
-    } = props
+    // Defensive coercion — the mobile backend has historically drifted from
+    // the flat shape this component expects, and an undefined numeric here
+    // crashes startup via `.toLocaleString()`.
+    const rank              = props.rank              ?? null
+    const totalParticipants = props.totalParticipants ?? 0
+    const username          = props.username          ?? 'Dresseur'
+    const avatarUrl         = props.avatarUrl         ?? null
+    const totalPoints       = props.totalPoints       ?? 0
+    const cardCount         = props.cardCount         ?? 0
+    const referralCount     = props.referralCount     ?? 0
+    const questsCompleted   = props.questsCompleted   ?? 0
+    const questsTotal       = props.questsTotal       ?? 0
 
     // Pre-fetch avatar as data URL so html2canvas can render it
     // Use the avatar endpoint directly (same-origin, handles legacy base64 + Blob URLs)

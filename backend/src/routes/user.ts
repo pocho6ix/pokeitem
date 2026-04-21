@@ -2,7 +2,7 @@ import { Router, Response } from "express";
 import Stripe from "stripe";
 import { prisma } from "../lib/prisma";
 import { AuthRequest, requireAuth } from "../middleware/auth";
-import { QUEST_MAP } from "../lib/quests";
+import { QUEST_MAP, ACTIVE_QUESTS } from "../lib/quests";
 import { completeQuest } from "../lib/points";
 
 const router = Router();
@@ -147,18 +147,41 @@ router.delete("/delete", requireAuth, async (req: AuthRequest, res: Response) =>
 });
 
 // ─── GET /api/user/share-data ─────────────────────────────────
-// Sharing settings live on `ClasseurShare` (1:1 with User, optional).
+// Shape mirrors the Next.js web route at `src/app/api/user/share-data/route.ts`
+// — the mobile client's <LeaderboardShareCard> reads flat fields (cardCount,
+// totalPoints, …) off the response, so any deviation crashes the hydration
+// with `undefined.toLocaleString is not a function`.
 router.get("/share-data", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await prisma.user.findUnique({
-      where:  { id: req.userId! },
-      select: {
-        username:      true,
-        image:         true,
-        classeurShare: true,
-      },
+    const userId = req.userId!;
+
+    const [points, cardCount, referralCount, userQuests, me] = await Promise.all([
+      prisma.userPoints.findUnique({ where: { userId } }),
+      prisma.userCard.count({ where: { userId } }),
+      prisma.user.count({ where: { referredById: userId, emailVerified: { not: null } } }),
+      prisma.userQuest.findMany({ where: { userId, completed: true } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { name: true, username: true, image: true } }),
+    ]);
+
+    const total = points?.total ?? 0;
+    const [rank, totalParticipants] = total > 0
+      ? await Promise.all([
+          prisma.userPoints.count({ where: { total: { gt: total } } }).then((n) => n + 1),
+          prisma.userPoints.count({ where: { total: { gt: 0 } } }),
+        ])
+      : [null, await prisma.userPoints.count({ where: { total: { gt: 0 } } })];
+
+    res.json({
+      rank,
+      totalParticipants,
+      username: me?.name ?? me?.username ?? "Dresseur",
+      avatar: me ? `/api/avatar/${userId}` : null,
+      totalPoints: total,
+      cardCount,
+      referralCount,
+      questsCompleted: userQuests.length,
+      questsTotal: ACTIVE_QUESTS.length,
     });
-    res.json({ user });
   } catch (error) {
     console.error("user/share-data error:", error);
     res.status(500).json({ error: "Erreur serveur" });
