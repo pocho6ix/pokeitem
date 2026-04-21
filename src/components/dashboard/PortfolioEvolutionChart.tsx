@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ProButton } from "@/components/subscription/ProButton";
+import { fetchApi } from "@/lib/api";
 import {
   AreaChart,
   Area,
@@ -71,7 +72,7 @@ export function PortfolioEvolutionChart() {
     setLoading(true);
     try {
       const url = `/api/portfolio/chart?period=${p}${serie ? `&serie=${serie}` : ""}`;
-      const res = await fetch(url);
+      const res = await fetchApi(url);
       if (res.ok) {
         const data = await res.json();
         setChartData(data.data ?? []);

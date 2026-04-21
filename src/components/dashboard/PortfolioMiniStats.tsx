@@ -8,6 +8,7 @@ import { CollectionValue } from "@/components/collection/CollectionValue";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ProButton } from "@/components/subscription/ProButton";
 import { useHideValues } from "@/components/ui/HideValuesContext";
+import { fetchApi } from "@/lib/api";
 
 interface Stats {
   totalValue: number;
@@ -40,7 +41,7 @@ export function PortfolioMiniStats() {
     setLoading(true);
     const timer = setTimeout(() => {
       const url = rarity ? `/api/portfolio/stats?rarity=${rarity}` : "/api/portfolio/stats";
-      fetch(url)
+      fetchApi(url)
         .then((r) => r.ok ? r.json() : null)
         .then((d) => { if (d) setStats(d); })
         .finally(() => setLoading(false));
