@@ -6,6 +6,7 @@ import { useShareCard } from '@/hooks/useShareCard'
 import { LeaderboardShareCard } from '@/components/share/LeaderboardShareCard'
 import { DailyLoginQuest } from '@/components/quests/DailyLoginQuest'
 import { fetchApi } from "@/lib/api";
+import { haptics } from "@/lib/haptics";
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
 
@@ -170,6 +171,7 @@ function ShareQuestRow({ quest, shareData, shareCardRef }: ShareQuestRowProps) {
     setCompleting(true)
     try {
       await fetchApi(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
+      void haptics.tap()
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)
@@ -238,6 +240,7 @@ function InstallPwaQuestRow({ quest }: { quest: QuestState }) {
     setCompleting(true)
     try {
       await fetchApi('/api/user/quests/install_pwa/complete', { method: 'POST' })
+      void haptics.tap()
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)
@@ -379,6 +382,7 @@ function QuestRow({ quest }: { quest: QuestState }) {
     setCompleting(true)
     try {
       await fetchApi(`/api/user/quests/${quest.id}/complete`, { method: 'POST' })
+      void haptics.tap()
       await mutate('/api/user/points')
     } finally {
       setCompleting(false)

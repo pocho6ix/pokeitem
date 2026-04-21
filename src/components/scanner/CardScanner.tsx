@@ -18,6 +18,8 @@ import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import type { CardCandidate, IdentifyResponse } from "@/types/scanner";
 import { fetchApi } from "@/lib/api";
+import { Capacitor } from "@capacitor/core";
+import { haptics } from "@/lib/haptics";
 
 const CardDetailModal = lazy(() =>
   import("@/components/cards/CardDetailModal").then((m) => ({ default: m.CardDetailModal }))
@@ -163,6 +165,12 @@ function GoldViewfinder() {
   );
 }
 
+// Native Capacitor path: use the system camera UI (full-screen native
+// camera + review step) instead of wiring getUserMedia into a <video>.
+// Same identify pipeline once we have the base64 image.
+const IS_NATIVE =
+  typeof window !== "undefined" && Capacitor.isNativePlatform();
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CardScanner() {
@@ -266,6 +274,9 @@ export function CardScanner() {
     }
     setPermissionDenied(false);
     setCameraError(null);
+    // Native iOS uses the system camera UI (Camera.getPhoto) per-capture,
+    // so we skip the getUserMedia preview stream entirely.
+    if (IS_NATIVE) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -345,7 +356,28 @@ export function CardScanner() {
     }
   }, [showPaywall, refreshSubscription]);
 
-  const capturePhoto = useCallback(() => {
+  const capturePhoto = useCallback(async () => {
+    if (IS_NATIVE) {
+      try {
+        const { Camera, CameraSource, CameraResultType } = await import("@capacitor/camera");
+        const photo = await Camera.getPhoto({
+          source: CameraSource.Camera,
+          resultType: CameraResultType.Base64,
+          quality: 85,
+          correctOrientation: true,
+        });
+        if (!photo.base64String) return;
+        const dataUrl = `data:image/${photo.format || "jpeg"};base64,${photo.base64String}`;
+        setVfFeedback("success");
+        setError(null);
+        setTimeout(() => setVfFeedback("idle"), 300);
+        setIdentifyPhase("identifying");
+        void identify(dataUrl);
+      } catch {
+        // User cancelled — no-op
+      }
+      return;
+    }
     const video  = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
@@ -361,6 +393,29 @@ export function CardScanner() {
     setIdentifyPhase("identifying");
     void identify(dataUrl);
     // Camera stays running for the next scan
+  }, [identify]);
+
+  const pickFromGallery = useCallback(async () => {
+    if (IS_NATIVE) {
+      try {
+        const { Camera, CameraSource, CameraResultType } = await import("@capacitor/camera");
+        const photo = await Camera.getPhoto({
+          source: CameraSource.Photos,
+          resultType: CameraResultType.Base64,
+          quality: 85,
+          correctOrientation: true,
+        });
+        if (!photo.base64String) return;
+        const dataUrl = `data:image/${photo.format || "jpeg"};base64,${photo.base64String}`;
+        setError(null);
+        setIdentifyPhase("identifying");
+        void identify(dataUrl);
+      } catch {
+        // User cancelled — no-op
+      }
+      return;
+    }
+    fileInputRef.current?.click();
   }, [identify]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,6 +462,7 @@ export function CardScanner() {
         }),
       });
       if (res.ok) {
+        void haptics.tap();
         recordCorrection(card, "auto");
         setSuccessBanner({
           text: `${card.card.name} ajoutée !`,
@@ -438,6 +494,7 @@ export function CardScanner() {
         }),
       });
       if (res.ok) {
+        void haptics.tap();
         recordCorrection(card, source);
         setSuccessBanner({
           text: `${card.card.name} ajoutée !`,
@@ -818,7 +875,7 @@ export function CardScanner() {
             </p>
           </div>
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => void pickFromGallery()}
             className="btn-gold w-full max-w-xs rounded-2xl py-4 text-sm font-semibold text-black active:scale-[0.98] transition-all"
           >
             Importer depuis la galerie
@@ -889,7 +946,7 @@ export function CardScanner() {
 
         {/* Gallery import */}
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => void pickFromGallery()}
           className="flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm text-white"
           style={{ background: "rgba(0,0,0,0.45)" }}
         >

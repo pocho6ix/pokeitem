@@ -13,6 +13,7 @@ import { useWishlistStore, useIsInWishlist } from "@/stores/wishlistStore";
 import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 import { fetchApi } from "@/lib/api";
+import { haptics } from "@/lib/haptics";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -297,6 +298,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           }),
         });
         if (!res.ok) throw new Error();
+        void haptics.tap();
         setAddSuccess(true);
         setIsOwned(true);
         // Auto-remove from wishlist on "Je l'ai" — owning it means you no

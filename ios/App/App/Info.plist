@@ -24,6 +24,12 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Pokeitem utilise l’appareil photo pour scanner vos cartes Pokémon et les ajouter automatiquement à votre collection.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pokeitem accède à vos photos pour importer l’image d’une carte depuis votre galerie.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Pokeitem enregistre vos photos de cartes dans la galerie.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

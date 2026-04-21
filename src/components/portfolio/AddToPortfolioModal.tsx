@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/utils";
 import { ITEM_TYPE_LABELS } from "@/lib/constants";
 import { ItemImage } from "@/components/shared/ItemImage";
 import { fetchApi } from "@/lib/api";
+import { haptics } from "@/lib/haptics";
 
 const TYPE_SLUG: Record<string, string> = {
   BOOSTER: "booster", DUOPACK: "duopack", BLISTER: "blister",
@@ -88,6 +89,7 @@ export function AddToPortfolioModal({
       }
 
       setSuccess(true);
+      void haptics.tap();
       onSuccess?.();
       setTimeout(() => {
         onClose();
