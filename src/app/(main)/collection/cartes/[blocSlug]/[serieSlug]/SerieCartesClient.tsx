@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import { BLOCS } from "@/data/blocs";
 import { SERIES } from "@/data/series";
@@ -112,26 +111,14 @@ export function SerieCartesClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-4">
-        <BackButton />
+      {/* iOS-only layout: the back button doubles as the current-section
+          label (POP 4 / Équilibre Parfait / …), so we drop the breadcrumb
+          row entirely. This file is imported only from the Capacitor
+          overrides — the web page renders its own header in its server
+          page.tsx. */}
+      <div className="mb-6">
+        <BackButton label={serieStatic.name} />
       </div>
-
-      <nav aria-label="Fil d'Ariane" className="mb-6 text-sm text-[var(--text-secondary)]">
-        <ol className="flex items-center gap-1.5">
-          <li>
-            <Link
-              href="/collection/cartes"
-              className="hover:text-blue-600 dark:hover:text-blue-400"
-            >
-              Collection
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li className="truncate font-medium text-[var(--text-primary)]">
-            {serieStatic.name}
-          </li>
-        </ol>
-      </nav>
 
       <div className="mb-8 flex items-center gap-4">
         {serieStatic.imageUrl && (
