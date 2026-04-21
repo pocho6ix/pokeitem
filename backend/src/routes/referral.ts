@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { AuthRequest, requireAuth } from "../middleware/auth";
-import { onReferralEmailVerified, getLeaderboard } from "../lib/referral";
+import { onReferralEmailVerified, getLeaderboard, getReferralStats } from "../lib/referral";
 
 const router = Router();
 
@@ -61,12 +61,13 @@ router.post("/apply", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── GET /api/referral/stats ──────────────────────────────────
+// Shape mirrors `src/app/api/referral/stats/route.ts` (web) so the iOS
+// ReferralBlock / QuestsBlock read `referralCode` / `referralLink` /
+// `validatedCount` / `pendingCount` exactly like on the web.
 router.get("/stats", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const count = await prisma.user.count({
-      where: { referredById: req.userId! },
-    });
-    res.json({ referrals: count });
+    const stats = await getReferralStats(req.userId!);
+    res.json(stats);
   } catch (error) {
     console.error("referral/stats error:", error);
     res.status(500).json({ error: "Erreur serveur" });

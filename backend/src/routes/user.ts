@@ -54,14 +54,55 @@ router.put("/username", requireAuth, async (req: AuthRequest, res: Response) => 
 });
 
 // ─── GET /api/user/points ─────────────────────────────────────
-// Points live on the `UserPoints` side-table (one row per user).
+// Shape mirrors `src/app/api/user/points/route.ts` (web) so the iOS
+// QuestsBlock reads `totalPoints` / `rank` / `quests` / `pointsHistory`
+// exactly like on the web. Quest list is materialised from ACTIVE_QUESTS
+// + the user's progress/completion side-tables.
 router.get("/points", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const row = await prisma.userPoints.findUnique({
-      where:  { userId: req.userId! },
-      select: { total: true },
+    const userId = req.userId!;
+
+    const [userPoints, userQuestRows, pointsHistory] = await Promise.all([
+      prisma.userPoints.findUnique({ where: { userId } }),
+      prisma.userQuest.findMany({
+        where: { userId },
+        select: { questId: true, completed: true, progress: true, completedAt: true },
+      }),
+      prisma.pointEvent.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: { points: true, source: true, questId: true, createdAt: true },
+      }),
+    ]);
+
+    const totalPoints = userPoints?.total ?? 0;
+
+    const rank = totalPoints > 0
+      ? (await prisma.userPoints.count({ where: { total: { gt: totalPoints } } })) + 1
+      : null;
+
+    const questStateMap = Object.fromEntries(userQuestRows.map((q) => [q.questId, q]));
+
+    const quests = ACTIVE_QUESTS.map((q) => {
+      const state = questStateMap[q.id];
+      return {
+        id: q.id,
+        title: q.title,
+        description: q.description,
+        points: q.points,
+        icon: q.icon,
+        type: q.type,
+        target: q.target,
+        actionUrl: q.actionUrl,
+        actionLabel: q.actionLabel,
+        completed: state?.completed ?? false,
+        completedAt: state?.completedAt ?? null,
+        progress: state?.progress ?? 0,
+      };
     });
-    res.json({ points: row?.total ?? 0 });
+
+    res.json({ totalPoints, rank, quests, pointsHistory });
   } catch (error) {
     console.error("user/points error:", error);
     res.status(500).json({ error: "Erreur serveur" });

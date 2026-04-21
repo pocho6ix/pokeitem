@@ -1,41 +1,23 @@
-import { Router, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
+import { Router, Response } from "express";
+import { AuthRequest, requireAuth } from "../middleware/auth";
+import { getPointsLeaderboard } from "../lib/points";
 
 const router = Router();
 
 // ─── GET /api/leaderboard ─────────────────────────────────────
-// Top users by total points. Public endpoint — queries `UserPoints` directly
-// (faster than joining through User) and hydrates the user once we have the
-// winners. Sharing consent is on `ClasseurShare`; we only surface users who
-// (a) aren't soft-deleted and (b) have an active public/link share.
-router.get("/", async (req: Request, res: Response) => {
+// Shape mirrors `src/app/api/leaderboard/route.ts` (web) so the iOS
+// ReferralBlock reads `rankings` / `currentUser` / `totalParticipants` /
+// `hasMore` exactly like on the web. Auth-required because we need the
+// caller's userId to compute `isCurrentUser` and the "me" entry.
+router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { limit } = req.query;
-    const take = Math.min(Number(limit) || 50, 200);
+    const userId = req.userId!;
+    const skip = Math.max(0, Number(req.query.skip) || 0);
+    const take = Math.min(50, Math.max(1, Number(req.query.take) || 20));
+    const search = (req.query.q as string) ?? "";
 
-    const rows = await prisma.userPoints.findMany({
-      where: {
-        user: {
-          deletedAt:     null,
-          classeurShare: { isActive: true, visibility: { in: ["public", "link"] } },
-        },
-      },
-      orderBy: { total: "desc" },
-      take,
-      select: {
-        total: true,
-        user:  { select: { id: true, username: true, image: true } },
-      },
-    });
-
-    const leaderboard = rows.map((r) => ({
-      id:       r.user.id,
-      username: r.user.username,
-      image:    r.user.image,
-      points:   r.total,
-    }));
-
-    res.json({ leaderboard });
+    const leaderboard = await getPointsLeaderboard(userId, { skip, take, search });
+    res.json(leaderboard);
   } catch (error) {
     console.error("leaderboard error:", error);
     res.status(500).json({ error: "Erreur serveur" });
