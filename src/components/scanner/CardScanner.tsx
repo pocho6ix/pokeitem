@@ -844,8 +844,14 @@ export function CardScanner() {
 
   return (
     <Screen style={{ background: "#0A0E14" } as React.CSSProperties}>
-      {/* Camera feed */}
-      {!showFallback && (
+      {/* Camera feed — web only.
+          On iOS WKWebView an empty <video> is promoted to its own GPU
+          compositor layer that paints OVER the non-composited overlays
+          (viewfinder, top bar, capture button), even though CSS stacking
+          order says otherwise. Result: full black screen with no UI.
+          The native build uses Camera.getPhoto() (system camera modal)
+          per-capture, so we don't need the inline preview element. */}
+      {!showFallback && !IS_NATIVE && (
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover"
@@ -978,7 +984,9 @@ export function CardScanner() {
             className="mt-4 text-sm"
             style={{ color: "#A0A0A0", fontSize: 14 }}
           >
-            Placez votre carte dans le cadre
+            {IS_NATIVE
+              ? "Appuyez pour prendre une photo"
+              : "Placez votre carte dans le cadre"}
           </p>
         </div>
       )}
