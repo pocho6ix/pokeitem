@@ -16,6 +16,10 @@ const upload = multer({
 });
 
 // ─── GET /api/profil ──────────────────────────────────────────
+// Shape mirrors `src/app/api/profil/route.ts` (web) — returns the user
+// object flat at the top level. The iOS ProfilForm reads `data.id`
+// directly, so a `{ profil: {...} }` wrapper makes `user.id` undefined
+// and the page crashes on `getDefaultAvatar(undefined)`.
 router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
@@ -32,7 +36,7 @@ router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
       },
     });
     if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
-    res.json({ profil: user });
+    res.json(user);
   } catch (error) {
     console.error("profil GET error:", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -40,15 +44,16 @@ router.get("/", requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ─── PUT /api/profil ──────────────────────────────────────────
+// Same flat shape as the web route.
 router.put("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const { name } = req.body;
     const user = await prisma.user.update({
       where:  { id: req.userId! },
       data:   { name: name ?? undefined },
-      select: { id: true, name: true },
+      select: { id: true, name: true, email: true, image: true },
     });
-    res.json({ profil: user });
+    res.json(user);
   } catch (error) {
     console.error("profil PUT error:", error);
     res.status(500).json({ error: "Erreur serveur" });
