@@ -101,7 +101,7 @@ export function InscriptionForm() {
       <div className="space-y-4">
         <Card>
           <CardHeader className="items-center space-y-4 pb-2">
-            <Logo size="lg" />
+            <Logo variant="long" />
           </CardHeader>
           <CardContent className="space-y-4 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -137,7 +137,7 @@ export function InscriptionForm() {
   return (
     <Card>
       <CardHeader className="items-center space-y-4 pb-2">
-        <Logo size="lg" />
+        <Logo variant="long" />
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           Cr&eacute;er un compte PokeItem
         </h1>

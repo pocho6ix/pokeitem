@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
     return (
       <Card>
         <CardHeader className="items-center space-y-4 pb-2">
-          <Logo size="lg" />
+          <Logo variant="long" />
         </CardHeader>
         <CardContent className="space-y-4 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
   return (
     <Card>
       <CardHeader className="items-center space-y-4 pb-2">
-        <Logo size="lg" />
+        <Logo variant="long" />
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Mot de passe oublié</h1>
         <p className="text-sm text-center text-[var(--text-secondary)]">
           Entrez votre email pour recevoir un lien de réinitialisation.

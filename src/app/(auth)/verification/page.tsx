@@ -118,7 +118,7 @@ export default function VerificationPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center space-y-4 pb-2">
-          <Logo size="lg" />
+          <Logo variant="long" />
         </CardHeader>
         <CardContent className="space-y-4 text-center">
           <Suspense

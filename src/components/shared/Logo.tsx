@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 interface LogoProps {
   className?: string;
   size?: "sm" | "md" | "lg";
-  /** "icon" = logo only | "full" = logo + POKEITEM wordmark | "text" = wordmark only */
-  variant?: "full" | "icon" | "text";
+  /** "icon" = logo only | "full" = logo + POKEITEM wordmark | "text" = wordmark only | "long" = horizontal logo image */
+  variant?: "full" | "icon" | "text" | "long";
 }
 
 // ─── Size presets ─────────────────────────────────────────────────────────────
@@ -29,6 +29,21 @@ const TEXT_SIZES = {
 
 export function Logo({ className, size = "md", variant = "full" }: LogoProps) {
   const { px, cls } = ICON_SIZES[size];
+
+  if (variant === "long") {
+    return (
+      <Link href="/" aria-label="PokeItem" className={cn("flex justify-center", className)}>
+        <Image
+          src="/logo-long.png"
+          alt="PokeItem"
+          width={240}
+          height={60}
+          className="object-contain"
+          priority
+        />
+      </Link>
+    );
+  }
 
   return (
     <Link href="/" className={cn("flex items-center gap-2 shrink-0", className)}>

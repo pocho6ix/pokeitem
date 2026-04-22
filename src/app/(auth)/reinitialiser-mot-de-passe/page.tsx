@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
   return (
     <Card>
       <CardHeader className="items-center space-y-4 pb-2">
-        <Logo size="lg" />
+        <Logo variant="long" />
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Nouveau mot de passe</h1>
       </CardHeader>
       <Suspense fallback={<div className="p-6 text-center text-sm text-[var(--text-secondary)]">Chargement...</div>}>
