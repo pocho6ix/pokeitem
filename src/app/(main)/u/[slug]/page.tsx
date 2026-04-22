@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPriceForVersion } from "@/lib/display-price";
 import { PublicProfileClient } from "./PublicProfileClient";
+
+// Public profiles are intentionally excluded from the sitemap AND marked
+// noindex/nofollow: product decision to keep user profiles out of search
+// engines until we ship a proper opt-in UX. The pages remain reachable via
+// direct URL (no 404, no auth wall) — only discoverability is suppressed.
+export const metadata: Metadata = {
+  title:   "Profil Dresseur",
+  robots:  { index: false, follow: false },
+};
 
 /**
  * Lightweight server-side loader for a public dresseur profile. Only pulls
