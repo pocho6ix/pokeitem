@@ -48,14 +48,19 @@ export function generateProductJsonLd(item: Item) {
 }
 
 // ---------------------------------------------------------------------------
-// Card JSON-LD (Schema.org/Product, NO offers)
+// Card JSON-LD (Schema.org/CreativeWork)
 //
-// Emitted from /carte/:cardId. app.pokeitem.fr is a collection-management
-// app, not a store — we don't fulfil orders. Displayed prices are market
-// indicators (Cardmarket) shown for reference, so we deliberately omit
-// `offers` / `availability`. Keeping the @type as Product (rather than
-// Thing) gives us Google's image-rich snippet in SERP without falsely
-// advertising stock.
+// Emitted from /carte/:cardId. We used to type these as Product, but Google
+// Rich Results rejects Product entries that don't carry `offers` /
+// `aggregateRating` / `review` (hard error, not a warning). Since PokeItem
+// is a collection-management app — not a marketplace — we can't honestly
+// publish `offers`. CreativeWork is also a better semantic fit: a Pokémon
+// card is an illustrated work, not a commercial product. Field mapping:
+//
+//   sku       → identifier        (CreativeWork's equivalent)
+//   brand     → publisher          ("The Pokémon Company" — the issuer)
+//   category  → genre              (CreativeWork classification)
+//   (new)     → isPartOf           (CreativeWorkSeries for the extension)
 // ---------------------------------------------------------------------------
 
 export interface CardJsonLdInput {
@@ -81,15 +86,19 @@ export function generateCardJsonLd(
 ) {
   return {
     "@context":   "https://schema.org",
-    "@type":      "Product",
+    "@type":      "CreativeWork",
     name:         `${card.name}${card.number ? ` n°${card.number}` : ""}`.trim(),
     description:  `Carte Pokémon ${card.name} de l'extension ${serie.name}${card.rarity ? ` — ${card.rarity}` : ""}.`,
     image:        card.imageUrl ?? undefined,
-    sku:          card.id,
-    brand:        { "@type": "Brand", name: "Pokémon TCG" },
-    category:     `Carte Pokémon TCG / ${bloc.name} / ${serie.name}`,
+    identifier:   card.id,
+    publisher:    { "@type": "Organization", name: "The Pokémon Company" },
+    genre:        `Carte Pokémon TCG / ${bloc.name} / ${serie.name}`,
     url:          `${BASE_URL}/carte/${card.id}`,
-    // No `offers` / `availability` by design — see module-level note.
+    isPartOf: {
+      "@type":  "CreativeWorkSeries",
+      name:     serie.name,
+      position: card.number,
+    },
   };
 }
 
