@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useTransition, useRef } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { CARD_RARITY_LABELS, CARD_RARITY_IMAGE, CardCondition, CARD_LANGUAGES, getCardRarityImage } from "@/types/card";
 import { isSpecialCard } from "@/lib/pokemon/card-variants";
@@ -14,6 +15,7 @@ import { getCardImageAlt } from "@/lib/seo/card-image";
 import { FirstEditionStamp } from "./FirstEditionStamp";
 import { fetchApi } from "@/lib/api";
 import { haptics } from "@/lib/haptics";
+import { isNative } from "@/lib/native";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -162,6 +164,9 @@ function formatEur(value: number | null | undefined): string {
 
 export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCard, onAdded }: Props) {
   const isInline = variant === "inline";
+  // Hide the "Voir la fiche détaillée" CTA inside the native Capacitor build —
+  // the /carte/[id] SEO page is a web-only surface, native app stays on the modal.
+  const isWeb = !isNative();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const [card, setCard] = useState<CardDetail | null>(null);
@@ -593,6 +598,21 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
           />
         )}
       </div>
+
+      {/* ── "Voir la fiche détaillée" CTA (web only) ─────────────────
+          Internal link to the /carte/[id] SEO page. Hidden on the
+          Capacitor native build where that route isn't part of the
+          shipped surface. Secondary styling on purpose — the primary
+          gold CTA (`#E7BA76`) is reserved for "Ajouter à ma collection". */}
+      {isWeb && (
+        <Link
+          href={`/carte/${cardId}`}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-secondary)] px-4 py-3 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card)]"
+        >
+          Voir la fiche détaillée
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      )}
 
       {/* ── Market prices table ───────────────────────────────────── */}
       <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-default)] p-4">
