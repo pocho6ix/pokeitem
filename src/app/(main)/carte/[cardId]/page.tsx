@@ -8,8 +8,12 @@ import { CARD_RARITY_LABELS, CARD_RARITY_SYMBOL, CardRarity } from "@/types/card
 import { CARD_VERSION_LABELS, CardVersion } from "@/data/card-versions";
 import { BackButton } from "@/components/ui/BackButton";
 import { RemoveCardButton } from "@/components/cards/RemoveCardButton";
+import { JsonLd } from "@/components/JsonLd";
 import { getCardImageAlt } from "@/lib/seo/card-image";
+import { generateCardJsonLd } from "@/lib/seo/structured-data";
 import { ExternalLink } from "lucide-react";
+
+const SITE_URL = "https://app.pokeitem.fr";
 
 interface PageProps {
   params: Promise<{ cardId: string }>;
@@ -57,16 +61,70 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { cardId } = await params;
   const card = await prisma.card.findUnique({
     where: { id: cardId },
-    select: { name: true, number: true, serie: { select: { name: true } } },
+    select: {
+      name:     true,
+      number:   true,
+      rarity:   true,
+      imageUrl: true,
+      priceFr:  true,
+      price:    true,
+      serie:    { select: { name: true } },
+    },
   });
   if (!card) return { title: "Carte introuvable" };
+
   const title = `${card.name} ${card.number} — ${card.serie.name}`;
-  const description = `Découvrez la carte Pokémon ${card.name} (${card.serie.name} n°${card.number}) : prix Cardmarket en temps réel, rareté, versions et détails sur PokeItem.`;
+
+  // Format the market reference price in French (e.g. "12,50 €"). The price
+  // is *indicative* — the app is a collection manager, not a marketplace.
+  // Mentioning "cote marché" + "à titre indicatif" in the description keeps
+  // SERP users from misinterpreting it as a buy-now offer, and earns us
+  // longue-traîne queries like "carte X cote".
+  const priceValue = card.priceFr ?? card.price ?? null;
+  const priceStr =
+    priceValue != null
+      ? priceValue.toLocaleString("fr-FR", {
+          style: "currency",
+          currency: "EUR",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : null;
+  const rarityLabel = card.rarity
+    ? CARD_RARITY_LABELS[card.rarity as CardRarity]
+    : null;
+  const description = priceStr
+    ? `Carte Pokémon ${card.name} (${card.serie.name}) — cote marché ${priceStr} à titre indicatif. Illustration, rareté, variantes et évolution de prix.`
+    : `Carte Pokémon ${card.name} (${card.serie.name}) — ${rarityLabel ?? "variante"}. Illustration, prix marché et ajout à votre collection.`;
+
+  const ogImages = card.imageUrl
+    ? [
+        {
+          url:    card.imageUrl,
+          alt:    getCardImageAlt(card, card.serie),
+          width:  734,
+          height: 1024,
+        },
+      ]
+    : undefined;
+
   return {
     title,
     description,
-    openGraph: { title, description, type: "website" },
-    twitter: { card: "summary_large_image", title, description },
+    alternates: { canonical: `${SITE_URL}/carte/${cardId}` },
+    openGraph: {
+      title,
+      description,
+      type:   "website",
+      url:    `${SITE_URL}/carte/${cardId}`,
+      images: ogImages,
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title,
+      description,
+      images:      card.imageUrl ? [card.imageUrl] : undefined,
+    },
   };
 }
 
@@ -136,8 +194,22 @@ export default async function CardDetailPage({ params }: PageProps) {
 
   const totalCards = card.serie.cardCount;
 
+  const cardJsonLd = generateCardJsonLd(
+    {
+      id:       card.id,
+      name:     card.name,
+      number:   card.number,
+      rarity:   CARD_RARITY_LABELS[rarity] ?? null,
+      imageUrl: card.imageUrl,
+    },
+    { name: card.serie.name },
+    { name: card.serie.bloc.name },
+  );
+
   return (
     <div className="mx-auto max-w-lg px-4 py-6 sm:px-6">
+      <JsonLd data={cardJsonLd} />
+
       {/* Back */}
       <div className="mb-5">
         <BackButton label="Retour" />

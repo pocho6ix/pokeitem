@@ -48,6 +48,52 @@ export function generateProductJsonLd(item: Item) {
 }
 
 // ---------------------------------------------------------------------------
+// Card JSON-LD (Schema.org/Product, NO offers)
+//
+// Emitted from /carte/:cardId. app.pokeitem.fr is a collection-management
+// app, not a store — we don't fulfil orders. Displayed prices are market
+// indicators (Cardmarket) shown for reference, so we deliberately omit
+// `offers` / `availability`. Keeping the @type as Product (rather than
+// Thing) gives us Google's image-rich snippet in SERP without falsely
+// advertising stock.
+// ---------------------------------------------------------------------------
+
+export interface CardJsonLdInput {
+  id:        string;
+  name:      string;
+  number:    string;
+  rarity?:   string | null; // human-readable label ("Rare Holographique"), not the enum
+  imageUrl?: string | null;
+}
+
+export interface CardJsonLdSerie {
+  name: string;
+}
+
+export interface CardJsonLdBloc {
+  name: string;
+}
+
+export function generateCardJsonLd(
+  card: CardJsonLdInput,
+  serie: CardJsonLdSerie,
+  bloc: CardJsonLdBloc,
+) {
+  return {
+    "@context":   "https://schema.org",
+    "@type":      "Product",
+    name:         `${card.name}${card.number ? ` n°${card.number}` : ""}`.trim(),
+    description:  `Carte Pokémon ${card.name} de l'extension ${serie.name}${card.rarity ? ` — ${card.rarity}` : ""}.`,
+    image:        card.imageUrl ?? undefined,
+    sku:          card.id,
+    brand:        { "@type": "Brand", name: "Pokémon TCG" },
+    category:     `Carte Pokémon TCG / ${bloc.name} / ${serie.name}`,
+    url:          `${BASE_URL}/carte/${card.id}`,
+    // No `offers` / `availability` by design — see module-level note.
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Article JSON-LD (Schema.org/Article)
 // ---------------------------------------------------------------------------
 
