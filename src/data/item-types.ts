@@ -75,7 +75,7 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
     label: 'ETB',
     description: 'Coffret Dresseur d\'Élite — boosters, sleeves et accessoires',
     typicalContent: '9 boosters, 65 sleeves, dé, marqueurs de dégâts',
-    typicalMsrp: 109.99,
+    typicalMsrp: 59.99,
     icon: 'Trophy',
   },
   {
