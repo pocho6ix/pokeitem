@@ -43,8 +43,8 @@ function PricingContent() {
     else setLoading(false)
   }
 
-  const monthlyPrice = 3.99
-  const annualPrice  = 39.99
+  const monthlyPrice = 2.99
+  const annualPrice  = 29.99
   const annualMonthly = (annualPrice / 12).toFixed(2).replace('.', ',')
   const savings = Math.round(100 - (annualPrice / (monthlyPrice * 12)) * 100)
 
@@ -123,10 +123,10 @@ function PricingContent() {
               {billing === 'monthly' ? (
                 <>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-[var(--text-primary)]">3,99€</span>
+                    <span className="text-3xl font-bold text-[var(--text-primary)]">2,99€</span>
                     <span className="text-[var(--text-secondary)] text-sm">/ mois</span>
                   </div>
-                  <p className="text-[var(--text-tertiary)] text-xs mt-1">Soit 47,88€ / an</p>
+                  <p className="text-[var(--text-tertiary)] text-xs mt-1">Soit 35,88€ / an</p>
                 </>
               ) : (
                 <>
@@ -135,13 +135,13 @@ function PricingContent() {
                     <span className="text-[var(--text-secondary)] text-sm">/ mois</span>
                   </div>
                   <p className="text-[var(--text-tertiary)] text-xs mt-1">
-                    Facturé <span className="font-semibold text-[var(--text-secondary)]">39,99€</span> en une fois par an
+                    Facturé <span className="font-semibold text-[var(--text-secondary)]">29,99€</span> en une fois par an
                   </p>
                 </>
               )}
               <p className="text-[var(--text-secondary)] text-sm mt-2">Pour les vrais collectionneurs.</p>
               <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
-                🎁 7 jours d&apos;essai gratuit — résiliable à tout moment
+                🎁 14 jours d&apos;essai gratuit — résiliable à tout moment
               </p>
             </div>
 
@@ -165,7 +165,7 @@ function PricingContent() {
                 className="pricing-cta-gold w-full rounded-full py-4 text-sm font-bold uppercase tracking-wide transition-all active:scale-[0.97] disabled:opacity-60"
               >
                 <span className="relative z-10" style={{ color: '#1A1A1A' }}>
-                  {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '39,99€/an' : '3,99€/mois'} →`}
+                  {loading ? 'Redirection…' : `S'abonner pour ${billing === 'annual' ? '29,99€/an' : '2,99€/mois'} →`}
                 </span>
                 <style jsx>{`
                   .pricing-cta-gold {
@@ -205,7 +205,7 @@ function PricingContent() {
               </div>
               <p className="text-[var(--text-secondary)] text-sm mt-2">Pour débuter ta collection Pokémon.</p>
               <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] px-3 py-1 text-xs font-semibold text-[var(--text-tertiary)]">
-                Passe à Pro — 7 jours d&apos;essai gratuit inclus
+                Passe à Pro — 14 jours d&apos;essai gratuit inclus
               </p>
             </div>
 

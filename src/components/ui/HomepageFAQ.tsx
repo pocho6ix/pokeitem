@@ -10,7 +10,7 @@
 const FAQ_ITEMS: { q: string; a: string }[] = [
   {
     q: "PokéItem est-il gratuit ?",
-    a: "Oui, PokéItem propose une version gratuite complète qui permet de cataloguer jusqu'à 500 cartes, 5 produits scellés et d'effectuer 10 scans par mois — largement suffisant pour démarrer. Pour aller plus loin, l'abonnement Premium (3,99€/mois ou 39,99€/an) débloque la collection de cartes illimitée, les items scellés illimités, les scans illimités et les statistiques avancées sur la valeur totale de votre portefeuille.",
+    a: "Oui, PokéItem propose une version gratuite complète qui permet de cataloguer jusqu'à 500 cartes, 5 produits scellés et d'effectuer 10 scans par mois — largement suffisant pour démarrer. Pour aller plus loin, l'abonnement Premium (2,99€/mois ou 29,99€/an) débloque la collection de cartes illimitée, les items scellés illimités, les scans illimités et les statistiques avancées sur la valeur totale de votre portefeuille.",
   },
   {
     q: "D'où viennent les prix et à quelle fréquence sont-ils mis à jour ?",

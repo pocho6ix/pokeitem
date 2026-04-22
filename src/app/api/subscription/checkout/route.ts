@@ -48,10 +48,10 @@ export async function POST(req: Request) {
 
   if (betaDiscount) {
     const coupon = await stripe.coupons.create({
-      amount_off: 1000, // -10€ → 29,99€ instead of 39,99€
+      amount_off: 500, // -5€ → 24,99€ instead of 29,99€ (beta holdover perk)
       currency: 'eur',
       duration: 'once',
-      name: 'Offre bêta testeur -10€',
+      name: 'Offre bêta testeur -5€',
     })
     discounts = [{ coupon: coupon.id }]
   } else if (user.referredById && period === 'annual') {
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     payment_method_types: ['card'],
     line_items: [{ price: priceId, quantity: 1 }],
     subscription_data: {
-      trial_period_days: 7,
+      trial_period_days: 14,
       metadata: { userId, referredById: user.referredById ?? '' },
     },
     success_url: `${process.env.NEXTAUTH_URL ?? 'https://app.pokeitem.fr'}/portfolio/cartes?success=1`,

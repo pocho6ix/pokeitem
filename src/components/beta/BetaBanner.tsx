@@ -87,18 +87,18 @@ export function BetaBanner() {
               </p>
               <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
                 Continue avec Pro à{" "}
-                <span className="font-bold text-orange-300">29,99€/an</span>{" "}
-                <span className="line-through opacity-60">39,99€</span> — ou{" "}
-                3,99€/mois
+                <span className="font-bold text-orange-300">24,99€/an</span>{" "}
+                <span className="line-through opacity-60">29,99€</span> — ou{" "}
+                2,99€/mois
               </p>
             </>
           ) : (
             <>
               <p className="text-sm font-semibold text-[#E7BA76]">
-                ⭐ Offre bêta — 29,99€/an au lieu de 39,99€
+                ⭐ Offre bêta — 24,99€/an au lieu de 29,99€
               </p>
               <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
-                37% d&rsquo;économie · Résiliable à tout moment
+                30% d&rsquo;économie vs mensuel · Résiliable à tout moment
               </p>
             </>
           )}
@@ -124,7 +124,7 @@ export function BetaBanner() {
                 <span className="relative z-10" style={{ color: '#1A1A1A' }}>
                   {checkoutState === "loading"
                     ? "Chargement…"
-                    : "S'abonner à 29,99€/an"}
+                    : "S'abonner à 24,99€/an"}
                 </span>
                 <style jsx>{`
                   .beta-sub-gold {
@@ -137,7 +137,7 @@ export function BetaBanner() {
               </button>
             )}
             <span className="text-[10px] text-[var(--text-tertiary)]">
-              ou 3,99€/mois
+              ou 2,99€/mois
             </span>
           </div>
         </div>

@@ -98,7 +98,7 @@ export function PaywallModal({ isOpen, reason, current, limit, onClose }: Paywal
 
         {/* Price hint */}
         <p className="text-center text-xs text-[var(--text-tertiary)] mb-4">
-          À partir de <span className="font-semibold text-[var(--text-secondary)]">3,33€/mois</span> facturé 39,99€/an
+          À partir de <span className="font-semibold text-[var(--text-secondary)]">2,50€/mois</span> facturé 29,99€/an
         </p>
 
         {/* CTAs */}
