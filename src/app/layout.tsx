@@ -61,21 +61,12 @@ export const metadata: Metadata = {
     title: "PokeItem — Gérez votre collection Pokémon TCG",
     description:
       "Gérez et valorisez votre collection Pokémon TCG : cartes, Booster Boxes, ETB, coffrets. Cote Cardmarket en temps réel, classeur virtuel, wishlist et stats.",
-    images: [
-      {
-        url: "https://app.pokeitem.fr/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "PokeItem — Valorisez votre collection Pokémon TCG",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "PokeItem — Gérez votre collection Pokémon TCG",
     description:
       "Gérez et valorisez votre collection Pokémon TCG : cartes, Booster Boxes, ETB, coffrets. Cote Cardmarket en temps réel, classeur virtuel et wishlist.",
-    images: ["https://app.pokeitem.fr/og-image.jpg"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
