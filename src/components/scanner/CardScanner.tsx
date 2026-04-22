@@ -8,10 +8,9 @@ import {
   lazy,
   Suspense,
 } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CardVersion, CARD_VERSION_LABELS, getSerieVersions } from "@/data/card-versions";
+import { CardVersion } from "@/data/card-versions";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
@@ -195,7 +194,6 @@ export function CardScanner() {
   const [selectedCard, setSelectedCard] = useState<CardCandidate | null>(null);
   const [confirmSource, setConfirmSource] = useState<ConfirmSource>("auto");
   const [prevState, setPrevState]       = useState<ScannerState>("scanning");
-  const [selectedVersion, setSelectedVersion] = useState<CardVersion>(CardVersion.NORMAL);
 
   // Camera
   const [permissionDenied, setPermissionDenied] = useState(false);
@@ -339,7 +337,6 @@ export function CardScanner() {
       const data: IdentifyResponse = await res.json();
       setResult(data);
       setShowSuggestions(false);
-      setSelectedVersion(CardVersion.NORMAL);
       if (data.candidates.length > 0) {
         setPanelCard(data.candidates[0]);
         setIdentifyPhase("result");
@@ -482,39 +479,15 @@ export function CardScanner() {
     setIsAdding(false);
   }, [recordCorrection]);
 
-  // Add from confirm screen (with version picker)
-  const addFromConfirm = useCallback(async (card: CardCandidate, source: ConfirmSource) => {
-    setIsAdding(true);
-    try {
-      const res = await fetchApi("/api/cards/collection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cards: [{ cardId: card.card.id, quantity: 1, condition: "NEAR_MINT", language: "FR", version: selectedVersion }],
-        }),
-      });
-      if (res.ok) {
-        void haptics.tap();
-        recordCorrection(card, source);
-        setSuccessBanner({
-          text: `${card.card.name} ajoutée !`,
-          href: `/collection/cartes/${card.serie.blocSlug}/${card.serie.slug}`,
-        });
-        setTimeout(() => setSuccessBanner(null), 4000);
-      } else {
-        setError("Impossible d'ajouter la carte.");
-      }
-    } catch {
-      setError("Erreur de connexion.");
-    }
-    setIsAdding(false);
-  }, [selectedVersion, recordCorrection]);
+  // Confirm screen now delegates the POST to CardDetailModal (full picker:
+  // version + quantity + condition + language + price mode). We still fire
+  // recordCorrection via the onAdded callback, so scanner training data
+  // stays accurate.
 
   const goToConfirm = useCallback((card: CardCandidate, source: ConfirmSource, from: ScannerState) => {
     setSelectedCard(card);
     setConfirmSource(source);
     setPrevState(from);
-    setSelectedVersion(CardVersion.NORMAL);
     setState("confirm");
   }, []);
 
@@ -560,7 +533,6 @@ export function CardScanner() {
     setPanelCard(null);
     setError(null);
     setSelectedCard(null);
-    setSelectedVersion(CardVersion.NORMAL);
     setState("scanning");
   }, []);
 
@@ -638,10 +610,13 @@ export function CardScanner() {
   }
 
   // ── CONFIRM screen ───────────────────────────────────────────────────────────
+  // Renders the shared CardDetailModal inline so the scanner's add-to-collection
+  // flow matches the one reached from /collection/cartes (same gold CTA, same
+  // bottom sheet with Version/Qty/Condition/Language/Price). Keeps our fullscreen
+  // chrome (back button + success banner) around it.
   if (state === "confirm" && selectedCard) {
-    const versions = getSerieVersions(selectedCard.serie.slug, selectedCard.serie.blocSlug);
     return (
-      <Screen>
+      <Screen className="bg-[var(--bg-primary)]">
         {successBanner && (
           <div className="absolute top-14 left-4 right-4 z-10 flex items-center gap-2 rounded-xl bg-green-600/90 backdrop-blur-sm px-4 py-3 text-xs font-medium text-white shadow-lg">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0">
@@ -651,72 +626,37 @@ export function CardScanner() {
           </div>
         )}
 
-        <div className="flex items-center justify-between px-5 pt-14 pb-2 shrink-0">
-          <button onClick={() => setState(prevState)} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white">
+        <div
+          className="flex items-center justify-between px-5 pb-2 shrink-0"
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.5rem)" }}
+        >
+          <button onClick={() => setState(prevState)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-primary)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
-          <span className="text-sm font-medium text-white/70">Ajouter à ma collection</span>
+          <span className="text-sm font-medium text-[var(--text-secondary)]">Ajouter à ma collection</span>
           <div className="h-9 w-9" />
         </div>
 
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          <div className="flex justify-center py-6">
-            {selectedCard.card.imageUrl ? (
-              <Image src={selectedCard.card.imageUrl} alt={getCardImageAlt(selectedCard.card, selectedCard.serie)} width={160} height={224} className="rounded-xl shadow-2xl shadow-black/60 object-contain" />
-            ) : (
-              <div className="flex h-56 w-40 items-center justify-center rounded-xl bg-white/5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-10 w-10 text-white/20"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="12" cy="10" r="3"/></svg>
-              </div>
-            )}
-          </div>
-
-          <button onClick={() => setDetailCardId(selectedCard.cardId)} className="mx-4 rounded-2xl bg-white/8 border border-white/10 px-5 py-4 mb-4 text-left w-[calc(100%-2rem)]">
-            <h2 className="text-base font-bold text-white mb-0.5">{selectedCard.card.name}</h2>
-            <p className="text-xs text-white/40 mb-3">{selectedCard.serie.name} · #{selectedCard.card.number}</p>
-            <div className="flex items-center gap-2 flex-wrap">
-              {selectedCard.card.price != null && (
-                <span className="rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "rgba(212,168,83,0.15)", color: "#D4A853" }}>
-                  {formatPrice(selectedCard.card.price)}
-                </span>
-              )}
-              <span className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] text-white/40 capitalize">
-                {selectedCard.card.rarity.toLowerCase().replace(/_/g, " ")}
-              </span>
-            </div>
-            <p className="mt-2 text-[10px] text-white/25 text-center">Appuyer pour voir les détails →</p>
-          </button>
-
-          {versions.length > 1 && (
-            <div className="mx-4 mb-4">
-              <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-widest text-white/30">Version</p>
-              <div className="flex flex-wrap gap-2">
-                {versions.map((v) => (
-                  <button key={v} onClick={() => setSelectedVersion(v)}
-                    className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors ${selectedVersion === v ? "btn-gold border-transparent text-black shadow-sm" : "border-white/15 bg-white/5 text-white/50 hover:border-white/30"}`}
-                  >
-                    {CARD_VERSION_LABELS[v]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mx-4 flex flex-col gap-2.5 pb-10">
-            <button
-              onClick={() => void addFromConfirm(selectedCard, confirmSource)}
-              disabled={isAdding}
-              className="btn-gold flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-semibold text-black disabled:opacity-50 active:scale-[0.98] transition-all"
-            >
-              {isAdding ? (
-                <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Ajout…</>
-              ) : "Ajouter à ma collection"}
-            </button>
-            <button onClick={backToScanning} className="rounded-2xl border border-white/15 py-3.5 text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
-              Rescanner
-            </button>
-          </div>
+        <div className="flex-1 overflow-y-auto px-4 pb-20">
+          <Suspense fallback={<div className="py-24 text-center text-sm text-[var(--text-tertiary)]">Chargement…</div>}>
+            <CardDetailModal
+              cardId={selectedCard.cardId}
+              variant="inline"
+              onClose={() => setState(prevState)}
+              onWrongCard={backToScanning}
+              onAdded={() => {
+                void haptics.tap();
+                recordCorrection(selectedCard, confirmSource);
+                setSuccessBanner({
+                  text: `${selectedCard.card.name} ajoutée !`,
+                  href: `/collection/cartes/${selectedCard.serie.blocSlug}/${selectedCard.serie.slug}`,
+                });
+                setTimeout(() => setSuccessBanner(null), 4000);
+              }}
+            />
+          </Suspense>
         </div>
       </Screen>
     );

@@ -141,6 +141,9 @@ interface Props {
   variant?: "modal" | "inline";
   /** Shown at the bottom in inline variant — "Ce n'est pas la bonne carte ?" */
   onWrongCard?: () => void;
+  /** Fired after a successful "Ajouter à ma collection" POST. Scanner uses
+   *  this to show its success banner + log the correction analytics. */
+  onAdded?: () => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -157,7 +160,7 @@ function formatEur(value: number | null | undefined): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCard }: Props) {
+export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCard, onAdded }: Props) {
   const isInline = variant === "inline";
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -301,6 +304,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
         void haptics.tap();
         setAddSuccess(true);
         setIsOwned(true);
+        onAdded?.();
         // Auto-remove from wishlist on "Je l'ai" — owning it means you no
         // longer need to want it. Silent best-effort; store is single source
         // of truth so the UI updates immediately.
