@@ -958,11 +958,13 @@ export function CardScanner() {
         }}
       />
 
-      {/* Viewfinder area — centered in the camera zone (above bottom panel) */}
+      {/* Viewfinder area — centered in the camera zone.
+          Bottom offset reserves space for the capture button + status pill
+          (instead of the old 30vh black slab). */}
       {!showFallback && (
         <div
           className="absolute left-0 right-0 flex flex-col items-center justify-center"
-          style={{ top: 80, bottom: "30vh" }}
+          style={{ top: 80, bottom: "calc(env(safe-area-inset-bottom, 16px) + 180px)" }}
         >
           <GoldViewfinder />
           <p
@@ -976,11 +978,63 @@ export function CardScanner() {
         </div>
       )}
 
-      {/* Capture button — floating above bottom panel */}
-      {!showFallback && (
+      {/* Status pill — waiting / identifying / error.
+          Floats above the capture button as a slim, Pokéitem-branded chip
+          (navy translucent + backdrop blur), replacing the old 30vh panel. */}
+      {!showFallback && identifyPhase !== "result" && (
         <div
           className="absolute left-1/2 -translate-x-1/2 z-10"
-          style={{ bottom: "calc(30vh + 16px)" }}
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 16px) + 132px)" }}
+        >
+          <div
+            className="flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md shadow-lg"
+            style={{
+              background: error ? "rgba(185, 28, 28, 0.85)" : "rgba(13, 30, 53, 0.72)",
+              border: `1px solid ${error ? "rgba(248, 113, 113, 0.4)" : "rgba(255, 255, 255, 0.08)"}`,
+            }}
+          >
+            {error ? (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 shrink-0 text-white">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span className="text-xs font-medium text-white">{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-white/80 hover:text-white"
+                  aria-label="Fermer"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </>
+            ) : identifyPhase === "identifying" ? (
+              <>
+                <div
+                  className="rounded-full border-2 border-t-transparent animate-spin shrink-0"
+                  style={{ width: 12, height: 12, borderColor: "#D4A853", borderTopColor: "transparent" }}
+                />
+                <span className="text-xs font-medium text-white">Identification…</span>
+              </>
+            ) : (
+              <>
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ background: "#D4A853" }} />
+                  <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: "#D4A853" }} />
+                </span>
+                <span className="text-xs font-medium text-white/85">En attente d&apos;une carte</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Capture button — hidden during result phase (result sheet owns bottom) */}
+      {!showFallback && identifyPhase !== "result" && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 z-10"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 16px) + 36px)" }}
         >
           <button
             onClick={capturePhoto}
@@ -1007,57 +1061,23 @@ export function CardScanner() {
         </div>
       )}
 
-      {/* Bottom results panel */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col rounded-t-2xl"
-        style={{
-          height: "30vh",
-          background: "#0D1117",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-      >
-        {/* Waiting */}
-        {identifyPhase === "waiting" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2">
-            {error ? (
-              <>
-                <p className="text-sm font-medium" style={{ color: "#ef4444" }}>{error}</p>
-                <button
-                  onClick={() => setError(null)}
-                  className="text-xs text-white/40 mt-1"
-                >
-                  Fermer
-                </button>
-              </>
-            ) : (
-              <p className="text-sm" style={{ color: "#8B95A5" }}>En attente d&apos;une carte…</p>
-            )}
-          </div>
-        )}
-
-        {/* Identifying */}
-        {identifyPhase === "identifying" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <div
-              className="rounded-full border-2 border-t-transparent animate-spin"
-              style={{ width: 32, height: 32, borderColor: "#D4A853", borderTopColor: "transparent" }}
-            />
-            <p className="text-sm" style={{ color: "#8B95A5" }}>Identification…</p>
-          </div>
-        )}
-
-        {/* Result */}
-        {identifyPhase === "result" && panelCard && (
-          <div
-            className="flex flex-1 items-center gap-3 px-4"
-            style={{
-              animation: "panelSlideUp 0.4s ease-out",
-            }}
-          >
+      {/* Result sheet — sized to content, uses --bg-card navy to match app identity */}
+      {!showFallback && identifyPhase === "result" && panelCard && (
+        <div
+          className="absolute bottom-0 left-0 right-0 z-10 rounded-t-2xl"
+          style={{
+            background: "var(--bg-card)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+            animation: "panelSlideUp 0.4s ease-out",
+            boxShadow: "0 -8px 24px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          <div className="flex items-center gap-3 px-4 pt-4">
             <CardThumb imageUrl={panelCard.card.imageUrl} name={panelCard.card.name} size={52} />
             <div className="flex-1 min-w-0">
               <p className="text-base font-semibold text-white truncate">{panelCard.card.name}</p>
-              <p className="text-xs truncate" style={{ color: "#8B95A5" }}>{panelCard.serie.name}</p>
+              <p className="text-xs truncate" style={{ color: "var(--text-tertiary)" }}>{panelCard.serie.name}</p>
               {panelCard.card.price != null && (
                 <p className="text-lg font-bold" style={{ color: "#D4A853" }}>{formatPrice(panelCard.card.price)}</p>
               )}
@@ -1074,15 +1094,15 @@ export function CardScanner() {
                 <button
                   onClick={() => setState("result")}
                   className="text-[11px]"
-                  style={{ color: "#8B95A5" }}
+                  style={{ color: "var(--text-tertiary)" }}
                 >
                   Est-ce la bonne carte ?
                 </button>
               )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Success banner */}
       {successBanner && (
