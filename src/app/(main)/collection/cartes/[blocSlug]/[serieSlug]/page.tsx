@@ -16,6 +16,8 @@ import { getSerieVersions, CardVersion } from "@/data/card-versions";
 import { SYMBOL_SLUGS } from "@/data/symbol-slugs";
 import { FlagFR } from "@/components/shared/FlagFR";
 import { formatDateFR } from "@/lib/format-date";
+import { JsonLd } from "@/components/JsonLd";
+import { generateBreadcrumbJsonLd } from "@/lib/seo/structured-data";
 
 interface PageProps {
   params: Promise<{ blocSlug: string; serieSlug: string }>;
@@ -102,8 +104,19 @@ export default async function CollectionSerieCartesPage({ params }: PageProps) {
     energyType:   c.energyType,
   }));
 
+  // Breadcrumb JSON-LD — Accueil → Collection → Bloc → Série. Sibling to the
+  // bloc page (which emits a 3-level breadcrumb); together they let Google
+  // display the full card-taxonomy SERP even on deep URLs.
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd([
+    { name: "Accueil",         url: "/" },
+    { name: "Collection",      url: "/collection/cartes" },
+    { name: bloc.name,         url: `/collection/cartes/${bloc.slug}` },
+    { name: serieStatic.name,  url: `/collection/cartes/${bloc.slug}/${serieStatic.slug}` },
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <JsonLd data={breadcrumbJsonLd} />
 
       {/* Back */}
       <div className="mb-4">

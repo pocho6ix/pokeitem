@@ -10,7 +10,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { RemoveCardButton } from "@/components/cards/RemoveCardButton";
 import { JsonLd } from "@/components/JsonLd";
 import { getCardImageAlt } from "@/lib/seo/card-image";
-import { generateCardJsonLd } from "@/lib/seo/structured-data";
+import { generateBreadcrumbJsonLd, generateCardJsonLd } from "@/lib/seo/structured-data";
 import { ExternalLink } from "lucide-react";
 
 const SITE_URL = "https://app.pokeitem.fr";
@@ -206,9 +206,23 @@ export default async function CardDetailPage({ params }: PageProps) {
     { name: card.serie.bloc.name },
   );
 
+  // Breadcrumb JSON-LD — 5 levels so Google can display the full taxonomy
+  // in the SERP (app.pokeitem.fr › Collection › Bloc › Série › Carte) even
+  // though the canonical URL is flat (/carte/[id]). Per Mueller URL depth
+  // doesn't affect ranking, so we keep the flat URL and let the breadcrumb
+  // carry the hierarchy.
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd([
+    { name: "Accueil",            url: "/" },
+    { name: "Collection",         url: "/collection/cartes" },
+    { name: card.serie.bloc.name, url: `/collection/cartes/${card.serie.bloc.slug}` },
+    { name: card.serie.name,      url: `/collection/cartes/${card.serie.bloc.slug}/${card.serie.slug}` },
+    { name: `${card.name} n°${card.number}`, url: `/carte/${card.id}` },
+  ]);
+
   return (
     <div className="mx-auto max-w-lg px-4 py-6 sm:px-6">
       <JsonLd data={cardJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
 
       {/* Back */}
       <div className="mb-5">
