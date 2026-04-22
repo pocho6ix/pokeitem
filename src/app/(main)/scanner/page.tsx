@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "Scanner de cartes Pokémon TCG",
   description:
     "Scannez vos cartes Pokémon TCG avec l'appareil photo pour les ajouter en un clin d'œil à votre classeur virtuel PokeItem. Reconnaissance automatique rapide.",
+  // Auth-gated — displays a "Connexion requise" stub for non-authed
+  // visitors, nothing indexable. `follow: true` matches the rest of the
+  // authenticated area (portfolio/*) — the page title/description may
+  // still appear in site: queries for logged-in users.
+  robots: { index: false, follow: true },
 };
 
 export default async function ScannerPage() {

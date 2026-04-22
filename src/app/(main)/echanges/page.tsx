@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { EchangesPageClient } from "./EchangesPageClient";
+
+// Auth-gated — redirects unauthenticated visitors. Not indexable;
+// `follow: true` matches the portfolio convention.
+export const metadata: Metadata = {
+  title: "Échanges",
+  description:
+    "Trouvez des partenaires d'échange Pokémon TCG parmi les collectionneurs PokeItem ayant partagé leur classeur.",
+  robots: { index: false, follow: true },
+};
 
 export default async function EchangesPage() {
   const session = await getServerSession(authOptions);

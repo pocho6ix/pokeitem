@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -7,6 +8,15 @@ import { ItemDetailForm } from "@/components/portfolio/ItemDetailForm";
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+// Private — each row is a user-owned PortfolioItem holding. Ownership is
+// enforced in the handler (404 if not yours), so there's nothing to index
+// even if someone had the opaque id. `follow: true` matches the rest of
+// the portfolio area.
+export const metadata: Metadata = {
+  title: "Détail de l'item",
+  robots: { index: false, follow: true },
+};
 
 /**
  * Detail page for a single PortfolioItem (sealed-item holding).
