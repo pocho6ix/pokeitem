@@ -21,9 +21,23 @@ export function generateOrganizationJsonLd() {
 
 // ---------------------------------------------------------------------------
 // Product JSON-LD (Schema.org/Product with AggregateOffer)
+//
+// Takes `serie` and `bloc` as separate params (matching `generateCardJsonLd`'s
+// convention) rather than reaching through `item.serie?.bloc?.slug`: those
+// relations are optional on the Item type, so relying on them would create a
+// silent runtime failure if a future caller forgot the Prisma `include`.
+// Explicit slug params keep the function decoupled from the Prisma query shape
+// and let TypeScript enforce that all 3 route segments are supplied.
 // ---------------------------------------------------------------------------
 
-export function generateProductJsonLd(item: Item) {
+export interface ProductJsonLdSerie { slug: string; }
+export interface ProductJsonLdBloc  { slug: string; }
+
+export function generateProductJsonLd(
+  item: Item,
+  serie: ProductJsonLdSerie,
+  bloc: ProductJsonLdBloc,
+) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -42,7 +56,7 @@ export function generateProductJsonLd(item: Item) {
       highPrice: item.currentPrice ?? item.retailPrice ?? 0,
       offerCount: 1,
       availability: "https://schema.org/InStock",
-      url: `${BASE_URL}/collection/${item.slug}`,
+      url: `${BASE_URL}/collection/produits/${bloc.slug}/${serie.slug}/${item.slug}`,
     },
   };
 }
