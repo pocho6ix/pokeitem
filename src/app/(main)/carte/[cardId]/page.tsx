@@ -176,9 +176,6 @@ export default async function CardDetailPage({ params }: PageProps) {
   const cardmarketUrl =
     tcgdex?.pricing?.cardmarket?.url ??
     `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encodedCard}`;
-  const tcgplayerUrl =
-    tcgdex?.pricing?.tcgplayer?.url ??
-    `https://www.tcgplayer.com/search/pokemon/product?q=${encodedCard}`;
 
   const rarity = card.rarity as CardRarity;
   const types: string[] = tcgdex?.types ?? [];
@@ -352,15 +349,6 @@ export default async function CardDetailPage({ params }: PageProps) {
               className="btn-gold flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-black"
             >
               Acheter sur Cardmarket
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-            <a
-              href={tcgplayerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 rounded-lg border border-[var(--border-default)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
-            >
-              Voir sur TCGPlayer
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
