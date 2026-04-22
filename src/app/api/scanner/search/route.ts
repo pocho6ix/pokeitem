@@ -22,6 +22,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       number: true,
       imageUrl: true,
       price: true,
+      priceFr: true,
       rarity: true,
       serie: {
         select: {

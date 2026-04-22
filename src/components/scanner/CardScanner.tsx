@@ -36,6 +36,7 @@ interface SearchCard {
   number: string;
   imageUrl: string | null;
   price: number | null;
+  priceFr: number | null;
   rarity: string;
   serie: {
     id: string;
@@ -540,32 +541,63 @@ export function CardScanner() {
     p == null ? null : new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(p);
 
   // ── SEARCH screen ────────────────────────────────────────────────────────────
+  // Uses the same visual language as HeroSearchBar (home search): deep navy
+  // --bg-primary background, --bg-card result container with --border-default
+  // separators, flag-prefixed price, and tap-row-to-select (no separate CTA).
   if (state === "search") {
     return (
-      <Screen>
+      <Screen className="bg-[var(--bg-primary)]">
         <div className="flex items-center gap-3 px-5 pt-14 pb-4 shrink-0">
-          <button onClick={() => setState(prevState)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+          <button
+            onClick={() => setState(prevState)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-card)] text-[var(--text-primary)]"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </button>
-          <div className="relative flex-1">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none">
+          <div
+            className="flex flex-1 items-center gap-3 rounded-2xl px-4 py-3.5 transition-colors"
+            style={{ background: "rgba(255,255,255,0.08)" }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 shrink-0 text-[#9CA3AF]">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <input
-              type="text"
+              type="search"
+              inputMode="search"
+              enterKeyHint="search"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Nom de la carte…"
+              placeholder="Rechercher une carte…"
               autoFocus
-              className="w-full rounded-xl bg-white/10 border border-white/10 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
+              // `fontSize: 16` prevents iOS Safari / WKWebView from auto-zooming on focus.
+              style={{ fontSize: 16 }}
+              className="flex-1 bg-transparent leading-none text-[var(--text-primary)] placeholder:text-[#9CA3AF] outline-none min-w-0"
             />
+            {searchLoading && (
+              <div className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-[#9CA3AF] border-t-transparent" />
+            )}
+            {searchQuery && !searchLoading && (
+              <button
+                onClick={() => { setSearchQuery(""); setSearchResults([]); }}
+                className="shrink-0 text-[#9CA3AF] hover:text-[var(--text-primary)]"
+                aria-label="Effacer"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 pb-10">
-          {searchLoading ? (
+          {searchLoading && searchResults.length === 0 ? (
             <div className="flex justify-center py-10">
               <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" style={{ color: "#D4A853" }}>
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -573,37 +605,50 @@ export function CardScanner() {
               </svg>
             </div>
           ) : searchQuery.length >= 2 && searchResults.length === 0 ? (
-            <p className="text-center py-10 text-sm text-white/30">Aucune carte trouvée</p>
-          ) : (
-            <div className="space-y-2">
-              {searchResults.map((card) => {
+            <p className="text-center py-10 text-sm text-[var(--text-tertiary)]">
+              Aucune carte trouvée pour &ldquo;{searchQuery}&rdquo;
+            </p>
+          ) : searchResults.length > 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] shadow-xl">
+              {searchResults.map((card, idx) => {
                 const candidate: CardCandidate = {
                   cardId: card.id,
                   confidence: 0,
                   card: { id: card.id, name: card.name, number: card.number, imageUrl: card.imageUrl, price: card.price, rarity: card.rarity },
                   serie: { id: card.serie.id, slug: card.serie.slug, name: card.serie.name, blocSlug: card.serie.bloc.slug },
                 };
+                const price =
+                  card.priceFr != null ? { label: formatPrice(card.priceFr), flag: "🇫🇷" } :
+                  card.price   != null ? { label: formatPrice(card.price),   flag: "🌐" } :
+                  null;
                 return (
-                  <div key={card.id} className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/8 px-3 py-2.5">
-                    <CardThumb imageUrl={card.imageUrl} name={card.name} size={48} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{card.name}</p>
-                      <p className="text-[11px] text-white/40 truncate">{card.serie.name} · #{card.number}</p>
-                      {card.price != null && (
-                        <p className="text-[11px] font-semibold" style={{ color: "#D4A853" }}>{formatPrice(card.price)}</p>
+                  <button
+                    key={card.id}
+                    onClick={() => goToConfirm(candidate, "search", "search")}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/5 ${idx > 0 ? "border-t border-[var(--border-default)]" : ""}`}
+                  >
+                    <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded-md bg-[var(--bg-subtle)]">
+                      {card.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={card.imageUrl} alt={getCardImageAlt(card, card.serie)} className="h-full w-full object-cover" />
                       )}
                     </div>
-                    <button
-                      onClick={() => goToConfirm(candidate, "search", "search")}
-                      className="shrink-0 rounded-xl bg-white/10 border border-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20 transition-colors"
-                    >
-                      Sélectionner
-                    </button>
-                  </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-[var(--text-primary)]">{card.name}</p>
+                      <p className="truncate text-xs text-[var(--text-tertiary)]">
+                        {card.serie.name} · #{card.number}
+                      </p>
+                    </div>
+                    {price && (
+                      <span className="shrink-0 text-sm font-semibold text-[var(--text-primary)]">
+                        {price.flag} {price.label}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </div>
-          )}
+          ) : null}
         </div>
       </Screen>
     );
