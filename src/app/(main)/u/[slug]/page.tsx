@@ -10,10 +10,29 @@ import { PublicProfileClient } from "./PublicProfileClient";
 // noindex/nofollow: product decision to keep user profiles out of search
 // engines until we ship a proper opt-in UX. The pages remain reachable via
 // direct URL (no 404, no auth wall) — only discoverability is suppressed.
-export const metadata: Metadata = {
-  title:   "Profil Dresseur",
-  robots:  { index: false, follow: false },
-};
+//
+// Metadata is nevertheless personalized per slug so that share links
+// (Discord, WhatsApp, Twitter cards) show a useful title/description
+// preview. We deliberately use the slug — not `owner.name` from the DB —
+// to avoid a second Prisma round-trip inside `generateMetadata`: the page
+// handler already makes the lookup it needs, and slugs are human-readable
+// enough for a preview card.
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> },
+): Promise<Metadata> {
+  const { slug } = await params;
+  const title       = `Profil @${slug}`;
+  const description = `Collection Pokémon TCG de ${slug} sur PokeItem — cartes possédées, doublons à échanger et wishlist publique.`;
+  const url         = `https://app.pokeitem.fr/u/${slug}`;
+  return {
+    title,
+    description,
+    robots:     { index: false, follow: false },
+    alternates: { canonical: url },
+    openGraph:  { title, description, type: "profile", url },
+    twitter:    { card: "summary_large_image", title, description },
+  };
+}
 
 /**
  * Lightweight server-side loader for a public dresseur profile. Only pulls
