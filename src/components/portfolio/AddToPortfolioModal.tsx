@@ -107,7 +107,7 @@ export function AddToPortfolioModal({
 
   if (!session) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4">
         <div className="w-full max-w-md rounded-2xl bg-[var(--bg-card)] p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Ajouter au portfolio</h2>
@@ -130,7 +130,7 @@ export function AddToPortfolioModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4">
       <div className="w-full max-w-md rounded-2xl bg-[var(--bg-card)] shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border-default)] p-5">

@@ -83,7 +83,7 @@ export const ITEM_TYPES: ItemTypeInfo[] = [
     label: 'Display',
     description: 'Display de 36 boosters scellés',
     typicalContent: '36 boosters scellés sous emballage',
-    typicalMsrp: 159.99,
+    typicalMsrp: 259.99,
     icon: 'Boxes',
   },
   {

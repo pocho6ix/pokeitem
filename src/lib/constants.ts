@@ -36,7 +36,7 @@ export const ITEM_TYPE_MSRP: Record<string, number> = {
   BOOSTER: 6.99,
   DUOPACK: 12.99,
   TRIPACK: 19.99,
-  BOOSTER_BOX: 159.99,
+  BOOSTER_BOX: 259.99,
   ETB: 109.99,
   BOX_SET: 25.99,
   UPC: 159.99,
