@@ -17,6 +17,7 @@ import { fetchApi } from "@/lib/api";
 
 type DbItem = {
   id: string;
+  slug: string | null;
   name: string;
   type: string;
   imageUrl: string | null;
@@ -145,6 +146,7 @@ export function SerieProduitsClient() {
           }))}
           serieName={serieStatic.name}
           serieSlug={serieSlug!}
+          blocSlug={blocSlug!}
           serieAbbreviation={serieStatic.abbreviation ?? ""}
           dbItems={items}
           availableImageTypes={[...(ITEM_IMAGES_BY_SERIE[serieSlug!] ?? [])]}

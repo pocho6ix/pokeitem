@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useSession } from "@/lib/auth-context";
 import { Card } from "@/components/ui/Card";
 import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
@@ -11,6 +13,7 @@ import { AddToPortfolioModal } from "@/components/portfolio/AddToPortfolioModal"
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { isNative } from "@/lib/native";
 
 interface ItemTypeData {
   type: string;
@@ -23,10 +26,23 @@ interface SerieItemsGridProps {
   itemTypes: ItemTypeData[];
   serieName: string;
   serieSlug: string;
+  /**
+   * Parent bloc slug, needed to build the canonical detail URL
+   * `/collection/produits/{bloc}/{serie}/{item}` shown by the
+   * "Voir les détails" CTA. Required so the link matches the same
+   * path the sitemap emits.
+   */
+  blocSlug: string;
   serieAbbreviation: string;
   /** Real DB items for this series (if any) */
   dbItems?: Array<{
     id: string;
+    /**
+     * Canonical item slug from Prisma (same column the sitemap walks via
+     * `getSealedProductsForSitemap`). Nullable — some items may be
+     * seeded without one; when absent, the detail CTA is skipped.
+     */
+    slug: string | null;
     name: string;
     type: string;
     imageUrl: string | null;
@@ -60,6 +76,7 @@ export function SerieItemsGrid({
   itemTypes,
   serieName,
   serieSlug,
+  blocSlug,
   serieAbbreviation,
   dbItems,
   availableImageTypes,
@@ -67,6 +84,9 @@ export function SerieItemsGrid({
   const { data: session } = useSession();
   const params = useParams();
   const resolvedSerieSlug = serieSlug || (params?.serieSlug as string) || "";
+  // Hide the "Voir les détails" CTA inside the native Capacitor build —
+  // the /collection/produits/[bloc]/[serie]/[item] SEO page is web-only.
+  const isWeb = !isNative();
   const [showOtherItems, setShowOtherItems] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
     id: string;
@@ -158,6 +178,23 @@ export function SerieItemsGrid({
               + Portfolio
             </button>
           </div>
+
+          {/* ── "Voir les détails" CTA (web only) ─────────────────────
+              Internal link to the /collection/produits/[bloc]/[serie]/[item]
+              SEO page. Rendered only when we have a canonical DB slug
+              (otherwise the target would 404) and hidden on the Capacitor
+              native build, where that route isn't part of the shipped
+              surface. Secondary styling on purpose — the primary gold CTA
+              is reserved for "+ Portfolio". */}
+          {isWeb && dbItem?.slug && (
+            <Link
+              href={`/collection/produits/${blocSlug}/${resolvedSerieSlug}/${dbItem.slug}`}
+              className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card)]"
+            >
+              Voir les détails
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
         </div>
       </Card>
     );

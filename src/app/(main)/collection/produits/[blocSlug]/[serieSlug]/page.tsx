@@ -94,6 +94,7 @@ export default async function SeriePage({ params }: SeriePageProps) {
 
   let dbItems: Array<{
     id: string;
+    slug: string | null;
     name: string;
     type: string;
     imageUrl: string | null;
@@ -112,6 +113,9 @@ export default async function SeriePage({ params }: SeriePageProps) {
         where: { serieId: dbSerie.id },
         select: {
           id: true,
+          // Canonical slug — required to build the "Voir les détails"
+          // link that points at the same URL the sitemap emits.
+          slug: true,
           name: true,
           type: true,
           imageUrl: true,
@@ -212,6 +216,7 @@ export default async function SeriePage({ params }: SeriePageProps) {
         itemTypes={ITEM_TYPES}
         serieName={serie.name}
         serieSlug={serie.slug}
+        blocSlug={bloc.slug}
         serieAbbreviation={serie.abbreviation}
         dbItems={dbItems.map((i) => ({
           ...i,
