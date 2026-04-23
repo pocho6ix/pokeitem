@@ -63,6 +63,27 @@ const webConfig: NextConfig = {
         permanent: true,
       });
     }
+    // Legal pages are canonical on the marketing site (www.pokeitem.fr).
+    // Duplicating them on app.pokeitem.fr would split the signal in Google's
+    // index; instead we 301 any straggler traffic (old internal links,
+    // backlinks, previously-indexed URLs) to the canonical www version.
+    rules.push(
+      {
+        source: "/cgu",
+        destination: "https://www.pokeitem.fr/cgu",
+        permanent: true,
+      },
+      {
+        source: "/mentions-legales",
+        destination: "https://www.pokeitem.fr/mentions-legales",
+        permanent: true,
+      },
+      {
+        source: "/politique-confidentialite",
+        destination: "https://www.pokeitem.fr/politique-confidentialite",
+        permanent: true,
+      },
+    );
     return rules;
   },
   async headers() {

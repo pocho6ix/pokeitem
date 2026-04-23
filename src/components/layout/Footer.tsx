@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { Logo } from "@/components/shared/Logo";
 
-const FOOTER_LINKS = {
+// Entries flagged `external: true` render as plain <a target="_blank">
+// (used for the legal pages, which are canonical on www.pokeitem.fr).
+// Everything else stays on Next's <Link> for client-side navigation.
+type FooterLink = { href: string; label: string; external?: boolean };
+
+const FOOTER_LINKS: Record<string, FooterLink[]> = {
   Collection: [
     { href: "/collection/cartes", label: "Catalogue complet" },
     { href: "/collection/cartes/ecarlate-violet", label: "Ecarlate & Violet" },
@@ -16,9 +21,9 @@ const FOOTER_LINKS = {
     { href: "/scanner", label: "Scanner" },
   ],
   Légal: [
-    { href: "/mentions-legales", label: "Mentions légales" },
-    { href: "/politique-confidentialite", label: "Confidentialité" },
-    { href: "/cgu", label: "CGU" },
+    { href: "https://www.pokeitem.fr/mentions-legales", label: "Mentions légales", external: true },
+    { href: "https://www.pokeitem.fr/politique-confidentialite", label: "Confidentialité", external: true },
+    { href: "https://www.pokeitem.fr/cgu", label: "CGU", external: true },
   ],
 };
 
@@ -99,12 +104,23 @@ export function Footer() {
               <ul className="mt-3 space-y-2">
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
