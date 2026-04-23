@@ -457,7 +457,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
                 <a
                   href={buildCardmarketUrl(card)!}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="nofollow noopener noreferrer"
                   className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
                   title="Voir sur Cardmarket"
                 >
@@ -624,7 +624,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
             <a
               href={buildCardmarketUrl(card)!}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
               className="inline-flex items-center rounded-lg overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
               title="Voir sur Cardmarket"
             >
@@ -649,7 +649,7 @@ export function CardDetailModal({ cardId, onClose, variant = "modal", onWrongCar
                   <a
                     href={buildCardmarketUrl(card, { firstEdition: true })!}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="nofollow noopener noreferrer"
                     className="inline-flex items-center rounded-md overflow-hidden border border-white/15 hover:border-white/30 transition-colors"
                     title="Voir la version Édition 1 sur Cardmarket"
                   >

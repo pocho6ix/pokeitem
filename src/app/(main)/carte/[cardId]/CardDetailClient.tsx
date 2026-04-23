@@ -281,7 +281,7 @@ export function CardDetailClient() {
             <a
               href={cardmarketUrl}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
               className="btn-gold flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-black"
             >
               Acheter sur Cardmarket
