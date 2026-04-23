@@ -24,6 +24,14 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   return {
     title: `${itemSlug} — ${serie.name}`,
     description: `${itemSlug} (${serie.name}, ${bloc.name}) : prix Cardmarket actuel, historique de cote, description et détails du produit scellé Pokémon TCG sur PokeItem.`,
+    // The JSX body below is still a placeholder ("Détail de l'item — en
+    // cours de construction"). Indexing it as-is would hand Google a
+    // Soft-404 / thin-content signal across ~70 URLs and drag the
+    // domain down. `follow: true` keeps the outbound breadcrumb + back
+    // link in the crawl graph so internal equity keeps flowing while
+    // we build the real fiche. Drop `robots` entirely (or flip to
+    // `index: true`) once the page ships real content.
+    robots: { index: false, follow: true },
   };
 }
 
@@ -63,7 +71,13 @@ export default async function ItemPage({ params }: ItemPageProps) {
         </span>
       </nav>
 
-      {/* Placeholder content */}
+      {/* Placeholder content.
+          TODO — when the real item fiche ships (image, prix, composition,
+          CreativeWork/Product JSON-LD, etc.), also remove the
+          `robots: { index: false, follow: true }` entry in
+          `generateMetadata` above so the page becomes indexable. The URL
+          is already in the sitemap and already maillée from SerieItemsGrid;
+          only the noindex flag holds indexation back. */}
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-card)] p-16 text-center">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
           Détail de l&apos;item
