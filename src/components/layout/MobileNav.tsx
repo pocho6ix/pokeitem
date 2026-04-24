@@ -7,13 +7,14 @@ import { useSession } from "@/lib/auth-context";
 import { Home, Package, ScanLine, BookOpen, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
+import { isNative } from "@/lib/native";
 
 const MOBILE_NAV_ITEMS = [
   { href: "/", label: "Accueil", icon: Home },
   { href: "/collection", label: "Collection", icon: Package },
   { href: "/scanner", label: "Scanner", icon: ScanLine },
   { href: "/portfolio", label: "Classeur", icon: BookOpen },
-  { href: "/echanges", label: "Échanges", icon: ArrowLeftRight },
+  { href: "/echanges", label: "Échanges", icon: ArrowLeftRight, webOnly: true },
 ];
 
 export function MobileNav() {
@@ -31,6 +32,13 @@ export function MobileNav() {
   // they sign in.
   if (!mounted || status !== "authenticated") return null;
 
+  // The Échanges tab is web-only for now (iOS lacks the wider trade
+  // matching surface). `isNative()` is safe post-mount — Capacitor has
+  // injected `window.Capacitor` by the time we render.
+  const navItems = MOBILE_NAV_ITEMS.filter(
+    (item) => !(item.webOnly && isNative()),
+  );
+
   return (
     /* Outer shell — leaves room for the iPhone home indicator */
     <nav
@@ -39,7 +47,7 @@ export function MobileNav() {
     >
       {/* Floating pill */}
       <div className="flex items-center justify-around rounded-2xl border border-[var(--border-default)] bg-[var(--bg-primary)]/90 backdrop-blur-xl shadow-2xl shadow-black/50 py-2">
-        {MOBILE_NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = item.href === "/"
             ? pathname === "/"
             : pathname.startsWith(item.href);

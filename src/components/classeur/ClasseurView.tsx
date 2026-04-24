@@ -7,6 +7,7 @@ import { ArrowLeftRight, LineChart, PieChart, Star } from "lucide-react";
 import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { fetchApi } from "@/lib/api";
+import { isNative } from "@/lib/native";
 import { ClasseurHeader } from "./ClasseurHeader";
 import { PortfolioGlobalCard } from "./PortfolioGlobalCard";
 import { InvestmentHeroCard } from "./InvestmentHeroCard";
@@ -74,6 +75,10 @@ export function ClasseurView() {
   const router = useRouter();
   const { status } = useSession();
   const { isPro } = useSubscription();
+  // Trade matching ("Chercher un échange") is web-only for now — the
+  // native app lacks the wider discovery surface, so we hide the CTA
+  // on iOS rather than routing users into a dead-end.
+  const showTradeCta = !isNative();
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -177,50 +182,52 @@ export function ClasseurView() {
         </div>
       </section>
 
-      {/* 4. Chercher un échange */}
-      <button
-        type="button"
-        onClick={() => router.push(isPro ? "/echanges" : "/pricing")}
-        className="mb-6 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#E7BA76]/40 bg-[#E7BA76]/8 px-4 py-3.5 text-left transition-colors hover:border-[#E7BA76]/70 hover:bg-[#E7BA76]/12"
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-xl"
-            style={{ backgroundColor: "rgba(231, 186, 118, 0.2)" }}
-          >
-            <ArrowLeftRight className="h-5 w-5" style={{ color: GOLD }} />
+      {/* 4. Chercher un échange — web-only (hidden on iOS) */}
+      {showTradeCta && (
+        <button
+          type="button"
+          onClick={() => router.push(isPro ? "/echanges" : "/pricing")}
+          className="mb-6 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#E7BA76]/40 bg-[#E7BA76]/8 px-4 py-3.5 text-left transition-colors hover:border-[#E7BA76]/70 hover:bg-[#E7BA76]/12"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: "rgba(231, 186, 118, 0.2)" }}
+            >
+              <ArrowLeftRight className="h-5 w-5" style={{ color: GOLD }} />
+            </div>
+            <div>
+              <p className="font-semibold text-[var(--text-primary)]">
+                Chercher un échange
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Trouve un dresseur et vois ce que vous pouvez faire
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold text-[var(--text-primary)]">
-              Chercher un échange
-            </p>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Trouve un dresseur et vois ce que vous pouvez faire
-            </p>
-          </div>
-        </div>
-        {isPro ? (
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="shrink-0 text-[var(--text-tertiary)]"
-            aria-hidden
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        ) : (
-          <span
-            className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
-            style={{ background: GOLD_GRADIENT, color: "#1A1A1A" }}
-          >
-            ★ PREMIUM
-          </span>
-        )}
-      </button>
+          {isPro ? (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="shrink-0 text-[var(--text-tertiary)]"
+              aria-hidden
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          ) : (
+            <span
+              className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
+              style={{ background: GOLD_GRADIENT, color: "#1A1A1A" }}
+            >
+              ★ PREMIUM
+            </span>
+          )}
+        </button>
+      )}
 
       {/* 5. Top performances */}
       <TopPerformancesSection />
