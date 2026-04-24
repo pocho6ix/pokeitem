@@ -211,12 +211,8 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
           target="_blank"
           rel="nofollow noopener noreferrer"
           aria-label="Voir sur Cardmarket"
-          // Inline color — the dark-mode anchor cascade otherwise wins over
-          // text-slate-900 via higher specificity.
-          style={{ color: "#0f172a" }}
-          className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold shadow-[var(--shadow-card)] transition-opacity hover:opacity-90"
+          className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 shadow-[var(--shadow-card)] transition-opacity hover:opacity-90"
         >
-          <span>Voir sur</span>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/cardmarket.png"

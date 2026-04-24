@@ -147,18 +147,28 @@ export default async function ItemPage({ params }: ItemPageProps) {
               <h1 className="text-2xl font-bold leading-tight text-[var(--text-primary)]">
                 {item.name}
               </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)]">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[var(--text-secondary)]">
                 <ItemBadge type={item.type} />
-                <span>{serie.name}</span>
-                <span className="text-[var(--text-tertiary)]">· {bloc.name}</span>
+                {/* Serie logo when available, fallback to the FR name. */}
+                {serie.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={serie.imageUrl}
+                    alt={serie.name}
+                    className="h-6 w-auto object-contain"
+                  />
+                ) : (
+                  <span>{serie.name}</span>
+                )}
               </div>
 
               {/* Price strip — only renders for DB rows with CM data. */}
-              {(item.priceFrom != null || item.priceTrend != null || item.retailPrice != null) && (
-                <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
+              {(item.priceFrom != null || item.priceTrend != null) && (
+                <dl className="mt-5 grid grid-cols-2 gap-3 text-center">
                   <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] p-3">
-                    <dt className="text-[10px] uppercase tracking-wide text-[var(--text-tertiary)]">
-                      À partir de
+                    <dt className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-tertiary)]">
+                      <span aria-hidden>🇫🇷</span>
+                      <span>Prix</span>
                     </dt>
                     <dd className="mt-1 font-data text-lg font-semibold tabular-nums text-[var(--text-primary)]">
                       {formatEuro(item.priceFrom) ?? "—"}
@@ -172,32 +182,20 @@ export default async function ItemPage({ params }: ItemPageProps) {
                       {formatEuro(item.priceTrend) ?? "—"}
                     </dd>
                   </div>
-                  <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] p-3">
-                    <dt className="text-[10px] uppercase tracking-wide text-[var(--text-tertiary)]">
-                      Prix conseillé
-                    </dt>
-                    <dd className="mt-1 font-data text-lg font-semibold tabular-nums text-[var(--text-primary)]">
-                      {formatEuro(item.retailPrice) ?? "—"}
-                    </dd>
-                  </div>
                 </dl>
               )}
             </div>
           </div>
 
-          {/* Cardmarket CTA — "Voir sur" + partner logo, centered. */}
+          {/* Cardmarket CTA — partner logo only. */}
           {item.cardmarketUrl && (
             <a
               href={item.cardmarketUrl}
               target="_blank"
               rel="nofollow noopener noreferrer"
               aria-label="Voir sur Cardmarket"
-              // Inline color — the app's dark-mode cascade on `<a>` elsewhere
-              // otherwise overrides text-slate-900 via higher specificity.
-              style={{ color: "#0f172a" }}
-              className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold shadow-[var(--shadow-card)] transition-opacity hover:opacity-90"
+              className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 shadow-[var(--shadow-card)] transition-opacity hover:opacity-90"
             >
-              <span>Voir sur</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/cardmarket.png"
@@ -207,13 +205,6 @@ export default async function ItemPage({ params }: ItemPageProps) {
               <ExternalLink className="h-4 w-4 text-slate-500" />
             </a>
           )}
-
-          {/* Placeholder for the full fiche (history chart, composition,
-              structured data). Drop along with the noindex when it ships. */}
-          <div className="mt-6 rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-center text-sm text-[var(--text-secondary)]">
-            L&apos;historique de prix et la composition détaillée du produit
-            arrivent prochainement.
-          </div>
         </>
       )}
     </div>

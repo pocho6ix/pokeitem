@@ -141,54 +141,69 @@ export function SerieItemsGrid({
     const dbItem = dbItems?.find((i) => i.type === itemType.type);
     const displayPrice = dbItem?.currentPrice ?? itemType.typicalMsrp;
     const label = ITEM_TYPE_LABELS[itemType.type] ?? itemType.label;
+    // Only render the type badge when it adds info — for BOOSTER/ETB/…
+    // badge == label (redundant). Useful for BOX_SET ("Coffret"), TRAINER_KIT
+    // ("Trainer"), THEME_DECK ("Deck"), etc.
+    const shortBadge = typeToBadgeLabel(itemType.type, label);
+    const showBadge = shortBadge !== label;
 
     return (
       <Card
         key={itemType.type}
         className="group flex flex-col overflow-hidden !bg-[var(--bg-card)]"
       >
-        {/* Image — transparent bg so the card surface shows through */}
-        <div className="relative">
-          <ItemImage
-            src={dbItem?.imageUrl}
-            slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
-            alt={label}
-            size="xl"
-            className="aspect-square w-full rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
-          />
-          <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-            {typeToBadgeLabel(itemType.type, label)}
-          </span>
-        </div>
+        {/* Image — white bg preserved per product decision. The type badge
+            used to sit in this corner but overlapped images of wider types
+            (ETB, Display, Trainer Kit) and floated away from narrow ones
+            (booster pack). Moved to the content area below. */}
+        <ItemImage
+          src={dbItem?.imageUrl}
+          slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
+          alt={label}
+          size="xl"
+          className="aspect-square w-full rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
+        />
 
-        {/* Content */}
-        <div className="flex flex-1 flex-col p-3">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight line-clamp-2">
-            {label}
-          </h3>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="font-data text-sm font-bold text-[var(--text-primary)]">
-              {formatPrice(displayPrice)}
-            </span>
+        {/* Content — name+badge → price → actions, with a clear vertical
+            rhythm and actions stacked full-width. The stacked layout
+            guarantees zero collision between the price and the Portfolio
+            button regardless of how narrow the card gets (fixes the
+            overlap + truncation seen at grid-cols-3 on iPhone SE). */}
+        <div className="flex flex-1 flex-col gap-2 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="truncate text-sm font-semibold text-[var(--text-primary)]">
+              {label}
+            </h3>
+            {showBadge && (
+              <span className="shrink-0 rounded-full bg-black/65 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                {shortBadge}
+              </span>
+            )}
+          </div>
+
+          <div className="font-data text-base font-bold tabular-nums text-[var(--text-primary)]">
+            {formatPrice(displayPrice)}
+          </div>
+
+          <div className="mt-auto flex flex-col gap-1.5">
             <button
               type="button"
               onClick={() => handleAddToPortfolio(itemType)}
-              className="inline-flex items-center gap-1 rounded-lg btn-gold px-2.5 py-1 text-[11px] font-semibold text-black"
+              className="inline-flex h-9 w-full items-center justify-center gap-1 rounded-lg btn-gold px-3 text-xs font-semibold text-black"
             >
               + Portfolio
             </button>
+            {/* "Voir les détails" CTA (web only, DB slug required) */}
+            {isWeb && dbItem?.slug && (
+              <Link
+                href={`/collection/produits/${blocSlug}/${resolvedSerieSlug}/${dbItem.slug}`}
+                className="inline-flex h-8 w-full items-center justify-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 text-[11px] font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card-hover)]"
+              >
+                Détails
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
           </div>
-
-          {/* "Voir les détails" CTA (web only, DB slug required) */}
-          {isWeb && dbItem?.slug && (
-            <Link
-              href={`/collection/produits/${blocSlug}/${resolvedSerieSlug}/${dbItem.slug}`}
-              className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card-hover)]"
-            >
-              Détails
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          )}
         </div>
       </Card>
     );
