@@ -109,8 +109,11 @@ export function ClasseurView() {
 
   const totalItemsCount = stats?.totalItems ?? null;
 
+  // The outer max-w-7xl + padding wrapper lives in portfolio/layout.tsx
+  // (shared with sub-pages), so this component just contributes its
+  // internal vertical stack.
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
       {/* 1. Header */}
       <ClasseurHeader />
 
@@ -230,6 +233,6 @@ export function ClasseurView() {
         </h2>
       </div>
       <PortfolioEvolutionChart />
-    </div>
+    </>
   );
 }

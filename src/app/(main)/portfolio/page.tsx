@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { ClasseurView } from "@/components/classeur/ClasseurView";
 
-// Auth-gated landing — tiles are rendered by the layout above the
-// stats/chart. Not indexable; `follow: true` matches the portfolio
-// convention (sub-pages all carry the same directive).
+// Auth-gated Classeur landing. Not indexable; `follow: true` matches
+// the portfolio convention (sub-pages all carry the same directive).
 export const metadata: Metadata = {
   title: "Classeur",
   description:
@@ -10,8 +10,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-// Landing — tiles are rendered by the layout above the stats/chart.
-// Nothing extra needed here.
 export default function PortfolioPage() {
-  return null;
+  return <ClasseurView />;
 }

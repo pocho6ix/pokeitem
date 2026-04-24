@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, TrendingDown, TrendingUp, Wallet, ShoppingCart } from "lucide-react";
+import { TrendingDown, TrendingUp, Wallet, ShoppingCart } from "lucide-react";
 import { useHideValues } from "@/components/ui/HideValuesContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ProButton } from "@/components/subscription/ProButton";
@@ -63,32 +62,20 @@ export function PortfolioGlobalCard({
         style={{ backgroundColor: GOLD }}
       />
 
-      {/* Row 1 — identity + "Voir plus" */}
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ backgroundColor: "rgba(231, 186, 118, 0.15)" }}
-          >
-            <Wallet className="h-5 w-5" style={{ color: GOLD }} />
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-[var(--text-primary)]">
-              Portefeuille global
-            </p>
-            <p className="text-xs text-[var(--text-secondary)]">Valeur totale</p>
-          </div>
-        </div>
-
-        <Link
-          href="/portfolio/details"
-          className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-[#E7BA76]/10"
-          style={{ color: GOLD }}
-          aria-label="Voir le détail du portefeuille"
+      {/* Row 1 — identity */}
+      <div className="relative flex items-center gap-2.5">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+          style={{ backgroundColor: "rgba(231, 186, 118, 0.15)" }}
         >
-          Voir plus
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+          <Wallet className="h-5 w-5" style={{ color: GOLD }} />
+        </div>
+        <div className="leading-tight">
+          <p className="text-sm font-semibold text-[var(--text-primary)]">
+            Portefeuille global
+          </p>
+          <p className="text-xs text-[var(--text-secondary)]">Valeur totale</p>
+        </div>
       </div>
 
       {/* Row 2 — big value */}
