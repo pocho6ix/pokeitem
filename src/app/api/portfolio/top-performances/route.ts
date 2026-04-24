@@ -138,6 +138,9 @@ export async function GET(req: NextRequest) {
   const historyByCardId = new Map(historyRows.map((h) => [h.cardId, h]));
 
   // 3) Compute deltas, filter to gainers only (top chart = positives), sort.
+  //    In "%" mode we also drop anything under €40 — otherwise a €0.50 card
+  //    that climbed to €1 (+100%) would outrank a real chase card.
+  const PERCENT_MIN_PRICE = 40;
   const scored: TopPerformanceItem[] = [];
   for (const uc of uniqueCards) {
     const hist = historyByCardId.get(uc.cardId);
@@ -149,6 +152,8 @@ export async function GET(req: NextRequest) {
 
     const deltaEuro = priceNow - priceThen;
     if (deltaEuro <= 0) continue; // user asked: "seulement le top", no losers
+
+    if (mode === "percent" && priceNow < PERCENT_MIN_PRICE) continue;
 
     const deltaPercent = (deltaEuro / priceThen) * 100;
     scored.push({
