@@ -40,45 +40,61 @@ type DbItem = {
 };
 
 const VALID_CATEGORIES = new Set<string>(ITEM_CATEGORIES.map((c) => c.id));
+const DEFAULT_CATEGORY: ItemCategory = "display";
 
-function categoryFromParam(raw: string | null): ItemCategory | null {
-  if (!raw) return null;
-  return VALID_CATEGORIES.has(raw) ? (raw as ItemCategory) : null;
+/**
+ * URL → category:
+ *   "all"        → null (explicit "Tous", no filter)
+ *   valid cat    → that category
+ *   missing/bad  → DEFAULT_CATEGORY ("display")
+ *
+ * The `all` sentinel is what we write when the user clicks "Tous", so a
+ * reload on `?type=all` stays on Tous instead of snapping back to the
+ * default. A missing param is treated as first-visit → default.
+ */
+function resolveCategory(raw: string | null): ItemCategory | null {
+  if (raw === "all") return null;
+  if (raw && VALID_CATEGORIES.has(raw)) return raw as ItemCategory;
+  return DEFAULT_CATEGORY;
 }
 
 export function ItemsCatalogGrid() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlType = categoryFromParam(searchParams.get("type"));
+  const selectedCategory = resolveCategory(searchParams.get("type"));
   const urlQuery = searchParams.get("q") ?? "";
 
-  // Local mirrors of URL state. Changes are pushed back to the URL via a
-  // debounced router.replace to keep the address bar in sync without
-  // thrashing history on every keystroke.
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory | null>(urlType);
+  // The search query needs local state for debounced URL sync and a
+  // responsive input. The category filter is driven directly by the URL
+  // (no local mirror) — cheap to derive every render and avoids any
+  // SSR/client state-divergence that would duplicate the DOM.
   const [query, setQuery] = useState(urlQuery);
 
-  useEffect(() => {
-    setSelectedCategory(urlType);
-  }, [urlType]);
   useEffect(() => {
     setQuery(urlQuery);
   }, [urlQuery]);
 
-  // Sync local → URL (debounced). replace() so back-button doesn't fill up
-  // with a history entry per keystroke.
+  // Debounce only the search term → URL. Category changes (chip clicks)
+  // update the URL synchronously via `updateCategory` below.
   useEffect(() => {
+    if (query === urlQuery) return;
     const id = setTimeout(() => {
-      const params = new URLSearchParams();
-      if (selectedCategory) params.set("type", selectedCategory);
+      const params = new URLSearchParams(searchParams.toString());
       if (query.trim()) params.set("q", query.trim());
-      const qs = params.toString();
-      router.replace(qs ? `?${qs}` : "?", { scroll: false });
+      else params.delete("q");
+      router.replace(`?${params.toString()}`, { scroll: false });
     }, 200);
     return () => clearTimeout(id);
-    // router is stable; intentionally only re-run on user-driven state
+    // router/searchParams are stable refs; intentionally only re-run on
+    // user-driven state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, query]);
+  }, [query]);
+
+  const updateCategory = (next: ItemCategory | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("type", next ?? "all");
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   // Static catalog is heavy enough (≈600 entries) that we memoize it and
   // overlay DB data when it arrives.
@@ -142,7 +158,7 @@ export function ItemsCatalogGrid() {
         >
           <Chip
             selected={selectedCategory === null}
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => updateCategory(null)}
           >
             Tous
           </Chip>
@@ -151,9 +167,8 @@ export function ItemsCatalogGrid() {
               key={cat.id}
               selected={selectedCategory === cat.id}
               onClick={() =>
-                setSelectedCategory(
-                  selectedCategory === cat.id ? null : cat.id,
-                )
+                // Clicking the already-selected chip falls back to "Tous"
+                updateCategory(selectedCategory === cat.id ? null : cat.id)
               }
             >
               {cat.label}
@@ -209,9 +224,14 @@ export function ItemsCatalogGrid() {
                     bgClassName="bg-transparent"
                     className="aspect-square w-full"
                   />
-                  <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-                    {entry.typeBadgeLabel}
-                  </span>
+                  {/* Type badge only makes sense when browsing "Tous" —
+                      once a type filter is active, every card has the
+                      same type and the badge becomes noise. */}
+                  {selectedCategory === null && (
+                    <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                      {entry.typeBadgeLabel}
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col gap-1 p-2 sm:p-3">
                   <h3 className="line-clamp-2 break-words text-[13px] font-semibold leading-tight text-[var(--text-primary)] sm:text-sm">
