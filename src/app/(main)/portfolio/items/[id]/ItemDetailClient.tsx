@@ -18,6 +18,7 @@ type PortfolioItemDTO = {
     type: string;
     imageUrl: string | null;
     retailPrice: number | null;
+    cardmarketUrl: string | null;
     serieName: string | null;
     blocName: string | null;
   };
@@ -59,6 +60,7 @@ export function ItemDetailClient() {
               type: row.item.type,
               imageUrl: row.item.imageUrl,
               retailPrice: row.item.retailPrice,
+              cardmarketUrl: row.item.cardmarketUrl ?? null,
               serieName: row.item.serie?.name ?? null,
               blocName: row.item.serie?.bloc?.name ?? null,
             },

@@ -188,6 +188,16 @@ model Item {
   order            Int        @default(0)
   cardmarketUrl    String?    @db.Text
   cardmarketId     String?
+  // Confidence bucket emitted by the Cardmarket matching script:
+  //   "auto_high"   — 1 CM product matched unambiguously, fields populated
+  //   "auto_low"    — 2+ candidates, admin must pick one (see cardmarketCandidates)
+  //   "unmatched"   — 0 candidates (DB item has no CM equivalent or rules missed)
+  //   "verified"    — admin confirmed a match via the Phase 3 dashboard
+  // Cleared to NULL once an admin resolves the item.
+  cardmarketMatchConfidence String?
+  // Snapshot of the top 3-5 candidates from the last matching run. Used by the
+  // admin dashboard. Shape: Array<{ cardmarketId: number; name: string; score: number; url: string }>.
+  cardmarketCandidates      Json?
   priceFrom        Float?
   priceTrend       Float?
   availableSellers Int?

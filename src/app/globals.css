@@ -123,6 +123,16 @@ html.capacitor body {
   background-attachment: fixed;
 }
 
+/* Hide scrollbar on a specific element (used on the fiche breadcrumb — it
+   scrolls horizontally on narrow viewports but the bar itself is distracting). */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

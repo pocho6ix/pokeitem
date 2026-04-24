@@ -3,11 +3,10 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Minus, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Minus, Plus, Trash2 } from "lucide-react";
 import { ItemImage } from "@/components/shared/ItemImage";
-import { Badge } from "@/components/ui/Badge";
+import { ItemBadge } from "@/components/portfolio/ItemBadge";
 import { BottomSheet } from "@/components/ui/BottomSheet";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
 import { fetchApi } from "@/lib/api";
 
 const MAX_PRICE  = 1_000_000;
@@ -37,14 +36,15 @@ export interface ItemDetailFormProps {
     currentPrice:          number | null;
     currentPriceUpdatedAt: string | null;
     item: {
-      id:          string;
-      name:        string;
-      slug:        string;
-      type:        string;
-      imageUrl:    string | null;
-      retailPrice: number | null;
-      serieName:   string | null;
-      blocName:    string | null;
+      id:            string;
+      name:          string;
+      slug:          string;
+      type:          string;
+      imageUrl:      string | null;
+      retailPrice:   number | null;
+      cardmarketUrl: string | null;
+      serieName:     string | null;
+      blocName:      string | null;
     };
   };
 }
@@ -196,14 +196,36 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
             {item.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
-            <Badge className={`${ITEM_TYPE_COLORS[item.type]} px-1.5 py-0 text-[10px]`}>
-              {ITEM_TYPE_LABELS[item.type]}
-            </Badge>
+            <ItemBadge type={item.type} />
             {item.serieName && <span>{item.serieName}</span>}
             {item.blocName && <span className="text-[var(--text-tertiary)]">· {item.blocName}</span>}
           </div>
         </div>
       </div>
+
+      {/* Cardmarket CTA — only rendered once the matching script (see
+          scripts/match-cardmarket-items.ts) has populated `cardmarketUrl`. */}
+      {item.cardmarketUrl && (
+        <a
+          href={item.cardmarketUrl}
+          target="_blank"
+          rel="nofollow noopener noreferrer"
+          aria-label="Voir sur Cardmarket"
+          // Inline color — the dark-mode anchor cascade otherwise wins over
+          // text-slate-900 via higher specificity.
+          style={{ color: "#0f172a" }}
+          className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold shadow-[var(--shadow-card)] transition-opacity hover:opacity-90"
+        >
+          <span>Voir sur</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/cardmarket.png"
+            alt="Cardmarket"
+            className="h-5 w-auto object-contain"
+          />
+          <ExternalLink className="h-4 w-4 text-slate-500" />
+        </a>
+      )}
 
       {/* Investment block */}
       <section className="mt-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-card)] p-4 shadow-[var(--shadow-card)]">
