@@ -13,6 +13,7 @@ export type Feature =
   | 'SCAN_CARD'
   | 'VIEW_COLLECTION_VALUE'
   | 'VIEW_PORTFOLIO_CHART'
+  | 'VIEW_TOP_PERFORMANCES'
 
 export type LimitReason =
   | 'PRO_REQUIRED'
@@ -50,6 +51,7 @@ export async function checkFeature(
   switch (feature) {
     case 'VIEW_COLLECTION_VALUE':
     case 'VIEW_PORTFOLIO_CHART':
+    case 'VIEW_TOP_PERFORMANCES':
       return { allowed: false, reason: 'PRO_REQUIRED', isPro: false }
 
     case 'ADD_CARD': {
