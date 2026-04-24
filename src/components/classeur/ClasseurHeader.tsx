@@ -5,10 +5,9 @@ import { useHideValues } from "@/components/ui/HideValuesContext";
 import { ExportExcelButton } from "./ExportExcelButton";
 
 // Top-of-screen bar for the Classeur: big title on the left, action
-// icons on the right. The "mask values" eye used to live inside
-// PortfolioMiniStats (which still powers the sub-pages dashboard) —
-// we colocate a second instance here so the control stays reachable
-// from the new root layout too.
+// icons on the right. The "mask values" eye lives here so the control
+// is reachable from the root layout (sub-pages no longer surface a
+// dashboard of their own).
 
 export function ClasseurHeader() {
   const { hidden, toggle } = useHideValues();

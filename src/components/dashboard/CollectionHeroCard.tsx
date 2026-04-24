@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Plus } from "lucide-react";
 import { useHideValues } from "@/components/ui/HideValuesContext";
 import { fetchApi } from "@/lib/api";
+import {
+  getPeriodFromFirstActivity,
+  type Period,
+} from "@/lib/portfolio/getPeriodFromFirstActivity";
 
 function fmt(n: number, decimals = 2) {
   return n.toLocaleString("fr-FR", {
@@ -147,20 +151,18 @@ function MiniSparkline({ values, color }: { values: number[]; color: string }) {
 }
 
 // ── Period selection based on account age ─────────────────────────────────────
+// The core rule lives in lib/portfolio/getPeriodFromFirstActivity.ts and is
+// shared with ClasseurView's evolution chart. Here we also derive the short
+// human-readable label rendered next to the hero headline.
 
-type Period = "7J" | "1M" | "3M" | "6M" | "1A" | "MAX";
-
-function getPeriodFromFirstCard(firstCardDate: string | null): { period: Period; label: string } {
-  if (!firstCardDate) return { period: "1M", label: "30j" };
-  const ageMs = Date.now() - new Date(firstCardDate).getTime();
-  const days  = ageMs / (1000 * 60 * 60 * 24);
-  if (days < 7)   return { period: "7J",  label: "7j"  };
-  if (days < 30)  return { period: "1M",  label: "30j" };
-  if (days < 90)  return { period: "3M",  label: "3M"  };
-  if (days < 180) return { period: "6M",  label: "6M"  };
-  if (days < 365) return { period: "1A",  label: "1A"  };
-  return              { period: "MAX", label: "max" };
-}
+const PERIOD_LABELS: Record<Period, string> = {
+  "7J": "7j",
+  "1M": "30j",
+  "3M": "3M",
+  "6M": "6M",
+  "1A": "1A",
+  MAX: "max",
+};
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -180,7 +182,8 @@ export function CollectionHeroCard({ total, firstCardDate }: Props) {
   const [chartValues, setChartValues] = useState<number[]>([]);
   const [changePercent, setChangePercent] = useState<number | null>(null);
 
-  const { period, label } = getPeriodFromFirstCard(firstCardDate);
+  const period = getPeriodFromFirstActivity(firstCardDate);
+  const label = PERIOD_LABELS[period];
 
   useEffect(() => {
     fetchApi(`/api/portfolio/chart?period=${period}`)

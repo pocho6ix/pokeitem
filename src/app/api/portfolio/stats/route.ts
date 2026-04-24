@@ -82,6 +82,28 @@ export async function GET(req: Request) {
       .filter((uc) => uc.quantity > 1)
       .reduce((sum, uc) => sum + getPriceForVersion(uc.card, uc.version) * (uc.quantity - 1), 0);
 
+    // First activity date — earliest of (first userCard, first portfolioItem).
+    // Consumers (ClasseurView, CollectionHeroCard) use this to pick the
+    // default evolution-chart timeframe: a brand new account defaults to
+    // "7J", while a year-old account defaults to "MAX". Two cheap queries
+    // (both indexed on userId), ran in parallel.
+    const [firstCard, firstItem] = await Promise.all([
+      prisma.userCard.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      }),
+      prisma.portfolioItem.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      }),
+    ]);
+    const firstActivityDate =
+      [firstCard?.createdAt, firstItem?.createdAt]
+        .filter((d): d is Date => d instanceof Date)
+        .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
+
     const totalValue = itemsValue + cardsValue;
     const totalInvestedAll = totalInvested + cardsInvested;
 
@@ -135,6 +157,7 @@ export async function GET(req: Request) {
       cardValue: Math.round(cardsValue * 100) / 100,
       doublesValue: Math.round(doublesValue * 100) / 100,
       wishlistCount,
+      firstActivityDate: firstActivityDate ? firstActivityDate.toISOString() : null,
     });
   } catch (error) {
     console.error("Error fetching portfolio stats:", error);

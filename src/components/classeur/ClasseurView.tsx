@@ -8,6 +8,7 @@ import { useSession } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { fetchApi } from "@/lib/api";
 import { isNative } from "@/lib/native";
+import { getPeriodFromFirstActivity } from "@/lib/portfolio/getPeriodFromFirstActivity";
 import { ClasseurHeader } from "./ClasseurHeader";
 import { PortfolioGlobalCard } from "./PortfolioGlobalCard";
 import { InvestmentHeroCard } from "./InvestmentHeroCard";
@@ -42,6 +43,12 @@ interface Stats {
   doublesValue?: number | null;
   itemsValue?: number | null;
   wishlistCount?: number;
+  // ISO date of the earliest card/item the user has ever added. Used to
+  // pick the evolution-chart's default timeframe ("7J" for fresh
+  // accounts, "MAX" for long-running ones). Nullable for brand new users
+  // with an empty collection — in that case `getPeriodFromFirstActivity`
+  // falls back to "1M".
+  firstActivityDate?: string | null;
 }
 
 const CARD_PREVIEWS = [
@@ -232,14 +239,17 @@ export function ClasseurView() {
       {/* 5. Top performances */}
       <TopPerformancesSection />
 
-      {/* 6. Évolution de mon classeur */}
+      {/* 6. Évolution de mon classeur — default timeframe scales with
+           account age (same rule as the home page's CollectionHeroCard). */}
       <div className="mb-2 flex items-center gap-2">
         <LineChart className="h-5 w-5" style={{ color: GOLD }} />
         <h2 className="text-base font-semibold text-[var(--text-primary)]">
           Évolution de mon classeur
         </h2>
       </div>
-      <PortfolioEvolutionChart />
+      <PortfolioEvolutionChart
+        initialPeriod={getPeriodFromFirstActivity(stats?.firstActivityDate ?? null)}
+      />
     </>
   );
 }

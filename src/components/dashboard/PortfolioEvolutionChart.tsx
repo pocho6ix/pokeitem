@@ -14,6 +14,10 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  PERIODS,
+  type Period,
+} from "@/lib/portfolio/getPeriodFromFirstActivity";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,9 +32,6 @@ interface SerieMeta {
   name: string;
   abbreviation: string | null;
 }
-
-const PERIODS = ["7J", "1M", "3M", "6M", "1A", "MAX"] as const;
-type Period = (typeof PERIODS)[number];
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
 
@@ -59,14 +60,32 @@ function ChartTooltip({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function PortfolioEvolutionChart() {
+interface PortfolioEvolutionChartProps {
+  // Timeframe to preselect on mount. When omitted, defaults to "7J" (the
+  // legacy behaviour). The Classeur hero passes a value derived from the
+  // user's first activity date so new accounts see "7J" while long-running
+  // accounts land on a broader window automatically.
+  initialPeriod?: Period;
+}
+
+export function PortfolioEvolutionChart({
+  initialPeriod = "7J",
+}: PortfolioEvolutionChartProps = {}) {
   const { status } = useSession();
   const { isPro, isLoading: subLoading } = useSubscription();
   const [chartData,     setChartData]     = useState<ChartDataPoint[]>([]);
   const [series,        setSeries]        = useState<SerieMeta[]>([]);
-  const [period,        setPeriod]        = useState<Period>("7J");
+  const [period,        setPeriod]        = useState<Period>(initialPeriod);
   const [selectedSerie, setSelectedSerie] = useState<string | null>(null);
   const [loading,       setLoading]       = useState(true);
+
+  // When `initialPeriod` changes (e.g. ClasseurView resolves it
+  // asynchronously from the stats API), adopt it — but only while the
+  // user hasn't manually touched the period control yet.
+  const [userOverrode, setUserOverrode] = useState(false);
+  useEffect(() => {
+    if (!userOverrode) setPeriod(initialPeriod);
+  }, [initialPeriod, userOverrode]);
 
   const fetchChart = useCallback(async (p: Period, serie: string | null) => {
     setLoading(true);
@@ -127,7 +146,10 @@ export function PortfolioEvolutionChart() {
           {PERIODS.map((p) => (
             <button
               key={p}
-              onClick={() => setPeriod(p)}
+              onClick={() => {
+                setUserOverrode(true);
+                setPeriod(p);
+              }}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
                 period === p
                   ? "btn-gold text-black"

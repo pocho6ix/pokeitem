@@ -1,26 +1,11 @@
-import { Suspense } from "react";
-import dynamic from "next/dynamic";
-import { PortfolioMiniStats } from "@/components/dashboard/PortfolioMiniStats";
 import { ClasseurBetaOffer } from "@/components/beta/ClasseurBetaOffer";
 import { PortfolioBackLink } from "./PortfolioBackLink";
-import { LegacyDashboardWrapper } from "./LegacyDashboardWrapper";
 
-// Recharts (~150 KB) chargé en lazy — code splitting sans bloquer le bundle principal
-const PortfolioEvolutionChart = dynamic(
-  () => import("@/components/dashboard/PortfolioEvolutionChart").then((m) => m.PortfolioEvolutionChart),
-  {
-    loading: () => <div className="mb-6 h-44 animate-pulse rounded-xl bg-[var(--bg-secondary)]" />,
-  }
-);
-
-// The outer max-w-7xl container stays — sub-pages rely on it for
-// their own content wrapping. What changed for the Classeur refactor:
-//
-//   • PortfolioTiles (the legacy "Mes collections" grid) is gone —
-//     the new ClasseurView replaces it on /portfolio root.
-//   • PortfolioMiniStats + PortfolioEvolutionChart are now guarded by
-//     LegacyDashboardWrapper, so they only render on sub-pages. On
-//     /portfolio root the new ClasseurView owns its own hero + chart.
+// The Classeur refactor removed the legacy sub-page dashboard (mini
+// KPIs + evolution chart). Sub-pages (Mes cartes / Mes items /
+// Mes doubles / Liste de souhaits) now render only their own content
+// — global KPIs and the evolution chart live exclusively on the
+// /portfolio root (owned by ClasseurView).
 //
 // BackLink and BetaOffer self-hide when appropriate (root / Pro users),
 // so they stay at the top unconditionally.
@@ -33,14 +18,6 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
 
       {/* Beta offer for new non-subscribed users (internal guard) */}
       <ClasseurBetaOffer />
-
-      {/* Legacy dashboard (stats + chart) — sub-pages only */}
-      <LegacyDashboardWrapper>
-        <Suspense>
-          <PortfolioMiniStats />
-        </Suspense>
-        <PortfolioEvolutionChart />
-      </LegacyDashboardWrapper>
 
       {/* Page content — ClasseurView on root, sub-page content elsewhere */}
       {children}
