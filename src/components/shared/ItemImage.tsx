@@ -55,7 +55,7 @@ export function ItemImage({
           alt={alt}
           width={dim.w}
           height={dim.h}
-          className="object-contain p-1 max-h-full w-auto"
+          className="h-full w-full object-contain p-1"
         />
       ) : (
         <Package
