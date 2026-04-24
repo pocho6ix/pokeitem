@@ -12,16 +12,17 @@ import { GOLD } from "./constants";
 //   • portefeuille_cartes.csv  (one line per userCard)
 //   • portefeuille_items.csv   (one line per sealed portfolioItem)
 //
-// The button is web-only for now — Excel/Numbers are desktop workflows
-// and Capacitor's WebView doesn't handle `<a download>` natively, so we
-// hide the CTA on iOS rather than shipping a broken download there.
-// Follow-up (out of scope): wire `@capacitor/filesystem` + `@capacitor/share`
-// for a mobile-native flow if there's demand.
+// Two delivery modes based on runtime:
+//   • Web  — Blob + anchor + <a download>, twice with a 150ms gap to
+//            sidestep browser multi-file permission prompts.
+//   • iOS  — Capacitor Filesystem writes both CSVs to the Cache dir,
+//            then Share.share({ files: [...] }) opens the native
+//            UIActivityViewController so the user can save to Files,
+//            email, AirDrop, etc. All in a single share sheet.
 //
-// Hit-target is 44×44px to honour iOS touch guidance (even though we
-// hide the button there — the rule stays if we re-enable it later).
+// Hit-target is 44×44px to honour iOS touch guidance.
 
-function downloadCsv(filename: string, content: string): void {
+function downloadCsvWeb(filename: string, content: string): void {
   const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -35,11 +36,48 @@ function downloadCsv(filename: string, content: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+async function shareCsvsNative(
+  cartesCsv: string,
+  itemsCsv: string,
+): Promise<void> {
+  // Dynamic imports — the plugins only load inside the Capacitor shell,
+  // keeping the web bundle clean.
+  const [{ Filesystem, Directory, Encoding }, { Share }] = await Promise.all([
+    import("@capacitor/filesystem"),
+    import("@capacitor/share"),
+  ]);
+
+  const files = [
+    { name: "portefeuille_cartes.csv", data: cartesCsv },
+    { name: "portefeuille_items.csv", data: itemsCsv },
+  ];
+
+  const uris: string[] = [];
+  for (const f of files) {
+    await Filesystem.writeFile({
+      path: f.name,
+      data: f.data,
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8,
+    });
+    const { uri } = await Filesystem.getUri({
+      directory: Directory.Cache,
+      path: f.name,
+    });
+    uris.push(uri);
+  }
+
+  // UIActivityViewController handles "Save to Files", Mail, AirDrop,
+  // WhatsApp, etc. all in one sheet when `files` is an array.
+  await Share.share({
+    title: "Mon portefeuille PokéItem",
+    dialogTitle: "Exporter mon portefeuille",
+    files: uris,
+  });
+}
+
 export function ExportExcelButton() {
   const [loading, setLoading] = useState(false);
-
-  // iOS users don't get the button — see rationale in the file header.
-  if (isNative()) return null;
 
   const handleExport = async () => {
     if (loading) return;
@@ -59,13 +97,25 @@ export function ExportExcelButton() {
         return;
       }
 
-      downloadCsv("portefeuille_cartes.csv", payload.cartesCsv);
-      // Small delay so Chrome/Firefox don't collapse the second download
-      // into a "multiple files" permission prompt.
-      setTimeout(() => {
-        downloadCsv("portefeuille_items.csv", payload.itemsCsv);
-      }, 150);
+      if (isNative()) {
+        await shareCsvsNative(payload.cartesCsv, payload.itemsCsv);
+      } else {
+        downloadCsvWeb("portefeuille_cartes.csv", payload.cartesCsv);
+        // Small delay so Chrome/Firefox don't collapse the second
+        // download into a "multiple files" permission prompt.
+        setTimeout(() => {
+          downloadCsvWeb("portefeuille_items.csv", payload.itemsCsv);
+        }, 150);
+      }
     } catch (err) {
+      // `AbortError` fires on iOS when the user dismisses the share
+      // sheet — that's not a failure, stay quiet.
+      if (
+        err instanceof Error &&
+        (err.name === "AbortError" || err.message.includes("cancel"))
+      ) {
+        return;
+      }
       console.error("[Classeur] Export CSV échoué", err);
       alert("L'export a échoué. Réessaie dans un instant.");
     } finally {
