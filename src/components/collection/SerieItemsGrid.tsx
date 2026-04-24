@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useSession } from "@/lib/auth-context";
 import { Card } from "@/components/ui/Card";
-import { ITEM_TYPE_LABELS, ITEM_TYPE_COLORS } from "@/lib/constants";
+import { ITEM_TYPE_LABELS } from "@/lib/constants";
+import { typeToBadgeLabel } from "@/lib/items-catalog";
 import { formatPrice } from "@/lib/utils";
 import { ItemImage } from "@/components/shared/ItemImage";
 import { AddToPortfolioModal } from "@/components/portfolio/AddToPortfolioModal";
@@ -81,7 +81,6 @@ export function SerieItemsGrid({
   dbItems,
   availableImageTypes,
 }: SerieItemsGridProps) {
-  const { data: session } = useSession();
   const params = useParams();
   const resolvedSerieSlug = serieSlug || (params?.serieSlug as string) || "";
   // Hide the "Voir les détails" CTA inside the native Capacitor build —
@@ -140,59 +139,55 @@ export function SerieItemsGrid({
 
   function renderItemCard(itemType: ItemTypeData) {
     const dbItem = dbItems?.find((i) => i.type === itemType.type);
-    const displayPrice = itemType.typicalMsrp;
+    const displayPrice = dbItem?.currentPrice ?? itemType.typicalMsrp;
+    const label = ITEM_TYPE_LABELS[itemType.type] ?? itemType.label;
 
     return (
       <Card
         key={itemType.type}
-        className="group flex flex-col overflow-hidden"
+        className="group flex flex-col overflow-hidden !bg-[var(--bg-card)]"
       >
-        {/* Image */}
-        <ItemImage
-          src={dbItem?.imageUrl}
-          slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
-          alt={ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-          size="xl"
-          className="aspect-[4/3] rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
-        />
+        {/* Image — transparent bg so the card surface shows through */}
+        <div className="relative">
+          <ItemImage
+            src={dbItem?.imageUrl}
+            slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
+            alt={label}
+            size="xl"
+            bgClassName="bg-transparent"
+            className="aspect-square w-full rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
+          />
+          <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+            {typeToBadgeLabel(itemType.type, label)}
+          </span>
+        </div>
 
         {/* Content */}
-        <div className="flex flex-1 flex-col p-4">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm text-[var(--text-primary)] leading-tight">
-              {ITEM_TYPE_LABELS[itemType.type] ?? itemType.label}
-            </h3>
-          </div>
-          <p className="mt-1 flex-1 text-xs text-[var(--text-secondary)] line-clamp-2">
-            {itemType.description}
-          </p>
-          <div className="mt-3 flex items-center justify-between">
-            <span className="font-data text-base font-bold text-[var(--text-primary)]">
+        <div className="flex flex-1 flex-col p-3">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] leading-tight line-clamp-2">
+            {label}
+          </h3>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="font-data text-sm font-bold text-[var(--text-primary)]">
               {formatPrice(displayPrice)}
             </span>
             <button
               type="button"
               onClick={() => handleAddToPortfolio(itemType)}
-              className="inline-flex items-center gap-1.5 rounded-lg btn-gold px-3 py-1.5 text-xs font-medium text-black"
+              className="inline-flex items-center gap-1 rounded-lg btn-gold px-2.5 py-1 text-[11px] font-semibold text-black"
             >
               + Portfolio
             </button>
           </div>
 
-          {/* ── "Voir les détails" CTA (web only) ─────────────────────
-              Internal link to the /collection/produits/[bloc]/[serie]/[item]
-              SEO page. Rendered only when we have a canonical DB slug
-              (otherwise the target would 404) and hidden on the Capacitor
-              native build, where that route isn't part of the shipped
-              surface. Secondary styling on purpose — the primary gold CTA
-              is reserved for "+ Portfolio". */}
+          {/* "Voir les détails" CTA (web only, DB slug required) */}
           {isWeb && dbItem?.slug && (
             <Link
               href={`/collection/produits/${blocSlug}/${resolvedSerieSlug}/${dbItem.slug}`}
-              className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card)]"
+              className="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-primary)] transition-colors hover:border-white/30 hover:bg-[var(--bg-card-hover)]"
             >
-              Voir les détails
-              <ArrowRight className="h-3.5 w-3.5" />
+              Détails
+              <ArrowRight className="h-3 w-3" />
             </Link>
           )}
         </div>
@@ -202,7 +197,7 @@ export function SerieItemsGrid({
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 min-[360px]:grid-cols-3 sm:gap-4 lg:grid-cols-4">
         {withImage.map(renderItemCard)}
       </div>
 
@@ -219,7 +214,7 @@ export function SerieItemsGrid({
           </label>
 
           {showOtherItems && (
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 min-[360px]:grid-cols-3 sm:gap-4 lg:grid-cols-4">
               {withoutImage.map(renderItemCard)}
             </div>
           )}

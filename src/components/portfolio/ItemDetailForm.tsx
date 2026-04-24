@@ -189,6 +189,7 @@ export function ItemDetailForm({ portfolioItem }: ItemDetailFormProps) {
           slug={item.slug}
           alt={item.name}
           size="md"
+          bgClassName="bg-[var(--bg-secondary)]"
           className="h-24 w-24 shrink-0 rounded-lg border border-[var(--border-default)]"
         />
         <div className="min-w-0 flex-1">

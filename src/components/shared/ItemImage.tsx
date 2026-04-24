@@ -1,12 +1,27 @@
 import Image from "next/image";
 import { Package } from "lucide-react";
+import { ITEM_IMAGE_URL } from "@/data/item-images-map.generated";
 
 interface ItemImageProps {
   src?: string | null;
   alt: string;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
-  /** Item slug — used to resolve image by convention when src is null */
+  /**
+   * Tailwind class for the wrapping div's background.
+   * Defaults to `bg-white` for backwards compatibility with the legacy
+   * sealed-products UI; pass e.g. `bg-transparent` or
+   * `bg-[var(--bg-card)]` in the refreshed grid where the card already
+   * provides the surface color.
+   */
+  bgClassName?: string;
+  /**
+   * Item slug — used to resolve image by convention when src is null.
+   * First tried against the generated stem → URL map (which knows
+   * whether the on-disk artwork is .png or .jpg), then falls back to
+   * `/images/items/${slug}.jpg` so callers passing arbitrary slugs
+   * (e.g. DB items not in the static catalog) still work.
+   */
   slug?: string;
 }
 
@@ -22,14 +37,17 @@ export function ItemImage({
   alt,
   size = "md",
   className = "",
+  bgClassName = "bg-white",
   slug,
 }: ItemImageProps) {
   const dim = SIZES[size];
-  const resolvedSrc = src || (slug ? `/images/items/${slug}.jpg` : null);
+  const resolvedSrc =
+    src ||
+    (slug ? ITEM_IMAGE_URL[slug] ?? `/images/items/${slug}.jpg` : null);
 
   return (
     <div
-      className={`bg-white flex items-center justify-center overflow-hidden ${className}`}
+      className={`${bgClassName} flex items-center justify-center overflow-hidden ${className}`}
     >
       {resolvedSrc ? (
         <Image

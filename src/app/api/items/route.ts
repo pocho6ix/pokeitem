@@ -5,7 +5,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const type = searchParams.get("type");
     const serieId = searchParams.get("serieId");
+    const serieSlug = searchParams.get("serieSlug");
     const blocId = searchParams.get("blocId");
+    const blocSlug = searchParams.get("blocSlug");
     const search = searchParams.get("search");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
@@ -21,8 +23,19 @@ export async function GET(request: NextRequest) {
       where.serieId = serieId;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const serieFilter: Record<string, any> = {};
+    if (serieSlug) {
+      serieFilter.slug = serieSlug;
+    }
     if (blocId) {
-      where.serie = { blocId };
+      serieFilter.blocId = blocId;
+    }
+    if (blocSlug) {
+      serieFilter.bloc = { slug: blocSlug };
+    }
+    if (Object.keys(serieFilter).length > 0) {
+      where.serie = serieFilter;
     }
 
     if (search) {

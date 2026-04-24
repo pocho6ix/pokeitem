@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { BLOCS } from "@/data/blocs";
-import { SERIES } from "@/data/series";
-import { Card } from "@/components/ui/Card";
+import { Suspense } from "react";
 import { TabNav } from "@/components/ui/TabNav";
+import { ProduitsLandingClient } from "./ProduitsLandingClient";
 
 export const metadata: Metadata = {
   title: "Collection produits scellés Pokémon TCG",
@@ -12,44 +9,7 @@ export const metadata: Metadata = {
     "Parcourez tous les produits scellés Pokémon TCG par série et extension : Booster Boxes, ETB, coffrets, blisters, tins et displays avec leur cote actuelle.",
 };
 
-function formatPeriod(startDate: string, endDate: string | null): string {
-  const start = new Date(startDate).toLocaleDateString("fr-FR", {
-    month: "short",
-    year: "numeric",
-  });
-  if (!endDate) return `${start} - Aujourd'hui`;
-  const end = new Date(endDate).toLocaleDateString("fr-FR", {
-    month: "short",
-    year: "numeric",
-  });
-  return `${start} - ${end}`;
-}
-
-function getSeriesCount(blocSlug: string): number {
-  return SERIES.filter((s) => s.blocSlug === blocSlug).length;
-}
-
-const GRADIENT_PALETTES = [
-  "from-blue-500/20 to-purple-500/20",
-  "from-red-500/20 to-orange-500/20",
-  "from-green-500/20 to-teal-500/20",
-  "from-amber-500/20 to-yellow-500/20",
-  "from-pink-500/20 to-rose-500/20",
-  "from-indigo-500/20 to-blue-500/20",
-  "from-violet-500/20 to-fuchsia-500/20",
-  "from-cyan-500/20 to-sky-500/20",
-  "from-emerald-500/20 to-green-500/20",
-  "from-orange-500/20 to-red-500/20",
-  "from-teal-500/20 to-cyan-500/20",
-  "from-fuchsia-500/20 to-pink-500/20",
-  "from-sky-500/20 to-indigo-500/20",
-];
-
-const EXCLUDED_BLOCS = new Set(["collection-mcdo", "pokemon-organized-play"]);
-
 export default function CollectionProduitsPage() {
-  const visibleBlocs = BLOCS.filter((b) => !EXCLUDED_BLOCS.has(b.slug));
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <TabNav
@@ -59,52 +19,11 @@ export default function CollectionProduitsPage() {
         ]}
       />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {visibleBlocs.map((bloc, index) => {
-          const seriesCount = getSeriesCount(bloc.slug);
-          const gradient =
-            GRADIENT_PALETTES[index % GRADIENT_PALETTES.length];
-
-          return (
-            <Link key={bloc.slug} href={`/collection/produits/${bloc.slug}`}>
-              <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <div
-                  className={`h-40 bg-gradient-to-br ${gradient} flex items-center justify-center p-6`}
-                >
-                  {bloc.imageUrl ? (
-                    <Image
-                      src={bloc.imageUrl}
-                      alt={bloc.name}
-                      width={280}
-                      height={80}
-                      className="h-auto max-h-24 w-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <span className="text-4xl font-extrabold text-[var(--text-secondary)] opacity-40 group-hover:opacity-60 transition-opacity">
-                      {bloc.abbreviation}
-                    </span>
-                  )}
-                </div>
-                <div className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-[var(--text-primary)] group-hover:text-blue-600 transition-colors">
-                      {bloc.name}
-                    </h2>
-                  </div>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {formatPeriod(bloc.startDate, bloc.endDate)}
-                  </p>
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    {seriesCount > 0
-                      ? `${seriesCount} extension${seriesCount > 1 ? "s" : ""}`
-                      : "Aucune extension référencée"}
-                  </p>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+      {/* The client landing reads `?view=` and `?type=` via `useSearchParams`,
+          which requires a Suspense boundary under Next's App Router. */}
+      <Suspense fallback={null}>
+        <ProduitsLandingClient />
+      </Suspense>
     </div>
   );
 }
