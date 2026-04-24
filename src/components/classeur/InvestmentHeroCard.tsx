@@ -87,11 +87,17 @@ export function InvestmentHeroCard({
         </div>
       )}
 
-      {/* Preview images — bottom-right corner */}
+      {/* Preview images — bottom-right corner. Items get a larger box
+          than cards since product boxes read as smaller at equivalent
+          dimensions (flatter aspect ratio + less visual density). */}
       {previewImages.length > 0 && (
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0 h-24 w-32 sm:h-28 sm:w-36"
+          className={`pointer-events-none absolute bottom-0 right-0 ${
+            previewLayout === "items"
+              ? "h-36 w-48 sm:h-40 sm:w-56"
+              : "h-24 w-32 sm:h-28 sm:w-36"
+          }`}
         >
           {previewLayout === "cards" ? (
             <CardFan images={previewImages.slice(0, 3)} />
@@ -148,30 +154,32 @@ function CardFan({ images }: { images: string[] }) {
   );
 }
 
-// 2 items side by side with opposing tilts.
+// 2 items side by side with opposing tilts. Larger than the card fan so
+// product boxes stay visually dominant — keeps parity with the iEstims
+// reference where the items tile reads "fuller" than the cards tile.
 function ItemPair({ images }: { images: string[] }) {
   const [a, b] = images;
   return (
     <>
       {a && (
-        <div className="absolute bottom-1 right-12 h-24 w-16 -rotate-[4deg] sm:right-14 sm:h-28 sm:w-20">
+        <div className="absolute bottom-1 right-20 h-36 w-28 -rotate-[4deg] sm:right-24 sm:h-40 sm:w-32">
           <Image
             src={a}
             alt=""
             fill
-            sizes="80px"
-            className="rounded-md object-contain shadow-md"
+            sizes="128px"
+            className="rounded-md object-contain drop-shadow-md"
           />
         </div>
       )}
       {b && (
-        <div className="absolute bottom-1 right-0 h-24 w-16 rotate-[4deg] sm:h-28 sm:w-20">
+        <div className="absolute bottom-1 right-0 h-36 w-28 rotate-[4deg] sm:h-40 sm:w-32">
           <Image
             src={b}
             alt=""
             fill
-            sizes="80px"
-            className="rounded-md object-contain shadow-md"
+            sizes="128px"
+            className="rounded-md object-contain drop-shadow-md"
           />
         </div>
       )}
