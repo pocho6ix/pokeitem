@@ -154,7 +154,6 @@ export function SerieItemsGrid({
             slug={`${resolvedSerieSlug}-${TYPE_SLUG[itemType.type] || itemType.type.toLowerCase()}`}
             alt={label}
             size="xl"
-            bgClassName="bg-transparent"
             className="aspect-square w-full rounded-t-xl group-hover:scale-[1.02] transition-transform duration-300"
           />
           <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">

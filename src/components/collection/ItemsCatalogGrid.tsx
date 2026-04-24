@@ -221,7 +221,6 @@ export function ItemsCatalogGrid() {
                     slug={entry.key}
                     alt={`${entry.typeLabel} ${entry.serieName}`}
                     size="lg"
-                    bgClassName="bg-transparent"
                     className="aspect-square w-full"
                   />
                   {/* Type badge only makes sense when browsing "Tous" —

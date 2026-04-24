@@ -16,14 +16,13 @@ export function ItemCardGrid({ row }: ItemCardGridProps) {
       href={`/portfolio/items/${row.id}`}
       className="rounded-2xl bg-[var(--bg-card)] overflow-hidden border border-[var(--border-default)] transition-all duration-[120ms] hover:bg-[var(--bg-card-hover)] hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E7BA76] focus-visible:ring-offset-2"
     >
-      {/* Image area — uses card surface color, no white background */}
+      {/* Image area — product shots ship with their native white bg */}
       <div className="h-32 flex items-center justify-center p-2">
         <ItemImage
           src={row.item.imageUrl}
           slug={row.item.slug}
           alt={row.item.name}
           size="md"
-          bgClassName="bg-transparent"
           className="h-full w-full"
         />
       </div>

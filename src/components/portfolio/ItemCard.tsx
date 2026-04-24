@@ -61,7 +61,6 @@ export function ItemCard({ row, onDelete, isDeleting }: ItemCardProps) {
           slug={row.item.slug}
           alt={row.item.name}
           size="sm"
-          bgClassName="bg-[var(--bg-secondary)]"
           className="w-16 h-16 rounded-xl shrink-0"
         />
 
