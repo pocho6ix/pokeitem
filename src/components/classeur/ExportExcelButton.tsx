@@ -2,28 +2,56 @@
 
 import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { zipSync, strToU8 } from "fflate";
 import { fetchApi } from "@/lib/api";
 import { isNative } from "@/lib/native";
 import { GOLD } from "./constants";
 
 // CSV export trigger for the Classeur.
 //
-// Produces two files matching the templates the user defined:
-//   • portefeuille_cartes.csv  (one line per userCard)
-//   • portefeuille_items.csv   (one line per sealed portfolioItem)
+// Bundles both CSVs (portefeuille_cartes + portefeuille_items) into a
+// single ZIP. The previous "download twice with a setTimeout" approach
+// worked for the first file but Chrome silently blocks the second as a
+// "multiple automatic download" — the second call runs outside the
+// user-gesture window. ZIP = one user-initiated download, one file to
+// share on iOS, same UX everywhere.
 //
-// Two delivery modes based on runtime:
-//   • Web  — Blob + anchor + <a download>, twice with a 150ms gap to
-//            sidestep browser multi-file permission prompts.
-//   • iOS  — Capacitor Filesystem writes both CSVs to the Cache dir,
-//            then Share.share({ files: [...] }) opens the native
-//            UIActivityViewController so the user can save to Files,
-//            email, AirDrop, etc. All in a single share sheet.
-//
-// Hit-target is 44×44px to honour iOS touch guidance.
+// Delivery modes:
+//   • Web  — Blob + anchor + <a download>.
+//   • iOS  — Capacitor Filesystem writes the ZIP to Cache (as base64
+//            since it's binary), then Share.share({ files: [uri] })
+//            opens UIActivityViewController so the user can save to
+//            Files, email, AirDrop, etc. The Files app unzips natively
+//            via long-press → Decompress.
 
-function downloadCsvWeb(filename: string, content: string): void {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+const ZIP_FILENAME = "portefeuille_pokeitem.zip";
+
+function buildZip(cartesCsv: string, itemsCsv: string): Uint8Array {
+  return zipSync(
+    {
+      "portefeuille_cartes.csv": strToU8(cartesCsv),
+      "portefeuille_items.csv": strToU8(itemsCsv),
+    },
+    { level: 6 },
+  );
+}
+
+function u8ToBase64(bytes: Uint8Array): string {
+  // btoa() takes a binary string, not UTF-8 — so we build one char per
+  // byte. Chunked to avoid blowing up the call stack on large payloads.
+  let binary = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(
+      null,
+      bytes.subarray(i, i + CHUNK) as unknown as number[],
+    );
+  }
+  return btoa(binary);
+}
+
+function downloadBlobWeb(filename: string, bytes: Uint8Array): void {
+  const blob = new Blob([bytes as BlobPart], { type: "application/zip" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -31,48 +59,33 @@ function downloadCsvWeb(filename: string, content: string): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // Give Chrome a beat before freeing the blob — otherwise the second
-  // download in the sequence can race the first one being revoked.
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-async function shareCsvsNative(
-  cartesCsv: string,
-  itemsCsv: string,
-): Promise<void> {
+async function shareZipNative(filename: string, bytes: Uint8Array): Promise<void> {
   // Dynamic imports — the plugins only load inside the Capacitor shell,
   // keeping the web bundle clean.
-  const [{ Filesystem, Directory, Encoding }, { Share }] = await Promise.all([
+  const [{ Filesystem, Directory }, { Share }] = await Promise.all([
     import("@capacitor/filesystem"),
     import("@capacitor/share"),
   ]);
 
-  const files = [
-    { name: "portefeuille_cartes.csv", data: cartesCsv },
-    { name: "portefeuille_items.csv", data: itemsCsv },
-  ];
+  // Binary writeFile on iOS expects base64 (no `encoding` field).
+  await Filesystem.writeFile({
+    path: filename,
+    data: u8ToBase64(bytes),
+    directory: Directory.Cache,
+  });
 
-  const uris: string[] = [];
-  for (const f of files) {
-    await Filesystem.writeFile({
-      path: f.name,
-      data: f.data,
-      directory: Directory.Cache,
-      encoding: Encoding.UTF8,
-    });
-    const { uri } = await Filesystem.getUri({
-      directory: Directory.Cache,
-      path: f.name,
-    });
-    uris.push(uri);
-  }
+  const { uri } = await Filesystem.getUri({
+    directory: Directory.Cache,
+    path: filename,
+  });
 
-  // UIActivityViewController handles "Save to Files", Mail, AirDrop,
-  // WhatsApp, etc. all in one sheet when `files` is an array.
   await Share.share({
     title: "Mon portefeuille PokéItem",
     dialogTitle: "Exporter mon portefeuille",
-    files: uris,
+    files: [uri],
   });
 }
 
@@ -97,15 +110,12 @@ export function ExportExcelButton() {
         return;
       }
 
+      const zipBytes = buildZip(payload.cartesCsv, payload.itemsCsv);
+
       if (isNative()) {
-        await shareCsvsNative(payload.cartesCsv, payload.itemsCsv);
+        await shareZipNative(ZIP_FILENAME, zipBytes);
       } else {
-        downloadCsvWeb("portefeuille_cartes.csv", payload.cartesCsv);
-        // Small delay so Chrome/Firefox don't collapse the second
-        // download into a "multiple files" permission prompt.
-        setTimeout(() => {
-          downloadCsvWeb("portefeuille_items.csv", payload.itemsCsv);
-        }, 150);
+        downloadBlobWeb(ZIP_FILENAME, zipBytes);
       }
     } catch (err) {
       // `AbortError` fires on iOS when the user dismisses the share
