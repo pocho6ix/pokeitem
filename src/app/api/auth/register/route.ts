@@ -80,10 +80,14 @@ export async function POST(request: Request) {
       // Account created but email failed — user can request a resend
     }
 
-    // Upsert contact in Brevo CRM (fire-and-forget)
-    upsertBrevoContact(email, { name, subscribed }).catch((err) =>
-      console.error("[Brevo] register upsert failed:", err)
-    );
+    // Upsert contact in Brevo CRM — only for users who consented to
+    // marketing. Opt-outs are never pushed (GDPR / CNIL-friendly, and
+    // keeps the Brevo contact count aligned with the newsletter audience).
+    if (subscribed) {
+      upsertBrevoContact(email, { name, subscribed: true }).catch((err) =>
+        console.error("[Brevo] register upsert failed:", err)
+      );
+    }
 
     return NextResponse.json(
       { message: "Compte créé. Vérifiez votre email pour activer votre compte." },

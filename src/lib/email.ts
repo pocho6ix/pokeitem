@@ -81,6 +81,15 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 
 // ─── CRM contact management ───────────────────────────────────────────────────
 
+// Only users who opted into marketing communications are stored in Brevo.
+// Unsubscribed users are removed entirely rather than left in a "users"
+// list with the newsletter list unlinked — the previous behavior leaked
+// opt-outs into the CRM and inflated the contact count.
+//
+// Transactional emails (verify, welcome, reset) do not require a Brevo
+// contact to exist — they're sent directly to the `to:` address — so
+// skipping the upsert for opt-outs has no effect on critical mail flows.
+
 export async function upsertBrevoContact(
   email: string,
   opts: {
@@ -88,15 +97,17 @@ export async function upsertBrevoContact(
     subscribed?: boolean
   } = {}
 ) {
+  const subscribed = opts.subscribed ?? true
+
+  if (!subscribed) {
+    await deleteBrevoContact(email)
+    return
+  }
+
   const client = getBrevoClient()
   const usersListId = getUsersListId()
   const newsletterListId = getNewsletterListId()
-  const subscribed = opts.subscribed ?? true
-
-  const listIds = subscribed
-    ? [usersListId, newsletterListId]
-    : [usersListId]
-  const unlinkListIds = subscribed ? [] : [newsletterListId]
+  const listIds = [usersListId, newsletterListId]
 
   try {
     await client.contacts.createContact({
@@ -117,7 +128,6 @@ export async function upsertBrevoContact(
           POKEITEM_USER: true,
         } as Record<string, string | number | boolean | string[]>,
         listIds,
-        unlinkListIds,
       })
     } catch (updateErr) {
       console.error("[Brevo] Failed to upsert contact:", updateErr)
@@ -125,6 +135,18 @@ export async function upsertBrevoContact(
   }
 }
 
+// Brevo's deleteContact is a no-op when the identifier doesn't exist
+// (returns 404) — swallow it so "never-subscribed" users don't log noise.
+async function deleteBrevoContact(email: string) {
+  try {
+    await getBrevoClient().contacts.deleteContact({ identifier: email })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (/404|not\s*found/i.test(msg)) return
+    console.error("[Brevo] Failed to delete contact:", msg)
+  }
+}
+
 export async function unsubscribeContact(email: string) {
-  await upsertBrevoContact(email, { subscribed: false })
+  await deleteBrevoContact(email)
 }

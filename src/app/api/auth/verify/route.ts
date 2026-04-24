@@ -44,23 +44,30 @@ export async function GET(request: NextRequest) {
   })
 
   // ── Send welcome email + sync Brevo ──────────────────────────────────────
-  // IMPORTANT: must be awaited — Vercel kills un-awaited promises on return
+  // IMPORTANT: must be awaited — Vercel kills un-awaited promises on return.
+  // Brevo sync only runs for users who consented to marketing; opt-outs
+  // are never pushed to the CRM.
   console.log("[verify] Envoi email de bienvenue à:", user.email)
-  await Promise.all([
+  const tasks: Array<Promise<unknown>> = [
     sendWelcomeEmail(user.email, user.name).then(() => {
       console.log("[verify] ✅ Email de bienvenue envoyé à:", user.email)
     }).catch((err) => {
       console.error("[verify] ❌ Échec email de bienvenue:", err)
     }),
-    upsertBrevoContact(user.email, {
-      name: user.name,
-      subscribed: user.subscribedNewsletter,
-    }).then(() => {
-      console.log("[verify] ✅ Contact Brevo mis à jour pour:", user.email)
-    }).catch((err) => {
-      console.error("[verify] ❌ Échec upsert Brevo:", err)
-    }),
-  ]);
+  ];
+  if (user.subscribedNewsletter) {
+    tasks.push(
+      upsertBrevoContact(user.email, {
+        name: user.name,
+        subscribed: true,
+      }).then(() => {
+        console.log("[verify] ✅ Contact Brevo mis à jour pour:", user.email)
+      }).catch((err) => {
+        console.error("[verify] ❌ Échec upsert Brevo:", err)
+      }),
+    );
+  }
+  await Promise.all(tasks);
 
   // Generate a short-lived auto-login token (5 min, single-use by design)
   const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET ?? "");
