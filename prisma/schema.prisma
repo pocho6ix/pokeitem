@@ -40,6 +40,11 @@ model User {
   subscribedNewsletter Boolean   @default(true)
   unsubscribedAt       DateTime?
 
+  // ToS / Privacy policy consent — captured client-side at signup and
+  // echoed from the API (falls back to `now()` at user creation time
+  // so legacy callers that omit the field still get a timestamp).
+  tosAcceptedAt        DateTime?
+
   referralCode        String    @unique @default(cuid())
   referredById        String?
   referredBy          User?     @relation("Referrals", fields: [referredById], references: [id])

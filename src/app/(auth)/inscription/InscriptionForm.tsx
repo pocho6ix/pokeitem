@@ -32,6 +32,14 @@ const registerSchema = z
       .string()
       .min(1, "Veuillez confirmer votre mot de passe"),
     subscribeNewsletter: z.boolean().optional(),
+    // ToS / Privacy consent — blocking. `z.literal(true)` forces the
+    // checkbox to be explicitly checked; defaultChecked is intentionally
+    // NOT set so the user performs a deliberate action (GDPR best
+    // practice: no pre-ticked consent boxes). Zod v4 uses `message`
+    // directly (v3's `errorMap` option was removed).
+    acceptCgu: z.literal(true, {
+      message: "Vous devez accepter les CGU pour créer un compte",
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Les mots de passe ne correspondent pas",
@@ -55,10 +63,16 @@ export function InscriptionForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  // Watched to drive the submit button's disabled state — keeps the CTA
+  // visually disabled until the user ticks the ToS box (Zod will also
+  // reject submission if they bypass it via devtools).
+  const acceptCgu = watch("acceptCgu");
 
   async function handleOAuth(provider: "google") {
     await signIn(provider, { callbackUrl: "/" });
@@ -77,6 +91,7 @@ export function InscriptionForm() {
           email: data.email,
           password: data.password,
           subscribeNewsletter: data.subscribeNewsletter !== false,
+          tosAcceptedAt: new Date().toISOString(),
           referralCode,
         }),
       });
@@ -187,6 +202,38 @@ export function InscriptionForm() {
             {...register("confirmPassword")}
           />
 
+          {/* CGU consent — obligatoire */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-[var(--border-default)] accent-[#E7BA76]"
+              {...register("acceptCgu")}
+            />
+            <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              J&apos;accepte les{" "}
+              <a
+                href="https://www.pokeitem.fr/cgu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-[#E7BA76]"
+              >
+                CGU
+              </a>{" "}
+              et j&apos;ai pris connaissance de la{" "}
+              <a
+                href="https://www.pokeitem.fr/politique-confidentialite"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-[#E7BA76]"
+              >
+                Politique de confidentialit&eacute;
+              </a>
+            </span>
+          </label>
+          {errors.acceptCgu && (
+            <p className="text-xs text-red-500">{errors.acceptCgu.message}</p>
+          )}
+
           {/* Newsletter consent */}
           <label className="flex items-start gap-2 cursor-pointer">
             <input
@@ -201,7 +248,7 @@ export function InscriptionForm() {
             </span>
           </label>
 
-          <Button type="submit" className="w-full" loading={isLoading}>
+          <Button type="submit" className="w-full" loading={isLoading} disabled={!acceptCgu || isLoading}>
             Cr&eacute;er mon compte
           </Button>
         </form>

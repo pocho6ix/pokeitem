@@ -6,7 +6,7 @@ import { sendVerificationEmail, upsertBrevoContact } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, subscribeNewsletter, referralCode } = await request.json();
+    const { name, email, password, subscribeNewsletter, referralCode, tosAcceptedAt } = await request.json();
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -57,6 +57,7 @@ export async function POST(request: Request) {
         email,
         passwordHash,
         subscribedNewsletter: subscribed,
+        tosAcceptedAt: tosAcceptedAt ? new Date(tosAcceptedAt) : new Date(),
         ...(referredById ? { referredById } : {}),
       },
     });
