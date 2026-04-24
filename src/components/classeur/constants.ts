@@ -1,9 +1,9 @@
 // Shared design tokens for the Classeur screen.
 //
-// `GOLD_GRADIENT` is the app-wide premium accent. It's currently also
-// hardcoded inline in the legacy PortfolioTiles / CollectionTile
-// components, which go away in commit 3 — once those are deleted, this
-// module owns the constant.
+// `GOLD_GRADIENT` is the app-wide premium accent — the same string
+// still lives inlined in ~12 other components (BetaBanner, ProButton,
+// PricingPageClient, etc.). Factoring it app-wide is out of scope for
+// the Classeur refactor; we only own the Classeur-local usage here.
 
 export const GOLD_GRADIENT =
   "linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)";
