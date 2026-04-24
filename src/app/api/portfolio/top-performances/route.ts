@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
       h."priceFr"     AS "priceFr",
       h."priceReverse" AS "priceReverse",
       h."recordedAt"  AS "recordedAt"
-    FROM card_price_histories h
+    FROM card_price_history h
     WHERE h."cardId" = ANY(${cardIds}::text[])
       AND h."recordedAt" < ${firstOfMonth}
     ORDER BY h."cardId", h."recordedAt" DESC
