@@ -17,6 +17,10 @@ export interface PortfolioItemData {
     currentPrice?: number | null;
     priceTrend: number | null;
     priceFrom: number | null;
+    /** Origin of `priceFrom`. "FR" = cheapest French-language listing,
+     *  "EU" = global fallback. Null when no listing exists. Used by the
+     *  UI to pick between 🇫🇷 and 🌐 next to the price. */
+    priceSource: "FR" | "EU" | null;
     priceUpdatedAt: string | null;
     lastScrapedAt: string | null;
     cardmarketUrl: string | null;

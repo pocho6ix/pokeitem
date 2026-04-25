@@ -91,7 +91,7 @@ async function getCollectionValue(userId: string) {
         select: {
           quantity:     true,
           currentPrice: true,
-          item: { select: { retailPrice: true } },
+          item: { select: { retailPrice: true, priceFrom: true } },
         },
       }),
     ]);
@@ -101,7 +101,10 @@ async function getCollectionValue(userId: string) {
       0,
     );
     const sealedValue = portfolioItems.reduce(
-      (sum, pi) => sum + resolveItemPrice(pi.currentPrice, pi.item.retailPrice) * pi.quantity,
+      (sum, pi) =>
+        sum +
+        resolveItemPrice(pi.item.priceFrom, pi.currentPrice, pi.item.retailPrice) *
+          pi.quantity,
       0,
     );
 

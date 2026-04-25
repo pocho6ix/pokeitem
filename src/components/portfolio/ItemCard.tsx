@@ -85,7 +85,9 @@ export function ItemCard({ row, onDelete, isDeleting }: ItemCardProps) {
               <>
                 <span className="text-[var(--text-tertiary)] text-xs">·</span>
                 <span className="text-xs text-[var(--text-secondary)]">
-                  <span aria-hidden>🇫🇷</span>{" "}
+                  <span aria-hidden>
+                    {row.item.priceSource === "EU" ? "🌐" : "🇫🇷"}
+                  </span>{" "}
                   <span className="font-medium text-[var(--text-primary)]">
                     {formatPrice(row.item.priceFrom)}
                   </span>

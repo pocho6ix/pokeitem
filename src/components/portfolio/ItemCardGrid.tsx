@@ -44,12 +44,13 @@ export function ItemCardGrid({ row }: ItemCardGridProps) {
           />
           <PerfBadge value={row.pnlPercent} />
         </div>
-        {/* Cardmarket FR market price (per unit) — reference point that
-            sits next to the user's personal valuation. Hidden when no CM
-            data is available for this item. */}
+        {/* Cardmarket reference price (per unit) — flag picks between
+            🇫🇷 (FR-language seller) and 🌐 (global fallback). Hidden when
+            no CM data is available for this item. */}
         {row.item.priceFrom != null && (
           <p className="font-data text-[11px] text-[var(--text-tertiary)]">
-            <span aria-hidden>🇫🇷</span> {formatPrice(row.item.priceFrom)}
+            <span aria-hidden>{row.item.priceSource === "EU" ? "🌐" : "🇫🇷"}</span>{" "}
+            {formatPrice(row.item.priceFrom)}
             <span className="text-[var(--text-tertiary)]">/u</span>
           </p>
         )}

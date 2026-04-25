@@ -40,6 +40,7 @@ export async function GET() {
             // listing) and 30d trend. Surfaces in the portfolio cards as a
             // reference point alongside the user's personal valuation.
             priceFrom:      true,
+            priceSource:    true,
             priceTrend:     true,
             priceUpdatedAt: true,
             lastScrapedAt:  true,
@@ -64,7 +65,7 @@ export async function GET() {
     const items = portfolioItems.map((pi) => {
       const purchasePrice = pi.purchasePrice ?? 0;
       // Unit current price = user's personal valuation → retailPrice → 0.
-      const currentPrice = resolveItemPrice(pi.currentPrice, pi.item.retailPrice);
+      const currentPrice = resolveItemPrice(pi.item.priceFrom, pi.currentPrice, pi.item.retailPrice);
       const currentValue = currentPrice * pi.quantity;
       const pnl = currentValue - purchasePrice;
       const pnlPercent = purchasePrice > 0 ? (pnl / purchasePrice) * 100 : 0;

@@ -35,10 +35,10 @@ export async function GET(req: Request) {
       },
     });
 
-    // Resolve each row's unit price once — uses the owner's personal valuation
-    // falling back to retailPrice.
+    // Resolve each row's unit price once — Cardmarket market value first,
+    // falling back to the owner's personal valuation, then retailPrice.
     const resolvedUnitPrice = portfolioItems.map((pi) =>
-      resolveItemPrice(pi.currentPrice, pi.item.retailPrice),
+      resolveItemPrice(pi.item.priceFrom, pi.currentPrice, pi.item.retailPrice),
     );
 
     const totalItems = portfolioItems.reduce((sum, pi) => sum + pi.quantity, 0);

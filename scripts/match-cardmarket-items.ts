@@ -223,6 +223,7 @@ async function main() {
             cardmarketMatchConfidence: "auto_high",
             cardmarketCandidates:      candidateJson,
             priceFrom:                 prices.priceFrom,
+            priceSource:               prices.priceSource,
             priceTrend:                prices.priceTrend,
             currentPrice:              prices.currentPrice,
             priceUpdatedAt:            now,

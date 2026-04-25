@@ -37,6 +37,7 @@ async function findItem(blocSlug: string, serieSlug: string, itemSlug: string) {
       retailPrice:   true,
       cardmarketUrl: true,
       priceFrom:     true,
+      priceSource:   true,
       priceTrend:    true,
       currentPrice:  true,
       priceUpdatedAt: true,
@@ -167,7 +168,9 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 <dl className="mt-5 grid grid-cols-2 gap-3 text-center">
                   <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-secondary)] p-3">
                     <dt className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-tertiary)]">
-                      <span aria-hidden>🇫🇷</span>
+                      <span aria-hidden>
+                        {item.priceSource === "EU" ? "🌐" : "🇫🇷"}
+                      </span>
                       <span>Prix</span>
                     </dt>
                     <dd className="mt-1 font-data text-lg font-semibold tabular-nums text-[var(--text-primary)]">

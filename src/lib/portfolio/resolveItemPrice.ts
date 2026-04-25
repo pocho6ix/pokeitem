@@ -1,22 +1,28 @@
 /**
  * Resolve the "current price" to display for a PortfolioItem.
  *
- * There is NO reliable automatic price source for sealed items (unlike cards
- * which have CardMarket history). Resolution order:
+ * Priority (most authoritative first):
  *
- *   1. The owner's manually-entered `PortfolioItem.currentPrice` — never cross-user.
- *   2. The item's retail price (MSRP) from the catalogue, as a sane default
- *      so freshly-added items don't show 0 € before the owner has typed a
- *      value.
- *   3. 0 — the owner can edit it from the detail page.
+ *   1. `marketPrice` — Cardmarket scraped/API value (`Item.priceFrom`).
+ *      Fresh, cross-user, ground truth when the item is matched.
+ *   2. `portfolioCurrentPrice` — the owner's manually-entered fallback.
+ *      Used only when we have no CM listing for this item (unmatched or
+ *      auto_low items still pending admin review).
+ *   3. `itemRetailPrice` — MSRP, last-resort default so freshly-added items
+ *      don't show 0 € before any pricing data lands.
+ *   4. 0.
  *
  * We deliberately do NOT read `Item.currentPrice` — that column used to be
  * written cross-user and is now kept blank.
  */
 export function resolveItemPrice(
+  marketPrice:           number | null | undefined,
   portfolioCurrentPrice: number | null | undefined,
   itemRetailPrice:       number | null | undefined,
 ): number {
+  if (marketPrice != null && marketPrice >= 0) {
+    return marketPrice;
+  }
   if (portfolioCurrentPrice != null && portfolioCurrentPrice >= 0) {
     return portfolioCurrentPrice;
   }

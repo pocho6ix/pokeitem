@@ -293,8 +293,13 @@ export function decideConfidence(verdict: ItemVerdict): Confidence {
 // `lowest_FR` is null (no active FR listing), we fall back to `lowest` so the
 // field stays populated. UI can surface the distinction via a flag later.
 
+export type PriceSource = "FR" | "EU"
+
 export interface ExtractedPrice {
   priceFrom: number | null
+  /** Origin of `priceFrom` — "FR" when at least one French-language listing
+   *  exists, "EU" when we fell back to the global `lowest`. */
+  priceSource: PriceSource | null
   priceTrend: number | null
   currentPrice: number | null
   currency: string
@@ -302,13 +307,17 @@ export interface ExtractedPrice {
 
 export function extractPrices(product: CMProduct): ExtractedPrice {
   const cm = product.prices?.cardmarket ?? null
-  const priceFrom = cm?.lowest_FR ?? cm?.lowest ?? null
-  const priceTrend = cm?.["30d_average"] ?? null
+  const fr = numOrNull(cm?.lowest_FR)
+  const global = numOrNull(cm?.lowest)
+  const priceFrom = fr ?? global
+  const priceSource: PriceSource | null = fr != null ? "FR" : global != null ? "EU" : null
+  const priceTrend = numOrNull(cm?.["30d_average"])
   const currentPrice = priceTrend ?? priceFrom
   return {
-    priceFrom: numOrNull(priceFrom),
-    priceTrend: numOrNull(priceTrend),
-    currentPrice: numOrNull(currentPrice),
+    priceFrom,
+    priceSource,
+    priceTrend,
+    currentPrice,
     currency: cm?.currency ?? "EUR",
   }
 }
@@ -378,6 +387,7 @@ export interface StoredCandidate {
   /** Canonical cardmarket.com FR URL (with ?language=2). */
   url: string | null
   priceFrom: number | null
+  priceSource: PriceSource | null
   priceTrend: number | null
 }
 
@@ -389,6 +399,7 @@ export function candidateFromProduct(p: CMProduct, type: ItemType): StoredCandid
     name: p.name,
     url: buildCardmarketUrl(p, type),
     priceFrom: prices.priceFrom,
+    priceSource: prices.priceSource,
     priceTrend: prices.priceTrend,
   }
 }

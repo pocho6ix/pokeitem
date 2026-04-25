@@ -199,6 +199,11 @@ model Item {
   // admin dashboard. Shape: Array<{ cardmarketId: number; name: string; score: number; url: string }>.
   cardmarketCandidates      Json?
   priceFrom        Float?
+  // Source of `priceFrom` — "FR" when at least one French-language listing
+  // exists (cardmarket-api `lowest_FR`), "EU" when we fell back to the
+  // global `lowest`. NULL only when the item has no listing at all. Drives
+  // the 🇫🇷 / 🌐 flag picker in the UI.
+  priceSource      String?
   priceTrend       Float?
   availableSellers Int?
   lastScrapedAt    DateTime?

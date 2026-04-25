@@ -74,6 +74,7 @@ export async function GET() {
           select: {
             type: true,
             retailPrice: true,
+            priceFrom: true,
             serie: { select: { name: true } },
           },
         },
@@ -100,7 +101,7 @@ export async function GET() {
     serieName: pi.item.serie.name,
     quantity: pi.quantity,
     purchasePrice: pi.purchasePrice,
-    currentPrice: resolveItemPrice(pi.currentPrice, pi.item.retailPrice),
+    currentPrice: resolveItemPrice(pi.item.priceFrom, pi.currentPrice, pi.item.retailPrice),
   }));
 
   const cartesCsv = buildCardsCsv(cardRows);
