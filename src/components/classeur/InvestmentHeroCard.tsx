@@ -13,6 +13,8 @@ interface InvestmentHeroCardProps {
   count: number | null;
   countLabel: string;
   trend?: number | null;              // € gain over the period (optional)
+  /** Optional Cardmarket FR market reference (sum of priceFrom × qty). */
+  marketValue?: number | null;
   previewImages: string[];
   previewLayout: "cards" | "items";
   loading: boolean;
@@ -36,6 +38,7 @@ export function InvestmentHeroCard({
   count,
   countLabel,
   trend,
+  marketValue,
   previewImages,
   previewLayout,
   loading,
@@ -85,6 +88,15 @@ export function InvestmentHeroCard({
           {trend >= 0 ? "+" : ""}
           {fmtEUR(trend)}
         </div>
+      )}
+
+      {/* Cardmarket FR market reference — only meaningful when there's at
+          least one matched item (value > 0). Hidden under the "values
+          masked" toggle to honour the user's privacy preference. */}
+      {marketValue != null && marketValue > 0 && !hidden && (
+        <p className="mt-1 text-xs text-[var(--text-secondary)]">
+          <span aria-hidden>🇫🇷</span> Marché&nbsp;: {fmtEUR(marketValue)}
+        </p>
       )}
 
       {/* Preview images — bottom-right corner. Items get a larger box

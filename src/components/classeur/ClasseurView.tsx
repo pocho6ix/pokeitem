@@ -42,6 +42,9 @@ interface Stats {
   doublesCount?: number;
   doublesValue?: number | null;
   itemsValue?: number | null;
+  /** Sum of `Item.priceFrom × quantity` across the user's holdings — the
+   *  Cardmarket FR market value of "Mes Items". Null/0 when no items. */
+  itemsMarketValue?: number | null;
   wishlistCount?: number;
   // ISO date of the earliest card/item the user has ever added. Used to
   // pick the evolution-chart's default timeframe ("7J" for fresh
@@ -162,6 +165,7 @@ export function ClasseurView() {
             title="Voir mes Items"
             href="/portfolio/items"
             value={stats?.itemsValue ?? null}
+            marketValue={stats?.itemsMarketValue ?? null}
             count={totalItemsCount}
             countLabel="produits"
             previewImages={ITEM_PREVIEWS}

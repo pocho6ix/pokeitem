@@ -26,6 +26,9 @@ export type ItemCategory =
   | "bundle"
   | "upc"
   | "tripack"
+  | "mini-tin"
+  | "tin"
+  | "box-set"
   | "coffret";
 
 export const ITEM_CATEGORIES: { id: ItemCategory; label: string }[] = [
@@ -35,12 +38,17 @@ export const ITEM_CATEGORIES: { id: ItemCategory; label: string }[] = [
   { id: "upc", label: "UPC" },
   { id: "tripack", label: "Tripack" },
   { id: "booster", label: "Booster" },
+  { id: "mini-tin", label: "Mini Tin" },
+  { id: "tin", label: "Tin" },
+  { id: "box-set", label: "Box Set" },
   { id: "coffret", label: "Coffret" },
 ];
 
 /**
  * Map a Prisma ItemType to the simplified category used by the filter chips.
- * BLISTER / OTHER fall into "coffret" as a catch-all.
+ * Tins and box sets used to fall under "coffret"; they now have their own
+ * chips so users can filter precisely. "coffret" stays as the catch-all for
+ * Pokéball Tins, Trainer Kits, Theme Decks, Blisters and OTHER.
  */
 export function typeToCategory(type: ItemType | string): ItemCategory {
   switch (type) {
@@ -57,9 +65,12 @@ export function typeToCategory(type: ItemType | string): ItemCategory {
       return "tripack";
     case ItemType.BOOSTER:
       return "booster";
-    case ItemType.BOX_SET:
-    case ItemType.TIN:
     case ItemType.MINI_TIN:
+      return "mini-tin";
+    case ItemType.TIN:
+      return "tin";
+    case ItemType.BOX_SET:
+      return "box-set";
     case ItemType.POKEBALL_TIN:
     case ItemType.TRAINER_KIT:
     case ItemType.THEME_DECK:

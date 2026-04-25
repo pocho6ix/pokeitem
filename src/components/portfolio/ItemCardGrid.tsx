@@ -4,6 +4,7 @@ import { ItemImage } from "@/components/shared/ItemImage";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { ItemBadge } from "./ItemBadge";
 import { PerfBadge } from "./PerfBadge";
+import { formatPrice } from "@/lib/utils";
 import type { PortfolioItemData } from "@/types/portfolio";
 
 interface ItemCardGridProps {
@@ -43,6 +44,15 @@ export function ItemCardGrid({ row }: ItemCardGridProps) {
           />
           <PerfBadge value={row.pnlPercent} />
         </div>
+        {/* Cardmarket FR market price (per unit) — reference point that
+            sits next to the user's personal valuation. Hidden when no CM
+            data is available for this item. */}
+        {row.item.priceFrom != null && (
+          <p className="font-data text-[11px] text-[var(--text-tertiary)]">
+            <span aria-hidden>🇫🇷</span> {formatPrice(row.item.priceFrom)}
+            <span className="text-[var(--text-tertiary)]">/u</span>
+          </p>
+        )}
       </div>
     </Link>
   );

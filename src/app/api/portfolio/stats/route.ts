@@ -29,6 +29,7 @@ export async function GET(req: Request) {
             name: true,
             type: true,
             retailPrice: true,
+            priceFrom: true,
           },
         },
       },
@@ -44,6 +45,15 @@ export async function GET(req: Request) {
 
     const itemsValue = portfolioItems.reduce(
       (sum, pi, i) => sum + resolvedUnitPrice[i] * pi.quantity,
+      0
+    );
+
+    // FR market value — sum of `priceFrom × quantity` for the user's holdings.
+    // Only counts items that actually have a CM listing; items still
+    // unmatched (priceFrom == null) contribute 0 here, which is the right
+    // semantic for "what would I get on Cardmarket today".
+    const itemsMarketValue = portfolioItems.reduce(
+      (sum, pi) => sum + (pi.item.priceFrom ?? 0) * pi.quantity,
       0
     );
 
@@ -147,6 +157,7 @@ export async function GET(req: Request) {
       totalItems,
       totalValue: Math.round(totalValue * 100) / 100,
       itemsValue: Math.round(itemsValue * 100) / 100,
+      itemsMarketValue: Math.round(itemsMarketValue * 100) / 100,
       totalInvested: Math.round(totalInvestedAll * 100) / 100,
       profitLoss: Math.round(profitLoss * 100) / 100,
       profitLossPercent: Math.round(profitLossPercent * 100) / 100,

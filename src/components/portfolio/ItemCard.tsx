@@ -7,6 +7,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { CollectionValue } from "@/components/collection/CollectionValue";
 import { ItemBadge } from "./ItemBadge";
 import { PerfBadge } from "./PerfBadge";
+import { formatPrice } from "@/lib/utils";
 import type { PortfolioItemData } from "@/types/portfolio";
 
 interface ItemCardProps {
@@ -80,6 +81,17 @@ export function ItemCard({ row, onDelete, isDeleting }: ItemCardProps) {
                 className="inline font-medium text-[var(--text-primary)]"
               />
             </span>
+            {row.item.priceFrom != null && (
+              <>
+                <span className="text-[var(--text-tertiary)] text-xs">·</span>
+                <span className="text-xs text-[var(--text-secondary)]">
+                  <span aria-hidden>🇫🇷</span>{" "}
+                  <span className="font-medium text-[var(--text-primary)]">
+                    {formatPrice(row.item.priceFrom)}
+                  </span>
+                </span>
+              </>
+            )}
           </div>
         </div>
 

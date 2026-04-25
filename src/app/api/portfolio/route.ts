@@ -36,6 +36,13 @@ export async function GET() {
             type:           true,
             imageUrl:       true,
             retailPrice:    true,
+            // Cardmarket FR market price ("À partir de" — cheapest active FR
+            // listing) and 30d trend. Surfaces in the portfolio cards as a
+            // reference point alongside the user's personal valuation.
+            priceFrom:      true,
+            priceTrend:     true,
+            priceUpdatedAt: true,
+            lastScrapedAt:  true,
             language:       true,
             cardmarketUrl:  true,
             serie: {

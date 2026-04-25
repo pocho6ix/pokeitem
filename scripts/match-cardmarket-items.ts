@@ -49,6 +49,7 @@ import {
   decideConfidence,
   extractPrices,
   candidateFromProduct,
+  buildCardmarketUrl,
   type ItemInput,
   type StoredCandidate,
 } from "../src/lib/cardmarket-items-matching"
@@ -208,7 +209,7 @@ async function main() {
       stats.autoHigh++
       const product = match.candidates[0]
       const prices = extractPrices(product)
-      const candidateJson: StoredCandidate[] = [candidateFromProduct(product)]
+      const candidateJson: StoredCandidate[] = [candidateFromProduct(product, item.type)]
 
       logRow(item, confidence, product.name, prices)
       if (DRY_RUN) continue
@@ -218,7 +219,7 @@ async function main() {
           where: { id: item.id },
           data: {
             cardmarketId:              String(product.cardmarket_id ?? product.id),
-            cardmarketUrl:             product.links?.cardmarket ?? null,
+            cardmarketUrl:             buildCardmarketUrl(product, item.type),
             cardmarketMatchConfidence: "auto_high",
             cardmarketCandidates:      candidateJson,
             priceFrom:                 prices.priceFrom,
@@ -255,7 +256,9 @@ async function main() {
       }
     } else if (confidence === "auto_low") {
       stats.autoLow++
-      const candidateJson: StoredCandidate[] = match.candidates.slice(0, 5).map(candidateFromProduct)
+      const candidateJson: StoredCandidate[] = match.candidates
+        .slice(0, 5)
+        .map((p) => candidateFromProduct(p, item.type))
       logRow(item, confidence, `${match.candidates.length} candidats`)
       if (DRY_RUN) continue
 

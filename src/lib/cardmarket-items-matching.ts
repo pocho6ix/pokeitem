@@ -317,25 +317,77 @@ function numOrNull(v: number | null | undefined): number | null {
   return typeof v === "number" && v > 0 ? v : null
 }
 
+// ─── Cardmarket URL builder ─────────────────────────────────────────────────
+//
+// The CM URL pattern is:
+//   https://www.cardmarket.com/fr/Pokemon/Products/{Category}/{Capitalized-Slug}?language=2
+//
+// `?language=2` is Cardmarket's URL parameter that pre-filters the page on
+// French sellers (matches the FR-first positioning of Pokeitem).
+//
+// The `Category` segment is NOT returned by the API — we infer it from the
+// Pokeitem ItemType. Mapping below was validated manually against live CM
+// product pages (see commit history for the audit-and-test cycle).
+
+/** Pokeitem ItemType → URL path segment used by cardmarket.com.
+ *  `null` means no live CM listing for that type → leave URL unset. */
+export const URL_CATEGORY_BY_TYPE: Record<ItemType, string | null> = {
+  BOOSTER:      "Boosters",
+  DUOPACK:      "Blisters",
+  TRIPACK:      "Blisters",
+  BLISTER:      "Blisters",
+  BOOSTER_BOX:  "Booster-Boxes",
+  // CM groups Booster Bundles under the same /Booster-Boxes/ category as displays.
+  BUNDLE:       "Booster-Boxes",
+  ETB:          "Elite-Trainer-Boxes",
+  UPC:          "Box-Sets",
+  BOX_SET:      "Box-Sets",
+  TIN:          "Tins",
+  MINI_TIN:     "Tins",
+  POKEBALL_TIN: "Tins",
+  // No live CM listings observed for these types — keep URL empty.
+  TRAINER_KIT:  null,
+  THEME_DECK:   null,
+  OTHER:        null,
+}
+
+/** Capitalize each `-` separated token of a slug.
+ *  "paldean-fates-booster-bundle" → "Paldean-Fates-Booster-Bundle". */
+function capitalizeSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => (w.length > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+    .join("-")
+}
+
+/** Build the canonical FR cardmarket.com URL for a product.
+ *  Returns null if the type has no listing category on CM. */
+export function buildCardmarketUrl(product: CMProduct, type: ItemType): string | null {
+  const category = URL_CATEGORY_BY_TYPE[type]
+  if (!category) return null
+  if (!product.slug) return null
+  return `https://www.cardmarket.com/fr/Pokemon/Products/${category}/${capitalizeSlug(product.slug)}?language=2`
+}
+
 // ─── Candidate serialization (for Item.cardmarketCandidates) ────────────────
 
 export interface StoredCandidate {
   cardmarketId: number | null
   productId: number
   name: string
-  /** TCGGO redirect — canonical CM URL is harvested separately (Phase 2 puppeteer). */
+  /** Canonical cardmarket.com FR URL (with ?language=2). */
   url: string | null
   priceFrom: number | null
   priceTrend: number | null
 }
 
-export function candidateFromProduct(p: CMProduct): StoredCandidate {
+export function candidateFromProduct(p: CMProduct, type: ItemType): StoredCandidate {
   const prices = extractPrices(p)
   return {
     cardmarketId: p.cardmarket_id,
     productId: p.id,
     name: p.name,
-    url: p.links?.cardmarket ?? null,
+    url: buildCardmarketUrl(p, type),
     priceFrom: prices.priceFrom,
     priceTrend: prices.priceTrend,
   }
