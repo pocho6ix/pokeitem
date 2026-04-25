@@ -260,19 +260,55 @@ async function main() {
       const candidateJson: StoredCandidate[] = match.candidates
         .slice(0, 5)
         .map((p) => candidateFromProduct(p, item.type))
-      logRow(item, confidence, `${match.candidates.length} candidats`)
+      // Stopgap: copy the first candidate's URL + prices into the Item
+      // columns so the UI shows pricing even before an admin manually
+      // resolves the ambiguity. Confidence stays "auto_low" so the
+      // dashboard (Phase 3) can still flag the row for review.
+      const top = match.candidates[0]
+      const topPrices = extractPrices(top)
+
+      logRow(item, confidence, `${match.candidates.length} candidats — top: ${top.name}`, topPrices)
       if (DRY_RUN) continue
 
       await withRetry(`item.update ${item.id}`, () =>
         prisma.item.update({
           where: { id: item.id },
           data: {
+            cardmarketId:              String(top.cardmarket_id ?? top.id),
+            cardmarketUrl:             buildCardmarketUrl(top, item.type),
             cardmarketMatchConfidence: "auto_low",
             cardmarketCandidates:      candidateJson,
-            // Intentionally don't set cardmarketUrl/Id/prices — admin picks.
+            priceFrom:                 topPrices.priceFrom,
+            priceSource:               topPrices.priceSource,
+            priceTrend:                topPrices.priceTrend,
+            currentPrice:              topPrices.currentPrice,
+            priceUpdatedAt:            now,
+            lastScrapedAt:             now,
           },
         })
       )
+
+      if (topPrices.currentPrice != null) {
+        await withRetry(`priceHistory ${item.id}`, () =>
+          prisma.priceHistory.upsert({
+            where: { id: `${item.id}_${recordedAt.toISOString().slice(0, 10)}` },
+            create: {
+              id: `${item.id}_${recordedAt.toISOString().slice(0, 10)}`,
+              itemId: item.id,
+              price: topPrices.currentPrice!,
+              priceFrom: topPrices.priceFrom,
+              source: "cardmarket-api",
+              currency: topPrices.currency,
+              date: recordedAt,
+            },
+            update: {
+              price: topPrices.currentPrice!,
+              priceFrom: topPrices.priceFrom,
+            },
+          })
+        )
+        stats.priceHistoryRows++
+      }
     } else {
       stats.unmatched++
       logRow(item, confidence, match.verdict === "no-episode" ? "aucune épisode CM" : "aucun candidat")
