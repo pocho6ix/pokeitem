@@ -86,7 +86,6 @@ export function SerieItemsGrid({
   // Hide the "Voir les détails" CTA inside the native Capacitor build —
   // the /collection/produits/[bloc]/[serie]/[item] SEO page is web-only.
   const isWeb = !isNative();
-  const [showOtherItems, setShowOtherItems] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{
     id: string;
     name: string;
@@ -103,16 +102,14 @@ export function SerieItemsGrid({
   const { canAddSealed, usage } = useSubscription();
   const { paywallState, showPaywall, closePaywall } = usePaywall();
 
+  // Only render product types that have an artwork — either a real DB
+  // item with imageUrl or a static asset on disk for the (serie, type)
+  // pair. Items without a photo are hidden entirely (no fallback toggle).
   const imageSet = new Set(availableImageTypes ?? []);
-
-  const allItems = itemTypes.filter((it) => it.typicalMsrp > 0);
-  const withImage = allItems.filter((it) => {
+  const visibleItems = itemTypes.filter((it) => {
+    if (it.typicalMsrp <= 0) return false;
     const dbItem = dbItems?.find((i) => i.type === it.type);
-    return dbItem?.imageUrl || imageSet.has(it.type);
-  });
-  const withoutImage = allItems.filter((it) => {
-    const dbItem = dbItems?.find((i) => i.type === it.type);
-    return !dbItem?.imageUrl && !imageSet.has(it.type);
+    return Boolean(dbItem?.imageUrl) || imageSet.has(it.type);
   });
 
   function handleAddToPortfolio(itemType: ItemTypeData) {
@@ -212,28 +209,8 @@ export function SerieItemsGrid({
   return (
     <>
       <div className="grid grid-cols-2 gap-3 min-[360px]:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-        {withImage.map(renderItemCard)}
+        {visibleItems.map(renderItemCard)}
       </div>
-
-      {withoutImage.length > 0 && (
-        <div className="mt-6">
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none text-sm text-[var(--text-secondary)]">
-            <input
-              type="checkbox"
-              checked={showOtherItems}
-              onChange={(e) => setShowOtherItems(e.target.checked)}
-              className="h-4 w-4 rounded border-[var(--border-default)] text-blue-600 focus:ring-blue-500"
-            />
-            Autres items ({withoutImage.length})
-          </label>
-
-          {showOtherItems && (
-            <div className="mt-4 grid grid-cols-2 gap-3 min-[360px]:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-              {withoutImage.map(renderItemCard)}
-            </div>
-          )}
-        </div>
-      )}
 
       {selectedItem && (
         <AddToPortfolioModal
