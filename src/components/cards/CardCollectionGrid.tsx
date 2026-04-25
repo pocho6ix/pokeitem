@@ -741,6 +741,15 @@ export function CardCollectionGrid({
               }
               return m;
             });
+            // Auto-remove newly-owned cards from the wishlist: owning means you
+            // no longer need to want it. Best-effort, optimistic.
+            const wlStore = useWishlistStore.getState();
+            const addedIds = Array.from(new Set(pairs.map((p) => p.card.id)));
+            const toUnwish = addedIds.filter((id) => wlStore.ids.has(id));
+            for (const id of toUnwish) {
+              wlStore.remove(id);
+              fetchApi(`/api/wishlist/cards/${id}`, { method: "DELETE" }).catch(() => {});
+            }
           }
         } catch {
           setOwnedMap(buildOwnedMap(initialOwned));
@@ -790,6 +799,15 @@ export function CardCollectionGrid({
           body: JSON.stringify({ cards: missing.map((c) => ({ cardId: c.id, quantity: 1, condition: "NEAR_MINT", language: "FR", version: "NORMAL", foil: false })) }),
         });
         if (!res.ok) setOwnedMap(buildOwnedMap(initialOwned));
+        else {
+          // Auto-remove from wishlist for any newly-owned cards.
+          const wlStore = useWishlistStore.getState();
+          const toUnwish = missing.map((c) => c.id).filter((id) => wlStore.ids.has(id));
+          for (const id of toUnwish) {
+            wlStore.remove(id);
+            fetchApi(`/api/wishlist/cards/${id}`, { method: "DELETE" }).catch(() => {});
+          }
+        }
       } catch {
         setOwnedMap(buildOwnedMap(initialOwned));
       }

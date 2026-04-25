@@ -142,15 +142,39 @@ async function main() {
   const backfillCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   if (SERIE_SLUG) console.log(`Filtre série : ${SERIE_SLUG}\n`)
 
-  const cards = await prisma.card.findMany({
-    where: {
-      cardmarketId: { not: null },
-      priceHistory: { none: { recordedAt: { lte: backfillCutoff } } },
-      ...(SERIE_SLUG ? { serie: { slug: SERIE_SLUG } } : {}),
-    },
-    select: { id: true, cardmarketId: true },
-    ...(LIMIT ? { take: LIMIT } : {}),
-  })
+  // Raw SQL query — the Prisma `priceHistory: { none: ... }` nested filter
+  // becomes a correlated NOT EXISTS that is too slow at 1M+ history rows.
+  // A LEFT JOIN + IS NULL on a pre-filtered DISTINCT cardIds set is ~10x faster.
+  const serieFilterSql = SERIE_SLUG
+    ? `AND c."serieId" IN (SELECT id FROM series WHERE slug = '${SERIE_SLUG.replace(/'/g, "''")}')`
+    : ""
+  const limitSql = LIMIT ? `LIMIT ${LIMIT}` : ""
+  // A card is considered "already backfilled" if EITHER:
+  //   (a) it has a history point older than 30 days  — initial criterion, or
+  //   (b) it already has a `cardmarket-api` source entry within the last 7 days
+  //       — protects against looping on cards where the CM API only returns
+  //       recent history (no 1-year data available). Without this, those
+  //       cards would be reprocessed every run forever.
+  const recentBackfillCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const cards = await prisma.$queryRawUnsafe<Array<{ id: string; cardmarketId: string }>>(`
+    SELECT c.id, c."cardmarketId"
+    FROM cards c
+    LEFT JOIN (
+      SELECT DISTINCT "cardId" FROM card_price_history
+      WHERE "recordedAt" <= $1
+        AND source IN ('cardmarket-api', 'cardmarket-api-empty')
+    ) ph_old ON ph_old."cardId" = c.id
+    LEFT JOIN (
+      SELECT DISTINCT "cardId" FROM card_price_history
+      WHERE source IN ('cardmarket-api', 'cardmarket-api-empty') AND "createdAt" >= $2
+    ) ph_recent ON ph_recent."cardId" = c.id
+    WHERE c."cardmarketId" IS NOT NULL
+      AND ph_old."cardId" IS NULL
+      AND ph_recent."cardId" IS NULL
+      ${serieFilterSql}
+    ORDER BY c.id
+    ${limitSql}
+  `, backfillCutoff, recentBackfillCutoff)
 
   console.log(`${cards.length} cartes avec cardmarketId à traiter\n`)
 
@@ -178,6 +202,28 @@ async function main() {
           return
         }
 
+        // Always write an "attempt marker" sentinel (upsert keyed on cardId +
+        // today 00:00) so the next-run filter excludes this card for 7 days,
+        // regardless of whether the CM API returned usable history. This
+        // prevents infinite looping on cards where the API returns empty
+        // history OR where all days have null prices.
+        const today = new Date()
+        today.setUTCHours(0, 0, 0, 0)
+        await withRetry(`sentinel ${card.id}`, () =>
+          prisma.cardPriceHistory.upsert({
+            where: { cardId_recordedAt: { cardId: card.id, recordedAt: today } },
+            create: {
+              cardId:     card.id,
+              price:      0,
+              priceFr:    null,
+              source:     "cardmarket-api-empty",
+              recordedAt: today,
+            },
+            // Bump createdAt so the filter treats this as a recent attempt.
+            update: { createdAt: new Date() },
+          })
+        )
+
         if (history.length === 0) return
 
         // Most recent day with a usable price → used to refresh the card's
@@ -202,7 +248,10 @@ async function main() {
                   source: "cardmarket-api",
                   recordedAt,
                 },
-                update: { priceFr: h.cmLow },
+                // Bump createdAt so the next-run filter (createdAt >= 7d ago)
+                // correctly excludes this card even if no new points were
+                // inserted this run.
+                update: { priceFr: h.cmLow, createdAt: new Date() },
               })
             )
           }

@@ -171,11 +171,16 @@ export default async function CardDetailPage({ params }: PageProps) {
   const avg7       = cmPrices?.avg7        ?? null;
   const avg30      = cmPrices?.avg30       ?? null;
 
-  // Marketplace links — use TCGdex URLs when available, fallback to search
-  const encodedCard  = encodeURIComponent(card.name);
-  const cardmarketUrl =
-    tcgdex?.pricing?.cardmarket?.url ??
-    `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encodedCard}`;
+  // Marketplace link — mirror CardDetailModal's buildCardmarketUrl:
+  // prefer our stored slug-based `cardmarketUrl` (most accurate), fall back
+  // to `?idProduct={cardmarketId}`, then TCGdex, then name search.
+  const encodedCard = encodeURIComponent(card.name);
+  const cardmarketUrl = card.cardmarketUrl
+    ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles/${card.cardmarketUrl}`
+    : card.cardmarketId
+    ? `https://www.cardmarket.com/fr/Pokemon/Products/Singles?idProduct=${card.cardmarketId}&language=5`
+    : tcgdex?.pricing?.cardmarket?.url ??
+      `https://www.cardmarket.com/fr/Pokemon/Products/Search?searchString=${encodedCard}`;
 
   const rarity = card.rarity as CardRarity;
   const types: string[] = tcgdex?.types ?? [];

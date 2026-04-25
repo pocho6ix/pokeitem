@@ -431,30 +431,79 @@ async function updateFrenchPrices(): Promise<{ episodesProcessed: number; cardsF
 // ---------------------------------------------------------------------------
 // CM history backfill — persists historical CM price data into CardPriceHistory
 // so the price chart has rich data without making live API calls per user.
-// Only runs for cards whose history hasn't been seeded yet (cardmarketId set
-// but no CardPriceHistory rows older than 7 days).
+//
+// Candidate criteria (mirrors scripts/backfill-cm-history.ts):
+//   - Has cardmarketId
+//   - No `cardmarket-api` / `cardmarket-api-empty` history row older than 30 days
+//     (i.e. hasn't been fully backfilled yet)
+//   - No `cardmarket-api*` row with createdAt within the last 7 days
+//     (avoids re-processing cards already attempted this week, prevents infinite
+//     looping on cards where the CM API returns empty history)
+//
+// A sentinel row (`cardmarket-api-empty`, recordedAt = today 00:00 UTC) is
+// always written per processed card so the next cron excludes it for 7 days,
+// regardless of whether the API returned usable history.
 // ---------------------------------------------------------------------------
 
 async function backfillCMHistory(): Promise<{ cardsEnriched: number }> {
   if (!isFrenchPriceFetcherEnabled()) return { cardsEnriched: 0 };
 
-  // Find cards with cardmarketId that have few history records
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const candidates = await prisma.card.findMany({
-    where: {
-      cardmarketId: { not: null },
-      priceHistory: { none: { recordedAt: { lte: sevenDaysAgo } } },
-    },
-    select: { id: true, cardmarketId: true },
-    take: 50, // Process up to 50 cards per cron run
-  });
+  const backfillCutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recentCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Raw SQL for performance: the equivalent Prisma nested filter becomes a
+  // correlated NOT EXISTS that is prohibitively slow at 1M+ history rows.
+  const candidates = await prisma.$queryRawUnsafe<
+    Array<{ id: string; cardmarketId: string }>
+  >(
+    `
+    SELECT c.id, c."cardmarketId"
+    FROM cards c
+    LEFT JOIN (
+      SELECT DISTINCT "cardId" FROM card_price_history
+      WHERE "recordedAt" <= $1
+        AND source IN ('cardmarket-api', 'cardmarket-api-empty')
+    ) ph_old ON ph_old."cardId" = c.id
+    LEFT JOIN (
+      SELECT DISTINCT "cardId" FROM card_price_history
+      WHERE source IN ('cardmarket-api', 'cardmarket-api-empty')
+        AND "createdAt" >= $2
+    ) ph_recent ON ph_recent."cardId" = c.id
+    WHERE c."cardmarketId" IS NOT NULL
+      AND ph_old."cardId" IS NULL
+      AND ph_recent."cardId" IS NULL
+    ORDER BY c.id
+    LIMIT 50
+    `,
+    backfillCutoff,
+    recentCutoff
+  );
 
   if (candidates.length === 0) return { cardsEnriched: 0 };
+
+  const todayUTC = new Date();
+  todayUTC.setUTCHours(0, 0, 0, 0);
 
   let cardsEnriched = 0;
   for (const card of candidates) {
     try {
       const history = await fetchCardHistory(Number(card.cardmarketId));
+
+      // Always write a sentinel "attempt marker" so this card is excluded by
+      // the 7-day filter on the next run, even if the API returned empty
+      // history or all days were null-priced.
+      await prisma.cardPriceHistory.upsert({
+        where: { cardId_recordedAt: { cardId: card.id, recordedAt: todayUTC } },
+        create: {
+          cardId: card.id,
+          price: 0,
+          priceFr: null,
+          source: "cardmarket-api-empty",
+          recordedAt: todayUTC,
+        },
+        update: { createdAt: new Date() },
+      });
+
       if (history.length === 0) continue;
 
       const upserts = history.map((h) => {
@@ -468,7 +517,8 @@ async function backfillCMHistory(): Promise<{ cardsEnriched: number }> {
             source: "cardmarket-api",
             recordedAt,
           },
-          update: { priceFr: h.cmLow },
+          // Bump createdAt so the next-run filter excludes this card.
+          update: { priceFr: h.cmLow, createdAt: new Date() },
         });
       });
 

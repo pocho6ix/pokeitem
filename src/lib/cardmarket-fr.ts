@@ -135,11 +135,36 @@ export function isFrenchPriceFetcherEnabled(): boolean {
 }
 
 /**
- * Extracts the lowest Near-Mint FR price from a CMApiCard, or null if none.
+ * Extracts the lowest Near-Mint FR price from a CMApiCard.
+ *
+ * Priority:
+ *   1. `lowest_near_mint_FR`  — cheapest FR-language NM listing (strictly FR)
+ *   2. `lowest_near_mint`     — cheapest global NM listing (approximation,
+ *      used when no FR listing is active — typically old/rare cards nobody
+ *      sells in FR at that moment)
+ *
+ * Returns null only if both are null/0.
  */
 export function extractLowestFr(card: CMApiCard): number | null {
-  const v = card.prices?.cardmarket?.lowest_near_mint_FR
-  return typeof v === "number" && v > 0 ? v : null
+  const fr = card.prices?.cardmarket?.lowest_near_mint_FR
+  if (typeof fr === "number" && fr > 0) return fr
+  const global = card.prices?.cardmarket?.lowest_near_mint
+  if (typeof global === "number" && global > 0) return global
+  return null
+}
+
+/**
+ * Like `extractLowestFr` but also reports which source was used.
+ * Useful for analytics and UI hints (e.g. hide 🇫🇷 flag on global fallback).
+ */
+export function extractLowestFrWithSource(
+  card: CMApiCard
+): { value: number | null; source: "fr" | "global" | null } {
+  const fr = card.prices?.cardmarket?.lowest_near_mint_FR
+  if (typeof fr === "number" && fr > 0) return { value: fr, source: "fr" }
+  const global = card.prices?.cardmarket?.lowest_near_mint
+  if (typeof global === "number" && global > 0) return { value: global, source: "global" }
+  return { value: null, source: null }
 }
 
 /**
